@@ -1838,6 +1838,21 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testBasicPaidMessage() {
+            game.removeForces("Ix", ix, 2, 1, true);
+            game.reviveForces(ix, true, 0, 1, false);
+            assertEquals(Emojis.IX + " revives 1 " + Emojis.IX_CYBORG + " for 3 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testPaidToBT() {
+            game.addFaction(bt);
+            game.removeForces("Ix", ix, 2, 1, true);
+            game.reviveForces(ix, true, 0, 1, false);
+            assertEquals(Emojis.IX + " revives 1 " + Emojis.IX_CYBORG + " for 3 " + Emojis.SPICE + " paid to " + Emojis.BT, turnSummary.getMessages().getLast());
+        }
+
+        @Test
         void testIxHighTresholdPaidRevival() {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.removeForces("Ix", ix, 2, 1, true);

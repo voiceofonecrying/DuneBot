@@ -195,7 +195,7 @@ public class SetupCommands {
             );
         }
 
-        if (game.hasFaction("BT")) {
+        if (game.hasBTFaction()) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.TRAITORS) + 1,
                     SetupStep.BT_FACE_DANCERS
@@ -614,7 +614,7 @@ public class SetupCommands {
     }
 
     public static StepStatus btDrawFaceDancersStep(Game game) throws InvalidGameStateException {
-        ((BTFaction) game.getFaction("BT")).drawFaceDancers();
+        game.getBTFaction().drawFaceDancers();
         return StepStatus.CONTINUE;
     }
 

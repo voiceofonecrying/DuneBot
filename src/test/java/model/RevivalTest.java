@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -67,6 +68,69 @@ public class RevivalTest extends DuneTest {
             game.removeForces("Kaitain", emperor, 6, 0, true);
             game.removeForces("Salusa Secundus", emperor, 0, 2, true);
             assertTrue(revival.askAboutRevivalLimits(game));
+        }
+    }
+
+    @Nested
+    @DisplayName("#startRevivingForces")
+    class StartRevivingForces {
+        @BeforeEach
+        void setUp() {
+            game.setTurn(2);
+            game.addFaction(emperor);
+        }
+
+        @Test
+        void testBTNotInGame() {
+            game.removeForces("Kaitain", emperor, 6, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 2, true);
+            revival.askAboutRevivalLimits(game);
+            assertDoesNotThrow(() -> revival.startRevivingForces(game));
+        }
+
+        @Test
+        void testBTInGameNoLimitsNeedToBeRaised() {
+            game.addFaction(bt);
+            game.removeForces("Kaitain", emperor, 2, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 4, true);
+            revival.askAboutRevivalLimits(game);
+            assertDoesNotThrow(() -> revival.startRevivingForces(game));
+        }
+
+        @Test
+        void testBTInGameLimitCanBeRaised() {
+            game.addFaction(bt);
+            game.removeForces("Kaitain", emperor, 6, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 2, true);
+            revival.askAboutRevivalLimits(game);
+            assertThrows(InvalidGameStateException.class, () -> revival.startRevivingForces(game));
+        }
+
+        @Test
+        void testBTFreeRevivalSpice() throws InvalidGameStateException {
+            game.addFaction(bt);
+            game.removeForces("Kaitain", emperor, 6, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 2, true);
+            revival.askAboutRevivalLimits(game);
+            bt.setRevivalLimit("Emperor", 3);
+            turnSummary.clear();
+            revival.startRevivingForces(game);
+            assertEquals(Emojis.BT + " gain 1 " + Emojis.SPICE + " from free revivals.\n", turnSummary.getMessages().get(2));
+        }
+
+        @Test
+        void testBTLowThresholdFreeRevivalSpice() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(bt);
+            bt.placeForceFromReserves(game, sietchTabr, 20, false);
+            assertFalse(bt.isHighThreshold());
+            game.removeForces("Kaitain", emperor, 6, 0, true);
+            game.removeForces("Salusa Secundus", emperor, 0, 2, true);
+            revival.askAboutRevivalLimits(game);
+            bt.setRevivalLimit("Emperor", 3);
+            turnSummary.clear();
+            revival.startRevivingForces(game);
+            assertNotEquals(Emojis.BT + " gain 1 " + Emojis.SPICE + " from free revivals.\n", turnSummary.getMessages().get(2));
         }
     }
 }

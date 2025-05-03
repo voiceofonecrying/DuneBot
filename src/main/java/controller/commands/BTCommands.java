@@ -45,18 +45,18 @@ public class BTCommands {
 
     public static void swapBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String faceDancer = discordGame.required(btFaceDancer).getAsString();
-        ((BTFaction) game.getFaction("BT")).swapFaceDancer(faceDancer);
+        game.getBTFaction().swapFaceDancer(faceDancer);
         discordGame.pushGame();
     }
 
     public static void revealBTFaceDancer(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String faceDancer = discordGame.required(btFaceDancer).getAsString();
-        ((BTFaction) game.getFaction("BT")).revealFaceDancer(faceDancer, game);
+        game.getBTFaction().revealFaceDancer(faceDancer, game);
         discordGame.pushGame();
     }
 
     public static void setRevivalLimit(MessageChannel channel, DiscordGame discordGame, Game game, String factionName, int revivalLimit) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        BTFaction bt = (BTFaction) game.getFaction("BT");
+        BTFaction bt = game.getBTFaction();
         bt.setRevivalLimit(factionName, revivalLimit);
         if (bt.hasSetAllRevivalLimits()) {
             RunCommands.advance(discordGame, game);
@@ -74,8 +74,7 @@ public class BTCommands {
     }
 
     public static void nexusCardCunning(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        BTFaction bt = (BTFaction) game.getFaction("BT");
-        bt.nexusCardCunning();
+        game.getBTFaction().nexusCardCunning();
         discordGame.pushGame();
     }
 }

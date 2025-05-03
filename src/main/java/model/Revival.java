@@ -45,8 +45,7 @@ public class Revival {
         if (recruitsAsked && !recruitsDeclined && !recruitsInPlay)
             throw new InvalidGameStateException(recruitsHolder + " must decide if they will play Recruits before the game can be advanced.");
         else if (btAskedAboutLimits) {
-            BTFaction bt = (BTFaction) game.getFaction("BT");
-            List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();
+            List<String> factionsNeedingLimits = game.getBTFactionOrNull().getFactionsNeedingRevivalLimit();
             if (factionsNeedingLimits.isEmpty()) {
                 return true;
             } else {
@@ -78,8 +77,8 @@ public class Revival {
      * @return true if BT needs to set any revival limits, otherwise false.
      */
     public boolean askAboutRevivalLimits(Game game) {
-        if (game.getTurn() > 1 && game.hasFaction("BT")) {
-            BTFaction bt = (BTFaction) game.getFaction("BT");
+        BTFaction bt = game.getBTFactionOrNull();
+        if (game.getTurn() > 1 && bt != null) {
             bt.getChat().publish("Please set revival rates for each faction. " + bt.getPlayer());
             List<String> limitsNotNeededMessages = new ArrayList<>();
             game.getFactions().stream().filter(faction -> !(faction instanceof BTFaction)).forEach(faction -> {
@@ -137,16 +136,14 @@ public class Revival {
         if (isRecruitsDecisionNeeded())
             throw new InvalidGameStateException(recruitsHolder + " must decide if they will play recruits before the game can be advanced.");
         boolean btWasHighThreshold = false;
-        try {
-            BTFaction bt = (BTFaction) game.getFaction("BT");
+        BTFaction bt = game.getBTFactionOrNull();
+        if (bt != null) {
             List<String> factionsNeedingLimits = bt.getFactionsNeedingRevivalLimit();
             if (!factionsNeedingLimits.isEmpty()) {
                 String names = String.join(", ", factionsNeedingLimits);
                 throw new InvalidGameStateException("BT must set revival limits for the following factions before the game can be advanced.\n" + names);
             }
             btWasHighThreshold = !game.hasGameOption(GameOption.HOMEWORLDS) || bt.isHighThreshold();
-        } catch (IllegalArgumentException e) {
-            // BT are not in the game
         }
         DuneTopic turnSummary = game.getTurnSummary();
         turnSummary.publish("**Turn " + game.getTurn() + " Revival Phase**");
@@ -166,14 +163,13 @@ public class Revival {
         }
 
         if (btWasHighThreshold && factionsWithRevivals > 0) {
-            Faction btFaction = game.getFaction("BT");
-            message.append(btFaction.getEmoji())
+            message.append(bt.getEmoji())
                     .append(" gain ")
                     .append(factionsWithRevivals)
                     .append(" ")
                     .append(Emojis.SPICE)
                     .append(" from free revivals.\n");
-            btFaction.addSpice(factionsWithRevivals, "for free revivals");
+            bt.addSpice(factionsWithRevivals, "for free revivals");
         }
 
         if (!message.isEmpty()) {

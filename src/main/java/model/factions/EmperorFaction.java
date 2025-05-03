@@ -318,6 +318,7 @@ public class EmperorFaction extends Faction {
     }
 
     public void reviveAllyForces(int numForces) throws InvalidGameStateException {
+        // TODO: Entire function needs automated tests
         paidRevivalTBD = false;
         if (!hasAlly())
             throw new InvalidGameStateException("Emperor does not have an ally.");
@@ -342,10 +343,10 @@ public class EmperorFaction extends Faction {
         }
         subtractSpice(cost, allyFaction.getEmoji() + " revivals");
         String costString = cost + " " + Emojis.SPICE;
-        if (game.hasFaction("BT")) {
-            Faction btFaction = game.getFaction("BT");
-            costString += " to " + Emojis.BT;
-            btFaction.addSpice(cost, allyFaction.getEmoji() + " revivals, " + Emojis.EMPEROR + " alliance power");
+        BTFaction bt = game.getBTFactionOrNull();
+        if (bt != null) {
+            costString += " to " + bt.getEmoji();
+            bt.addSpice(cost, allyFaction.getEmoji() + " revivals, " + Emojis.EMPEROR + " alliance power");
         }
         game.getTurnSummary().publish(Emojis.EMPEROR + " pays " + costString + revivalString);
     }
