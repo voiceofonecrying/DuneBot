@@ -260,7 +260,7 @@ class RicheseFactionTest extends FactionTestTemplate {
             sietchTabr.setRicheseNoField(3);
             assertEquals(20, faction.getReservesStrength());
             assertEquals(0, sietchTabr.getForceStrength("Richese"));
-            faction.revealNoField(game);
+            faction.revealNoField();
             assertEquals(3, sietchTabr.getForceStrength("Richese"));
             assertEquals(17, faction.getReservesStrength());
             assertEquals("The 3 " + Emojis.NO_FIELD + " in Sietch Tabr reveals 3 " + Emojis.RICHESE_TROOP,
@@ -274,7 +274,7 @@ class RicheseFactionTest extends FactionTestTemplate {
             faction.removeReserves(16);
             assertEquals(4, faction.getReservesStrength());
             assertEquals(0, sietchTabr.getForceStrength("Richese"));
-            faction.revealNoField(game);
+            faction.revealNoField();
             assertEquals(4, sietchTabr.getForceStrength("Richese"));
             assertEquals(0, faction.getReservesStrength());
             assertEquals("The 5 " + Emojis.NO_FIELD + " in Sietch Tabr reveals 4 " + Emojis.RICHESE_TROOP,

@@ -1467,7 +1467,7 @@ public class Battle {
         if (noFieldValue != null) {
             resolution += MessageFormat.format("{0} reveals {1} to be {2} {3}\n\n", Emojis.RICHESE, Emojis.NO_FIELD, noFieldValue, Emojis.RICHESE_TROOP);
             if (executeResolution && richeseFaction != null)
-                richeseFaction.revealNoField(game);
+                richeseFaction.revealNoField();
         }
 
         cardsForAudit = new ArrayList<>();
@@ -1734,7 +1734,7 @@ public class Battle {
             String ambassador = allTerritorySectors.stream().map(Territory::getEcazAmbassador).filter(Objects::nonNull).findFirst().orElse(null);
             if (executeResolution) {
                 if (noFieldTerritory != null)
-                    game.getRicheseFaction().revealNoField(game);
+                    game.getRicheseFaction().revealNoField();
                 for (Territory t : allTerritorySectors) {
                     for (Force f : nonCombatantForcesInSector(game, t)) {
                         int regular = f.getName().equals(f.getFactionName()) ? f.getStrength() : 0;

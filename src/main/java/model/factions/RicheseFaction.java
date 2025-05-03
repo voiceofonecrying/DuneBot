@@ -99,7 +99,7 @@ public class RicheseFaction extends Faction {
         String territoryName = territory.getTerritoryName();
         String turnSummaryMessage;
         turnSummaryMessage = faction.getEmoji() + " ship a " + Emojis.NO_FIELD + " to " + territoryName;
-        revealNoField(game);
+        revealNoField();
         territory.setRicheseNoField(noField);
         faction.noFieldMessage(noField, territoryName);
         int spice = game.shipmentCost(faction, 1, territory, karama, false);
@@ -123,9 +123,7 @@ public class RicheseFaction extends Faction {
     }
 
     public Territory getTerritoryWithNoFieldOrNull() {
-        return game.getTerritories().values().stream()
-                .filter(Territory::hasRicheseNoField)
-                .findFirst().orElse(null);
+        return game.getTerritories().values().stream().filter(Territory::hasRicheseNoField).findFirst().orElse(null);
     }
 
     public void revealNoField(Game game, Faction factionShippedWithNoField) {
@@ -158,7 +156,7 @@ public class RicheseFaction extends Faction {
         }
     }
 
-    public void revealNoField(Game game) {
+    public void revealNoField() {
         revealNoField(game, this);
     }
 
