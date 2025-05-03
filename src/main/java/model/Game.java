@@ -353,7 +353,7 @@ public class Game {
         setPhaseForWhispers("Turn " + turn + " CHOAM Charity Phase\n");
         int multiplier = 1;
 
-        if (hasFaction("CHOAM")) {
+        if (hasCHOAMFaction()) {
             multiplier = ((ChoamFaction) getFaction("CHOAM")).getChoamMultiplier(turn);
 
             if (multiplier == 0) {
@@ -366,7 +366,7 @@ public class Game {
 
         int choamGiven = 0;
         Faction choamFaction = null;
-        if (hasFaction("CHOAM")) {
+        if (hasCHOAMFaction()) {
             choamFaction = getFaction("CHOAM");
             int choamSpiceReceived = 2 * factions.size() * multiplier;
             choamFaction.addSpice(choamSpiceReceived, "CHOAM Charity");
@@ -618,6 +618,10 @@ public class Game {
 
     public boolean hasIxFaction() {
         return hasFaction("Ix");
+    }
+
+    public boolean hasCHOAMFaction() {
+        return hasFaction("CHOAM");
     }
 
     public boolean hasRicheseFaction() {

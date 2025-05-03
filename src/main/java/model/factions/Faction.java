@@ -201,7 +201,7 @@ public class Faction {
     public void setAlly(String ally) {
         this.ally = ally;
         ledger.publish("You are now allies with " + Emojis.getFactionEmoji(ally) + "!");
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("CHOAM")) {
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasCHOAMFaction()) {
             HomeworldTerritory tupile = (HomeworldTerritory) game.getTerritory("Tupile");
             if (tupile.getOccupyingFaction() == this)
                 tupile.increaseHandLimitForTupile(game.getFaction(ally));
@@ -211,7 +211,7 @@ public class Faction {
 
     public void removeAlliance() {
         ledger.publish("Your alliance with " + Emojis.getFactionEmoji(ally) + " has been dissolved!");
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasFaction("CHOAM")) {
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasCHOAMFaction()) {
             HomeworldTerritory tupile = (HomeworldTerritory) game.getTerritory("Tupile");
             if (tupile.getOccupyingFaction() == this)
                 tupile.reduceHandLimitForTupile(game.getFaction(ally));
