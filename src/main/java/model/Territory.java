@@ -347,7 +347,7 @@ public class Territory {
 
     public void stormTroops(Game game) {
         if (richeseNoField != null)
-            game.getRicheseFaction().revealNoField(game);
+            game.getRicheseFaction().revealNoField();
         int advisorStrength = getForceStrength("Advisor");
         if (advisorStrength > 0)
             stormRemoveTroops("Advisor", "BG", getForceStrength("Advisor"), game);

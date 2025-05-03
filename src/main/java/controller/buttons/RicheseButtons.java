@@ -26,7 +26,7 @@ public class RicheseButtons implements Pressable {
     }
 
     private static void revealNoField(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        game.getRicheseFaction().revealNoField(game);
+        game.getRicheseFaction().revealNoField();
         discordGame.queueMessage("You have revealed your No-Field.");
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
