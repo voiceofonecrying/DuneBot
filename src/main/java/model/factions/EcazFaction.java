@@ -75,7 +75,7 @@ public class EcazFaction extends Faction {
                 DuneChoice offerAlliance = new DuneChoice("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
                 if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))
                         || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
-                        || (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))))
+                        || (game.hasBTFaction() && game.getBTFaction().getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))))
                     getVidal.setDisabled(true);
                 if (hasAlly() || triggeringFaction.hasAlly())
                     offerAlliance.setDisabled(true);
@@ -129,7 +129,7 @@ public class EcazFaction extends Faction {
             throw new InvalidGameStateException("Duke Vidal is in the tanks.");
         else if (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
             throw new InvalidGameStateException("Duke Vidal has been captured by Harkonnen.");
-        else if (game.hasFaction("BT") && game.getFaction("BT").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
+        else if (game.hasBTFaction() && game.getBTFactionOrNull().getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
             throw new InvalidGameStateException("Duke Vidal is a ghola for BT");
         game.releaseDukeVidal(false);
         addLeader(game.getDukeVidal());

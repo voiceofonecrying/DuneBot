@@ -135,6 +135,7 @@ public class BTFaction extends Faction {
             game.getTurnSummary().publish(faction.getEmoji() + " revival limit was left at " + faction.getMaxRevival());
         }
         factionsNeedingRevivalLimit.clear();
+        chat.reply("Remaining revival limits left unchanged.");
     }
 
     public void setRevivalLimit(String factionName, int revivalLimit) {

@@ -426,9 +426,11 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> btFaceDancers(Game game, String searchValue) {
-        if (!game.hasFaction("BT")) return new ArrayList<>();
+        BTFaction bt = game.getBTFactionOrNull();
+        if (bt == null)
+            return new ArrayList<>();
         else {
-            return game.getFaction("BT").getTraitorHand().stream()
+            return bt.getTraitorHand().stream()
                     .map(TraitorCard::getName)
                     .filter(traitor -> traitor.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(traitor -> new Command.Choice(traitor, traitor))

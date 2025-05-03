@@ -6,6 +6,7 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
+import model.factions.BTFaction;
 import model.factions.EmperorFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -67,10 +68,9 @@ public class RevivalButtons implements Pressable {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         // Maybe do the following in game.setRecruitsInPlay(true);
         faction.discard("Recruits", "to raise all revival limits to 7");
-        try {
-            Faction bt = game.getFaction("BT");
+        BTFaction bt = game.getBTFactionOrNull();
+        if (bt != null)
             bt.getChat().publish("Recruits has been played. All revival limits are set to 7.");
-        } catch (IllegalArgumentException ignored) {}
 
         discordGame.queueDeleteMessage();
         RunCommands.advance(discordGame, game);

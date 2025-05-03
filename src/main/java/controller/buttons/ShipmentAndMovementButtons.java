@@ -387,7 +387,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (guildAmbassador) {
                 discordGame.queueMessage("Shipment with Guild ambassador complete.");
             } else if (btHTPlacement) {
-                BTFaction bt = (BTFaction) game.getFaction("BT");
+                BTFaction bt = game.getBTFaction();
                 discordGame.queueMessage("Placement of " + bt.getNumFreeRevivals() + " free revivals complete.");
                 bt.setBtHTActive(false);
             } else {
@@ -537,7 +537,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             return;
         } else if (btHTPlacement) {
             faction.getShipment().setTerritoryName(territory.getTerritoryName());
-            BTFaction bt = (BTFaction) game.getFaction("BT");
+            BTFaction bt = game.getBTFaction();
             faction.getShipment().setForce(bt.getNumFreeRevivals());
             MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
                     .addContent("Currently sending your free revivals to " + territory.getTerritoryName() + "."
@@ -858,7 +858,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (isShipment && !fremenRide) faction.getShipment().setTerritoryName(territory.getFirst().getTerritoryName());
             else faction.getMovement().setMovingTo(territory.getFirst().getTerritoryName());
             if (btHTPlacement)
-                ((BTFaction) game.getFaction("BT")).presentHTExecutionChoices();
+                game.getBTFaction().presentHTExecutionChoices();
             else if (startingForces) {
                 if (faction instanceof FremenFaction)
                     queueForcesButtons(event, game, discordGame, faction, isShipment, false, false, false, false, true);
@@ -1130,7 +1130,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 discordGame.queueMessage("You will leave your free revivals on Tleilaxu.");
                 game.getTurnSummary().publish(Emojis.BT + " leaves their free revivals on Tleilaxu.");
                 faction.getShipment().clear();
-                ((BTFaction) game.getFaction("BT")).setBtHTActive(false);
+                game.getBTFaction().setBtHTActive(false);
             }
             default -> {
                 game.getTurnSummary().publish(faction.getEmoji() + " does not ship.");

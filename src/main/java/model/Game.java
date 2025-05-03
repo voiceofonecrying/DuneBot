@@ -224,7 +224,8 @@ public class Game {
             throw new InvalidGameStateException(factionsStillToRevive + " must decide on paid revivals before the game can advance.");
         if (revival.isEcazAmbassadorsToBePlaced())
             throw new InvalidGameStateException("Ecaz must finish placing ambassadors before the game can advance.");
-        if (game.hasFaction("BT") && ((BTFaction) game.getFaction("BT")).isBtHTActive())
+        BTFaction bt = game.getBTFactionOrNull();
+        if (bt != null && bt.isBtHTActive())
             throw new InvalidGameStateException("BT must decide on High Threshold free revival placement before the game can advance.");
         if (!revival.isEcazAskedAboutAmbassadors() && revival.ecazAmbassadorPlacement(game))
             return false;
@@ -532,21 +533,31 @@ public class Game {
     }
 
     /**
-     * Get the BT faction object
-     *
-     * @return the BTFaction object if BT is in the game or null if BT is not in the game
-     */
-    public BTFaction getBTFactionOrNull() {
-        return (BTFaction) getFactionOrNull("BT");
-    }
-
-    /**
      * Get the named faction object
      *
      * @return the Faction object if the faction is in the game, null if not in the game
      */
     public Faction getFactionOrNull(String name) {
         return factions.stream().filter(f -> f.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+    }
+
+    /**
+     * Get the BT faction object
+     *
+     * @return the BTFaction object if BT is in the game
+     * @throws IllegalArgumentException if BT is not in the game
+     */
+    public BTFaction getBTFaction() {
+        return (BTFaction) getFaction("BT");
+    }
+
+    /**
+     * Get the BT faction object
+     *
+     * @return the BTFaction object if BT is in the game or null if BT is not in the game
+     */
+    public BTFaction getBTFactionOrNull() {
+        return (BTFaction) getFactionOrNull("BT");
     }
 
     /**
@@ -637,6 +648,10 @@ public class Game {
 
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
+    }
+
+    public boolean hasBTFaction() {
+        return hasFaction("BT");
     }
 
     public boolean hasIxFaction() {
@@ -1855,10 +1870,10 @@ public class Game {
             int revivalCost = faction.revivalCost(regularAmount, starredAmount);
             faction.subtractSpice(revivalCost, "revivals");
             costString = " for " + revivalCost + " " + Emojis.SPICE;
-            if (hasFaction("BT") && !(faction instanceof BTFaction)) {
-                Faction btFaction = getFaction("BT");
+            BTFaction bt = getBTFactionOrNull();
+            if (bt != null && !(faction instanceof BTFaction)) {
                 costString += " paid to " + Emojis.BT;
-                btFaction.addSpice(revivalCost, faction.getEmoji() + " revivals");
+                bt.addSpice(revivalCost, faction.getEmoji() + " revivals");
             }
         }
 

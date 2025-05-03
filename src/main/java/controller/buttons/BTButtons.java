@@ -6,7 +6,6 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import model.Game;
-import model.factions.BTFaction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -36,9 +35,7 @@ public class BTButtons implements Pressable {
     }
 
     private static void btRevivalLeaveRatesAsIs(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        BTFaction bt = (BTFaction) game.getFaction("BT");
-        bt.leaveRevivalLimitsUnchanged();
-        discordGame.queueMessage("Remaining revival limits left unchanged.");
+        game.getBTFaction().leaveRevivalLimitsUnchanged();
         deleteRevivalButtonsInChannel(event.getMessageChannel());
         RunCommands.advance(discordGame, game);
     }
