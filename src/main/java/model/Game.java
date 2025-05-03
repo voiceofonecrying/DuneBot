@@ -537,6 +537,15 @@ public class Game {
     }
 
     /**
+     * Get the BT faction object
+     *
+     * @return the BTFaction object if BT is in the game or null if BT is not in the game
+     */
+    public BTFaction getBTFactionOrNull() {
+        return (BTFaction) getFactionOrNull("BT");
+    }
+
+    /**
      * Get the named faction object
      *
      * @return the Faction object if the faction is in the game, null if not in the game
@@ -1720,6 +1729,11 @@ public class Game {
             }
             leader.setFaceDown(faceDown);
             leaderTanks.add(leader);
+            BTFaction bt = getBTFactionOrNull();
+            if (bt != null && faceDown) {
+                bt.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+                bt.getChat().publish(leader.getEmoiNameAndValueString() + " is face down in the tanks.");
+            }
             String message = leaderName + " was sent to the tanks" + (faceDown ? " face down." : ".");
             targetFaction.getLedger().publish(message);
             turnSummary.publish(targetFaction.getEmoji() + " " + message);
@@ -1788,8 +1802,10 @@ public class Game {
 
         Leader killedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), null, true);
         leaderTanks.add(killedLeader);
-        if (hasFaction("BT")) {
-            getFaction("BT").setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        BTFaction bt = getBTFactionOrNull();
+        if (bt != null) {
+            bt.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            bt.getChat().publish(leader.getEmoiNameAndValueString() + " is face down in the tanks.");
         }
 
         faction.getChat().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
