@@ -2,6 +2,7 @@ package model;
 
 import constants.Emojis;
 import controller.commands.SetupCommands;
+import enums.ChoamInflationType;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
@@ -175,6 +176,26 @@ class GameTest extends DuneTest {
             assertEquals(0, choam.getSpice());
             game.choamCharity();
             assertEquals(10, choam.getSpice());
+        }
+
+        @Test
+        public void testCHOAMInflationDoubled() throws InvalidGameStateException {
+            game.advanceTurn();
+            choam.setFirstInflation(ChoamInflationType.DOUBLE);
+            game.advanceTurn();
+            turnSummary.clear();
+            game.choamCharity();
+            assertEquals("CHOAM charity is doubled! No bribes may be made while the Inflation token is Double side up.", turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        public void testCHOAMInflatioCanceled() throws InvalidGameStateException {
+            game.advanceTurn();
+            choam.setFirstInflation(ChoamInflationType.CANCEL);
+            game.advanceTurn();
+            turnSummary.clear();
+            game.choamCharity();
+            assertEquals("CHOAM Charity is cancelled!", turnSummary.getMessages().getLast());
         }
     }
 
