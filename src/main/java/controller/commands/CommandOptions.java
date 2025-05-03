@@ -441,7 +441,7 @@ public class CommandOptions {
         if (event.getSubcommandName() != null && event.getSubcommandName().equals("robbery-discard"))
             faction = game.getMoritaniFaction();
         else if (event.getSubcommandName() != null && event.getSubcommandName().equals("swap-card-with-ally"))
-            faction = game.getFaction("CHOAM");
+            faction = game.getCHOAMFaction();
         else
             faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
@@ -451,7 +451,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> allyCardsInHand(Game game, String searchValue) {
-        Faction faction = game.getFaction(game.getFaction("CHOAM").getAlly());
+        Faction faction = game.getFaction(game.getCHOAMFaction().getAlly());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card, card))

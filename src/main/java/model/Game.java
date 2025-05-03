@@ -353,23 +353,18 @@ public class Game {
         setPhaseForWhispers("Turn " + turn + " CHOAM Charity Phase\n");
         int multiplier = 1;
 
-        if (hasCHOAMFaction()) {
-            multiplier = ((ChoamFaction) getFaction("CHOAM")).getChoamMultiplier(turn);
-
+        int choamGiven = 0;
+        ChoamFaction choam = getCHOAMFactionOrNull();
+        if (choam != null) {
+            multiplier = choam.getChoamMultiplier(turn);
             if (multiplier == 0) {
                 turnSummary.publish("CHOAM Charity is cancelled!");
                 return;
             } else if (multiplier == 2) {
                 turnSummary.publish("CHOAM charity is doubled! No bribes may be made while the Inflation token is Double side up.");
             }
-        }
-
-        int choamGiven = 0;
-        Faction choamFaction = null;
-        if (hasCHOAMFaction()) {
-            choamFaction = getFaction("CHOAM");
             int choamSpiceReceived = 2 * factions.size() * multiplier;
-            choamFaction.addSpice(choamSpiceReceived, "CHOAM Charity");
+            choam.addSpice(choamSpiceReceived, "CHOAM Charity");
             turnSummary.publish(Emojis.CHOAM + " receives " + choamSpiceReceived + " " + Emojis.SPICE + " in dividends from their many investments.");
         }
         for (Faction faction : factions) {
@@ -391,9 +386,9 @@ public class Game {
                 faction.addSpice(charity, "CHOAM Charity");
             }
         }
-        if (choamFaction != null) {
+        if (choam != null) {
             turnSummary.publish(Emojis.CHOAM + " has paid " + choamGiven + " " + Emojis.SPICE + " to factions in need.");
-            choamFaction.subtractSpice(choamGiven, "CHOAM Charity given");
+            choam.subtractSpice(choamGiven, "CHOAM Charity given");
         }
         if (hasGameOption(GameOption.TECH_TOKENS) && !hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION))
             TechToken.collectSpice(this, TechToken.SPICE_PRODUCTION);
@@ -562,6 +557,25 @@ public class Game {
      */
     public IxFaction getIxFaction() {
         return (IxFaction) getFaction("Ix");
+    }
+
+    /**
+     * Get the CHOAM faction object
+     *
+     * @return the ChoamFaction object if CHOAM is in the game
+     * @throws IllegalArgumentException if CHOAM is not in the game
+     */
+    public ChoamFaction getCHOAMFaction() {
+        return (ChoamFaction) getFaction("CHOAM");
+    }
+
+    /**
+     * Get the CHOAM faction object
+     *
+     * @return the ChoamFaction object if CHOAM is in the game or null if CHOAM is not in the game
+     */
+    public ChoamFaction getCHOAMFactionOrNull() {
+        return (ChoamFaction) getFactionOrNull("CHOAM");
     }
 
     /**

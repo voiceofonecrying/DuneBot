@@ -1099,8 +1099,8 @@ public class Battle {
                     resolution += allyFaction.getEmoji() + " loses " + spiceFromAlly + " " + Emojis.SPICE + " ally support\n";
             }
 
-            if (!(faction instanceof ChoamFaction) && game.hasCHOAMFaction()) {
-                Faction choam = game.getFaction("CHOAM");
+            Faction choam = game.getCHOAMFactionOrNull();
+            if (!(faction instanceof ChoamFaction) && choam != null) {
                 int choamEligibleSpice = battlePlan.getSpice();
                 if (faction.getAlly().equals("CHOAM"))
                     choamEligibleSpice -= spiceFromAlly;
