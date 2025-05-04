@@ -563,23 +563,19 @@ public class SetupCommands {
     }
 
     public static StepStatus harkonnenTraitorsStep(Game game) {
-        Faction faction = game.getFaction("Harkonnen");
-
-        for (int j = 0; j < 4; j++) {
-            game.drawCard("traitor deck", faction.getName());
-        }
-
+        Faction faction = game.getHarkonnenFaction();
+        IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", faction.getName()));
         long numHarkonnenTraitors = faction.getTraitorHand().stream().filter(TraitorCard::isHarkonnenTraitor).count();
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
-            game.getModInfo().publish("Harkonnen can mulligan");
+            game.getModInfo().publish("Harkonnen can mulligan.");
             List<DuneChoice> choices = new ArrayList<>();
             choices.add(new DuneChoice("harkonnen-mulligan-yes", "Yes, draw 4 new traitors"));
             choices.add(new DuneChoice("harkonnen-mulligan-no", "No, keep my current traitors"));
             faction.getChat().publish("You have drawn " + numHarkonnenTraitors + " of your own leaders as Traitors.\nDo you want to mulligan your Traitor cards and draw a new set? " + faction.getPlayer(), choices);
             return StepStatus.STOP;
         } else {
-            game.getModInfo().publish("Harkonnen cannot mulligan");
+            game.getModInfo().publish("Harkonnen cannot mulligan.");
             return StepStatus.CONTINUE;
         }
     }
@@ -595,8 +591,7 @@ public class SetupCommands {
     }
 
     public static void harkonnenMulligan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        HarkonnenFaction harkonnen = (HarkonnenFaction) game.getFaction("Harkonnen");
-        harkonnen.mulliganTraitorHand();
+        game.getHarkonnenFaction().mulliganTraitorHand();
         SetupCommands.advance(event.getGuild(), discordGame, game);
     }
 

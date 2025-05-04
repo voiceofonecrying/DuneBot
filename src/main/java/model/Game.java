@@ -552,6 +552,16 @@ public class Game {
     }
 
     /**
+     * Get the Harkonnen faction object
+     *
+     * @return the HarkonnenFaction object if Harkonnen is in the game
+     * @throws IllegalArgumentException if Harkonnen is not in the game
+     */
+    public HarkonnenFaction getHarkonnenFaction() {
+        return (HarkonnenFaction) getFaction("Harkonnen");
+    }
+
+    /**
      * Get the BT faction object
      *
      * @return the BTFaction object if BT is in the game or null if BT is not in the game
@@ -1778,56 +1788,33 @@ public class Game {
         Faction faction = getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).orElseThrow();
 
-        Faction harkonnenFaction = getFaction("Harkonnen");
-
-        harkonnenFaction.addLeader(leader);
+        Faction harkonnen = getHarkonnenFaction();
+        harkonnen.addLeader(leader);
         faction.removeLeader(leader);
 
-        if (leader.getSkillCard() != null) {
-            turnSummary.publish(MessageFormat.format(
-                    "{0} has captured a {1} skilled leader: {2} the {3}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(),
-                    leader.getName(), leader.getSkillCard().name()
-            ));
-        } else {
-            turnSummary.publish(MessageFormat.format(
-                    "{0} has captured a {1} leader",
-                    harkonnenFaction.getEmoji(), faction.getEmoji()
-            ));
-        }
+        if (leader.getSkillCard() != null)
+            turnSummary.publish(harkonnen.getEmoji() + " has captured the " + faction.getEmoji() + " skilled leader, " + leaderName + " the " + leader.getSkillCard().name()+ ".");
+        else
+            turnSummary.publish("asdf");
 
         faction.getChat().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
         faction.getLedger().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
-        harkonnenFaction.getLedger().publish("You have captured " + leader.getName());
+        harkonnen.getLedger().publish("You have captured " + leader.getName() + ".");
     }
 
     public void harkonnenKillLeader(String factionName, String leaderName) {
         Faction faction = getFaction(factionName);
         Leader leader = faction.getLeader(leaderName).orElseThrow();
+        faction.removeLeader(leader);
+
+        Faction harkonnen = getHarkonnenFaction();
+        harkonnen.addSpice(2, "killing " + leader.getName());
 
         if (leader.getSkillCard() != null) {
             leaderSkillDeck.add(leader.getSkillCard());
-            // TODO: Need to combine removal with conditionals below
-//            leader.removeSkillCard();
-        }
-
-        faction.removeLeader(leader);
-
-        Faction harkonnenFaction = getFaction("Harkonnen");
-
-        harkonnenFaction.addSpice(2, "killing " + leader.getName());
-
-        if (leader.getSkillCard() != null) {
-            turnSummary.publish(MessageFormat.format(
-                    "{0} has killed the {1} skilled leader, {2}, for 2 {3}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(), leader.getName(), Emojis.SPICE
-            ));
-        } else {
-            turnSummary.publish(MessageFormat.format(
-                    "{0} has killed the {1} leader for 2 {2}",
-                    harkonnenFaction.getEmoji(), faction.getEmoji(), Emojis.SPICE
-            ));
-        }
+            turnSummary.publish(harkonnen.getEmoji() + " has killed the " + faction.getEmoji() + " skilled leader, " + leaderName + ", for 2 " + Emojis.SPICE);
+        } else
+            turnSummary.publish(harkonnen.getEmoji() + " has killed the " + faction.getEmoji() + " leader for 2 " + Emojis.SPICE);
 
         Leader killedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), null, true);
         leaderTanks.add(killedLeader);
