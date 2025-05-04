@@ -63,6 +63,50 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#assignSkillToLeader")
+    class AssignSkillToLeader {
+        Leader leader;
+        LeaderSkillCard mentat;
+        LeaderSkillCard swordmaster;
+
+        @BeforeEach
+        public void setUp() throws InvalidGameStateException {
+            mentat = game.getLeaderSkillDeck().stream().filter(ls -> ls.name().equals("Mentat")).findFirst().orElseThrow();
+            swordmaster = game.getLeaderSkillDeck().stream().filter(ls -> ls.name().equals("Swordmaster of Ginaz")).findFirst().orElseThrow();
+            game.getLeaderSkillDeck().remove(mentat);
+            faction.getLeaderSkillsHand().add(mentat);
+            game.getLeaderSkillDeck().remove(swordmaster);
+            faction.getLeaderSkillsHand().add(swordmaster);
+            leader = faction.getLeaders().getFirst();
+            int numLeaders = faction.getLeaders().size();
+            faction.assignSkillToLeader(leader.getName(), "Mentat");
+            assertEquals(numLeaders, faction.getLeaders().size());
+        }
+
+        @Test
+        public void testLeaderHasSkill() {
+            Leader newLeader = faction.getLeader(leader.getName()).orElseThrow();
+            assertEquals(mentat, newLeader.getSkillCard());
+            assertEquals(mentat, leader.getSkillCard());
+        }
+
+        @Test
+        public void testLeaderSkillsHandEmpty() {
+            assertTrue(faction.getLeaderSkillsHand().isEmpty());
+        }
+
+        @Test
+        public void testSwordmasterBackInSkillsDeck() {
+            assertTrue(game.getLeaderSkillDeck().contains(swordmaster));
+        }
+
+        @Test
+        public void testPublishedToFactionChat() {
+            assertEquals("After years of training, " + leader.getName() + " has become a Mentat!", chat.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#revival")
     class Revival {
         Faction faction;

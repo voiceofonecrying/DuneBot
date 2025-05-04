@@ -648,37 +648,11 @@ public class SetupCommands {
         return StepStatus.STOP;
     }
 
-    public static void factionLeaderSkill(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void factionLeaderSkill(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
         String leaderSkillName = discordGame.required(factionLeaderSkill).getAsString();
-
-        Faction faction = game.getFaction(factionName);
-        Leader leader = faction.getLeader(leaderName)
-                .orElseThrow(() -> new IllegalArgumentException("Leader not found"));
-
-        LeaderSkillCard leaderSkillCard = faction.getLeaderSkillsHand().stream()
-                .filter(l -> l.name().equalsIgnoreCase(leaderSkillName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Leader Skill not found"));
-
-        Leader updatedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), leaderSkillCard, leader.isFaceDown());
-
-        faction.removeLeader(leader);
-        faction.addLeader(updatedLeader);
-
-        LeaderSkillCard returnedLeaderSkillCard = faction.getLeaderSkillsHand().stream()
-                .filter(l -> !l.name().equalsIgnoreCase(leaderSkillName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Rejected leader Skill not found"));
-        game.getLeaderSkillDeck().add(returnedLeaderSkillCard);
-        Collections.shuffle(game.getLeaderSkillDeck());
-
-        faction.getLeaderSkillsHand().clear();
-        faction.getChat().publish(MessageFormat.format("After years of training, {0} has become a {1}! ",
-                        updatedLeader.getName(), leaderSkillCard.name()
-                )
-        );
+        game.getFaction(factionName).assignSkillToLeader(leaderName, leaderSkillName);
         discordGame.pushGame();
     }
 

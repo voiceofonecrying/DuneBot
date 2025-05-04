@@ -531,6 +531,24 @@ public class Faction {
         return leaders;
     }
 
+    public void assignSkillToLeader(String leaderName, String leaderSkillName) throws InvalidGameStateException {
+        Leader leader = getLeader(leaderName).orElseThrow(() -> new IllegalArgumentException("Leader not found"));
+        LeaderSkillCard leaderSkillCard = leaderSkillsHand.stream()
+                .filter(l -> l.name().equalsIgnoreCase(leaderSkillName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Leader Skill not found"));
+        leader.setSkillCard(leaderSkillCard);
+        chat.publish("After years of training, " + leaderName + " has become a " + leaderSkillCard.name() + "!");
+
+        LeaderSkillCard returnedLeaderSkillCard = getLeaderSkillsHand().stream()
+                .filter(l -> !l.name().equalsIgnoreCase(leaderSkillName))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("Rejected leader Skill not found"));
+        game.getLeaderSkillDeck().add(returnedLeaderSkillCard);
+        Collections.shuffle(game.getLeaderSkillDeck());
+        leaderSkillsHand.clear();
+    }
+
     public List<Leader> getSkilledLeaders() {
         return getLeaders().stream().filter(l -> l.getSkillCard() != null).toList();
     }
