@@ -140,11 +140,11 @@ public class Bidding {
             game.getModInfo().publish("If anyone wants to Karama " + Emojis.IX + " bidding advantage, that must be done now.");
         }
         game.getTurnSummary().publish(message.toString());
-        if (numCardsForBid == 0) {
+        if (richeseCacheCardOutstanding) {
+            if (presentCacheCardChoices(game))
+                game.getModInfo().publish(Emojis.RICHESE + " has been given buttons for selling their cache card.");
+        } else if (numCardsForBid == 0) {
             game.getModInfo().publish("All hands are full. If a player discards now, execute '/run bidding' again. Otherwise, '/run advance' to end bidding.");
-        } else if (richeseCacheCardOutstanding) {
-            presentCacheCardChoices(game);
-            game.getModInfo().publish(Emojis.RICHESE + " has been given buttons for selling their cache card.");
         } else {
             game.getModInfo().publish("Start running commands to bid and then advance when all the bidding is done.");
         }
@@ -1257,8 +1257,8 @@ public class Bidding {
             int numCardsReturned = moveMarketToDeck(game);
             game.getTurnSummary().publish("All players passed. " + numCardsReturned + " cards were returned to top of the Treachery Deck.");
             if (richeseCacheCardOutstanding) {
-                presentCacheCardChoices(game);
-                game.getModInfo().publish(Emojis.RICHESE + " has been asked to select the last card of the turn.");
+                if (presentCacheCardChoices(game))
+                    game.getModInfo().publish(Emojis.RICHESE + " has been asked to select the last card of the turn.");
             }
         } else if (getEligibleBidOrder(game).isEmpty()) {
             if (richeseCacheCardOutstanding) {
