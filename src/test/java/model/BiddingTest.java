@@ -1465,6 +1465,49 @@ class BiddingTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#richeseToSellOnlyOneHandOpen")
+    class RicheseToSellOnlyOneHandOpen {
+        Bidding bidding;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(richese);
+            game.addFaction(choam);
+            game.addFaction(atreides);
+            game.addFaction(guild);
+            game.addFaction(emperor);
+            game.addFaction(ecaz);
+            richese.setHandLimit(0);
+            choam.setHandLimit(0);
+            atreides.setHandLimit(0);
+            guild.setHandLimit(0);
+            emperor.setHandLimit(0);
+            ecaz.setHandLimit(1);
+            game.advanceTurn();
+            bidding = game.startBidding();
+            bidding.setBlackMarketDecisionInProgress(false);
+            richeseChat.clear();
+        }
+
+        @Test
+        void testOneHandOpen() throws InvalidGameStateException {
+            game.getBidding().cardCountsInBiddingPhase(game);
+            assertEquals("Please select your cache card to be sold. You must sell now. ri", richeseChat.getMessages().getLast());
+            assertEquals(Emojis.RICHESE + " has been given buttons for selling their cache card.", modInfo.getMessages().getLast());
+            assertThrows(InvalidGameStateException.class, () -> bidding.finishBiddingPhase(game));
+        }
+
+        @Test
+        void testAllHandsFull() throws InvalidGameStateException {
+            ecaz.setHandLimit(0);
+            game.getBidding().cardCountsInBiddingPhase(game);
+            assertTrue(richeseChat.getMessages().isEmpty());
+            assertEquals("If anyone discards now, use /richese card-bid to auction the " + Emojis.RICHESE + " cache card. Otherwise, use /run advance to end the bidding phase.", modInfo.getMessages().getLast());
+            assertDoesNotThrow(() -> bidding.finishBiddingPhase(game));
+        }
+    }
+
+    @Nested
     @DisplayName("#richeseCacheCardNotOccupied")
     class RicheseCacheCardNotOccupied {
         Bidding bidding;
@@ -1583,16 +1626,35 @@ class BiddingTest extends DuneTest {
             assertEquals("ch Use the bot to place your bid for the silent auction. Your bid will be the exact amount you set.", choamChat.getMessages().getFirst());
         }
 
-        @Test
-        void testRicheseSellsLast() throws InvalidGameStateException {
-            bidding.richeseCardLast(game);
-            bidding.auctionNextCard(game, false);
-            bidding.bid(game, richese, true, 1, false, false);
-            richeseChat.clear();
-            choamChat.clear();
-            bidding.awardTopBidder(game);
-            assertTrue(richeseChat.getMessages().isEmpty());
-            assertEquals("Please select the " + Emojis.RICHESE + " cache card to be sold. ch", choamChat.getMessages().getFirst());
+        @Nested
+        @DisplayName("#richeseSellsLast")
+        class RicheseSellsLast {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                bidding.richeseCardLast(game);
+                bidding.auctionNextCard(game, false);
+                bidding.bid(game, richese, true, 1, false, false);
+                richeseChat.clear();
+                choamChat.clear();
+                bidding.awardTopBidder(game);
+            }
+
+            @Test
+            void testOccupierGetsCardChoicesWhenRicheseSellsLast() throws InvalidGameStateException {
+                assertTrue(richeseChat.getMessages().isEmpty());
+                assertEquals("Please select the " + Emojis.RICHESE + " cache card to be sold. ch", choamChat.getMessages().getFirst());
+            }
+
+            @Test
+            void testRicheseGetsMethodChoices() {
+                richeseChat.clear();
+                choamChat.clear();
+                bidding.presentCacheCardMethodChoices(game, "Ornithopter");
+                assertEquals("You selected Ornithopter. " + Emojis.RICHESE + " chooses the bidding method.", choamChat.getMessages().getFirst());
+                assertTrue(choamChat.getChoices().isEmpty());
+                assertEquals("How would you like to sell Ornithopter?", richeseChat.getMessages().getFirst());
+                assertEquals(3, richeseChat.getChoices().getFirst().size());
+            }
         }
     }
 
