@@ -1878,13 +1878,31 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testHarkonnenAllyNotAskedWithBattlePlanSubmission() {
+            void testHarkonnenAsAllyNotAskedWithBattlePlanSubmission() {
                 assertTrue(harkonnenChat.getMessages().isEmpty());
                 assertFalse(battle.getAggressorBattlePlan().isHarkCanCallTraitor());
             }
 
             @Test
-            void testHarkonnenAllyAskedAfterFactionSaysTheyWillCallTraitor() throws InvalidGameStateException {
+            void testHarkonnenAsAllyNotAskedAfterFactionSaysTheyMightCallTraitor() throws InvalidGameStateException {
+                battle.mightCallTraitor(game, bg, 0, "Arrakeen");
+                // Harkonnen should not be asked if main faction chose to wait
+//                assertTrue(harkonnenChat.getMessages().isEmpty());
+                assertEquals("Will you call Traitor for your ally if " + Emojis.ATREIDES + " plays Duncan Idaho or Gurney Halleck? ha", harkonnenChat.getMessages().getLast());
+                assertTrue(battle.getAggressorBattlePlan().isHarkCanCallTraitor());
+                assertEquals(Emojis.HARKONNEN + " can call Traitor for ally " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().getLast());
+            }
+
+            @Test
+            void testHarkonnenAsAllyAskedAfterResolutionPublishedFactionMightCallTraitor() throws InvalidGameStateException {
+                battle.mightCallTraitor(game, bg, 0, "Arrakeen");
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.printBattleResolution(game, true);
+                assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
+            }
+
+            @Test
+            void testHarkonnenAsAllyAskedAfterFactionSaysTheyWillCallTraitor() throws InvalidGameStateException {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 assertEquals("Will you call Traitor for your ally if " + Emojis.ATREIDES + " plays Duncan Idaho or Gurney Halleck? ha", harkonnenChat.getMessages().getLast());
                 assertTrue(battle.getAggressorBattlePlan().isHarkCanCallTraitor());
@@ -1892,24 +1910,25 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testHarkonnenAllySaysNoBeforeResolutionPublished() throws InvalidGameStateException {
+            void testHarkonnenAsAllySaysNoBeforeResolutionPublished() throws InvalidGameStateException {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 battle.willCallTraitor(game, harkonnen, false, 0, "Arrakeen");
                 assertEquals(Emojis.HARKONNEN + " declines calling Traitor for " + Emojis.BG + " in Arrakeen.", modInfo.getMessages().getLast());
             }
 
             @Test
-            void testHarkonnenAllySaysYesBeforeResolutionPublished() throws InvalidGameStateException {
+            void testHarkonnenAsAllySaysYesBeforeResolutionPublished() throws InvalidGameStateException {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 battle.willCallTraitor(game, harkonnen, true, 0, "Arrakeen");
                 assertEquals(Emojis.HARKONNEN + " will call Traitor for " + Emojis.BG + " in Arrakeen if possible.", modInfo.getMessages().getLast());
             }
 
             @Test
-            void testHarkonnenAllySaysNoAfterResolutionPublished() throws InvalidGameStateException {
+            void testHarkonnenAsAllySaysNoAfterResolutionPublished() throws InvalidGameStateException {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
                 battle.printBattleResolution(game, true);
+//                throwTestTopicMessages(harkonnenChat);
                 assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
                 modInfo.clear();
                 battle.willCallTraitor(game, harkonnen, false, 0, "Arrakeen");
@@ -1917,18 +1936,20 @@ class BattleTest extends DuneTest {
             }
 
             @Test
-            void testHarkonnenAllySaysYesAfterResolutionPublishedCorrectLeader() throws InvalidGameStateException {
+            void testHarkonnenAsAllySaysYesAfterResolutionPublishedCorrectLeader() throws InvalidGameStateException {
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
                 battle.printBattleResolution(game, true);
+//                throwTestTopicMessages(harkonnenChat);
                 assertEquals("Will you call Traitor for your ally against Duncan Idaho in Arrakeen? ha", harkonnenChat.getMessages().getLast());
                 battle.willCallTraitor(game, harkonnen, true, 0, "Arrakeen");
+                assertTrue(turnSummary.getMessages().getLast().contains(Emojis.HARKONNEN + " calls Traitor against Duncan Idaho!"));
                 assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for your ally!", harkonnenChat.getMessages().getLast());
                 assertEquals("Duncan Idaho has betrayed " + Emojis.ATREIDES + " for " + Emojis.HARKONNEN + " and you!", bgChat.getMessages().getLast());
             }
 
             @Test
-            void testHarkonnenAllySaysYesAfterResolutionPublishedWrongLeader() throws InvalidGameStateException {
+            void testHarkonnenAsAllySaysYesAfterResolutionPublishedWrongLeader() throws InvalidGameStateException {
                 harkonnen.removeTraitorCard(duncanTraitor);
                 battle.willCallTraitor(game, bg, true, 0, "Arrakeen");
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
@@ -1937,6 +1958,107 @@ class BattleTest extends DuneTest {
                 battle.willCallTraitor(game, harkonnen, true, 0, "Arrakeen");
                 assertEquals("You cannot call Traitor for " + Emojis.BG + ".", harkonnenChat.getMessages().getLast());
                 assertTrue(bgChat.getMessages().isEmpty());
+            }
+        }
+
+        @Nested
+        @DisplayName("#aggressorCallsTraitor")
+        class AggressorCallsTraitor {
+            @Test
+            void testDefaultFalse() throws InvalidGameStateException {
+                bg.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                assertFalse(battle.aggressorCallsTraitor(game));
+            }
+
+            @Test
+            void testAggressorDoesNotHaveCorrectTraitor() throws InvalidGameStateException {
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getAggressorBattlePlan().setWillCallTraitor(true);
+                assertFalse(battle.aggressorCallsTraitor(game));
+            }
+
+            @Test
+            void testAggressorCallsTraitor() throws InvalidGameStateException {
+                bg.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getAggressorBattlePlan().setWillCallTraitor(true);
+                assertTrue(battle.aggressorCallsTraitor(game));
+            }
+
+            @Test
+            void testHarkonnenAsAllyCallsTraitor() throws InvalidGameStateException {
+                game.createAlliance(bg, harkonnen);
+                harkonnen.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getAggressorBattlePlan().setHarkWillCallTraitor(true);
+                assertTrue(battle.aggressorCallsTraitor(game));
+            }
+
+            @Test
+            void testHarkonnenAsAllyDoesNotHaveCorrectTraitor() throws InvalidGameStateException {
+                game.createAlliance(bg, harkonnen);
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getAggressorBattlePlan().setHarkWillCallTraitor(true);
+                assertFalse(battle.aggressorCallsTraitor(game));
+            }
+        }
+
+        @Nested
+        @DisplayName("#defenderCallsTraitor")
+        class DefenderCallsTraitor {
+            @BeforeEach
+            void setUp() {
+                battle = new Battle(game, List.of(arrakeen), List.of(atreides, bg));
+            }
+
+            @Test
+            void testDefaultFalse() throws InvalidGameStateException {
+                bg.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                assertFalse(battle.defenderCallsTraitor(game));
+            }
+
+            @Test
+            void testDefenderDoesNotHaveCorrectTraitor() throws InvalidGameStateException {
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getDefenderBattlePlan().setWillCallTraitor(true);
+                assertFalse(battle.defenderCallsTraitor(game));
+            }
+
+            @Test
+            void testDefenderCallsTraitor() throws InvalidGameStateException {
+                bg.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getDefenderBattlePlan().setWillCallTraitor(true);
+                assertTrue(battle.defenderCallsTraitor(game));
+            }
+
+            @Test
+            void testHarkonnenAsAllyCallsTraitor() throws InvalidGameStateException {
+                game.createAlliance(bg, harkonnen);
+                harkonnen.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getDefenderBattlePlan().setHarkWillCallTraitor(true);
+                assertTrue(battle.defenderCallsTraitor(game));
+            }
+
+            @Test
+            void testHarkonnenAsAllyDoesNotHaveCorrectTraitor() throws InvalidGameStateException {
+                game.createAlliance(bg, harkonnen);
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
+                battle.getDefenderBattlePlan().setHarkWillCallTraitor(true);
+                assertFalse(battle.defenderCallsTraitor(game));
             }
         }
     }

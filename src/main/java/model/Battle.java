@@ -622,20 +622,20 @@ public class Battle {
         return isAggressorWin(game) ? getAggressorEmojis(game) : getDefenderEmojis(game);
     }
 
-    private boolean aggressorCallsTraitor(Game game) {
+    protected boolean aggressorCallsTraitor(Game game) {
         String opponentLeader = defenderBattlePlan.getLeaderNameForTraitor();
         if (aggressorBattlePlan.isWillCallTraitor() && getAggressor(game).hasTraitor(opponentLeader))
             return true;
         else
-            return getAggressor(game).getAlly().equals("Harkonnen") && aggressorBattlePlan.isHarkWillCallTraitor() && game.getFaction("Harkonnen").hasTraitor(opponentLeader);
+            return getAggressor(game).getAlly().equals("Harkonnen") && aggressorBattlePlan.isHarkWillCallTraitor() && game.getHarkonnenFaction().hasTraitor(opponentLeader);
     }
 
-    private boolean defenderCallsTraitor(Game game) {
+    protected boolean defenderCallsTraitor(Game game) {
         String opponentLeader = aggressorBattlePlan.getLeaderNameForTraitor();
         if (defenderBattlePlan.isWillCallTraitor() && getDefender(game).hasTraitor(opponentLeader))
             return true;
         else
-            return getDefender(game).getAlly().equals("Harkonnen") && defenderBattlePlan.isHarkWillCallTraitor() && game.getFaction("Harkonnen").hasTraitor(opponentLeader);
+            return getDefender(game).getAlly().equals("Harkonnen") && defenderBattlePlan.isHarkWillCallTraitor() && game.getHarkonnenFaction().hasTraitor(opponentLeader);
     }
 
     private boolean bothCallTraitor(Game game) {
@@ -1359,7 +1359,7 @@ public class Battle {
     public String getTraitorCallString(Game game, Faction faction, String opponentLeader) throws InvalidGameStateException {
         if (faction.hasTraitor(opponentLeader))
             return faction.getEmoji() + " calls Traitor against " + opponentLeader + "!";
-        else if (faction.getAlly().equals("Harkonnen") && game.getFaction("Harkonnen").hasTraitor(opponentLeader))
+        else if (faction.getAlly().equals("Harkonnen") && game.getHarkonnenFaction().hasTraitor(opponentLeader))
             return Emojis.HARKONNEN + " calls Traitor against " + opponentLeader + "!";
         else
             throw new InvalidGameStateException("Traitor not found.");
@@ -1582,7 +1582,7 @@ public class Battle {
 
         checkForTraitorCall(game, faction, faction, battlePlan, opponent, opponentPlan, false, modInfo, publishToTurnSummary, executeResolution);
         if (faction.getAlly().equals("Harkonnen"))
-            checkForTraitorCall(game, game.getFaction("Harkonnen"), faction, battlePlan, opponent, opponentPlan, true, modInfo, publishToTurnSummary, executeResolution);
+            checkForTraitorCall(game, game.getHarkonnenFaction(), faction, battlePlan, opponent, opponentPlan, true, modInfo, publishToTurnSummary, executeResolution);
     }
 
     private void checkForTraitorCall(Game game, Faction faction, Faction combatant, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary, boolean executeResolution) {
@@ -1679,7 +1679,7 @@ public class Battle {
                 plan.setWillCallTraitor(true);
                 game.getModInfo().publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + " if possible.");
                 if (faction.getAlly().equals("Harkonnen")) {
-                    plan.presentEarlyTraitorChoices(game, game.getFaction("Harkonnen"), opponent, true);
+                    plan.presentEarlyTraitorChoices(game, game.getHarkonnenFaction(), opponent, true);
                     if (plan.isHarkCanCallTraitor())
                         game.getModInfo().publish(Emojis.HARKONNEN + " can call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
                 }
@@ -1716,7 +1716,7 @@ public class Battle {
         if (!resolutionPublished) {
             game.getModInfo().publish(faction.getEmoji() + " will wait for battle wheels  to decide whether to call Traitor in " + wholeTerritoryName);
             if (faction.getAlly().equals("Harkonnen")) {
-                plan.presentEarlyTraitorChoices(game, game.getFaction("Harkonnen"), opponent, true);
+                plan.presentEarlyTraitorChoices(game, game.getHarkonnenFaction(), opponent, true);
                 if (plan.isHarkCanCallTraitor())
                     game.getModInfo().publish(Emojis.HARKONNEN + " can call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
                 else
