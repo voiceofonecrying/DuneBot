@@ -65,7 +65,7 @@ public class HomeworldTerritory extends Territory {
         this.occupierName = null;
         game.getTurnSummary().publish(territoryName + " is no longer occupied.");
 
-        if (occupier != null) {
+        if (occupier != null && territoryName.equals("Tupile")) {
             reduceHandLimitForTupile(occupier);
             if (occupier.hasAlly())
                 reduceHandLimitForTupile(game.getFaction(occupier.getAlly()));
