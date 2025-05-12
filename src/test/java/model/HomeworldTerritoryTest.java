@@ -181,5 +181,20 @@ public class HomeworldTerritoryTest extends DuneTest {
             assertEquals(8, harkonnen.getHandLimit());
             assertEquals(Emojis.HARKONNEN + " " + Emojis.TREACHERY + " limit has been reduced to 8.", turnSummary.getMessages().getLast());
         }
+
+        @Test
+        void testClearingCaladanOccupationDoesNotDecreaseHandLimit() {
+            game.createAlliance(emperor, harkonnen);
+            caladan.removeForces(game, "Atreides", 10);
+            caladan.addForces("Emperor*", 1);
+            assertEquals(emperor, caladan.getOccupyingFaction());
+            caladan.addForces("Atreides", 10);
+            turnSummary.clear();
+            caladan.removeForces(game, "Emperor*", 1);
+            assertFalse(atreides.isHomeworldOccupied());
+            assertEquals(4, emperor.getHandLimit());
+            assertEquals(8, harkonnen.getHandLimit());
+            assertTrue(turnSummary.getMessages().stream().noneMatch(m -> m.contains("limit has been reduced")));
+        }
     }
 }
