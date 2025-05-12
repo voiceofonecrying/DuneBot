@@ -2000,7 +2000,6 @@ public class Game {
             if (territories.get("Cistern") != null && territories.get("Cistern").hasActiveFaction(faction)) {
                 faction.addSpice(2, "for Cistern");
                 turnSummary.publish(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Cistern");
-                faction.setHasMiningEquipment(true);
             }
         }
 

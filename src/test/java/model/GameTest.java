@@ -2394,6 +2394,38 @@ class GameTest extends DuneTest {
             game.startSpiceHarvest();
             assertTrue(moritaniChat.getMessages().isEmpty());
         }
+
+        @Test
+        void testFactionInArrakeenHasMiningEquipment() throws InvalidGameStateException {
+            bg.placeForceFromReserves(game, arrakeen, 1, false);
+            game.startSpiceHarvest();
+            assertTrue(bg.hasMiningEquipment());
+        }
+
+        @Test
+        void testFactionInCarthagHasMiningEquipment() throws InvalidGameStateException {
+            bg.placeForceFromReserves(game, carthag, 1, false);
+            game.startSpiceHarvest();
+            assertTrue(bg.hasMiningEquipment());
+        }
+
+        @Test
+        void testFactionInTueksDoesNotHaveMiningEquipment() throws InvalidGameStateException {
+            bg.placeForceFromReserves(game, tueksSietch, 1, false);
+            game.startSpiceHarvest();
+            assertFalse(bg.hasMiningEquipment());
+        }
+
+        @Test
+        void testFactionInCisternDoesNotHaveMiningEquipment() throws InvalidGameStateException {
+            game.addGameOption(GameOption.DISCOVERY_TOKENS);
+            Territory cistern = new Territory("Cistern", 1, true, false, true, false);
+            sihayaRidge.setDiscoveryToken("Cistern");
+            game.putTerritoryInAnotherTerritory(cistern, sihayaRidge);
+            bg.placeForceFromReserves(game, cistern, 1, false);
+            game.startSpiceHarvest();
+            assertFalse(bg.hasMiningEquipment());
+        }
     }
 
     @Nested
