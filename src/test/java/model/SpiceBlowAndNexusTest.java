@@ -198,6 +198,36 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#SandtroutThenWormThenAnotherWorm")
+    class SandtroutThenWormThenAnotherWorm {
+        @BeforeEach
+        void setUp() {
+            game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("The Great Flat")).findFirst().orElseThrow());
+            game.setTurn(2);
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(new SpiceCard("Sandtrout", -1, 0, null, null));
+            game.drawSpiceBlow("A", false);
+        }
+
+        @Test
+        void testFremenMayNotPlaceWorm() {
+            assertFalse(turnSummary.getMessages().getLast().contains("may place it in any sand territory"));
+        }
+
+        @Test
+        void testWormSandtroutWormTerritoryDoublesSpiceBlow() {
+            assertEquals(6, funeralPlain.getSpice());
+        }
+
+        @Test
+        void testNexusOccurs() {
+            assertEquals(" We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.", gameActions.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#thumperWithSandtroutActive")
     class ThumperWithSandtroutActive {
         @BeforeEach
