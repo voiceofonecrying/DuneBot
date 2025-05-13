@@ -72,7 +72,6 @@ public class Game {
     private String gameRoleMention;
     private boolean shieldWallDestroyed;
     private boolean sandtroutInPlay;
-    private boolean shaiHuludAfterSandtrout;
     private List<SetupStep> setupSteps;
     private boolean setupStarted;
     private boolean setupFinished;
@@ -196,7 +195,6 @@ public class Game {
         }
 
         this.sandtroutInPlay = false;
-        this.shaiHuludAfterSandtrout = false;
     }
 
     public Bidding startBidding() {
@@ -1323,16 +1321,13 @@ public class Game {
                             .append(" will be reshuffled back into deck.\n");
                 } else if (sandtroutInPlay) {
                     sandtroutInPlay = false;
-                    shaiHuludAfterSandtrout = true;
                     nexus = false;
                     greatMaker = false;
                     spiceMultiplier = 2;
                     message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been ").append(spotted).append("! The next Shai-Hulud will cause a Nexus!\n");
                 } else if (!shaiHuludSpotted) {
+                    spiceMultiplier = 1;
                     shaiHuludSpotted = true;
-                    if (shaiHuludAfterSandtrout)
-                        spiceMultiplier = 1;
-                    shaiHuludAfterSandtrout = false;
                     message.append(getTerritory(Objects.requireNonNull(lastCard).name()).shaiHuludAppears(this, drawn.name(), true));
                     nexus = true;
                     if (cardIsGreatMaker)
