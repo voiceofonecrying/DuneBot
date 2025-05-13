@@ -137,6 +137,67 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#wormThenSandtroutThenWorm")
+    class WormThenSandtroutThenWorm {
+        @BeforeEach
+        void setUp() {
+            game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("The Great Flat")).findFirst().orElseThrow());
+            game.setTurn(2);
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(new SpiceCard("Sandtrout", -1, 0, null, null));
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
+            game.drawSpiceBlow("A", false);
+        }
+
+        @Test
+        void testFremenMayNotPlaceNoEffectWorm() {
+            assertFalse(turnSummary.getMessages().getLast().contains("may place it in any sand territory"));
+        }
+
+        @Test
+        void testWormSandtroutWormTerritoryDoublesSpiceBlow() {
+            assertEquals(12, funeralPlain.getSpice());
+        }
+
+        @Test
+        void testNoNexus() {
+            assertTrue(gameActions.getMessages().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#wormThenSandtroutThenWormThenAnotherWorm")
+    class WormThenSandtroutThenWormThenAnotherWorm {
+        @BeforeEach
+        void setUp() {
+            game.getSpiceDiscardA().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("The Great Flat")).findFirst().orElseThrow());
+            game.setTurn(2);
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Funeral Plain")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
+            game.getSpiceDeck().addFirst(new SpiceCard("Sandtrout", -1, 0, null, null));
+            game.getSpiceDeck().addFirst(game.getSpiceDeck().stream().filter(c -> c.name().equals("Shai-Hulud")).findFirst().orElseThrow());
+            game.drawSpiceBlow("A", false);
+        }
+
+        @Test
+        void testFremenMayPlaceIfAnotherWormAppears() {
+            assertTrue(turnSummary.getMessages().getLast().contains("may place it in any sand territory"));
+        }
+
+        @Test
+        void testSpiceBlowDoesNotDoubleIfAnotherWormAppearsFirst() {
+            assertEquals(6, funeralPlain.getSpice());
+        }
+
+        @Test
+        void testNexusOccurs() {
+            assertEquals(" We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.", gameActions.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#thumperWithSandtroutActive")
     class ThumperWithSandtroutActive {
         @BeforeEach
