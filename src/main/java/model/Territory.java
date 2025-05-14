@@ -408,9 +408,12 @@ public class Territory {
                 forcesToRemove.add(force);
             }
             response += message.toString();
-            for (Force force : forcesToRemove)
+            for (Force force : forcesToRemove) {
+                if (force.getName().equals("Hidden Mobile Stronghold"))
+                    continue;
                 // Move this to Territory::removeForces - but Game::removeForces is checking for high/low threshold, so that must move over too
                 game.removeForces(territoryName, game.getFaction(force.getFactionName()), force.getStrength(), force.getName().contains("*"), true);
+            }
             if (wormName.equals("Shai-Hulud")) {
                 String fremenForces = "";
                 int strength = getForceStrength("Fremen");
