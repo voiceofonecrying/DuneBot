@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class HomeworldTerritoryTest extends DuneTest {
     private HomeworldTerritory caladan;
     private HomeworldTerritory tupile;
+    private HomeworldTerritory ixHomeworld;
 
     @BeforeEach
     public void setUp() throws IOException, InvalidGameStateException {
@@ -23,8 +24,10 @@ public class HomeworldTerritoryTest extends DuneTest {
         game.addFaction(harkonnen);
         game.addFaction(emperor);
         game.addFaction(choam);
+        game.addFaction(ix);
         caladan = (HomeworldTerritory) game.getTerritory(atreides.getHomeworld());
         tupile = (HomeworldTerritory) game.getTerritory(choam.getHomeworld());
+        ixHomeworld = (HomeworldTerritory) game.getTerritory(ix.getHomeworld());
     }
 
     @Nested
@@ -138,6 +141,19 @@ public class HomeworldTerritoryTest extends DuneTest {
             caladan.addForces("Atreides", 10);
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals(1, turnSummary.getMessages().size());
+        }
+
+        @Test
+        void testNativeRevivalWithZeroRegularsDoesNotEndOccupy() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            ixHomeworld.removeForces(game, "Ix", 10);
+            ixHomeworld.removeForces(game, "Ix*", 4);
+            ixHomeworld.addForces("Harkonnen", 1);
+            assertTrue(ix.isHomeworldOccupied());
+            ixHomeworld.addForces("Ix", 0);
+            ixHomeworld.addForces("Ix*", 1);
+            assertEquals("Harkonnen", ixHomeworld.getOccupierName());
+            assertEquals(2, turnSummary.getMessages().size());
         }
 
         @Test

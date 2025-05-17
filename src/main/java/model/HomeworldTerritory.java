@@ -102,6 +102,8 @@ public class HomeworldTerritory extends Territory {
 
     @Override
     public void addForces(String forceName, int amount) {
+        if (amount == 0)
+            return;
         boolean wasOccupied = occupierName != null;
         String formerOccupier = occupierName;
         super.addForces(forceName, amount);
@@ -121,6 +123,8 @@ public class HomeworldTerritory extends Territory {
 
     @Override
     public void removeForces(Game game, String forceName, int amount) {
+        if (amount == 0)
+            return;
         boolean wasOccupied = occupierName != null;
         String formerOccupier = occupierName;
         super.removeForces(game, forceName, amount);
