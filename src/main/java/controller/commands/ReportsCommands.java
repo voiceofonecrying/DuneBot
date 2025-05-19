@@ -533,6 +533,7 @@ public class ReportsCommands {
                         if (gr.getFieldValue(f) != null && fp.factionEmoji.equals(Emojis.getFactionEmoji(f)))
                             totalFactionWinPercentage += fp.winPercentage;
                 expectedWins += (float) (expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
+//                System.out.println(gr.getGameName() + " " + playerName + " " + expectedWins + " " + expectedWinsThisGame + " " + expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
                 if (LocalDate.parse(gr.getGameEndDate()).isAfter(LocalDate.parse(lastGameEnd)))
                     lastGameEnd = gr.getGameEndDate();
             }
@@ -1285,6 +1286,7 @@ public class ReportsCommands {
                 }
                 if (foundChannelId) {
                     try {
+                        jda.awaitReady();
                         TextChannel posts = Objects.requireNonNull(guild).getTextChannelById(channelString);
                         if (posts != null) {
                             LocalDate startDate = posts.getTimeCreated().toLocalDate();
@@ -1302,11 +1304,16 @@ public class ReportsCommands {
                                     gr.setDaysUntilArchive("" + endDate.datesUntil(archiveDate).count());
                                 }
                             }
-                        } else if (gameName.equals("PBD 109 Zooming Zoomers")) {
-                            gr.setGameStartDate("2025-04-08");
-                            gr.setGameEndDate("2025-05-18");
-                            gr.setGameDuration("40");
-                            gr.setDaysUntilArchive("0");
+//                        } else if (gameName.equals("PBD89: Furry Whales")) {
+//                            gr.setGameStartDate("2024-12-01");
+//                            gr.setGameEndDate("2025-05-06");
+//                            gr.setGameDuration("146");
+//                            gr.setDaysUntilArchive("1");
+//                        } else if (gameName.equals("PBD 109 Zooming Zoomers")) {
+//                            gr.setGameStartDate("2025-04-08");
+//                            gr.setGameEndDate("2025-05-18");
+//                            gr.setGameDuration("40");
+//                            gr.setDaysUntilArchive("0");
                         }
                     } catch (Exception e) {
                         // Can't get game start and end, but save everything else
