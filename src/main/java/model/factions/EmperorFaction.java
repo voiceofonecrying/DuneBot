@@ -265,18 +265,11 @@ public class EmperorFaction extends Faction {
 
     @Override
     public String getNoRevivableForcesMessage() {
-        presentAllyRevivalChoices();
         boolean starsInTanks = game.getTleilaxuTanks().getForceStrength(name + "*") > 0;
         if (starsInTanks)
             return emoji + " has no revivable forces in the tanks";
         else
             return emoji + " has no forces in the tanks";
-    }
-
-    @Override
-    public String getRevivedMaximumMessage() {
-        presentAllyRevivalChoices();
-        return super.getRevivedMaximumMessage();
     }
 
     /**
@@ -295,7 +288,6 @@ public class EmperorFaction extends Faction {
             starRevived = true;
         } else
             game.reviveForces(this, isPaid, numForces, 0);
-        presentAllyRevivalChoices();
     }
 
     public void presentAllyRevivalChoices() {

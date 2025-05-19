@@ -152,6 +152,7 @@ public class Revival {
         StringBuilder message = new StringBuilder();
         boolean nonBTRevival = false;
         int factionsWithRevivals = 0;
+        EmperorFaction emperor = null;
         for (Faction faction : factions) {
             int numFreeRevived = faction.performFreeRevivals();
             if (numFreeRevived > 0) {
@@ -160,7 +161,11 @@ public class Revival {
                     nonBTRevival = true;
             }
             faction.presentPaidRevivalChoices(numFreeRevived);
+            if (faction instanceof EmperorFaction emp)
+                emperor = emp;
         }
+        if (emperor != null)
+            emperor.presentAllyRevivalChoices();
 
         if (btWasHighThreshold && factionsWithRevivals > 0) {
             message.append(bt.getEmoji())
