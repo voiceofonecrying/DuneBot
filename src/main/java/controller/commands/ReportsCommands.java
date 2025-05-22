@@ -8,11 +8,13 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import helpers.GameResult;
+import io.github.cdimascio.dotenv.Dotenv;
 import model.Bidding;
 import model.Game;
 import model.factions.BGFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -533,6 +535,7 @@ public class ReportsCommands {
                         if (gr.getFieldValue(f) != null && fp.factionEmoji.equals(Emojis.getFactionEmoji(f)))
                             totalFactionWinPercentage += fp.winPercentage;
                 expectedWins += (float) (expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
+//                System.out.println(gr.getGameName() + " " + playerName + " " + expectedWins + " " + expectedWinsThisGame + " " + expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
                 if (LocalDate.parse(gr.getGameEndDate()).isAfter(LocalDate.parse(lastGameEnd)))
                     lastGameEnd = gr.getGameEndDate();
             }
@@ -1284,8 +1287,17 @@ public class ReportsCommands {
                     }
                 }
                 if (foundChannelId) {
+                    JDA mainJDA = jda;
+                    Guild mainGuild = guild;
+                    String mainToken = Dotenv.configure().load().get("MAIN_TOKEN");
+                    String mainGuildId = Dotenv.configure().load().get("MAIN_GUILD_ID");
+                    if (mainToken != null && mainGuildId != null) {
+                        mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
+                        mainGuild = mainJDA.getGuildById(mainGuildId);
+                    }
                     try {
-                        TextChannel posts = Objects.requireNonNull(guild).getTextChannelById(channelString);
+                        mainJDA.awaitReady();
+                        TextChannel posts = Objects.requireNonNull(mainGuild).getTextChannelById(channelString);
                         if (posts != null) {
                             LocalDate startDate = posts.getTimeCreated().toLocalDate();
                             gr.setGameStartDate(startDate.toString());
@@ -1302,11 +1314,16 @@ public class ReportsCommands {
                                     gr.setDaysUntilArchive("" + endDate.datesUntil(archiveDate).count());
                                 }
                             }
-                        } else if (gameName.equals("PBD 109 Zooming Zoomers")) {
-                            gr.setGameStartDate("2025-04-08");
-                            gr.setGameEndDate("2025-05-18");
-                            gr.setGameDuration("40");
-                            gr.setDaysUntilArchive("0");
+//                        } else if (gameName.equals("PBD89: Furry Whales")) {
+//                            gr.setGameStartDate("2024-12-01");
+//                            gr.setGameEndDate("2025-05-06");
+//                            gr.setGameDuration("146");
+//                            gr.setDaysUntilArchive("1");
+//                        } else if (gameName.equals("PBD 109 Zooming Zoomers")) {
+//                            gr.setGameStartDate("2025-04-08");
+//                            gr.setGameEndDate("2025-05-18");
+//                            gr.setGameDuration("40");
+//                            gr.setDaysUntilArchive("0");
                         }
                     } catch (Exception e) {
                         // Can't get game start and end, but save everything else
@@ -1479,12 +1496,8 @@ public class ReportsCommands {
         TextChannel gameResults = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("game-results")).findFirst().orElseThrow(() -> new IllegalStateException("The game-results channel was not found."));
 
         String lastMessageID = "";
-        if (!grList.gameResults.isEmpty()) {
-            if (grList.gameResults.getFirst().getGameName().equals("Dune 8"))
-                lastMessageID = grList.gameResults.getLast().getMessageID();
-            else
-                lastMessageID = grList.gameResults.getFirst().getMessageID();
-        }
+        if (!grList.gameResults.isEmpty())
+            lastMessageID = grList.gameResults.getFirst().getMessageID();
 
         MessageHistory messageHistory;
         if (lastMessageID.isEmpty())
