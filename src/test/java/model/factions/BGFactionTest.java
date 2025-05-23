@@ -346,4 +346,46 @@ class BGFactionTest extends FactionTestTemplate {
             }
         }
     }
+
+    @Nested
+    @DisplayName("#placeForces")
+    class PlaceForces extends FactionTestTemplate.PlaceForces {
+        Territory arrakeen;
+
+        @BeforeEach
+        void setUp() {
+            super.setUp();
+            arrakeen = game.getTerritory("Arrakeen");
+        }
+
+        @Test
+        void testPlaceInTerritoryWithAdvisors() throws InvalidGameStateException {
+            arrakeen.addForces("Advisor", 1);
+            faction.placeForces(arrakeen, 2, 0, true, true, true, game, false, false);
+            assertEquals(Emojis.BG + ": 2 " + Emojis.BG_ADVISOR + " placed on Arrakeen for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+            assertEquals(3, arrakeen.getForceStrength("Advisor"));
+            assertEquals(0, arrakeen.getForceStrength("BG"));
+        }
+    }
+
+    @Nested
+    @DisplayName("executeShipment")
+    class ExecuteShipment extends FactionTestTemplate.ExecuteShipment {
+        Territory sietchTabr;
+
+        @BeforeEach
+        void setUp() {
+            super.setUp();
+            sietchTabr = game.getTerritory("Sietch Tabr");
+            sietchTabr.addForces("Advisor", 2);
+        }
+
+        @Test
+        void testShipToTerritoryWithAdvisors() throws InvalidGameStateException {
+            faction.executeShipment(game, false, false);
+            assertEquals(Emojis.BG + ": 1 " + Emojis.BG_ADVISOR + " placed on Sietch Tabr for 1 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+            assertEquals(3, sietchTabr.getForceStrength("Advisor"));
+            assertEquals(0, sietchTabr.getForceStrength("BG"));
+        }
+    }
 }

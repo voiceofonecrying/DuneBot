@@ -407,12 +407,18 @@ public class Faction {
     }
 
     public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, Game game, boolean karama, boolean crossShip) throws InvalidGameStateException {
-        if (amountValue > 0)
-            placeForceFromReserves(game, targetTerritory, amountValue, false);
-        if (starredAmountValue > 0)
-            placeForceFromReserves(game, targetTerritory, starredAmountValue, true);
-
-        String forcesPlaced = emoji + ": " + forcesString(amountValue, starredAmountValue) + " placed on " + targetTerritory.getTerritoryName();
+        String forcesPlaced = emoji + ": ";
+        if (this instanceof BGFaction bg && targetTerritory.hasForce("Advisor")) {
+            bg.placeAdvisorsFromReserves(game, targetTerritory, amountValue);
+            forcesPlaced += amountValue + " " + Emojis.BG_ADVISOR;
+        } else {
+            if (amountValue > 0)
+                placeForceFromReserves(game, targetTerritory, amountValue, false);
+            if (starredAmountValue > 0)
+                placeForceFromReserves(game, targetTerritory, starredAmountValue, true);
+            forcesPlaced += forcesString(amountValue, starredAmountValue);
+        }
+        forcesPlaced += " placed on " + targetTerritory.getTerritoryName();
 
         if (isShipment) {
             getShipment().setShipped(true);
