@@ -62,8 +62,9 @@ public class HomeworldTerritory extends Territory {
 
     public void clearOccupier() {
         Faction occupier = getOccupyingFaction();
-        this.occupierName = null;
-        game.getTurnSummary().publish(territoryName + " is no longer occupied.");
+        if (occupier != null)
+            game.getTurnSummary().publish(territoryName + " is no longer occupied by " + occupier.getEmoji());
+        occupierName = null;
 
         if (occupier != null && territoryName.equals("Tupile")) {
             reduceHandLimitForTupile(occupier);

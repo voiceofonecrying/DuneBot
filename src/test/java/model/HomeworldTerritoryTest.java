@@ -40,11 +40,8 @@ public class HomeworldTerritoryTest extends DuneTest {
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals("Caladan is now occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getFirst());
             caladan.removeForces(game, "Harkonnen", 1);
-            assertEquals("Harkonnen", caladan.getOccupierName());
-            assertEquals(1, turnSummary.getMessages().size());
-            caladan.resetOccupation();
-            assertNull(caladan.getOccupierName());
-            assertEquals("Caladan is no longer occupied.", turnSummary.getMessages().get(1));
+            assertNull(caladan.getOccupyingFaction());
+            assertEquals("Caladan is no longer occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -85,7 +82,7 @@ public class HomeworldTerritoryTest extends DuneTest {
             turnSummary.clear();
             caladan.removeForces(game, "Harkonnen", 1);
             assertEquals("Emperor", caladan.getOccupierName());
-            assertEquals("Caladan is now occupied by " + Emojis.EMPEROR, turnSummary.getMessages().getFirst());
+            assertEquals("Caladan is now occupied by " + Emojis.EMPEROR, turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -95,12 +92,9 @@ public class HomeworldTerritoryTest extends DuneTest {
             assertEquals("Harkonnen", caladan.getOccupierName());
             assertEquals("Caladan is now occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().getFirst());
             caladan.removeForces(game, "Harkonnen", 1);
-            assertEquals("Harkonnen", caladan.getOccupierName());
-            assertEquals(1, turnSummary.getMessages().size());
-            turnSummary.clear();
             caladan.addForces("Emperor", 1);
             assertEquals("Emperor", caladan.getOccupierName());
-            assertEquals("Caladan is now occupied by " + Emojis.EMPEROR, turnSummary.getMessages().getFirst());
+            assertEquals("Caladan is now occupied by " + Emojis.EMPEROR, turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -111,7 +105,7 @@ public class HomeworldTerritoryTest extends DuneTest {
             assertEquals("Harkonnen", caladan.getOccupierName());
             caladan.removeForces(game, "Harkonnen", 1);
             assertNull(caladan.getOccupierName());
-            assertEquals("Caladan is no longer occupied.", turnSummary.getMessages().get(1));
+            assertEquals("Caladan is no longer occupied by " + Emojis.HARKONNEN, turnSummary.getMessages().get(1));
         }
 
         @Test
