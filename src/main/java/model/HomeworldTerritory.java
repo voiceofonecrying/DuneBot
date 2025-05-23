@@ -62,8 +62,9 @@ public class HomeworldTerritory extends Territory {
 
     public void clearOccupier() {
         Faction occupier = getOccupyingFaction();
-        this.occupierName = null;
-        game.getTurnSummary().publish(territoryName + " is no longer occupied.");
+        if (occupier != null)
+            game.getTurnSummary().publish(territoryName + " is no longer occupied by " + occupier.getEmoji());
+        occupierName = null;
 
         if (occupier != null && territoryName.equals("Tupile")) {
             reduceHandLimitForTupile(occupier);
@@ -128,6 +129,8 @@ public class HomeworldTerritory extends Territory {
         boolean wasOccupied = occupierName != null;
         String formerOccupier = occupierName;
         super.removeForces(game, forceName, amount);
+        if (wasOccupied && !hasActiveFaction(occupierName))
+            clearOccupier();
         Set<String> factionNames = new HashSet<>();
         forces.forEach(force -> factionNames.add(force.getFactionName()));
         if (hasRicheseNoField())

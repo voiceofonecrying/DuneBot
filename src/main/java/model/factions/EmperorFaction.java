@@ -96,12 +96,6 @@ public class EmperorFaction extends Faction {
         return (HomeworldTerritory) game.getTerritory(secondHomeworld);
     }
 
-    @Override
-    public void resetOccupation() {
-        super.resetOccupation();
-        getSecondHomeworldTerritory().resetOccupation();
-    }
-
     public boolean isSecundusOccupied() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS)) return false;
         return getSecondHomeworldTerritory().getOccupierName() != null;

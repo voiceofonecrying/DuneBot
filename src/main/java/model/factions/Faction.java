@@ -1068,10 +1068,6 @@ public class Faction {
         return (HomeworldTerritory) game.getTerritory(homeworld);
     }
 
-    public void resetOccupation() {
-        getHomeworldTerritory().resetOccupation();
-    }
-
     public boolean isHomeworldOccupied() {
         if (!game.hasGameOption(GameOption.HOMEWORLDS))
             return false;
