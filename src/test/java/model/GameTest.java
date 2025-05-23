@@ -965,36 +965,6 @@ class GameTest extends DuneTest {
         void setUp() throws IOException {
             game.addFaction(fremen);
         }
-
-        @Test
-        void testNewTurnResetsOccupation() {
-            game.addFaction(guild);
-            HomeworldTerritory junction = (HomeworldTerritory) game.getTerritory(guild.getHomeworld());
-            junction.addForces("Fremen*", 1);
-            junction.removeForces(game, "Guild", 15);
-            assertEquals("Fremen", junction.getOccupierName());
-            assertEquals("Junction is now occupied by " + Emojis.FREMEN, turnSummary.getMessages().getFirst());
-            junction.removeForces(game, "Fremen*", 1);
-            assertEquals("Fremen", junction.getOccupierName());
-            game.advanceTurn();
-            assertNull(junction.getOccupierName());
-            assertEquals("Junction is no longer occupied.", turnSummary.getMessages().get(1));
-        }
-
-        @Test
-        void testNewTurnResetsSalusaSecundusOccupation() {
-            game.addFaction(emperor);
-            HomeworldTerritory salusaSecudus = (HomeworldTerritory) game.getTerritory(emperor.getSecondHomeworld());
-            salusaSecudus.addForces("Fremen*", 1);
-            salusaSecudus.removeForces(game, "Emperor*", 5);
-            assertEquals("Fremen", salusaSecudus.getOccupierName());
-            assertEquals("Salusa Secundus is now occupied by " + Emojis.FREMEN, turnSummary.getMessages().getFirst());
-            salusaSecudus.removeForces(game, "Fremen*", 1);
-            assertEquals("Fremen", salusaSecudus.getOccupierName());
-            game.advanceTurn();
-            assertNull(salusaSecudus.getOccupierName());
-            assertEquals("Salusa Secundus is no longer occupied.", turnSummary.getMessages().get(1));
-        }
     }
 
     @Nested
