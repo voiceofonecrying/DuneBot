@@ -5525,4 +5525,134 @@ class BattleTest extends DuneTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("#resolutionWithOccupyScenarios")
+    class ResolutionWithOccupyScenarios {
+        @BeforeEach
+        void setUp() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            game.addFaction(emperor);
+        }
+
+        @Test
+        void testHomeworldBecomesOccupied() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            assertNull(giediPrime.getOccupyingFaction());
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(atreides, harkonnen));
+            battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            assertEquals("Giedi Prime is now occupied by " + Emojis.ATREIDES, turnSummary.getMessages().get(1));
+        }
+
+        @Test
+        void testAllForcesLostDoesNotEstablishOccupy() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            assertNull(giediPrime.getOccupyingFaction());
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(atreides, harkonnen));
+            battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, true, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertTrue(giediPrime.getForces().isEmpty());
+            assertNull(giediPrime.getOccupyingFaction());
+            assertTrue(turnSummary.getMessages().stream().noneMatch(m -> m.contains("occupied")));
+        }
+
+        @Test
+        void testNativeEndsOccation() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            harkonnen.removeForces("Giedi Prime", 10, false, true);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            harkonnen.reviveForces(false, 10);
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(harkonnen, atreides));
+            battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertNull(giediPrime.getOccupyingFaction());
+        }
+
+        @Test
+        void testNativeDefeatsInvaderButLosesAllForces() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            harkonnen.removeForces("Giedi Prime", 9, false, true);
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(harkonnen, atreides));
+            battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, true, 0, null, null);
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertTrue(giediPrime.getForces().isEmpty());
+            assertNull(giediPrime.getOccupyingFaction());
+        }
+
+        @Test
+        void testNativeEndsOccationButLosesAllForces() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            harkonnen.removeForces("Giedi Prime", 10, false, true);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            harkonnen.reviveForces(false, 1);
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(harkonnen, atreides));
+            battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, true, 0, null, null);
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertTrue(giediPrime.getForces().isEmpty());
+            assertNull(giediPrime.getOccupyingFaction());
+        }
+
+        @Test
+        void testOccupierChanges() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            harkonnen.removeForces("Giedi Prime", 10, false, true);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            emperor.placeForceFromReserves(game, giediPrime, 1, false);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(emperor, atreides));
+            battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+            battle.printBattleResolution(game, false, true);
+            assertEquals(emperor, giediPrime.getOccupyingFaction());
+        }
+
+        @Test
+        void testOccupierDoesNotChange() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            harkonnen.removeForces("Giedi Prime", 10, false, true);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            emperor.placeForceFromReserves(game, giediPrime, 1, false);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(emperor, atreides));
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+            turnSummary.clear();
+            battle.printBattleResolution(game, false, true);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            assertTrue(turnSummary.getMessages().stream().noneMatch(m -> m.contains("occupied")));
+        }
+
+        @Test
+        void testTwoNonNativeNoForcesRemain() throws InvalidGameStateException {
+            HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
+            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            harkonnen.removeForces("Giedi Prime", 10, false, true);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            emperor.placeForceFromReserves(game, giediPrime, 1, false);
+            assertEquals(atreides, giediPrime.getOccupyingFaction());
+            Battle battle = new Battle(game, List.of(giediPrime), List.of(emperor, atreides));
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, true, 0, null, null);
+            battle.setBattlePlan(game, emperor, burseg, null, false, 0, true, 0, null, null);
+            turnSummary.clear();
+            battle.printBattleResolution(game, false, true);
+            assertNull(giediPrime.getOccupyingFaction());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.contains("is no longer occupied")));
+        }
+    }
 }

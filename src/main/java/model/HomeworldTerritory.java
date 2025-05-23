@@ -128,6 +128,8 @@ public class HomeworldTerritory extends Territory {
         boolean wasOccupied = occupierName != null;
         String formerOccupier = occupierName;
         super.removeForces(game, forceName, amount);
+        if (wasOccupied && !hasActiveFaction(occupierName))
+            clearOccupier();
         Set<String> factionNames = new HashSet<>();
         forces.forEach(force -> factionNames.add(force.getFactionName()));
         if (hasRicheseNoField())
