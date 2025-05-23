@@ -11,6 +11,7 @@ import model.Territory;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -133,6 +134,23 @@ public class BGFaction extends Faction {
         if (treacheryHand.stream().anyMatch(c -> c.type().equals("Worthless Card")))
             return false;
         return super.doesNotHaveKarama();
+    }
+
+    /**
+     * Places BG advisors from reserves into this territory.
+     * Reports removal from reserves to ledger.
+     * Switches homeworld to low threshold if applicable.
+     *
+     * @param game      The Game instance.
+     * @param territory The territory to place the force in.
+     * @param amount    The number of forces to place.
+     */
+    public void placeAdvisorsFromReserves(Game game, Territory territory, int amount) {
+        String forceName = "Advisor";
+        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(forceName)));
+        territory.addForces(forceName, amount);
+        checkForLowThreshold();
+        game.setUpdated(UpdateType.MAP);
     }
 
     /**

@@ -39,6 +39,10 @@ abstract class FactionTestTemplate {
         game.addFaction(faction);
     }
 
+    void throwTestTopicMessages(TestTopic topic) {
+        throw new RuntimeException("\n- " + String.join("\n- ", topic.getMessages()));
+    }
+
     @Nested
     @DisplayName("#getInfoChannelPrefix")
     class GetInfoChannelPrefix {
