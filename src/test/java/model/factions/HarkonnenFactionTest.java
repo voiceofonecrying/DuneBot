@@ -5,6 +5,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TraitorCard;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -139,5 +140,26 @@ class HarkonnenFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 8);
+    }
+
+    @Test
+    public void testNexusCardBetrayal() throws IOException {
+        AtreidesFaction atreides = new AtreidesFaction("at", "at");
+        game.addFaction(atreides);
+        TraitorCard drYueh = new TraitorCard("Dr. Yueh", "Atreides", 1);
+        TraitorCard feydRautha = new TraitorCard("Feyd Rautha", "Harkonnen", 6);
+        TraitorCard alia = new TraitorCard("Alia", "BG", 5);
+        TraitorCard jamis = new TraitorCard("Jamis", "Fremen", 2);
+        faction.addTraitorCard(drYueh);
+        faction.addTraitorCard(feydRautha);
+        faction.addTraitorCard(alia);
+        faction.addTraitorCard(jamis);
+        faction.nexusCardBetrayal(drYueh.getName());
+        assertEquals(3, faction.getTraitorHand().size());
+        assertFalse(faction.getTraitorHand().contains(drYueh));
+        assertTrue(faction.nexusBetrayalTraitorNeeded);
+        assertTrue(game.getTraitorDeck().contains(drYueh));
+        assertEquals("Dr. Yueh has been shuffled back into the Traitor Deck.", ledger.getMessages().getLast());
+        assertEquals(faction.getEmoji() + " loses Dr. Yueh and will draw a new Traitor in Mentat Pause.", turnSummary.getMessages().getLast());
     }
 }

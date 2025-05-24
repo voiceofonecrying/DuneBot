@@ -4,9 +4,6 @@ import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
-import model.TraitorCard;
-import model.factions.Faction;
-import model.factions.HarkonnenFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -24,7 +21,7 @@ public class HarkCommands {
                         new SubcommandData("capture-leader", "Capture a faction's leader after winning a battle.").addOptions(faction, factionLeader),
                         new SubcommandData("kill-leader", "Kill a faction's leader after winning a battle.").addOptions(faction, factionLeader),
                         new SubcommandData("return-leader", "Return a captured leader to their faction.").addOptions(nonHarkLeader),
-                        new SubcommandData("nexus-card-lose-traitor", "Lose the played traitor to the deck. New traitor will be drawn in Mentat Pause.").addOptions(traitor),
+                        new SubcommandData("nexus-card-betrayal", "Lose the played traitor to the deck. New traitor will be drawn in Mentat Pause.").addOptions(traitor),
                         new SubcommandData("nexus-card-secret-ally", "Play Harkonnen Nexus Card as Secret Ally"),
                         new SubcommandData("block-bonus-card", "Block Harkonnen from receiving bonus card.").addOptions(harkonnenKaramad)
                 )
@@ -43,7 +40,7 @@ public class HarkCommands {
             case "capture-leader" -> captureLeader(discordGame, game);
             case "kill-leader" -> killLeader(discordGame, game);
             case "return-leader" -> returnLeader(discordGame, game);
-            case "nexus-card-lose-traitor" -> nexusCardLoseTraitor(discordGame, game);
+            case "nexus-card-betrayal" -> nexusCardBetrayal(discordGame, game);
             case "nexus-card-secret-ally" -> nexusCardSecretAlly(discordGame, game);
             case "block-bonus-card" -> blockBonusCard(discordGame, game);
         }
@@ -69,19 +66,9 @@ public class HarkCommands {
         discordGame.pushGame();
     }
 
-    private static void nexusCardLoseTraitor(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void nexusCardBetrayal(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String traitorName = discordGame.required(traitor).getAsString();
-        Faction faction = game.getFaction("Harkonnen");
-        LinkedList<TraitorCard> traitorDeck = game.getTraitorDeck();
-        TraitorCard traitorCard = faction.getTraitorHand().stream()
-                .filter(t -> t.getName().equalsIgnoreCase(traitorName))
-                .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Invalid Traitor: " + traitorName));
-        faction.removeTraitorCard(traitorCard);
-        traitorDeck.add(traitorCard);
-        Collections.shuffle(traitorDeck);
-        faction.getLedger().publish(traitorName + " has been shuffled back into the Traitor Deck.");
-        game.getTurnSummary().publish(faction.getEmoji() + " loses " + traitorName + " and will draw a new Traitor in Mentat Pause.");
+        game.getHarkonnenFaction().nexusCardBetrayal(traitorName);
         discordGame.pushGame();
     }
 
