@@ -416,7 +416,7 @@ public class CommandOptions {
     private static List<Command.Choice> traitors(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
         Faction faction;
         if (event.getSubcommandName() != null && event.getSubcommandName().equals("nexus-card-lose-traitor"))
-            faction = game.getFaction("Harkonnen");
+            faction = game.getHarkonnenFaction();
         else
             faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getTraitorHand().stream().map(TraitorCard::getName)
@@ -509,7 +509,7 @@ public class CommandOptions {
     }
 
     private static List<Command.Choice> nonHarkLeaders(Game game, String searchValue) {
-        Faction faction = game.getFaction("Harkonnen");
+        Faction faction = game.getHarkonnenFaction();
         List<String> harkLeaders = new LinkedList<>();
         harkLeaders.add("Feyd Rautha");
         harkLeaders.add("Beast Rabban");

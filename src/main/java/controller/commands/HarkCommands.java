@@ -51,7 +51,7 @@ public class HarkCommands {
 
     private static void returnLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String returningLeader = discordGame.required(nonHarkLeader).getAsString();
-        ((HarkonnenFaction) game.getFaction("Harkonnen")).returnCapturedLeader(returningLeader);
+        game.getHarkonnenFaction().returnCapturedLeader(returningLeader);
         discordGame.pushGame();
     }
 
@@ -92,8 +92,7 @@ public class HarkCommands {
 
     private static void blockBonusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         boolean prescienceBlocked = discordGame.optional(harkonnenKaramad) != null && discordGame.required(harkonnenKaramad).getAsBoolean();
-        HarkonnenFaction harkonnen = (HarkonnenFaction) game.getFaction("Harkonnen");
-        harkonnen.setBonusCardBlocked(prescienceBlocked);
+        game.getHarkonnenFaction().setBonusCardBlocked(prescienceBlocked);
         discordGame.pushGame();
     }
 }
