@@ -1268,24 +1268,6 @@ public class ReportsCommands {
                         foundChannelId = true;
                     }
                 }
-                switch (gameName) {
-                    case "Dune 22b" -> {
-                        channelString = "952976095697829918";
-                        foundChannelId = true;
-                    }
-                    case "Dune 22c" -> {
-                        channelString = "962367250101325975";
-                        foundChannelId = true;
-                    }
-                    case "Discord 4" -> {
-                        channelString = "996300327856906280";
-                        foundChannelId = true;
-                    }
-                    case "Discord 23" -> {
-                        channelString = "1097244553947389992";
-                        foundChannelId = true;
-                    }
-                }
                 if (foundChannelId) {
                     JDA mainJDA = jda;
                     Guild mainGuild = guild;
@@ -1314,16 +1296,6 @@ public class ReportsCommands {
                                     gr.setDaysUntilArchive("" + endDate.datesUntil(archiveDate).count());
                                 }
                             }
-//                        } else if (gameName.equals("PBD89: Furry Whales")) {
-//                            gr.setGameStartDate("2024-12-01");
-//                            gr.setGameEndDate("2025-05-06");
-//                            gr.setGameDuration("146");
-//                            gr.setDaysUntilArchive("1");
-//                        } else if (gameName.equals("PBD 109 Zooming Zoomers")) {
-//                            gr.setGameStartDate("2025-04-08");
-//                            gr.setGameEndDate("2025-05-18");
-//                            gr.setGameDuration("40");
-//                            gr.setDaysUntilArchive("0");
                         }
                     } catch (Exception e) {
                         // Can't get game start and end, but save everything else
@@ -1350,8 +1322,7 @@ public class ReportsCommands {
                         assistants.add("@" + jda.retrieveUserById(modMatcher.group(1)).complete().getName());
                 } else
                     moderator = lines[1].substring(2).split("\\s+", 2)[0];
-            } else if (gameName.equals("Discord 27"))
-                moderator = "@voiceofonecrying";
+            }
             gr.setModerator(moderator);
             if (!assistants.isEmpty())
                 gr.setAssistantModerators(assistants);
@@ -1375,8 +1346,6 @@ public class ReportsCommands {
                 victoryType = "G";
             else if (winnersString.contains(tagEmojis(guild,":guild: Default")))
                 victoryType = "G";
-            else if (gameName.equals("Discord 26"))
-                victoryType = "F";
             else if (gameName.contains("PBD67"))
                 victoryType = "Most strongholds";
             else if (winnersString.toLowerCase().contains("victory condition")) {
@@ -1507,8 +1476,6 @@ public class ReportsCommands {
         List<Message> messages = messageHistory.getRetrievedHistory();
         List<GameResult> newGRs = messages.stream().map(m -> loadNewGame(guild, jda, m)).filter(Objects::nonNull).collect(Collectors.toList());
         int numNewGames = newGRs.size();
-        if (grList.gameResults.getFirst().getGameName().equals("Dune 8"))
-            Collections.reverse(grList.gameResults);
         Collections.reverse(newGRs);
         newGRs.forEach(gr -> grList.gameResults.addFirst(gr));
         return numNewGames;
