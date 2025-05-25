@@ -1305,12 +1305,12 @@ public class ReportsCommands {
                 if (foundChannelId) {
                     JDA mainJDA = jda;
                     Guild mainGuild = guild;
-                    String mainToken = Dotenv.configure().load().get("MAIN_TOKEN");
-                    String mainGuildId = Dotenv.configure().load().get("MAIN_GUILD_ID");
-                    if (mainToken != null && mainGuildId != null) {
-                        mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
-                        mainGuild = mainJDA.getGuildById(mainGuildId);
-                    }
+//                    String mainToken = Dotenv.configure().load().get("MAIN_TOKEN");
+//                    String mainGuildId = Dotenv.configure().load().get("MAIN_GUILD_ID");
+//                    if (mainToken != null && mainGuildId != null) {
+//                        mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
+//                        mainGuild = mainJDA.getGuildById(mainGuildId);
+//                    }
                     try {
                         mainJDA.awaitReady();
                         TextChannel posts = Objects.requireNonNull(mainGuild).getTextChannelById(channelString);
