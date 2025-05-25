@@ -674,12 +674,12 @@ public class ReportsCommands {
         String channelString = optionMapping.getAsString();
         JDA mainJDA = event.getJDA();
         Guild mainGuild = event.getGuild();
-        String mainToken = Dotenv.configure().load().get("MAIN_TOKEN");
-        String mainGuildId = Dotenv.configure().load().get("MAIN_GUILD_ID");
-        if (mainToken != null && mainGuildId != null) {
-            mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
-            mainGuild = mainJDA.getGuildById(mainGuildId);
-        }
+//        String mainToken = Dotenv.configure().load().get("MAIN_TOKEN");
+//        String mainGuildId = Dotenv.configure().load().get("MAIN_GUILD_ID");
+//        if (mainToken != null && mainGuildId != null) {
+//            mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
+//            mainGuild = mainJDA.getGuildById(mainGuildId);
+//        }
         String response = "";
         try {
             mainJDA.awaitReady();
