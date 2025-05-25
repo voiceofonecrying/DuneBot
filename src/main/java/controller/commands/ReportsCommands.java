@@ -669,6 +669,40 @@ public class ReportsCommands {
         return updateStats(event.getGuild(), event.getJDA(), true, members, publishIfNoNewGames);
     }
 
+    public static String statsDiagnostic(SlashCommandInteractionEvent event, List<Member> members) throws InterruptedException {
+        OptionMapping optionMapping = event.getOption(message.getName());
+        String channelString = optionMapping.getAsString();
+        JDA mainJDA = event.getJDA();
+        Guild mainGuild = event.getGuild();
+        String mainToken = Dotenv.configure().load().get("MAIN_TOKEN");
+        String mainGuildId = Dotenv.configure().load().get("MAIN_GUILD_ID");
+        if (mainToken != null && mainGuildId != null) {
+            mainJDA = JDABuilder.createDefault(mainToken).build().awaitReady();
+            mainGuild = mainJDA.getGuildById(mainGuildId);
+        }
+        String response = "";
+        try {
+            mainJDA.awaitReady();
+            TextChannel posts = Objects.requireNonNull(mainGuild).getTextChannelById(channelString);
+            if (posts != null) {
+                LocalDate startDate = posts.getTimeCreated().toLocalDate();
+                response += "start = " + startDate.toString();
+                MessageHistory postsHistory = posts.getHistory();
+                postsHistory.retrievePast(1).complete();
+                List<Message> ml = postsHistory.getRetrievedHistory();
+                if (!ml.isEmpty()) {
+                    LocalDate endDate = ml.getFirst().getTimeCreated().toLocalDate();
+                    response += "\nend = " + endDate.toString();
+                }
+            } else
+                response = "stats is null";
+        } catch (Exception e) {
+            return response + " ---\n" + e.getMessage();
+            // Can't get game start and end, but save everything else
+        }
+        return response;
+    }
+
     private static class FactionPerformance {
         String factionEmoji;
         int numGames;
