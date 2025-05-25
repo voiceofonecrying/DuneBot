@@ -167,6 +167,9 @@ public class CommandManager extends ListenerAdapter {
             } else if (name.equals("update-stats") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 String result = ReportsCommands.updateStats(event, members);
                 event.getHook().editOriginal(result).queue();
+            } else if (name.equals("stats-diagnostic") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
+                String result = ReportsCommands.statsDiagnostic(event, members);
+                event.getHook().editOriginal(result).queue();
             } else if (name.equals("list-members") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 String result = ReportsCommands.listMembers(event, members);
                 event.getHook().editOriginal(result).queue();
@@ -435,6 +438,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
         commandData.add(Commands.slash("save-game-bot-data", "Save the game bot data at the end of a game for future analysis"));
         commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(forcePublish));
+        commandData.add(Commands.slash("stats-diagnostic", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(message));
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
         commandData.add(Commands.slash("players-fastest-speed", "Show each player's days per turn in their fastest game.").addOptions(numFastGamesForAverageDuration, minTurnsForAverageDuration));
