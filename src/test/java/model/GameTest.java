@@ -2396,6 +2396,36 @@ class GameTest extends DuneTest {
             game.startSpiceHarvest();
             assertFalse(bg.hasMiningEquipment());
         }
+
+        @Test
+        void testRicheseNoFieldOccupiesHomeworld() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(atreides);
+            game.addFaction(richese);
+            game.getTerritory("Caladan").setRicheseNoField(3);
+            atreides.placeForceFromReserves(game, arrakeen, 10, false);
+            assertTrue(atreides.isHomeworldOccupied());
+            game.startSpiceHarvest();
+            assertEquals(7, richese.getSpice());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m ->m.equals(Emojis.RICHESE + " collects 2 " + Emojis.SPICE + " for occupying Caladan")));
+        }
+
+        @Test
+        void testHarkonnenAtHighThresholdCollects2SpiceForOccupation() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            atreides.placeForceFromReserves(game, arrakeen, 10, false);
+            harkonnen.placeForceFromReserves(game, game.getTerritory("Caladan"), 1, false);
+            assertTrue(atreides.isHomeworldOccupied());
+            assertEquals(10, harkonnen.getSpice());
+            assertEquals(10, atreides.getSpice());
+            game.startSpiceHarvest();
+            assertEquals(16, harkonnen.getSpice());
+            assertEquals(12, atreides.getSpice());
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m ->m.equals(Emojis.HARKONNEN + " collects 2 " + Emojis.SPICE + " for occupying Caladan")));
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m ->m.equals(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.")));
+        }
     }
 
     @Nested
