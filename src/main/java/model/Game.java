@@ -2002,12 +2002,12 @@ public class Game {
         }
 
         for (Faction faction : factions) {
-            Territory homeworld = getTerritory(faction.getHomeworld());
-            if (homeworld.getForces().stream().anyMatch(force -> !force.getFactionName().equals(faction.getName()))) {
-                Faction occupyingFaction = homeworld.getActiveFactions(this).getFirst();
-                if (hasGameOption(GameOption.HOMEWORLDS) && occupyingFaction instanceof HarkonnenFaction harkonnenFaction && occupyingFaction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
-                    faction.addSpice(2, "for High Threshold advantage");
+            if (faction.isHomeworldOccupied()) {
+                Faction occupyingFaction = faction.getOccupier();
+                if (occupyingFaction instanceof HarkonnenFaction harkonnenFaction && occupyingFaction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
+                    harkonnenFaction.addSpice(2, "for High Threshold advantage");
                     harkonnenFaction.setTriggeredHT(true);
+                    turnSummary.publish(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.");
                 }
                 turnSummary.publish(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " " + Emojis.SPICE + " for occupying " + faction.getHomeworld());
                 occupyingFaction.addSpice(faction.getOccupiedIncome(), "for occupying " + faction.getHomeworld());
@@ -2046,7 +2046,7 @@ public class Game {
             if (hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction harkonnenFaction && faction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
                 faction.addSpice(2, "for High Threshold advantage");
                 harkonnenFaction.setTriggeredHT(true);
-                turnSummary.publish(Emojis.HARKONNEN + "gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage");
+                turnSummary.publish(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.");
             }
         }
         if (hasFaction("Harkonnen")) ((HarkonnenFaction) getFaction("Harkonnen")).setTriggeredHT(false);
