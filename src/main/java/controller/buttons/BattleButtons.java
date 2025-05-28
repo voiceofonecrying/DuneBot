@@ -36,6 +36,7 @@ public class BattleButtons implements Pressable {
         else if (event.getComponentId().startsWith("battle-harkonnen-return-captured-leader")) returnCapturedLeader(discordGame, game);
         else if (event.getComponentId().startsWith("battle-publish-resolution")) publishResolution(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-resolve")) resolveBattle(event, discordGame, game);
+        else if (event.getComponentId().startsWith("battle-harkonnen-betrayal-resolve-turn-")) betrayHarkTraitorAndResolve(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-dont-resolve")) dontResolveBattle(event, discordGame);
         else if (event.getComponentId().startsWith("battle-cancel-audit")) cancelAudit(event, discordGame, game);
         else if (event.getComponentId().startsWith("battle-emperor-nexus-cunning")) emperorNexusCunning(event, discordGame, game);
@@ -250,6 +251,17 @@ public class BattleButtons implements Pressable {
         int turn = Integer.parseInt(params[0]);
         String wholeTerritoryName = params[1];
         game.getBattles().getCurrentBattle().resolveBattle(game, true, turn, wholeTerritoryName);
+        discordGame.queueDeleteMessage();
+        deletePublishResolutionButtonsInChannel(event.getMessageChannel());
+        discordGame.queueMessage("Resolving the battle");
+        discordGame.pushGame();
+    }
+
+    private static void betrayHarkTraitorAndResolve(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+        String[] params = event.getComponentId().replace("battle-harkonnen-betrayal-resolve-turn-", "").split("-");
+        int turn = Integer.parseInt(params[0]);
+        String wholeTerritoryName = params[1];
+        game.getBattles().getCurrentBattle().betrayHarkTraitorAndResolve(game, true, turn, wholeTerritoryName);
         discordGame.queueDeleteMessage();
         deletePublishResolutionButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage("Resolving the battle");

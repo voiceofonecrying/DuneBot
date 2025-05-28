@@ -2236,6 +2236,176 @@ class BattleTest extends DuneTest {
                 assertTrue(modInfo.getMessages().getLast().contains("Would you like the bot to resolve the battle?"));
             }
         }
+
+        @Nested
+        @DisplayName("#getHarkonnenNexusBetrayalFaction")
+        class GetHarkonnenNexusBetrayalFaction {
+            @BeforeEach
+            void setUp() {
+                game.addFaction(harkonnen);
+                game.addFaction(emperor);
+                game.addFaction(atreides);
+                game.addFaction(fremen);
+                game.createAlliance(harkonnen, emperor);
+                harkonnen.addTraitorCard(new TraitorCard("Lady Jessica", "Atreides", 5));
+                fremen.setNexusCard(new NexusCard("Harkonnen"));
+            }
+
+            @Test
+            void testNoFactionHoldsHarkonnenNexusCard() throws InvalidGameStateException {
+                game.discardNexusCard(fremen);
+                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
+                battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.getAggressorBattlePlan().setWillCallTraitor(true);
+                assertNull(battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+
+            @Test
+            void testHarkonnenNotInTheBattle() throws InvalidGameStateException {
+                game.removeAlliance(harkonnen);
+                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.getDefenderBattlePlan().setWillCallTraitor(true);
+                assertNull(battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+
+            @Test
+            void testHarkonnenDoesNotCallTraitor() throws InvalidGameStateException {
+                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
+                battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                assertNull(battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+
+            @Test
+            void testHarkonnenAsAllyDoesNotCallTraitor() throws InvalidGameStateException {
+                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                assertNull(battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+
+            @Test
+            void testHarkonnenAsAggressorCalledTraitor() throws InvalidGameStateException {
+                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
+                battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.getAggressorBattlePlan().setWillCallTraitor(true);
+                assertEquals(fremen, battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+
+            @Test
+            void testHarkonnenAsAllyAggressorCalledTraitor() throws InvalidGameStateException {
+                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(emperor, atreides));
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.getAggressorBattlePlan().setHarkWillCallTraitor(true);
+                assertEquals(fremen, battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+
+            @Test
+            void testHarkonnenAsDefenderCalledTraitor() throws InvalidGameStateException {
+                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
+                battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.getDefenderBattlePlan().setWillCallTraitor(true);
+                assertEquals(fremen, battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+
+            @Test
+            void testHarkonnenAsAllyDefenderCallsTraitor() throws InvalidGameStateException {
+                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.getDefenderBattlePlan().setHarkWillCallTraitor(true);
+                assertEquals(fremen, battle.getHarkonnenNexusBetrayalFaction(game));
+            }
+        }
+
+        @Nested
+        @DisplayName("#harkonnenNexusBetrayal")
+        class HarkonnenNexusBetrayal {
+            @BeforeEach
+            void setUp() {
+                game.addFaction(harkonnen);
+                game.addFaction(emperor);
+                game.addFaction(atreides);
+                game.addFaction(fremen);
+                game.createAlliance(harkonnen, emperor);
+                harkonnen.addTraitorCard(new TraitorCard("Lady Jessica", "Atreides", 5));
+                fremen.setNexusCard(new NexusCard("Harkonnen"));
+            }
+
+            @Test
+            void testHarkonnenCallsTraitor() throws InvalidGameStateException {
+                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
+                battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                battle.getAggressorBattlePlan().setWillCallTraitor(true);
+                modInfo.clear();
+                battle.checkIfResolvable(game);
+                assertEquals(Emojis.FREMEN + " may play " + Emojis.HARKONNEN + " Nexus Card Betrayal to cancel the Traitor call.", modInfo.getMessages().getFirst());
+                assertEquals(3, modInfo.getChoices().getLast().size());
+                assertEquals("Resolve with Hark Betrayal", modInfo.getChoices().getLast().getFirst().getLabel());
+                turnSummary.clear();
+                battle.betrayHarkTraitorAndResolve(game, true, 0, "Arrakeen");
+            }
+
+            @Test
+            void testHarkonnenHasWrongTraitor() throws InvalidGameStateException {
+                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
+                battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                battle.getAggressorBattlePlan().setWillCallTraitor(true);
+                modInfo.clear();
+                battle.checkIfResolvable(game);
+                assertEquals(2, modInfo.getChoices().getLast().size());
+                assertEquals("Yes", modInfo.getChoices().getLast().getFirst().getLabel());
+            }
+
+            @Test
+            void testHarkonnenCallsTraitorForAlly() throws InvalidGameStateException {
+                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
+                assertTrue(battle.isAggressorWin(game));
+                battle.getDefenderBattlePlan().setWillCallTraitor(true);
+                battle.getDefenderBattlePlan().setHarkWillCallTraitor(true);
+                assertFalse(battle.isAggressorWin(game));
+                modInfo.clear();
+                battle.checkIfResolvable(game);
+                assertEquals(Emojis.FREMEN + " may play " + Emojis.HARKONNEN + " Nexus Card Betrayal to cancel the Traitor call.", modInfo.getMessages().getFirst());
+                assertEquals(3, modInfo.getChoices().getLast().size());
+                assertEquals("Resolve with Hark Betrayal", modInfo.getChoices().getLast().getFirst().getLabel());
+            }
+
+            @Test
+            void testHarkonnenHasWrongTraitorForAlly() throws InvalidGameStateException {
+                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
+                battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+                battle.getDefenderBattlePlan().setWillCallTraitor(true);
+                battle.getDefenderBattlePlan().setHarkWillCallTraitor(true);
+                modInfo.clear();
+                battle.checkIfResolvable(game);
+                assertEquals(2, modInfo.getChoices().getLast().size());
+                assertEquals("Yes", modInfo.getChoices().getLast().getFirst().getLabel());
+            }
+        }
     }
 
     @Nested
