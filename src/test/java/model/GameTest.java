@@ -1803,6 +1803,12 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testCaptureLeader() {
+            game.harkonnenKeepLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertEquals(Emojis.HARKONNEN + " has captured a Leader from " + Emojis.ATREIDES, turnSummary.getMessages().getLast());
+        }
+
+        @Test
         void testCaptureSkilledLeader() throws InvalidGameStateException {
             LeaderSkillCard swordmaster = game.getLeaderSkillDeck().stream().filter(ls -> ls.name().equals("Swordmaster of Ginaz")).findFirst().orElseThrow();
             game.getLeaderSkillDeck().remove(swordmaster);

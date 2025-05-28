@@ -21,7 +21,6 @@ public class HarkCommands {
                         new SubcommandData("capture-leader", "Capture a faction's leader after winning a battle.").addOptions(faction, factionLeader),
                         new SubcommandData("kill-leader", "Kill a faction's leader after winning a battle.").addOptions(faction, factionLeader),
                         new SubcommandData("return-leader", "Return a captured leader to their faction.").addOptions(nonHarkLeader),
-                        new SubcommandData("nexus-card-betrayal", "Lose the played traitor to the deck. New traitor will be drawn in Mentat Pause.").addOptions(traitor),
                         new SubcommandData("nexus-card-secret-ally", "Play Harkonnen Nexus Card as Secret Ally"),
                         new SubcommandData("block-bonus-card", "Block Harkonnen from receiving bonus card.").addOptions(harkonnenKaramad)
                 )
@@ -40,7 +39,6 @@ public class HarkCommands {
             case "capture-leader" -> captureLeader(discordGame, game);
             case "kill-leader" -> killLeader(discordGame, game);
             case "return-leader" -> returnLeader(discordGame, game);
-            case "nexus-card-betrayal" -> nexusCardBetrayal(discordGame, game);
             case "nexus-card-secret-ally" -> nexusCardSecretAlly(discordGame, game);
             case "block-bonus-card" -> blockBonusCard(discordGame, game);
         }
@@ -63,12 +61,6 @@ public class HarkCommands {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
         game.harkonnenKillLeader(factionName, leaderName);
-        discordGame.pushGame();
-    }
-
-    private static void nexusCardBetrayal(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String traitorName = discordGame.required(traitor).getAsString();
-        game.getHarkonnenFaction().nexusCardBetrayal(traitorName);
         discordGame.pushGame();
     }
 

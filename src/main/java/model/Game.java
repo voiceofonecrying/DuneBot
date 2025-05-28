@@ -562,6 +562,15 @@ public class Game {
     }
 
     /**
+     * Get the Harkonnen faction object
+     *
+     * @return the HarkonnenFaction object if Harkonnen is in the game or null if Harkonnen is not in the game
+     */
+    public HarkonnenFaction getHarkonnenFactionOrNull() {
+        return (HarkonnenFaction) getFactionOrNull("Harkonnen");
+    }
+
+    /**
      * Get the BT faction object
      *
      * @return the BTFaction object if BT is in the game or null if BT is not in the game
@@ -985,9 +994,9 @@ public class Game {
     }
 
     public void discardNexusCard(Faction faction) {
+        turnSummary.publish(faction.getEmoji() + " has discarded a Nexus Card.");
         nexusDiscard.add(faction.getNexusCard());
         faction.setNexusCard(null);
-        turnSummary.publish(faction.getEmoji() + " has discarded a Nexus Card.");
         faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
@@ -1793,7 +1802,7 @@ public class Game {
         if (leader.getSkillCard() != null)
             turnSummary.publish(harkonnen.getEmoji() + " has captured the " + faction.getEmoji() + " skilled leader, " + leaderName + " the " + leader.getSkillCard().name()+ ".");
         else
-            turnSummary.publish("asdf");
+            turnSummary.publish(harkonnen.getEmoji() + " has captured a Leader from " + faction.getEmoji());
 
         faction.getChat().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
         faction.getLedger().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
