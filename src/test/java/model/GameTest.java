@@ -2417,6 +2417,18 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testHarkonnenAtHighThresholdCollects2SpiceOnlyOnce() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(harkonnen);
+            garaKulon.setSpice(6);
+            harkonnen.placeForceFromReserves(game, garaKulon, 1, false);
+            sihayaRidge.setSpice(6);
+            harkonnen.placeForceFromReserves(game, sihayaRidge, 1, false);
+            game.startSpiceHarvest();
+            assertEquals(20, harkonnen.getSpice());
+        }
+
+        @Test
         void testHarkonnenAtHighThresholdCollects2SpiceForOccupation() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
@@ -2426,8 +2438,10 @@ class GameTest extends DuneTest {
             assertTrue(atreides.isHomeworldOccupied());
             assertEquals(10, harkonnen.getSpice());
             assertEquals(10, atreides.getSpice());
+            garaKulon.setSpice(6);
+            harkonnen.placeForceFromReserves(game, garaKulon, 1, false);
             game.startSpiceHarvest();
-            assertEquals(16, harkonnen.getSpice());
+            assertEquals(19, harkonnen.getSpice());
             assertEquals(12, atreides.getSpice());
             assertTrue(turnSummary.getMessages().stream().anyMatch(m ->m.equals(Emojis.HARKONNEN + " collects 2 " + Emojis.SPICE + " for occupying Caladan")));
             assertTrue(turnSummary.getMessages().stream().anyMatch(m ->m.equals(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.")));

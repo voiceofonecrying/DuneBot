@@ -13,7 +13,6 @@ import java.util.LinkedList;
 import java.util.stream.IntStream;
 
 public class HarkonnenFaction extends Faction {
-    private Boolean hasTriggeredHT;
     private boolean bonusCardBlocked;
     protected boolean nexusBetrayalTraitorNeeded;
 
@@ -28,7 +27,6 @@ public class HarkonnenFaction extends Faction {
         this.lowThreshold = 6;
         this.occupiedIncome = 2;
         this.homeworld = "Giedi Prime";
-        this.hasTriggeredHT = false;
         this.handLimit = 8;
     }
 
@@ -47,15 +45,6 @@ public class HarkonnenFaction extends Faction {
         Collections.shuffle(game.getTraitorDeck());
         IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", "Harkonnen"));
         game.getTurnSummary().publish(emoji + " mulliganed their Traitor Hand.");
-    }
-
-    public boolean hasTriggeredHT() {
-        if (hasTriggeredHT == null) hasTriggeredHT = false;
-        return hasTriggeredHT;
-    }
-
-    public void setTriggeredHT(boolean hasTriggeredHT) {
-        this.hasTriggeredHT = hasTriggeredHT;
     }
 
     public boolean isBonusCardBlocked() {

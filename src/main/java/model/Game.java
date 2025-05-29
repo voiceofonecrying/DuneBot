@@ -1985,6 +1985,7 @@ public class Game {
 
         turnSummary.publish("**Turn " + turn + " Spice Harvest Phase**");
         setPhaseForWhispers("Turn " + turn + " Spice Harvest Phase\n");
+        boolean harkonnenCollectsForHighThreshold = false;
         if (!hasGameOption(GameOption.BG_COEXIST_WITH_ALLY))
             territories.flipAdvisorsIfAlone(this);
 
@@ -2013,11 +2014,8 @@ public class Game {
         for (Faction faction : factions) {
             if (faction.isHomeworldOccupied()) {
                 Faction occupyingFaction = faction.getOccupier();
-                if (occupyingFaction instanceof HarkonnenFaction harkonnenFaction && occupyingFaction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
-                    harkonnenFaction.addSpice(2, "for High Threshold advantage");
-                    harkonnenFaction.setTriggeredHT(true);
-                    turnSummary.publish(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.");
-                }
+                if (occupyingFaction instanceof HarkonnenFaction && occupyingFaction.isHighThreshold())
+                    harkonnenCollectsForHighThreshold = true;
                 turnSummary.publish(occupyingFaction.getEmoji() + " collects " + faction.getOccupiedIncome() + " " + Emojis.SPICE + " for occupying " + faction.getHomeworld());
                 occupyingFaction.addSpice(faction.getOccupiedIncome(), "for occupying " + faction.getHomeworld());
             }
@@ -2052,13 +2050,13 @@ public class Game {
                 altSpiceProductionTriggered = true;
             turnSummary.publish(faction.getEmoji() +
                     " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
-            if (hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction harkonnenFaction && faction.isHighThreshold() && !harkonnenFaction.hasTriggeredHT()) {
-                faction.addSpice(2, "for High Threshold advantage");
-                harkonnenFaction.setTriggeredHT(true);
-                turnSummary.publish(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.");
-            }
+            if (hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction && faction.isHighThreshold())
+                harkonnenCollectsForHighThreshold = true;
         }
-        if (hasFaction("Harkonnen")) ((HarkonnenFaction) getFaction("Harkonnen")).setTriggeredHT(false);
+        if (harkonnenCollectsForHighThreshold) {
+            getHarkonnenFaction().addSpice(2, "for High Threshold advantage");
+            turnSummary.publish(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.");
+        }
 
         for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
             List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, false);
