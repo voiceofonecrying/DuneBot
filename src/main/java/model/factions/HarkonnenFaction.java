@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.Game;
 import model.Leader;
 import model.Territory;
@@ -53,6 +54,52 @@ public class HarkonnenFaction extends Faction {
 
     public void setBonusCardBlocked(boolean bonusCardBlocked) {
         this.bonusCardBlocked = bonusCardBlocked;
+    }
+
+    public void keepCapturedLeader(String factionName, String leaderName) {
+        Faction faction = game.getFaction(factionName);
+        Leader leader = faction.getLeader(leaderName).orElseThrow();
+
+        addLeader(leader);
+        faction.removeLeader(leader);
+
+        if (leader.getSkillCard() != null)
+            game.getTurnSummary().publish(emoji + " has captured the " + faction.getEmoji() + " skilled leader, " + leaderName + " the " + leader.getSkillCard().name()+ ".");
+        else
+            game.getTurnSummary().publish(emoji + " has captured a Leader from " + faction.getEmoji());
+
+        faction.getChat().publish(leaderName + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
+        faction.getLedger().publish(leaderName + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
+        ledger.publish("You have captured " + leaderName + ".");
+        chat.reply("You kept " + leaderName);
+    }
+
+    public void killCapturedLeader(String factionName, String leaderName) {
+        Faction faction = game.getFaction(factionName);
+        Leader leader = faction.getLeader(leaderName).orElseThrow();
+        faction.removeLeader(leader);
+
+        addSpice(2, "killing " + leaderName);
+
+        if (leader.getSkillCard() != null) {
+            game.getLeaderSkillDeck().add(leader.getSkillCard());
+            leader.removeSkillCard();
+            game.getTurnSummary().publish(emoji + " has killed the " + faction.getEmoji() + " skilled leader, " + leaderName + ", for 2 " + Emojis.SPICE);
+        } else
+            game.getTurnSummary().publish(emoji + " has killed the " + faction.getEmoji() + " leader for 2 " + Emojis.SPICE);
+
+        game.getLeaderTanks().add(leader);
+        leader.setFaceDown(true);
+        BTFaction bt = game.getBTFactionOrNull();
+        if (bt != null) {
+            bt.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            bt.getChat().publish(leader.getEmoiNameAndValueString() + " is face down in the tanks.");
+        }
+
+        faction.getChat().publish(leader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        faction.getLedger().publish(leader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        setUpdated(UpdateType.MAP);
+        chat.publish("You killed " + leaderName);
     }
 
     public void returnCapturedLeader(String leaderName) {

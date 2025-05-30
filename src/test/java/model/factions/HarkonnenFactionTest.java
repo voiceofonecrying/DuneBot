@@ -2,14 +2,16 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
-import model.HomeworldTerritory;
-import model.Territory;
-import model.TraitorCard;
+import model.*;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -140,6 +142,112 @@ class HarkonnenFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 8);
+    }
+
+    @Nested
+    @DisplayName("#keepCapturedLeader")
+    class KeepCapturedLeader {
+        AtreidesFaction atreides;
+        TestTopic atreidesChat;
+        Leader duncanIdaho;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("at", "at");
+            atreidesChat = new TestTopic();
+            atreides.setChat(atreidesChat);
+            atreides.setLedger(new TestTopic());
+            game.addFaction(atreides);
+            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+        }
+
+        @Test
+        void testHarkonnenKeepsLeader() {
+            faction.keepCapturedLeader("Atreides", "Duncan Idaho");
+            assertTrue(faction.getLeaders().contains(duncanIdaho));
+            assertFalse(atreides.getLeaders().contains(duncanIdaho));
+            assertEquals("You have captured Duncan Idaho.", ledger.getMessages().getLast());
+            assertEquals("Duncan Idaho has been captured by the treacherous " + Emojis.HARKONNEN + "!", atreidesChat.getMessages().getLast());
+        }
+
+        @Test
+        void testVictimDoesNotHaveLeader() {
+            game.killLeader(atreides, "Duncan Idaho");
+            assertThrows(NoSuchElementException.class, () -> faction.keepCapturedLeader("Atreides", "Duncan Idaho"));
+        }
+
+        @Test
+        void testCaptureLeader() {
+            faction.keepCapturedLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertEquals(Emojis.HARKONNEN + " has captured a Leader from " + Emojis.ATREIDES, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testCaptureSkilledLeader() throws InvalidGameStateException {
+            LeaderSkillCard swordmaster = game.getLeaderSkillDeck().stream().filter(ls -> ls.name().equals("Swordmaster of Ginaz")).findFirst().orElseThrow();
+            game.getLeaderSkillDeck().remove(swordmaster);
+            duncanIdaho.setSkillCard(swordmaster);
+            assertFalse(game.getLeaderSkillDeck().contains(swordmaster));
+            faction.keepCapturedLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertEquals(Emojis.HARKONNEN + " has captured the " + Emojis.ATREIDES + " skilled leader, Duncan Idaho the Swordmaster of Ginaz.", turnSummary.getMessages().getLast());
+            assertSame(swordmaster, duncanIdaho.getSkillCard());
+            assertFalse(game.getLeaderSkillDeck().contains(swordmaster));
+        }
+    }
+
+    @Nested
+    @DisplayName("#killCapturedLeader")
+    class KillCapturedLeader {
+        AtreidesFaction atreides;
+        TestTopic atreidesChat;
+        Leader duncanIdaho;
+        BTFaction bt;
+        TestTopic btChat;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            atreides = new AtreidesFaction("at", "at");
+            atreidesChat = new TestTopic();
+            atreides.setChat(atreidesChat);
+            atreides.setLedger(new TestTopic());
+            game.addFaction(atreides);
+            bt = new BTFaction("bt", "bt");
+            btChat = new TestTopic();
+            bt.setChat(btChat);
+            game.addFaction(bt);
+            duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+        }
+
+        @Test
+        void testKillLeaderGainsSpice() {
+            faction.killCapturedLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertEquals(12, faction.getSpice());
+            assertEquals(Emojis.HARKONNEN + " has killed the " + Emojis.ATREIDES + " leader for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testKilledLeaderIsFaceDown() {
+            faction.killCapturedLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertTrue(duncanIdaho.isFaceDown());
+        }
+
+        @Test
+        void testFaceDownLeaderReportedToBT() {
+            faction.killCapturedLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertTrue(bt.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertEquals(Emojis.ATREIDES + " Duncan Idaho (2) is face down in the tanks.", btChat.getMessages().getLast());
+        }
+
+        @Test
+        void testKillSkilledLeader() throws InvalidGameStateException {
+            LeaderSkillCard swordmaster = game.getLeaderSkillDeck().stream().filter(ls -> ls.name().equals("Swordmaster of Ginaz")).findFirst().orElseThrow();
+            game.getLeaderSkillDeck().remove(swordmaster);
+            duncanIdaho.setSkillCard(swordmaster);
+            assertFalse(game.getLeaderSkillDeck().contains(swordmaster));
+            faction.killCapturedLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
+            assertEquals(Emojis.HARKONNEN + " has killed the " + Emojis.ATREIDES + " skilled leader, Duncan Idaho, for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+            assertTrue(game.getLeaderSkillDeck().contains(swordmaster));
+        }
     }
 
     @Test

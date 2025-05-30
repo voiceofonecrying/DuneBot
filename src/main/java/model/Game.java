@@ -1791,51 +1791,6 @@ public class Game {
         killLeader(targetFaction, leaderName, false);
     }
 
-    public void harkonnenKeepLeader(String factionName, String leaderName) {
-        Faction faction = getFaction(factionName);
-        Leader leader = faction.getLeader(leaderName).orElseThrow();
-
-        Faction harkonnen = getHarkonnenFaction();
-        harkonnen.addLeader(leader);
-        faction.removeLeader(leader);
-
-        if (leader.getSkillCard() != null)
-            turnSummary.publish(harkonnen.getEmoji() + " has captured the " + faction.getEmoji() + " skilled leader, " + leaderName + " the " + leader.getSkillCard().name()+ ".");
-        else
-            turnSummary.publish(harkonnen.getEmoji() + " has captured a Leader from " + faction.getEmoji());
-
-        faction.getChat().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
-        faction.getLedger().publish(leader.getName() + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
-        harkonnen.getLedger().publish("You have captured " + leader.getName() + ".");
-    }
-
-    public void harkonnenKillLeader(String factionName, String leaderName) {
-        Faction faction = getFaction(factionName);
-        Leader leader = faction.getLeader(leaderName).orElseThrow();
-        faction.removeLeader(leader);
-
-        Faction harkonnen = getHarkonnenFaction();
-        harkonnen.addSpice(2, "killing " + leader.getName());
-
-        if (leader.getSkillCard() != null) {
-            leaderSkillDeck.add(leader.getSkillCard());
-            turnSummary.publish(harkonnen.getEmoji() + " has killed the " + faction.getEmoji() + " skilled leader, " + leaderName + ", for 2 " + Emojis.SPICE);
-        } else
-            turnSummary.publish(harkonnen.getEmoji() + " has killed the " + faction.getEmoji() + " leader for 2 " + Emojis.SPICE);
-
-        Leader killedLeader = new Leader(leader.getName(), leader.getValue(), leader.getOriginalFactionName(), null, true);
-        leaderTanks.add(killedLeader);
-        BTFaction bt = getBTFactionOrNull();
-        if (bt != null) {
-            bt.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-            bt.getChat().publish(leader.getEmoiNameAndValueString() + " is face down in the tanks.");
-        }
-
-        faction.getChat().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        faction.getLedger().publish(killedLeader.getName() + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
-        setUpdated(UpdateType.MAP);
-    }
-
     public void assignTechToken(String tt, Faction recipient) throws InvalidGameStateException {
         Faction possessor = factions.stream().filter(f -> f.hasTechToken(tt)).findAny().orElseThrow();
         possessor.removeTechToken(tt);
