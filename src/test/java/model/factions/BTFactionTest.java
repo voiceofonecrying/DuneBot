@@ -173,6 +173,19 @@ class BTFactionTest extends FactionTestTemplate {
         assertEquals(7, faction.getFreeRevival());
     }
 
+    @Test
+    public void testRemoveDukeVidal() throws IOException, InvalidGameStateException {
+        Faction ecaz = new EcazFaction("ec", "ec");
+        ecaz.setLedger(new TestTopic());
+        game.addFaction(ecaz);
+        ecaz.addLeader(game.getDukeVidal());
+        game.killLeader(ecaz, "Duke Vidal");
+        faction.reviveLeader("Duke Vidal", null);
+        assertTrue(faction.isDukeVidalGhola());
+        faction.removeLeader("Duke Vidal");
+        assertFalse(faction.isDukeVidalGhola());
+    }
+
     @Nested
     @DisplayName("#reviveLeader")
     class ReviveLeader extends FactionTestTemplate.ReviveLeader {
@@ -338,6 +351,8 @@ class BTFactionTest extends FactionTestTemplate {
                 game.killLeader(ecaz, "Duke Vidal");
                 faction.reviveLeader("Duke Vidal", null);
                 assertEquals(Emojis.BT + " revived " + Emojis.ECAZ + " Duke Vidal as a Ghola for 3 " + Emojis.SPICE, turnSummary.getMessages().getLast());
+                BTFaction bt = (BTFaction) faction;
+                assertTrue(bt.isDukeVidalGhola());
             }
         }
     }

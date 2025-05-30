@@ -564,23 +564,19 @@ public class Faction {
     }
 
     public Leader removeLeader(String name) {
-        Leader remove = leaders.stream()
+        Leader leader = leaders.stream()
                 .filter(l -> l.getName().equals(name))
                 .findFirst()
-                .orElseThrow(() -> new IllegalArgumentException("Leader not found."));
-
-        leaders.remove(remove);
-        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-
-        return remove;
+                .orElseThrow(() -> new IllegalArgumentException("Leader " + name + " not found."));
+        removeLeader(leader);
+        return leader;
     }
 
     public void removeLeader(Leader leader) {
-        getLeaders().remove(leader);
+        leaders.remove(leader);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        if (leader.getSkillCard() != null) {
+        if (leader.getSkillCard() != null)
             setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
-        }
     }
 
     public void addLeader(Leader leader) {
@@ -623,8 +619,11 @@ public class Faction {
         reviveLeader(leaderToRevive);
         subtractSpice(revivalCost, "revive " + leaderToRevive);
         String message = leaderToRevive + " was revived from the tanks for " + revivalCost + " " + Emojis.SPICE;
-        if (this instanceof BTFaction && leader != null && !leader.getOriginalFactionName().equals("BT"))
+        if (this instanceof BTFaction bt && leader != null && !leader.getOriginalFactionName().equals("BT")) {
             message = "revived " + Emojis.getFactionEmoji(leader.getOriginalFactionName()) + " " + leaderToRevive + " as a Ghola for " + revivalCost + " " + Emojis.SPICE;
+            if (leader.getName().equals("Duke Vidal"))
+                bt.setDukeVidalGhola(true);
+        }
         BTFaction bt = game.getBTFactionOrNull();
         if (bt != null && this != bt) {
             message += " paid to " + Emojis.BT;

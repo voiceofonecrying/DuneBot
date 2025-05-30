@@ -15,6 +15,7 @@ public class BTFaction extends Faction {
     private List<String> factionsNeedingRevivalLimit;
     private boolean btHTActive;
     private int numFreeRevivals;
+    private boolean dukeVidalGhola;
 
     public BTFaction(String player, String userName) throws IOException {
         super("BT", player, userName);
@@ -174,6 +175,21 @@ public class BTFaction extends Faction {
     public void performMentatPauseActions(boolean extortionTokenTriggered) {
         super.performMentatPauseActions(extortionTokenTriggered);
         chat.publish("Would you like to swap a Face Dancer? " + player);
+    }
+
+    public boolean isDukeVidalGhola() {
+        return dukeVidalGhola;
+    }
+
+    public void setDukeVidalGhola(boolean dukeVidalGhola) {
+        this.dukeVidalGhola = dukeVidalGhola;
+    }
+
+    @Override
+    public void removeLeader(Leader leader) {
+        super.removeLeader(leader);
+        if (leader.getName().equals("Duke Vidal"))
+            dukeVidalGhola = false;
     }
 
     public void presentHTChoices() {
