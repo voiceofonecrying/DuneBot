@@ -193,6 +193,17 @@ class HarkonnenFactionTest extends FactionTestTemplate {
             assertSame(swordmaster, duncanIdaho.getSkillCard());
             assertFalse(game.getLeaderSkillDeck().contains(swordmaster));
         }
+
+        @Test
+        void testKeepDukeVidal() throws IOException {
+            EcazFaction ecaz = new EcazFaction("ec", "ec");
+            game.addFaction(ecaz);
+            ecaz.setChat(new TestTopic());
+            ecaz.setLedger(new TestTopic());
+            ecaz.addLeader(game.getDukeVidal());
+            faction.keepCapturedLeader("Ecaz", "Duke Vidal");
+            assertTrue(faction.isDukeVidalCaptured());
+        }
     }
 
     @Nested
@@ -247,6 +258,36 @@ class HarkonnenFactionTest extends FactionTestTemplate {
             faction.killCapturedLeader(duncanIdaho.getOriginalFactionName(), duncanIdaho.getName());
             assertEquals(Emojis.HARKONNEN + " has killed the " + Emojis.ATREIDES + " skilled leader, Duncan Idaho, for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
             assertTrue(game.getLeaderSkillDeck().contains(swordmaster));
+        }
+    }
+
+    @Nested
+    @DisplayName("#returnCapturedLeader")
+    class ReturnCapturedLeader {
+        @Test
+        void testReturnDuncanIdaho() throws IOException {
+            AtreidesFaction atreides = new AtreidesFaction("at", "at");
+            game.addFaction(atreides);
+            atreides.setChat(new TestTopic());
+            atreides.setLedger(new TestTopic());
+            faction.keepCapturedLeader("Atreides", "Duncan Idaho");
+            assertFalse(atreides.getLeader("Duncan Idaho").isPresent());
+            faction.returnCapturedLeader("Duncan Idaho");
+            assertTrue(atreides.getLeader("Duncan Idaho").isPresent());
+        }
+
+        @Test
+        void testReleaseDukeVidal() throws IOException {
+            MoritaniFaction moritani = new MoritaniFaction("mo", "mo");
+            game.addFaction(moritani);
+            moritani.setChat(new TestTopic());
+            moritani.setLedger(new TestTopic());
+            moritani.addLeader(game.getDukeVidal());
+            faction.keepCapturedLeader("Moritani", "Duke Vidal");
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            faction.returnCapturedLeader("Duke Vidal");
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            assertFalse(game.getFactions().stream().anyMatch(f -> f.getLeaders().stream().anyMatch(l -> l.getName().equals("Duke Vidal"))));
         }
     }
 
