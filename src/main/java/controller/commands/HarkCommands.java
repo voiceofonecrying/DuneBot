@@ -53,14 +53,14 @@ public class HarkCommands {
     public static void captureLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
-        game.harkonnenKeepLeader(factionName, leaderName);
+        game.getHarkonnenFaction().keepCapturedLeader(factionName, leaderName);
         discordGame.pushGame();
     }
 
     public static void killLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String leaderName = discordGame.required(factionLeader).getAsString();
-        game.harkonnenKillLeader(factionName, leaderName);
+        game.getHarkonnenFaction().killCapturedLeader(factionName, leaderName);
         discordGame.pushGame();
     }
 

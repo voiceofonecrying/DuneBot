@@ -1,6 +1,7 @@
 package model.factions;
 
 import constants.Emojis;
+import enums.UpdateType;
 import model.Game;
 import model.Leader;
 import model.Territory;
@@ -14,6 +15,7 @@ import java.util.stream.IntStream;
 
 public class HarkonnenFaction extends Faction {
     private boolean bonusCardBlocked;
+    private boolean dukeVidalCaptured;
     protected boolean nexusBetrayalTraitorNeeded;
 
     public HarkonnenFaction(String player, String userName) throws IOException {
@@ -55,14 +57,78 @@ public class HarkonnenFaction extends Faction {
         this.bonusCardBlocked = bonusCardBlocked;
     }
 
+    @Override
+    public void removeLeader(Leader leader) {
+        super.removeLeader(leader);
+        if (leader.getName().equals("Duke Vidal"))
+            dukeVidalCaptured = false;
+    }
+
+    public void keepCapturedLeader(String factionName, String leaderName) {
+        Faction faction = game.getFaction(factionName);
+        Leader leader = faction.getLeader(leaderName).orElseThrow();
+
+        addLeader(leader);
+        if (leaderName.equals("Duke Vidal"))
+            dukeVidalCaptured = true;
+        faction.removeLeader(leader);
+
+        if (leader.getSkillCard() != null)
+            game.getTurnSummary().publish(emoji + " has captured the " + faction.getEmoji() + " skilled leader, " + leaderName + " the " + leader.getSkillCard().name()+ ".");
+        else
+            game.getTurnSummary().publish(emoji + " has captured a Leader from " + faction.getEmoji());
+
+        faction.getChat().publish(leaderName + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
+        faction.getLedger().publish(leaderName + " has been captured by the treacherous " + Emojis.HARKONNEN + "!");
+        ledger.publish("You have captured " + leaderName + ".");
+        chat.reply("You kept " + leaderName);
+    }
+
+    public void killCapturedLeader(String factionName, String leaderName) {
+        Faction faction = game.getFaction(factionName);
+        Leader leader = faction.getLeader(leaderName).orElseThrow();
+        faction.removeLeader(leader);
+
+        addSpice(2, "killing " + leaderName);
+
+        if (leader.getSkillCard() != null) {
+            game.getLeaderSkillDeck().add(leader.getSkillCard());
+            leader.removeSkillCard();
+            game.getTurnSummary().publish(emoji + " has killed the " + faction.getEmoji() + " skilled leader, " + leaderName + ", for 2 " + Emojis.SPICE);
+        } else
+            game.getTurnSummary().publish(emoji + " has killed the " + faction.getEmoji() + " leader for 2 " + Emojis.SPICE);
+
+        game.getLeaderTanks().add(leader);
+        leader.setFaceDown(true);
+        BTFaction bt = game.getBTFactionOrNull();
+        if (bt != null) {
+            bt.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            bt.getChat().publish(leader.getEmoiNameAndValueString() + " is face down in the tanks.");
+        }
+
+        faction.getChat().publish(leaderName + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        faction.getLedger().publish(leaderName + " has been killed by the treacherous " + Emojis.HARKONNEN + "!");
+        setUpdated(UpdateType.MAP);
+        chat.publish("You killed " + leaderName);
+    }
+
     public void returnCapturedLeader(String leaderName) {
         Leader leader = getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
         removeLeader(leader);
-        ledger.publish(leader.getName() + " has returned to " + Emojis.getFactionEmoji(leader.getOriginalFactionName()));
-        Faction opponentFaction = game.getFaction(leader.getOriginalFactionName());
-        opponentFaction.addLeader(leader);
-        opponentFaction.getLedger().publish(leader.getName() + " has returned to you.");
-        game.getTurnSummary().publish(Emojis.HARKONNEN + " has returned " + leader.getName() + " to " + Emojis.getFactionEmoji(leader.getOriginalFactionName()));
+        if (leaderName.equals("Duke Vidal")) {
+            ledger.publish(leaderName + " has been released.");
+            game.getTurnSummary().publish(Emojis.HARKONNEN + " has released " + leaderName + ".");
+        } else {
+            ledger.publish(leaderName + " has returned to " + Emojis.getFactionEmoji(leader.getOriginalFactionName()));
+            Faction opponentFaction = game.getFaction(leader.getOriginalFactionName());
+            opponentFaction.addLeader(leader);
+            opponentFaction.getLedger().publish(leaderName + " has returned to you.");
+            game.getTurnSummary().publish(Emojis.HARKONNEN + " has returned " + leaderName + " to " + Emojis.getFactionEmoji(leader.getOriginalFactionName()));
+        }
+    }
+
+    public boolean isDukeVidalCaptured() {
+        return dukeVidalCaptured;
     }
 
     public void nexusCardBetrayal(String traitorName) {

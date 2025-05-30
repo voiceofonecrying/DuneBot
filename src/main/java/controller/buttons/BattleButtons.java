@@ -214,16 +214,14 @@ public class BattleButtons implements Pressable {
     private static void keepCapturedLeader(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         Battle battle = game.getBattles().getCurrentBattle();
-        game.harkonnenKeepLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
-        discordGame.queueMessage("You kept " + battle.getHarkonnenCapturedLeader());
+        game.getHarkonnenFaction().keepCapturedLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
         discordGame.pushGame();
     }
 
     private static void killCapturedLeader(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
         discordGame.queueDeleteMessage();
         Battle battle = game.getBattles().getCurrentBattle();
-        game.harkonnenKillLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
-        discordGame.queueMessage("You killed " + battle.getHarkonnenCapturedLeader());
+        game.getHarkonnenFaction().killCapturedLeader(battle.getHarkonnenLeaderVictim(), battle.getHarkonnenCapturedLeader());
         discordGame.pushGame();
     }
 
