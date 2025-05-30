@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -235,6 +236,62 @@ abstract class FactionTestTemplate {
             assertEquals(1, chat.getMessages().size());
             assertEquals(1, chat.getChoices().size());
             assertEquals(5 - numRevived + 1, chat.getChoices().getFirst().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("#removeLeader")
+    class RemoveLeader {
+        Leader leader;
+
+        @BeforeEach
+        public void setUp() {
+            leader = faction.getLeaders().getFirst();
+        }
+
+        @Test
+        public void testRemoveLeader() {
+            faction.removeLeader(leader);
+            assertFalse(faction.getLeaders().contains(leader));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertFalse(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
+        }
+
+        @Test
+        public void testRemoveSkilledLeader() throws InvalidGameStateException {
+            leader.setSkillCard(new LeaderSkillCard("Mentat"));
+            faction.removeLeader(leader);
+            assertFalse(faction.getLeaders().contains(leader));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
+        }
+    }
+
+    @Nested
+    @DisplayName("#removeLeaderByName")
+    class RemoveLeaderByName {
+        String leaderName;
+
+        @BeforeEach
+        public void setUp() {
+            leaderName = faction.getLeaders().getFirst().getName();
+        }
+
+        @Test
+        public void testRemoveLeader() {
+            faction.removeLeader(leaderName);
+            assertFalse(faction.getLeaders().stream().anyMatch(l -> l.getName().equals(leaderName)));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertFalse(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
+        }
+
+        @Test
+        public void testRemoveSkilledLeader() throws InvalidGameStateException {
+            faction.getLeader(leaderName).orElseThrow().setSkillCard(new LeaderSkillCard("Mentat"));
+            faction.removeLeader(leaderName);
+            assertFalse(faction.getLeaders().stream().anyMatch(l -> l.getName().equals(leaderName)));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
         }
     }
 
