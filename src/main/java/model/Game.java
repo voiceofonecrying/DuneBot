@@ -2068,7 +2068,7 @@ public class Game {
 
     public void harkonnenSecretAlly() throws InvalidGameStateException {
         Faction faction = factions.stream().filter(f -> f.hasNexusCard("Harkonnen")).findFirst().orElseThrow(() -> new InvalidGameStateException("No faction has Harkonnen Nexus Card."));
-        if (hasFaction("Harkonnen"))
+        if (hasHarkonnenFaction())
             throw new InvalidGameStateException("Harkonnen is in the game.");
         faction.drawTwoTraitorsWithHarkonnenSecretAlly(Emojis.HARKONNEN + " Secret Ally");
     }

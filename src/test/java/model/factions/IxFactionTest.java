@@ -5,6 +5,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TestTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -32,6 +33,33 @@ class IxFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialSpice() {
         assertEquals(faction.getSpice(), 10);
+    }
+
+    @Nested
+    @DisplayName("#presentStartingCardsListAndChoices")
+    class PresentStartingCardsListAndChoices {
+        @BeforeEach
+        public void setUp() throws IOException {
+            game.addFaction(new AtreidesFaction("at", "at"));
+            game.addFaction(new BGFaction("bg", "bg"));
+            game.addFaction(new FremenFaction("fr", "fr"));
+            game.addFaction(new EmperorFaction("em", "em"));
+            game.addFaction(new HarkonnenFaction("ha", "ha"));
+            game.setModInfo(new TestTopic());
+        }
+
+        @Test
+        public void testTwoCardsForHarkonnen() throws InvalidGameStateException {
+            faction.presentStartingCardsListAndChoices();
+            assertEquals(7, faction.getTreacheryHand().size());
+        }
+
+        @Test
+        public void testOnlyOneCardPerFaction() throws InvalidGameStateException {
+            game.addGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION);
+            faction.presentStartingCardsListAndChoices();
+            assertEquals(6, faction.getTreacheryHand().size());
+        }
     }
 
     @Nested
