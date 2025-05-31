@@ -542,16 +542,6 @@ public class Game {
     }
 
     /**
-     * Get the BT faction object
-     *
-     * @return the BTFaction object if BT is in the game
-     * @throws IllegalArgumentException if BT is not in the game
-     */
-    public BTFaction getBTFaction() {
-        return (BTFaction) getFaction("BT");
-    }
-
-    /**
      * Get the Harkonnen faction object
      *
      * @return the HarkonnenFaction object if Harkonnen is in the game
@@ -568,6 +558,16 @@ public class Game {
      */
     public HarkonnenFaction getHarkonnenFactionOrNull() {
         return (HarkonnenFaction) getFactionOrNull("Harkonnen");
+    }
+
+    /**
+     * Get the BT faction object
+     *
+     * @return the BTFaction object if BT is in the game
+     * @throws IllegalArgumentException if BT is not in the game
+     */
+    public BTFaction getBTFaction() {
+        return (BTFaction) getFaction("BT");
     }
 
     /**
