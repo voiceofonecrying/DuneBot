@@ -290,6 +290,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void setUp() throws IOException {
             harkonnen = new HarkonnenFaction("p", "u");
             game.addFaction(harkonnen);
+            harkonnen.setChat(new TestTopic());
+            harkonnen.setLedger(new TestTopic());
             modInfo = new TestTopic();
             game.setModInfo(modInfo);
             faction.addTreacheryCard(new TreacheryCard("Karama"));
@@ -468,6 +470,27 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals("Would you like to revive a leader or 4 " + Emojis.ECAZ_TROOP + "?", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
         }
+
+        @Test
+        public void testHarkonnenCapturedDukeVidal() {
+            game.assignDukeVidalToAFaction(faction.getName());
+            harkonnen.keepCapturedLeader(faction.getName(), "Duke Vidal");
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            faction.triggerAmbassador(harkonnen, "Ecaz");
+            assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
+            assertTrue(chat.getChoices().getFirst().getFirst().isDisabled());
+        }
+
+        @Test
+        public void testHarkonnenHasDukeVidalNotCaptured() {
+            game.assignDukeVidalToAFaction(harkonnen.getName());
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            faction.triggerAmbassador(harkonnen, "Ecaz");
+            assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
+            assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
+        }
     }
 
     @Nested
@@ -496,14 +519,27 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testDukeVidalIsWithHarkonnen() throws IOException {
+        void testDukeVidalIsCapturedByHarkonnen() throws IOException {
+            HarkonnenFaction harkonnen = new HarkonnenFaction("ha", "ha");
+            harkonnen.setChat(new TestTopic());
+            harkonnen.setLedger(new TestTopic());
+            game.addFaction(harkonnen);
+            game.assignDukeVidalToAFaction(faction.getName());
+            harkonnen.keepCapturedLeader(faction.getName(), "Duke Vidal");
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
+        }
+
+        @Test
+        void testDukeVidalIsWithHarkonnenNotCaptured() throws IOException {
             HarkonnenFaction harkonnen = new HarkonnenFaction("ha", "ha");
             harkonnen.setChat(new TestTopic());
             game.addFaction(harkonnen);
             game.assignDukeVidalToAFaction(harkonnen.getName());
             assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
-            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
+            assertDoesNotThrow(() -> faction.gainDukeVidalWithEcazAmbassador());
         }
 
         @Test
