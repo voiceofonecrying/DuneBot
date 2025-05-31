@@ -187,8 +187,7 @@ public class SetupCommands {
             );
         }
 
-        if (game.hasGameOption(GameOption.HARKONNEN_MULLIGAN) &&
-                game.hasFaction("Harkonnen")) {
+        if (game.hasGameOption(GameOption.HARKONNEN_MULLIGAN) && game.hasHarkonnenFaction()) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.TRAITORS),
                     SetupStep.HARKONNEN_TRAITORS
@@ -203,7 +202,7 @@ public class SetupCommands {
         }
 
         if (game.hasEcazFaction()) {
-            if (game.hasFaction("Harkonnen") && game.hasGameOption(GameOption.HARKONNEN_MULLIGAN)) {
+            if (game.hasHarkonnenFaction() && game.hasGameOption(GameOption.HARKONNEN_MULLIGAN)) {
                 setupSteps.add(
                         setupSteps.indexOf(SetupStep.HARKONNEN_TRAITORS),
                         SetupStep.ECAZ_LOYALTY

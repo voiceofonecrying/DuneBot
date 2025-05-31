@@ -33,8 +33,6 @@ public class HarkCommands {
         String name = event.getSubcommandName();
         if (name == null) throw new IllegalArgumentException("Invalid command name: null");
 
-        if (!game.hasFaction("Harkonnen")) return;
-
         switch (name) {
             case "capture-leader" -> captureLeader(discordGame, game);
             case "kill-leader" -> killLeader(discordGame, game);
