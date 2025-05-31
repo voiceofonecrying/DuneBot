@@ -1894,11 +1894,16 @@ public class Game {
         // Get list of aggregate territory names with multiple factions
         battles = new Battles();
         battles.startBattlePhase(this);
-        if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.getName().equals("Duke Vidal")) && !(hasEcazFaction() && getEcazFaction().isHomeworldOccupied())) {
-            factions.forEach(Faction::loseDukeVidalToMoritani);
-            getMoritaniFaction().getDukeVidal();
-            getMoritaniFaction().getChat().publish("Duke Vidal has come to fight for you!");
-            turnSummary.publish("Duke Vidal now works for " + Emojis.MORITANI);
+        if (battles.isMoritaniCanTakeVidal() && leaderTanks.stream().noneMatch(leader -> leader.getName().equals("Duke Vidal"))) {
+            if (hasEcazFaction() && getEcazFaction().isHomeworldOccupied()) {
+                if (getMoritaniFaction().getLeader("Duke Vidal").isEmpty())
+                    turnSummary.publish(Emojis.MORITANI + " may not take Duke Vidal because Ecaz Homeworld is occupied.");
+            } else {
+                factions.forEach(Faction::loseDukeVidalToMoritani);
+                getMoritaniFaction().getDukeVidal();
+                getMoritaniFaction().getChat().publish("Duke Vidal has come to fight for you!");
+                turnSummary.publish("Duke Vidal now works for " + Emojis.MORITANI);
+            }
         }
 
         turnSummary.publish("**Turn " + turn + " Battle Phase**");

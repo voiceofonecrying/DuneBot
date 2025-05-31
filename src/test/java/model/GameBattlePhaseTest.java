@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -139,10 +140,28 @@ public class GameBattlePhaseTest extends DuneTest {
             tueksSietch.addForces("BG", 1);
 
             game.startBattlePhase();
-
             assertTrue(moritani.getLeader("Duke Vidal").isPresent());
             assertEquals("Duke Vidal has come to fight for you!", moritaniChat.messages.getFirst());
             assertEquals("Duke Vidal now works for " + Emojis.MORITANI, turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testMoritaniDoesNotGetVidalBecauseEcazHomeworldIsOccupied() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(moritani);
+            game.addFaction(ecaz);
+            arrakeen.addForces("Moritani", 6);
+            arrakeen.addForces("BG", 1);
+            tueksSietch.addForces("Moritani", 6);
+            tueksSietch.addForces("BG", 1);
+            Territory ecazHomeworld = game.getTerritory(ecaz.getHomeworld());
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            bg.placeForceFromReserves(game, ecazHomeworld, 1, false);
+
+            turnSummary.clear();
+            game.startBattlePhase();
+            assertFalse(moritani.getLeader("Duke Vidal").isPresent());
+            assertEquals(Emojis.MORITANI + " may not take Duke Vidal because Ecaz Homeworld is occupied.", turnSummary.getMessages().getFirst());
         }
 
         @Test

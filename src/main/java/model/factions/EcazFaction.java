@@ -75,7 +75,8 @@ public class EcazFaction extends Faction {
                 DuneChoice offerAlliance = new DuneChoice("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
                 if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))
                         || (game.hasHarkonnenFaction() && game.getHarkonnenFaction().isDukeVidalCaptured())
-                        || (game.hasBTFaction() && game.getBTFaction().isDukeVidalGhola()))
+                        || (game.hasBTFaction() && game.getBTFaction().isDukeVidalGhola())
+                        || isHomeworldOccupied())
                     getVidal.setDisabled(true);
                 if (hasAlly() || triggeringFaction.hasAlly())
                     offerAlliance.setDisabled(true);
@@ -127,6 +128,8 @@ public class EcazFaction extends Faction {
             throw new InvalidGameStateException("Ecaz already has Duke Vidal.");
         else if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
             throw new InvalidGameStateException("Duke Vidal is in the tanks.");
+        else if (isHomeworldOccupied())
+            throw new InvalidGameStateException("Ecaz Homeworld is occupied. Ecaz may not take Duke Vidal.");
         else if (game.hasHarkonnenFaction() && game.getHarkonnenFaction().isDukeVidalCaptured())
             throw new InvalidGameStateException("Duke Vidal has been captured by Harkonnen.");
         else if (game.hasBTFaction() && game.getBTFaction().isDukeVidalGhola())

@@ -75,11 +75,6 @@ public class HomeworldTerritory extends Territory {
         game.getFaction(nativeName).checkForHighThreshold();
     }
 
-    public void resetOccupation() {
-        if (countFactions() == 0 && occupierName != null)
-            clearOccupier();
-    }
-
     public Faction getNativeFaction() {
         try {
             return game.getFaction(nativeName);
