@@ -104,6 +104,8 @@ public class SetupCommands {
     }
 
     public static void advance(Guild discordGuild, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        if (game.getFactions().size() != 6)
+            throw new InvalidGameStateException("Set up all factions before running /setup advance.");
         if (game.getTurn() != 0 || game.isSetupFinished()) {
             return;
         }
