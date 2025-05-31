@@ -62,16 +62,17 @@ public class HomeworldTerritory extends Territory {
 
     public void clearOccupier() {
         Faction occupier = getOccupyingFaction();
-        if (occupier != null)
+        if (occupier != null) {
             game.getTurnSummary().publish(territoryName + " is no longer occupied by " + occupier.getEmoji());
-        occupierName = null;
-
-        if (occupier != null && territoryName.equals("Tupile")) {
-            reduceHandLimitForTupile(occupier);
-            if (occupier.hasAlly())
-                reduceHandLimitForTupile(game.getFaction(occupier.getAlly()));
+            if (territoryName.equals("Tupile")) {
+                reduceHandLimitForTupile(occupier);
+                if (occupier.hasAlly())
+                    reduceHandLimitForTupile(game.getFaction(occupier.getAlly()));
+            } else if (territoryName.equals("Ecaz")) {
+                game.releaseDukeVidal(false);
+            }
         }
-
+        occupierName = null;
         game.getFaction(nativeName).checkForHighThreshold();
     }
 

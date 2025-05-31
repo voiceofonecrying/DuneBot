@@ -16,6 +16,7 @@ public class HomeworldTerritoryTest extends DuneTest {
     private HomeworldTerritory caladan;
     private HomeworldTerritory tupile;
     private HomeworldTerritory ixHomeworld;
+    private HomeworldTerritory ecazHomeworld;
 
     @BeforeEach
     public void setUp() throws IOException, InvalidGameStateException {
@@ -25,9 +26,11 @@ public class HomeworldTerritoryTest extends DuneTest {
         game.addFaction(emperor);
         game.addFaction(choam);
         game.addFaction(ix);
+        game.addFaction(ecaz);
         caladan = (HomeworldTerritory) game.getTerritory(atreides.getHomeworld());
         tupile = (HomeworldTerritory) game.getTerritory(choam.getHomeworld());
         ixHomeworld = (HomeworldTerritory) game.getTerritory(ix.getHomeworld());
+        ecazHomeworld = (HomeworldTerritory) game.getTerritory(ecaz.getHomeworld());
     }
 
     @Nested
@@ -205,6 +208,39 @@ public class HomeworldTerritoryTest extends DuneTest {
             assertEquals(4, emperor.getHandLimit());
             assertEquals(8, harkonnen.getHandLimit());
             assertTrue(turnSummary.getMessages().stream().noneMatch(m -> m.contains("limit has been reduced")));
+        }
+
+        @Test
+        void testClearingEcazOccupationReleasesDukeVidalFromOccupier() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.createAlliance(emperor, harkonnen);
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            ecazHomeworld.addForces("Emperor*", 1);
+            assertEquals(emperor, ecazHomeworld.getOccupyingFaction());
+            assertTrue(emperor.getLeader("Duke Vidal").isPresent());
+            ecazHomeworld.addForces("Ecaz", 14);
+            ecazHomeworld.removeForces(game, "Emperor*", 1);
+            assertTrue(emperor.getLeader("Duke Vidal").isEmpty());
+            assertTrue(harkonnen.getLeader("Duke Vidal").isEmpty());
+            assertTrue(ecaz.getLeader("Duke Vidal").isEmpty());
+        }
+
+        @Test
+        void testClearingEcazOccupationReleasesDukeVidalFromOccupierAlly() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.createAlliance(emperor, harkonnen);
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            ecazHomeworld.addForces("Emperor*", 1);
+            assertEquals(emperor, ecazHomeworld.getOccupyingFaction());
+            assertTrue(emperor.getLeader("Duke Vidal").isPresent());
+            game.assignDukeVidalToAFaction("Harkonnen");
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertTrue(emperor.getLeader("Duke Vidal").isEmpty());
+            ecazHomeworld.addForces("Ecaz", 14);
+            ecazHomeworld.removeForces(game, "Emperor*", 1);
+            assertTrue(emperor.getLeader("Duke Vidal").isEmpty());
+            assertTrue(harkonnen.getLeader("Duke Vidal").isEmpty());
+            assertTrue(ecaz.getLeader("Duke Vidal").isEmpty());
         }
     }
 }
