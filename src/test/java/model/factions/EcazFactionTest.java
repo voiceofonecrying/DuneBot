@@ -284,6 +284,7 @@ public class EcazFactionTest extends FactionTestTemplate {
     @DisplayName("#triggerAmbassador")
     class TriggerAmbassador {
         HarkonnenFaction harkonnen;
+        BTFaction bt;
         TestTopic modInfo;
 
         @BeforeEach
@@ -292,6 +293,10 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.addFaction(harkonnen);
             harkonnen.setChat(new TestTopic());
             harkonnen.setLedger(new TestTopic());
+            bt = new BTFaction("bt", "bt");
+            game.addFaction(bt);
+            bt.setChat(new TestTopic());
+            bt.setLedger(new TestTopic());
             modInfo = new TestTopic();
             game.setModInfo(modInfo);
             faction.addTreacheryCard(new TreacheryCard("Karama"));
@@ -491,6 +496,28 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
         }
+
+        @Test
+        public void testBTGholadDukeVidal() throws InvalidGameStateException {
+            game.assignDukeVidalToAFaction(faction.getName());
+            game.killLeader(faction, "Duke Vidal");
+            bt.reviveLeader("Duke Vidal", null);
+            assertTrue(bt.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            faction.triggerAmbassador(bt, "Ecaz");
+            assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
+            assertTrue(chat.getChoices().getFirst().getFirst().isDisabled());
+        }
+
+        @Test
+        public void testBTHasDukeVidalNotGhola() {
+            game.assignDukeVidalToAFaction(bt.getName());
+            assertTrue(bt.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            faction.triggerAmbassador(bt, "Ecaz");
+            assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
+            assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
+        }
     }
 
     @Nested
@@ -543,14 +570,29 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testDukeVidalIsWithBT() throws IOException {
+        void testDukeVidalIsBTGhola() throws IOException, InvalidGameStateException {
+            BTFaction bt = new BTFaction("bt", "bt");
+            bt.setChat(new TestTopic());
+            bt.setLedger(new TestTopic());
+            game.addFaction(bt);
+            game.assignDukeVidalToAFaction(faction.getName());
+            game.killLeader(faction, "Duke Vidal");
+            bt.reviveLeader("Duke Vidal", null);
+            assertTrue(bt.isDukeVidalGhola());
+            assertTrue(bt.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
+        }
+
+        @Test
+        void testDukeVidalIsWithBTNotAGhola() throws IOException {
             BTFaction bt = new BTFaction("bt", "bt");
             bt.setChat(new TestTopic());
             game.addFaction(bt);
             game.assignDukeVidalToAFaction(bt.getName());
             assertTrue(bt.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
-            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
+            assertDoesNotThrow(() -> faction.gainDukeVidalWithEcazAmbassador());
         }
 
         @Test
