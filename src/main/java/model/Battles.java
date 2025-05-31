@@ -266,9 +266,9 @@ public class Battles {
         else if (opponent instanceof BGFaction || (opponent.getAlly().equals("BG") && !((BGFaction) game.getFaction("BG")).isDenyingAllyVoice()))
             message += step++ + ". " + opponent.getEmoji() + " use the Voice.\n";
 
-        if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides") && !((AtreidesFaction) game.getFaction("Atreides")).isDenyingAllyBattlePrescience())
+        if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides") && !game.getAtreidesFaction().isDenyingAllyBattlePrescience())
             message += step++ + ". " + aggressor.getEmoji() + " ask the Prescience question.\n";
-        else if (opponent instanceof AtreidesFaction || opponent.getAlly().equals("Atreides") && !((AtreidesFaction) game.getFaction("Atreides")).isDenyingAllyBattlePrescience())
+        else if (opponent instanceof AtreidesFaction || opponent.getAlly().equals("Atreides") && !game.getAtreidesFaction().isDenyingAllyBattlePrescience())
             message += step++ + ". " + opponent.getEmoji() + " ask the Prescience question.\n";
 
         String skilledLeaderFactions = "";
