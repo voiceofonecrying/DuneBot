@@ -669,6 +669,10 @@ public class Game {
         return findFaction(name).isPresent();
     }
 
+    public boolean hasHarkonnenFaction() {
+        return hasFaction("Harkonnen");
+    }
+
     public boolean hasBTFaction() {
         return hasFaction("BT");
     }

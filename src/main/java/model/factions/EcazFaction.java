@@ -74,7 +74,7 @@ public class EcazFaction extends Faction {
                 DuneChoice getVidal = new DuneChoice("ecaz-get-vidal", "Get Duke Vidal");
                 DuneChoice offerAlliance = new DuneChoice("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
                 if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))
-                        || (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
+                        || (game.hasHarkonnenFaction() && game.getHarkonnenFaction().isDukeVidalCaptured())
                         || (game.hasBTFaction() && game.getBTFaction().getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))))
                     getVidal.setDisabled(true);
                 if (hasAlly() || triggeringFaction.hasAlly())
@@ -127,7 +127,7 @@ public class EcazFaction extends Faction {
             throw new InvalidGameStateException("Ecaz already has Duke Vidal.");
         else if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
             throw new InvalidGameStateException("Duke Vidal is in the tanks.");
-        else if (game.hasFaction("Harkonnen") && game.getFaction("Harkonnen").getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
+        else if (game.hasHarkonnenFaction() && game.getHarkonnenFaction().isDukeVidalCaptured())
             throw new InvalidGameStateException("Duke Vidal has been captured by Harkonnen.");
         else if (game.hasBTFaction() && game.getBTFactionOrNull().getLeaders().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal")))
             throw new InvalidGameStateException("Duke Vidal is a ghola for BT");
