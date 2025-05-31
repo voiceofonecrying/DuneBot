@@ -518,6 +518,18 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
         }
+
+        @Test
+        public void testEcazHomeworldOccupied() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory ecazHomeworld = game.getTerritory("Ecaz");
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            bt.placeForceFromReserves(game, ecazHomeworld, 2, false);
+            assertTrue(faction.isHomeworldOccupied());
+            faction.triggerAmbassador(bt, "Ecaz");
+            assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
+            assertTrue(chat.getChoices().getFirst().getFirst().isDisabled());
+        }
     }
 
     @Nested
@@ -596,7 +608,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testDukeVidalIsWithEcazOccupier() throws IOException, InvalidGameStateException {
+        void testDukeVidalIsWithEcazOccupier() throws IOException {
             game.addGameOption(GameOption.HOMEWORLDS);
             AtreidesFaction atreides = new AtreidesFaction("at", "at");
             atreides.setChat(new TestTopic());
@@ -608,10 +620,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertTrue(faction.isHomeworldOccupied());
             assertTrue(atreides.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
-            faction.gainDukeVidalWithEcazAmbassador();
-            assertTrue(faction.getLeader("Duke Vidal").isPresent());
-            assertFalse(atreides.getLeader("Duke Vidal").isPresent());
-            assertEquals("Duke Vidal now works for " + Emojis.ECAZ, turnSummary.getMessages().getLast());
+            assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
         }
 
         @Test
