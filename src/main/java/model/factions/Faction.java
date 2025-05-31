@@ -211,10 +211,19 @@ public class Faction {
 
     public void removeAlliance() {
         ledger.publish("Your alliance with " + Emojis.getFactionEmoji(ally) + " has been dissolved!");
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && game.hasCHOAMFaction()) {
-            HomeworldTerritory tupile = (HomeworldTerritory) game.getTerritory("Tupile");
-            if (tupile.getOccupyingFaction() == this)
-                tupile.reduceHandLimitForTupile(game.getFaction(ally));
+        if (game.hasGameOption(GameOption.HOMEWORLDS)) {
+            if (game.hasCHOAMFaction()) {
+                HomeworldTerritory tupile = (HomeworldTerritory) game.getTerritory("Tupile");
+                if (tupile.getOccupyingFaction() == this)
+                    tupile.reduceHandLimitForTupile(game.getFaction(ally));
+            }
+            if (game.hasEcazFaction()) {
+                HomeworldTerritory ecazHomeworld = (HomeworldTerritory) game.getTerritory("Ecaz");
+                if (ecazHomeworld.getOccupyingFaction() == this && game.getFaction(ally).getLeader("Duke Vidal").isPresent()) {
+                    game.releaseDukeVidal(false);
+                    game.assignDukeVidalToAFaction(name);
+                }
+            }
         }
         ally = null;
         spiceForAlly = 0;

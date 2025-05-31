@@ -773,6 +773,29 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         public void testDenyTerrorAlliance() {
             assertThrows(InvalidGameStateException.class, () -> faction.denyTerrorAlliance("Arrakeen", "Robbery"));
         }
+
+        @Test
+        public void testBreakingAllianceWithEcazOccupier() throws IOException, InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            EcazFaction ecaz = new EcazFaction("ec", "ec");
+            game.addFaction(ecaz);
+            HarkonnenFaction harkonnen = new HarkonnenFaction("ha", "ha");
+            game.addFaction(harkonnen);
+            harkonnen.setChat(new TestTopic());
+            harkonnen.setLedger(new TestTopic());
+            EmperorFaction emperor = new EmperorFaction("em", "em");
+            game.addFaction(emperor);
+            emperor.setChat(new TestTopic());
+            emperor.setLedger(new TestTopic());
+            game.createAlliance(emperor, harkonnen);
+            Territory ecazHomeworld = game.getTerritory("Ecaz");
+            ecazHomeworld.removeForces(game, "Ecaz", 14);
+            harkonnen.placeForceFromReserves(game, ecazHomeworld, 1, false);
+            game.assignDukeVidalToAFaction("Emperor");
+            emperor.acceptTerrorAlliance(moritani, "Arrakeen", "Robbery");
+            assertTrue(emperor.getLeader("Duke Vidal").isEmpty());
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+        }
     }
 
     @Nested
