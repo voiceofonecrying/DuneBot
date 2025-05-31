@@ -536,7 +536,7 @@ public class Bidding {
     private void sendAtreidesCardPrescience(Game game, TreacheryCard card, boolean prescienceBlocked) {
         if (game.hasFaction("Atreides")) {
             String cardInfo = MessageFormat.format("{0} {1} {0} is up for bid (R{2}:C{3}).", Emojis.TREACHERY, card.name(), game.getTurn(), bidCardNumber);
-            AtreidesFaction atreides = (AtreidesFaction) game.getFaction("Atreides");
+            AtreidesFaction atreides = game.getAtreidesFaction();
             if (prescienceBlocked || atreides.isCardPrescienceBlocked()) {
                 atreides.getChat().publish("Your " + Emojis.TREACHERY + " Prescience was blocked by Karama.");
                 if (atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())

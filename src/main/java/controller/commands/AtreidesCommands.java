@@ -3,7 +3,6 @@ package controller.commands;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import model.*;
-import model.factions.AtreidesFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -41,15 +40,13 @@ public class AtreidesCommands {
     }
 
     private static void addForcesLost(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        AtreidesFaction atreides = (AtreidesFaction) game.getFaction("Atreides");
-        atreides.addForceLost(discordGame.required(amount).getAsInt());
+        game.getAtreidesFaction().addForceLost(discordGame.required(amount).getAsInt());
         discordGame.pushGame();
     }
 
     private static void blockCardPrescience(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         boolean prescienceBlocked = discordGame.optional(atreidesKaramad) != null && discordGame.required(atreidesKaramad).getAsBoolean();
-        AtreidesFaction atreides = (AtreidesFaction) game.getFaction("Atreides");
-        atreides.setCardPrescienceBlocked(prescienceBlocked);
+        game.getAtreidesFaction().setCardPrescienceBlocked(prescienceBlocked);
         discordGame.pushGame();
     }
 }

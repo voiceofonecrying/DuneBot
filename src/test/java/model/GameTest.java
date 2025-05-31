@@ -213,6 +213,13 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testAtreidesSpiceBlowPrescience() {
+            SpiceCard spiceCard = game.getSpiceDeck().getFirst();
+            game.startShipmentPhase();
+            assertEquals("You see visions of " + spiceCard.name() + " in your future.", atreidesChat.getMessages().getLast());
+        }
+
+        @Test
         void testBGFlipIfAlone() {
             game.setStorm(1);
             sietchTabr.addForces("Advisor", 1);

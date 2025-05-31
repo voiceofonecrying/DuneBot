@@ -542,6 +542,16 @@ public class Game {
     }
 
     /**
+     * Get the Atreides faction object
+     *
+     * @return the AtreidesFaction object if Atreides is in the game
+     * @throws IllegalArgumentException if Atreides is not in the game
+     */
+    public AtreidesFaction getAtreidesFaction() {
+        return (AtreidesFaction) getFaction("Atreides");
+    }
+
+    /**
      * Get the Harkonnen faction object
      *
      * @return the HarkonnenFaction object if Harkonnen is in the game
@@ -667,6 +677,10 @@ public class Game {
 
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
+    }
+
+    public boolean hasAtreidesFaction() {
+        return hasFaction("Atreides");
     }
 
     public boolean hasHarkonnenFaction() {
@@ -1465,8 +1479,8 @@ public class Game {
         } else
             promptNextFactionToShip();
 
-        if (hasFaction("Atreides"))
-            ((AtreidesFaction) getFaction("Atreides")).giveSpiceDeckPrescience();
+        if (hasAtreidesFaction())
+            getAtreidesFaction().giveSpiceDeckPrescience();
         if (hasFaction("BG")) {
             Faction bgFaction = getFaction("BG");
             String bgPlayer = bgFaction.getPlayer();
@@ -2065,7 +2079,7 @@ public class Game {
     public void startMentatPause() throws InvalidGameStateException {
         MoritaniFaction moritani = getMoritaniFactionOrNull();
         if (moritani != null && moritani.isHtRemovalTBD())
-            throw new InvalidGameStateException("Moritani must decide if they will remove a Terror Token before the game can advance.");
+            throw new InvalidGameStateException("Moritani must decide if they will remove a Terror Token before the game can get.");
         if (mentatPause == null)
             mentatPause = new MentatPause();
         mentatPause.startPhase(this);
