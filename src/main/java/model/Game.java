@@ -552,6 +552,15 @@ public class Game {
     }
 
     /**
+     * Get the Atreides faction object
+     *
+     * @return the AtreidesFaction object if Atreides is in the game or null if Atreides is not in the game
+     */
+    public AtreidesFaction getAtreidesFactionOrNull() {
+        return (AtreidesFaction) getFactionOrNull("Atreides");
+    }
+
+    /**
      * Get the Harkonnen faction object
      *
      * @return the HarkonnenFaction object if Harkonnen is in the game

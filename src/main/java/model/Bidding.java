@@ -404,7 +404,7 @@ public class Bidding {
         } else {
             runRicheseBid(game, bidType, true);
         }
-        sendAtreidesCardPrescience(game, card, false);
+        sendAtreidesCardPrescience(game, false);
         game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
         if (bidType.equals("Silent"))
             game.getModInfo().publish("Players should use the bot to enter their bids for the silent auction.");
@@ -453,8 +453,8 @@ public class Bidding {
                 ));
                 treacheryDeckReshuffled = false;
             }
-            TreacheryCard bidCard = nextBidCard(game);
-            sendAtreidesCardPrescience(game, bidCard, prescienceBlocked);
+            nextBidCard(game);
+            sendAtreidesCardPrescience(game, prescienceBlocked);
             Faction factionBeforeFirstToBid = game.getFaction(bidOrder.getLast());
             currentBidder = factionBeforeFirstToBid.getName();
             String newCardAnnouncement = MessageFormat.format("{0} You may now place your bids for R{1}:C{2}.",
@@ -468,7 +468,7 @@ public class Bidding {
         }
     }
 
-    private TreacheryCard nextBidCard(Game game) throws InvalidGameStateException {
+    private void nextBidCard(Game game) throws InvalidGameStateException {
         treacheryDeckReshuffled = false;
         numCardsFromOldDeck = 0;
         if (bidCardNumber != 0 && bidCardNumber == numCardsForBid) {
@@ -483,7 +483,6 @@ public class Bidding {
         bidCardNumber++;
         cardFromMarket = true;
         game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));
-        return bidCard;
     }
 
     protected int populateMarket(Game game) throws InvalidGameStateException {
@@ -533,10 +532,10 @@ public class Bidding {
         game.getTurnSummary().publish("The bidding market now has " + market.size() + " " + Emojis.TREACHERY + " cards remaining for auction. There are " + numCardsForBid + " total cards this turn.");
     }
 
-    private void sendAtreidesCardPrescience(Game game, TreacheryCard card, boolean prescienceBlocked) {
-        if (game.hasFaction("Atreides")) {
-            String cardInfo = MessageFormat.format("{0} {1} {0} is up for bid (R{2}:C{3}).", Emojis.TREACHERY, card.name(), game.getTurn(), bidCardNumber);
-            AtreidesFaction atreides = game.getAtreidesFaction();
+    protected void sendAtreidesCardPrescience(Game game, boolean prescienceBlocked) {
+        AtreidesFaction atreides = game.getAtreidesFactionOrNull();
+        if (atreides != null) {
+            String cardInfo = MessageFormat.format("{0} {1} {0} is up for bid (R{2}:C{3}).", Emojis.TREACHERY, bidCard.name(), game.getTurn(), bidCardNumber);
             if (prescienceBlocked || atreides.isCardPrescienceBlocked()) {
                 atreides.getChat().publish("Your " + Emojis.TREACHERY + " Prescience was blocked by Karama.");
                 if (atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
@@ -686,7 +685,7 @@ public class Bidding {
         return bidCard;
     }
 
-    private void setBidCard(Game game, TreacheryCard bidCard) {
+    protected void setBidCard(Game game, TreacheryCard bidCard) {
         clearFactionBidInfo(game);
         this.bidCard = bidCard;
     }
