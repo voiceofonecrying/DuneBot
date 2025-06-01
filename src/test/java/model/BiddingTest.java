@@ -248,6 +248,57 @@ class BiddingTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#sendAtreidesCardPrescience")
+    class SendAtreidesCardPrescience {
+        Bidding bidding;
+        TestTopic atreidesAllianceThread;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(emperor);
+            game.addFaction(harkonnen);
+            bidding = game.startBidding();
+            game.createAlliance(atreides, emperor);
+            atreidesAllianceThread = new TestTopic();
+            atreides.setAllianceThread(atreidesAllianceThread);
+
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory caladan = game.getTerritory("Caladan");
+            caladan.removeForces(game, "Atreides", 10);
+            caladan.addForces("Harkonnen", 5);
+            assertTrue(atreides.isHomeworldOccupied());
+
+            bidding.setBidCard(game, shield);
+        }
+
+        @Test
+        void testAtreidesGetsCardPrescience() {
+            bidding.sendAtreidesCardPrescience(game, false);
+            assertEquals("You predict " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY + " is up for bid (R0:C0).", atreidesChat.getMessages().getLast());
+        }
+
+        @Test
+        void testAtreidesNotGrantingPrescienceToAlly() {
+            bidding.sendAtreidesCardPrescience(game, false);
+            assertTrue(atreidesAllianceThread.getMessages().isEmpty());
+        }
+
+        @Test
+        void testAtreidesIsGrantingPrescienceToAlly() {
+            atreides.setGrantingAllyTreacheryPrescience(true);
+            bidding.sendAtreidesCardPrescience(game, false);
+            assertEquals(Emojis.ATREIDES + " predicts " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY + " is up for bid (R0:C0).", atreidesAllianceThread.getMessages().getLast());
+        }
+
+        @Test
+        void testCaladanOccupierGetsCardPrescience() {
+            bidding.sendAtreidesCardPrescience(game, false);
+            assertEquals("Your " + Emojis.ATREIDES + " subjects in Caladan predict " + Emojis.TREACHERY + " Shield " + Emojis.TREACHERY + " is up for bid (R0:C0).", harkonnenChat.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#assignAndPayForCard")
     public class AssignAndPayForCard {
         @BeforeEach
@@ -1640,7 +1691,7 @@ class BiddingTest extends DuneTest {
             }
 
             @Test
-            void testOccupierGetsCardChoicesWhenRicheseSellsLast() throws InvalidGameStateException {
+            void testOccupierGetsCardChoicesWhenRicheseSellsLast() {
                 assertTrue(richeseChat.getMessages().isEmpty());
                 assertEquals("Please select the " + Emojis.RICHESE + " cache card to be sold. ch", choamChat.getMessages().getFirst());
             }
