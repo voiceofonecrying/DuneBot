@@ -1775,9 +1775,8 @@ public class Battle {
                         int starred = f.getName().equals(f.getFactionName() + "*") ? f.getStrength() : 0;
                         if (regular > 0 || starred > 0)
                             game.removeForcesAndReportToTurnSummary(t.getTerritoryName(), game.getFaction(f.getFactionName()), regular, starred, true, true);
-                        else if (f.getName().equals("Advisor")) {
-                            game.removeAdvisorsAndReportToTurnSummary(t.getTerritoryName(), game.getFaction("BG"), f.getStrength(), true);
-                        }
+                        else if (f.getName().equals("Advisor"))
+                            game.removeAdvisorsAndReportToTurnSummary(t.getTerritoryName(), game.getBGFaction(), f.getStrength(), true);
                     }
                 }
                 if (ambassador != null) {

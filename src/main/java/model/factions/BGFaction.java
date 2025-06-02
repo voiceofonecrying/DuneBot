@@ -105,6 +105,7 @@ public class BGFaction extends Faction {
         choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
         choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
         chat.publish("Where would you like to place your starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER + "? " + player, choices);
+        game.getGameActions().publish(emoji + " will place their starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER);
     }
 
     @Override

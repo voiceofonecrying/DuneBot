@@ -571,6 +571,15 @@ public class Game {
     }
 
     /**
+     * Get the BG faction object
+     *
+     * @return the BGFaction object if BG is in the game or null if BG is not in the game
+     */
+    public BGFaction getBGFactionOrNull() {
+        return (BGFaction) getFactionOrNull("BG");
+    }
+
+    /**
      * Get the Harkonnen faction object
      *
      * @return the HarkonnenFaction object if Harkonnen is in the game
@@ -696,10 +705,6 @@ public class Game {
 
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
-    }
-
-    public boolean hasAtreidesFaction() {
-        return hasFaction("Atreides");
     }
 
     public boolean hasHarkonnenFaction() {
@@ -1498,10 +1503,11 @@ public class Game {
         } else
             promptNextFactionToShip();
 
-        if (hasAtreidesFaction())
-            getAtreidesFaction().giveSpiceDeckPrescience();
-        if (hasFaction("BG")) {
-            Faction bgFaction = getFaction("BG");
+        AtreidesFaction atreides = getAtreidesFactionOrNull();
+        if (atreides != null)
+            atreides.giveSpiceDeckPrescience();
+        BGFaction bgFaction = getBGFactionOrNull();
+        if (bgFaction != null) {
             String bgPlayer = bgFaction.getPlayer();
             territories.flipAdvisorsIfAlone(this);
             for (Territory territory : territories.values()) {
@@ -1692,7 +1698,8 @@ public class Game {
     }
 
     public boolean allFactionsHaveMoved() {
-        if (hasFaction("BG") && ((BGFaction) getFaction("BG")).hasIntrudedTerritoriesDecisions())
+        BGFaction bg = getBGFactionOrNull();
+        if (bg != null && bg.hasIntrudedTerritoriesDecisions())
             return false;
         return turnOrder.isEmpty();
     }
