@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 public class BGFaction extends Faction {
     private String predictionFactionName;
@@ -60,6 +61,13 @@ public class BGFaction extends Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    public void presentPredictedFactionChoices() {
+        List<DuneChoice> choices = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> new DuneChoice("primary", "bg-prediction-faction-" + f.getName(), null, f.getEmoji(), false)).toList();
+        List<String> factionsAndPlayers = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> f.getEmoji() + " - " + f.getPlayer()).toList();
+        String message = "Which faction do you predict to win? " + player + "\n" + String.join("\n", factionsAndPlayers);
+        chat.publish(message, choices);
+    }
+
     /**
      * @return The round in which the Bene Gesserit player has predicted that the faction will win the game
      */
@@ -71,19 +79,20 @@ public class BGFaction extends Faction {
      * @param predictionRound The round in which the Bene Gesserit player has predicted that the faction will
      *                        win the game
      */
-    public void setPredictionRound(int predictionRound) {
-        if (predictionRound <= 0 || predictionRound > 10) {
+    public void setPredictionRound(int predictionRound) throws InvalidGameStateException {
+        if (predictionFactionName == null)
+            throw new InvalidGameStateException("Predicted faction must be selected first.");
+        if (predictionRound <= 0 || predictionRound > 10)
             throw new IllegalArgumentException("Prediction round must be between 1 and 10");
-        }
         this.predictionRound = predictionRound;
+        chat.publish("You predict " + Emojis.getFactionEmoji(predictionFactionName) + " to win on turn " + predictionRound + ".");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
-    public void presentPredictedFactionChoices() {
-        List<DuneChoice> choices = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> new DuneChoice("primary", "bg-prediction-faction-" + f.getName(), null, f.getEmoji(), false)).toList();
-        List<String> factionsAndPlayers = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> f.getEmoji() + " - " + f.getPlayer()).toList();
-        String message = "Which faction do you predict to win? " + player + "\n" + String.join("\n", factionsAndPlayers);
-        chat.publish(message, choices);
+    public void presentPredictedTurnChoices(String factionName) {
+        setPredictionFactionName(factionName);
+        List<DuneChoice> choices = IntStream.rangeClosed(1, 10).mapToObj(i -> new DuneChoice("bg-prediction-turn-" + i, String.valueOf(i))).toList();
+        chat.reply("Which turn do you predict " + Emojis.getFactionEmoji(predictionFactionName) + " to win? " + player, choices);
     }
 
     @Override

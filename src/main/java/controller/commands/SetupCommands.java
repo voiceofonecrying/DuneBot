@@ -87,10 +87,10 @@ public class SetupCommands {
         }
     }
 
-    private static void setPrediction(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    private static void setPrediction(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         BGFaction bg = game.getBGFaction();
-        bg.setPredictionRound(discordGame.required(turn).getAsInt());
         bg.setPredictionFactionName(discordGame.required(faction).getAsString());
+        bg.setPredictionRound(discordGame.required(turn).getAsInt());
         discordGame.pushGame();
     }
 
