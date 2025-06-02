@@ -106,7 +106,7 @@ public class RicheseFaction extends Faction {
         turnSummaryMessage += faction.payForShipment(game, spice, territory, karama, true);
         if (game.hasFaction("BG") && accompanyingForce == 0) {
             if (territory.hasActiveFaction(game.getFaction("BG")) && !(faction instanceof BGFaction))
-                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, territory.getTerritoryName());
+                ((BGFaction) game.getFaction("BG")).presentFlipMessage(game, territory.getTerritoryName());
             if (!crossShip)
                 ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, faction, territory);
         }
