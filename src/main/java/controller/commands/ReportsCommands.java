@@ -1905,7 +1905,7 @@ public class ReportsCommands {
         else if (fremenSpecial)
             result += " - " + Emojis.getFactionEmoji("Fremen") + " special victory condition";
         else if (bgPrediction)
-            result += " - " + Emojis.getFactionEmoji("BG") + " predicted " + Emojis.getFactionEmoji(((BGFaction) game.getFaction("BG")).getPredictionFactionName());
+            result += " - " + Emojis.getFactionEmoji("BG") + " predicted " + Emojis.getFactionEmoji(game.getBGFaction().getPredictionFactionName());
         else if (ecazAllyOccupy)
             result += " - " + Emojis.getFactionEmoji("Ecaz") + Emojis.getFactionEmoji(Objects.requireNonNull(winner2Name)) + " co-occupied 3 strongholds";
         result += "\n";

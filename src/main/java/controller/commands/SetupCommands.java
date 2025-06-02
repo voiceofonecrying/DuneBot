@@ -445,9 +445,7 @@ public class SetupCommands {
     }
 
     public static StepStatus bgForceStep(Game game) {
-        Faction bg = game.getFaction("BG");
-        game.getGameActions().publish(bg.getEmoji() + " will place their starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER);
-        ((BGFaction) bg).presentStartingForcesChoices();
+        game.getBGFaction().presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 

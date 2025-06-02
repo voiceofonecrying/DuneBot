@@ -115,7 +115,7 @@ public class Territories extends HashMap<String, Territory> {
             List<List<Territory>> sectorsLists = getAggregateTerritoryList(territory.getAggregateTerritoryName(), game.getStorm(), false);
             List<Territory> connectedSectors = sectorsLists.stream().filter(sectors -> sectors.contains(territory)).findFirst().orElse(new ArrayList<>());
             if (getFighterNamesInAggTerritory(connectedSectors).isEmpty()) {
-                BGFaction bg = (BGFaction) game.getFaction("BG");
+                BGFaction bg = game.getBGFactionOrNull();
                 bg.flipForces(territory);
                 game.getTurnSummary().publish(Emojis.BG_ADVISOR + " are alone in " + territory.getTerritoryName() + " and have flipped to " + Emojis.BG_FIGHTER);
             }

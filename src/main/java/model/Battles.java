@@ -261,9 +261,9 @@ public class Battles {
         else if (opponent.hasSkill("Mentat"))
             message += step++ + ". " + opponent.getEmoji() + " may use Mentat skill.\n";
 
-        if (aggressor instanceof BGFaction || (aggressor.getAlly().equals("BG") && !((BGFaction) game.getFaction("BG")).isDenyingAllyVoice()))
+        if (aggressor instanceof BGFaction || (aggressor.getAlly().equals("BG") && !game.getBGFaction().isDenyingAllyVoice()))
             message += step++ + ". " + aggressor.getEmoji() + " use the Voice.\n";
-        else if (opponent instanceof BGFaction || (opponent.getAlly().equals("BG") && !((BGFaction) game.getFaction("BG")).isDenyingAllyVoice()))
+        else if (opponent instanceof BGFaction || (opponent.getAlly().equals("BG") && !game.getBGFaction().isDenyingAllyVoice()))
             message += step++ + ". " + opponent.getEmoji() + " use the Voice.\n";
 
         if (aggressor instanceof AtreidesFaction || aggressor.getAlly().equals("Atreides") && !game.getAtreidesFaction().isDenyingAllyBattlePrescience())
