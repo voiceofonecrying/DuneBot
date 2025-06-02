@@ -561,6 +561,16 @@ public class Game {
     }
 
     /**
+     * Get the BG faction object
+     *
+     * @return the BGFaction object if BG is in the game
+     * @throws IllegalArgumentException if BG is not in the game
+     */
+    public BGFaction getBGFaction() {
+        return (BGFaction) getFaction("BG");
+    }
+
+    /**
      * Get the Harkonnen faction object
      *
      * @return the HarkonnenFaction object if Harkonnen is in the game

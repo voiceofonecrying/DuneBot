@@ -79,6 +79,13 @@ public class BGFaction extends Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    public void presentPredictedFactionChoices() {
+        List<DuneChoice> choices = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> new DuneChoice("primary", "bg-prediction-faction-" + f.getName(), null, f.getEmoji(), false)).toList();
+        List<String> factionsAndPlayers = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> f.getEmoji() + " - " + f.getPlayer()).toList();
+        String message = "Which faction do you predict to win? " + player + "\n" + String.join("\n", factionsAndPlayers);
+        chat.publish(message, choices);
+    }
+
     @Override
     public void presentStartingForcesChoices() {
         shipment.clear();

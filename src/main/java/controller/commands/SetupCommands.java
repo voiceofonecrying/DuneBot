@@ -88,7 +88,7 @@ public class SetupCommands {
     }
 
     private static void setPrediction(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        BGFaction bg = (BGFaction) game.getFaction("BG");
+        BGFaction bg = game.getBGFaction();
         bg.setPredictionRound(discordGame.required(turn).getAsInt());
         bg.setPredictionFactionName(discordGame.required(faction).getAsString());
         discordGame.pushGame();
@@ -433,11 +433,7 @@ public class SetupCommands {
     }
 
     public static StepStatus bgPredictionStep(Game game) {
-        Faction bg = game.getFaction("BG");
-        List<DuneChoice> choices = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> new DuneChoice("primary", "bg-prediction-faction-" + f.getName(), null, f.getEmoji(), false)).toList();
-        List<String> factionsAndPlayers = game.getFactions().stream().filter(f -> !(f instanceof BGFaction)).map(f -> f.getEmoji() + " - " + f.getPlayer()).toList();
-        String message = "Which faction to you predict to win? " + bg.getPlayer() + "\n" + String.join("\n", factionsAndPlayers);
-        bg.getChat().publish(message, choices);
+        game.getBGFaction().presentPredictedFactionChoices();
         return StepStatus.STOP;
     }
 
