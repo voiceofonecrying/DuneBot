@@ -439,7 +439,7 @@ public class Faction {
 
         if (isIntrusion && game.hasFaction("BG")) {
             if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(this instanceof BGFaction))
-                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, targetTerritory.getTerritoryName());
+                ((BGFaction) game.getFaction("BG")).presentFlipMessage(game, targetTerritory.getTerritoryName());
             if (isShipment && getShipment().getCrossShipFrom().isEmpty())
                 ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, this, targetTerritory);
         }
@@ -1488,7 +1488,7 @@ public class Faction {
             from.setRicheseNoField(null);
             game.getTurnSummary().publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
             if (to.hasActiveFaction("BG") && !(this instanceof BGFaction))
-                ((BGFaction) game.getFaction("BG")).bgFlipMessageAndButtons(game, to.getTerritoryName());
+                ((BGFaction) game.getFaction("BG")).presentFlipMessage(game, to.getTerritoryName());
             game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
         } else {
             game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);

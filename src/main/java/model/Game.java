@@ -1721,7 +1721,7 @@ public class Game {
         targetFaction.checkForLowThreshold();
 
         if (to.hasActiveFaction("BG") && !(targetFaction instanceof BGFaction)) {
-            ((BGFaction) getFaction("BG")).bgFlipMessageAndButtons(this, to.getTerritoryName());
+            ((BGFaction) getFaction("BG")).presentFlipMessage(this, to.getTerritoryName());
         }
         if (canTrigger)
             checkForTriggers(to, targetFaction, amountValue + starredAmountValue);

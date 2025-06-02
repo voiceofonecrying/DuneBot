@@ -27,7 +27,7 @@ class BGFactionTest extends FactionTestTemplate {
 
     @BeforeEach
     void setUp() throws IOException {
-        faction = new BGFaction("player", "player");
+        faction = new BGFaction("player", "user");
         commonPostInstantiationSetUp();
     }
 
@@ -193,22 +193,51 @@ class BGFactionTest extends FactionTestTemplate {
         assertEquals(0, carthag.getForceStrength("Advisor"));
     }
 
-    @Test
-    public void testHasIntrudedTerritoriesDecisions() {
-        Territory sietchTabr = game.getTerritory("Sietch Tabr");
-        sietchTabr.addForces("BG", 1);
-        faction.bgFlipMessageAndButtons(game, "Sietch Tabr");
-        Territory habbanyaSietch = game.getTerritory("Habbanya Sietch");
-        habbanyaSietch.addForces("BG", 1);
-        faction.bgFlipMessageAndButtons(game, "Habbanya Sietch");
-        assertTrue(faction.hasIntrudedTerritoriesDecisions());
-        assertTrue(faction.getIntrudedTerritoriesString().equals("Sietch Tabr, Habbanya Sietch") || faction.getIntrudedTerritoriesString().equals("Habbanya Sietch, Sietch Tabr"));
-        faction.flipForces(sietchTabr);
-        assertTrue(faction.hasIntrudedTerritoriesDecisions());
-        assertEquals("Habbanya Sietch", faction.getIntrudedTerritoriesString());
-        faction.dontFlipFighters(game, habbanyaSietch.getTerritoryName());
-        assertFalse(faction.hasIntrudedTerritoriesDecisions());
-        assertTrue(faction.getIntrudedTerritoriesString().isEmpty());
+    @Nested
+    @DisplayName("#bgFlipMessageAndButtons")
+    class BGFlipMessageAndButtons {
+        Territory sietchTabr;
+        Territory habbanyaSietch;
+
+        @BeforeEach
+        public void setUp() {
+            sietchTabr = game.getTerritory("Sietch Tabr");
+            sietchTabr.addForces("BG", 1);
+            faction.presentFlipMessage(game, "Sietch Tabr");
+            habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            habbanyaSietch.addForces("BG", 1);
+            faction.presentFlipMessage(game, "Habbanya Sietch");
+        }
+
+        @Test
+        public void testFlipDecisionReportedToTurnSummary() {
+            assertEquals(Emojis.BG + " to decide if they want to flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr.", turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.BG + " to decide if they want to flip to " + Emojis.BG_ADVISOR + " in Habbanya Sietch.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testFlipChoicesPresentedToBGChat() {
+            assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr? player", chat.getMessages().getFirst());
+            assertEquals(2, chat.getChoices().getFirst().size());
+            assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Habbanya Sietch? player", chat.getMessages().getLast());
+            assertEquals(2, chat.getChoices().getLast().size());
+        }
+
+        @Test
+        public void testHasIntrudedTerritoriesDecisions() {
+            assertTrue(faction.hasIntrudedTerritoriesDecisions());
+            assertTrue(faction.getIntrudedTerritoriesString().equals("Sietch Tabr, Habbanya Sietch") || faction.getIntrudedTerritoriesString().equals("Habbanya Sietch, Sietch Tabr"));
+        }
+
+        @Test
+        public void testFlipDecisionsClearIntrudedTerritories() {
+            faction.flipForces(sietchTabr);
+            assertTrue(faction.hasIntrudedTerritoriesDecisions());
+            assertEquals("Habbanya Sietch", faction.getIntrudedTerritoriesString());
+            faction.dontFlipFighters(game, habbanyaSietch.getTerritoryName());
+            assertFalse(faction.hasIntrudedTerritoriesDecisions());
+            assertTrue(faction.getIntrudedTerritoriesString().isEmpty());
+        }
     }
 
     @Nested
@@ -287,6 +316,7 @@ class BGFactionTest extends FactionTestTemplate {
             @Test
             public void testAdviseButtonDisabledWithAllyInTerritoryWithGF9Rules() {
                 faction.presentAdvisorChoices(game, emperor, carthag);
+                assertEquals("Would you like to advise the shipment to Carthag? player", chat.getMessages().getLast());
                 DuneChoice adviseChoice = chat.getChoices().getFirst().getFirst();
                 assertEquals("Advise", adviseChoice.getLabel());
                 assertTrue(adviseChoice.isDisabled());
@@ -295,6 +325,7 @@ class BGFactionTest extends FactionTestTemplate {
             @Test
             public void testAdviseButtonEnabledWithAllyNotInTerritory() {
                 faction.presentAdvisorChoices(game, emperor, arrakeen);
+                assertEquals("Would you like to advise the shipment to Arrakeen? player", chat.getMessages().getLast());
                 DuneChoice adviseChoice = chat.getChoices().getFirst().getFirst();
                 assertEquals("Advise", adviseChoice.getLabel());
                 assertFalse(adviseChoice.isDisabled());

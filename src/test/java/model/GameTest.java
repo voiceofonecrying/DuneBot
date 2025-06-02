@@ -278,7 +278,7 @@ class GameTest extends DuneTest {
             void testGuildIntrudesOnBGAndBGFlips() {
                 // Really should replace these first three lines with a single function
                 guild.placeForceFromReserves(game, sietchTabr, 1, false);
-                bg.bgFlipMessageAndButtons(game, sietchTabr.getTerritoryName());
+                bg.presentFlipMessage(game, sietchTabr.getTerritoryName());
                 game.completeCurrentFactionMovement();
                 assertFalse(game.allFactionsHaveMoved());
                 bg.flipForces(sietchTabr);
@@ -289,7 +289,7 @@ class GameTest extends DuneTest {
             void testGuildIntrudesOnBGAndBGDoesNotFlip() {
                 // Really should replace these first three lines with a single function
                 guild.placeForceFromReserves(game, sietchTabr, 1, false);
-                bg.bgFlipMessageAndButtons(game, sietchTabr.getTerritoryName());
+                bg.presentFlipMessage(game, sietchTabr.getTerritoryName());
                 game.completeCurrentFactionMovement();
                 assertFalse(game.allFactionsHaveMoved());
                 bg.dontFlipFighters(game, sietchTabr.getTerritoryName());

@@ -228,7 +228,7 @@ public class BGFaction extends Faction {
             if (game.hasGameOption(GameOption.HOMEWORLDS))
                 choices.add(new DuneChoice("secondary", "bg-ht", "Advise 2 to Polar Sink"));
             choices.add(new DuneChoice("danger", "bg-dont-advise-" + territoryName, "No"));
-            chat.publish(Emojis.BG + " Would you like to advise the shipment to " + territoryName + "? " + game.getFaction("BG").getPlayer(), choices);
+            chat.publish("Would you like to advise the shipment to " + territoryName + "? " + player, choices);
         }
     }
 
@@ -266,31 +266,22 @@ public class BGFaction extends Faction {
         game.checkForTerrorTrigger(territory, this, amount);
     }
 
-    public void bgFlipMessageAndButtons(Game game, String territoryName) {
+    public void presentFlipMessage(Game game, String territoryName) {
         if (territoryName.equals("Polar Sink"))
             return;
-        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
-        if (intrudedTerritories == null)
-            intrudedTerritories = new HashSet<>();
         intrudedTerritories.add(territoryName);
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("bg-flip-" + territoryName, "Flip"));
         choices.add(new DuneChoice("secondary", "bg-dont-flip-" + territoryName, "Don't Flip"));
-        game.getTurnSummary().publish(Emojis.BG + " to decide whether they want to flip to " + Emojis.BG_ADVISOR + " in " + territoryName);
-        chat.publish("Will you flip to " + Emojis.BG_ADVISOR + " in " + territoryName + "? " + game.getFaction("BG").getPlayer(), choices);
+        game.getTurnSummary().publish(Emojis.BG + " to decide if they want to flip to " + Emojis.BG_ADVISOR + " in " + territoryName + ".");
+        chat.publish("Will you flip to " + Emojis.BG_ADVISOR + " in " + territoryName + "? " + player, choices);
     }
 
     public boolean hasIntrudedTerritoriesDecisions() {
-        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
-        if (intrudedTerritories == null)
-            intrudedTerritories = new HashSet<>();
         return !intrudedTerritories.isEmpty();
     }
 
     public String getIntrudedTerritoriesString() {
-        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
-        if (intrudedTerritories == null)
-            intrudedTerritories = new HashSet<>();
         return String.join(", ", intrudedTerritories);
     }
 
