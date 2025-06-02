@@ -2,17 +2,16 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.HomeworldTerritory;
 import model.Territory;
 import model.TestTopic;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -140,32 +139,74 @@ class BGFactionTest extends FactionTestTemplate {
         assertEquals(faction.getHandLimit(), 4);
     }
 
-    @Test
-    public void testInitialPredictionFactionName() {
-        assertNull(faction.getPredictionFactionName());
+    @Nested
+    @DisplayName("#predictedFaction")
+    class PredictedFaction {
+        @Test
+        public void testInitialPredictionFactionName() {
+            assertNull(faction.getPredictionFactionName());
+        }
+
+        @Test
+        public void testPresentPredictedFactionChoices() throws IOException {
+            game.addFaction(new AtreidesFaction("aPlayer", "aName"));
+            game.addFaction(new EmperorFaction("ePlayer", "eName"));
+            faction.presentPredictedFactionChoices();
+            assertEquals("Which faction do you predict to win? player\n" + Emojis.ATREIDES + " - aPlayer\n" + Emojis.EMPEROR + " - ePlayer", chat.getMessages().getFirst());
+            assertEquals(Emojis.ATREIDES, chat.getChoices().getFirst().getFirst().getEmoji());
+            assertNull(chat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("bg-prediction-faction-Atreides", chat.getChoices().getFirst().getFirst().getId());
+            assertEquals(Emojis.EMPEROR, chat.getChoices().getFirst().getLast().getEmoji());
+            assertNull(chat.getChoices().getFirst().getLast().getLabel());
+            assertEquals("bg-prediction-faction-Emperor", chat.getChoices().getFirst().getLast().getId());
+        }
+
+        @Test
+        public void testSetPredictionFactionName() {
+            faction.setPredictionFactionName("Atreides");
+            assertEquals(faction.getPredictionFactionName(), "Atreides");
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+        }
     }
 
-    @Test
-    public void testInitialPredictionRound() {
-        assertEquals(faction.getPredictionRound(), 0);
-    }
+    @Nested
+    @DisplayName("#predictedTurn")
+    class PredictedTurn {
+        @Test
+        public void testInitialPredictionRound() {
+            assertEquals(faction.getPredictionRound(), 0);
+        }
 
-    @Test
-    public void testSetPredictionRound() {
-        faction.setPredictionRound(1);
-        assertEquals(faction.getPredictionRound(), 1);
-    }
+        @Test
+        public void testPresentPredictedTurnChoices() {
+            faction.setPredictionFactionName("Atreides");
+            faction.presentPredictedTurnChoices("Atreides");
+            assertEquals(10, chat.getChoices().getFirst().size());
+            IntStream.rangeClosed(1, 10).forEach(i -> assertEquals("bg-prediction-turn-" + i, chat.getChoices().getFirst().get(i - 1).getId()));
+            IntStream.rangeClosed(1, 10).forEach(i -> assertEquals("" + i, chat.getChoices().getFirst().get(i - 1).getLabel()));
+        }
 
-    @Test
-    public void testSetPredictionRoundInvalid() {
-        assertThrows(IllegalArgumentException.class, () -> faction.setPredictionRound(0));
-        assertThrows(IllegalArgumentException.class, () -> faction.setPredictionRound(11));
-    }
+        @Test
+        public void testFactionMustBeSetBeforeTurn() {
+            assertNull(faction.getPredictionFactionName());
+            assertThrows(InvalidGameStateException.class, () ->faction.setPredictionRound(1));
+        }
 
-    @Test
-    public void testSetPredictionFactionName() {
-        faction.setPredictionFactionName("Atreides");
-        assertEquals(faction.getPredictionFactionName(), "Atreides");
+        @Test
+        public void testSetPredictionRound() throws InvalidGameStateException {
+            faction.setPredictionFactionName("Atreides");
+            faction.setPredictionRound(1);
+            assertEquals(faction.getPredictionRound(), 1);
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertEquals("You predict " + Emojis.ATREIDES + " to win on turn 1.", chat.getMessages().getLast());
+        }
+
+        @Test
+        public void testSetPredictionRoundInvalid() {
+            faction.setPredictionFactionName("Atreides");
+            assertThrows(IllegalArgumentException.class, () -> faction.setPredictionRound(0));
+            assertThrows(IllegalArgumentException.class, () -> faction.setPredictionRound(11));
+        }
     }
 
     @Test
