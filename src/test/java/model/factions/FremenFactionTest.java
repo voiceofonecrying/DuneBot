@@ -61,6 +61,11 @@ class FremenFactionTest extends FactionTestTemplate {
             assertEquals(faction.getEmoji() + ": 1 " + Emojis.FREMEN_TROOP + " placed on The Great Flat", turnSummary.getMessages().getFirst());
             assertFalse(turnSummary.getMessages().getLast().contains(Emojis.SPICE + " is placed on " + Emojis.HEIGHLINERS));
         }
+
+        @Test
+        @Override
+        void testBGGetAdviseMessage() {
+        }
     }
 
     @Nested

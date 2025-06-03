@@ -437,11 +437,12 @@ public class Faction {
                 forcesPlaced += payForShipment(game, cost, targetTerritory, karama, false);
         }
 
-        if (isIntrusion && game.hasFaction("BG")) {
-            if (targetTerritory.hasActiveFaction(game.getFaction("BG")) && !(this instanceof BGFaction))
-                ((BGFaction) game.getFaction("BG")).presentFlipMessage(game, targetTerritory.getTerritoryName());
+        BGFaction bg = game.getBGFactionOrNull();
+        if (isIntrusion && bg != null) {
+            if (targetTerritory.hasActiveFaction(bg) && !(this instanceof BGFaction))
+                bg.presentFlipMessage(game, targetTerritory.getTerritoryName());
             if (isShipment && getShipment().getCrossShipFrom().isEmpty())
-                ((BGFaction) game.getFaction("BG")).presentAdvisorChoices(game, this, targetTerritory);
+                bg.presentAdvisorChoices(game, this, targetTerritory);
         }
 
         game.getTurnSummary().publish(forcesPlaced);
@@ -1488,7 +1489,7 @@ public class Faction {
             from.setRicheseNoField(null);
             game.getTurnSummary().publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
             if (to.hasActiveFaction("BG") && !(this instanceof BGFaction))
-                ((BGFaction) game.getFaction("BG")).presentFlipMessage(game, to.getTerritoryName());
+                game.getBGFaction().presentFlipMessage(game, to.getTerritoryName());
             game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
         } else {
             game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);

@@ -1737,9 +1737,8 @@ public class Game {
         targetFaction.checkForHighThreshold();
         targetFaction.checkForLowThreshold();
 
-        if (to.hasActiveFaction("BG") && !(targetFaction instanceof BGFaction)) {
-            ((BGFaction) getFaction("BG")).presentFlipMessage(this, to.getTerritoryName());
-        }
+        if (to.hasActiveFaction("BG") && !(targetFaction instanceof BGFaction))
+            getBGFaction().presentFlipMessage(this, to.getTerritoryName());
         if (canTrigger)
             checkForTriggers(to, targetFaction, amountValue + starredAmountValue);
         setUpdated(UpdateType.MAP);
@@ -1767,12 +1766,10 @@ public class Game {
             messages.add(Emojis.getFactionEmoji(turnOrder.peekFirst()) + " was queued to ship/move.");
             turnOrder.clear();
         }
-        if (hasFaction("BG")) {
-            BGFaction bg = (BGFaction) getFaction("BG");
-            if (bg.hasIntrudedTerritoriesDecisions()) {
-                messages.add(Emojis.BG + " had flip decisions in " + bg.getIntrudedTerritoriesString());
-                bg.clearIntrudedTerritories();
-            }
+        BGFaction bg = getBGFactionOrNull();
+        if (bg != null && bg.hasIntrudedTerritoriesDecisions()) {
+            messages.add(Emojis.BG + " had flip decisions in " + bg.getIntrudedTerritoriesString() + ".");
+            bg.clearIntrudedTerritories();
         }
         if (messages.size() == 1)
             messages.add("There were no Shipment and Movement actions remaining.");

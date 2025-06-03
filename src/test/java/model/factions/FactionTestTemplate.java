@@ -781,11 +781,17 @@ abstract class FactionTestTemplate {
     class PlaceForces {
         Faction faction;
         Territory territory;
+        BGFaction bg;
+        TestTopic bgChat;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws IOException {
             faction = getFaction();
             territory = game.getTerritories().get("The Great Flat");
+            bg = new BGFaction("p", "u");
+            bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            bg.setLedger(new TestTopic());
         }
 
         @Test
@@ -808,6 +814,21 @@ abstract class FactionTestTemplate {
             faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
             assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             assertEquals("2 " + Emojis.SPICE + " is placed on " + Emojis.HEIGHLINERS, turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testBGGetFlipMessage() throws InvalidGameStateException {
+            game.addFaction(bg);
+            bg.placeForceFromReserves(game, territory, 1, false);
+            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in The Great Flat? p", bgChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testBGGetAdviseMessage() throws InvalidGameStateException {
+            game.addFaction(bg);
+            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            assertEquals("Would you like to advise the shipment to The Great Flat? p", bgChat.getMessages().getLast());
         }
     }
 
@@ -838,6 +859,40 @@ abstract class FactionTestTemplate {
             int spice = faction.getSpice();
             faction.subtractSpice(spice, "Test");
             assertDoesNotThrow(() -> faction.executeShipment(game, false, true));
+        }
+    }
+
+    @Nested
+    @DisplayName("#executeMovement")
+    class ExecuteMovement {
+        Faction faction;
+        Territory theGreatFlat;
+        Territory funeralPlain;
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            theGreatFlat = game.getTerritories().get("The Great Flat");
+            funeralPlain = game.getTerritories().get("Funeral Plain");
+            faction.placeForceFromReserves(game, theGreatFlat, 1, false);
+            movement = faction.getMovement();
+            movement.clear();
+            movement.setForce(1);
+            movement.setMovingFrom("The Great Flat");
+            movement.setMovingTo("Funeral Plain");
+        }
+
+        @Test
+        void testBGGetFlipMessage() throws IOException {
+            BGFaction bg = new BGFaction("p", "u");
+            TestTopic bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            bg.setLedger(new TestTopic());
+            game.addFaction(bg);
+            bg.placeForceFromReserves(game, funeralPlain, 1, false);
+            faction.executeMovement(game);
+            assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Funeral Plain? p", bgChat.getMessages().getFirst());
         }
     }
 

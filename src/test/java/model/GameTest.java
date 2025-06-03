@@ -530,6 +530,39 @@ class GameTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#moveForces")
+    class MoveForces {
+        @Test
+        void testBGGetFlipMessage() {
+            game.addFaction(harkonnen);
+            game.addFaction(bg);
+            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            game.moveForces(harkonnen, carthag, sietchTabr, 1, 0, true);
+            assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr? bg", bgChat.getMessages().getLast());
+        }
+    }
+
+    @Nested
+    @DisplayName("#endShippingPhase")
+    class EndShippingPhase {
+        @Test
+        void testNoActionsRemained() {
+            game.endShipmentMovement();
+            assertEquals("Shipment and Movement has been forced to end. \nThere were no Shipment and Movement actions remaining.", modInfo.getMessages().getFirst());
+        }
+
+        @Test
+        void testBGHadFlipDecisionsRemaining() throws InvalidGameStateException {
+            game.addFaction(bg);
+            game.addFaction(fremen);
+            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            fremen.placeForces(sietchTabr, 1, 0, true, true, true, game, false, false);
+            game.endShipmentMovement();
+            assertEquals("Shipment and Movement has been forced to end. \n" + Emojis.BG + " had flip decisions in Sietch Tabr.", modInfo.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#planetologistIsSingleMovement")
     class PlanetologistIsSingleMovement {
         @BeforeEach

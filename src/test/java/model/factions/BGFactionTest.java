@@ -4,10 +4,7 @@ import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
-import model.DuneChoice;
-import model.HomeworldTerritory;
-import model.Territory;
-import model.TestTopic;
+import model.*;
 import org.junit.jupiter.api.*;
 
 import java.io.IOException;
@@ -126,6 +123,39 @@ class BGFactionTest extends FactionTestTemplate {
         for (Territory territory : game.getTerritories().values()) {
             if (territory instanceof HomeworldTerritory) continue;
             assertEquals(0, territory.countFactions());
+        }
+    }
+
+    @Nested
+    @DisplayName("#placeChosenStartingForces")
+    class placeChosenStartingForces {
+        Shipment shipment;
+        Territory carthag;
+
+        @BeforeEach
+        public void setUp() {
+            shipment = faction.getShipment();
+            shipment.clear();
+            shipment.setForce(1);
+            shipment.setTerritoryName("Carthag");
+            carthag = game.getTerritory("Carthag");
+        }
+
+        @Test
+        public void testAdvisorToEmptyTerritory() {
+            faction.placeChosenStartingForces();
+            assertEquals(1, carthag.getForceStrength("BG"));
+            assertEquals(0, carthag.getForceStrength("Advisor"));
+            assertEquals("Initial force placement complete.", chat.getMessages().getLast());
+        }
+
+        @Test
+        public void testAdvisorToPopulatedTerritory() throws IOException {
+            game.addFaction(new HarkonnenFaction("p", "u"));
+            faction.placeChosenStartingForces();
+            assertEquals(0, carthag.getForceStrength("BG"));
+            assertEquals(1, carthag.getForceStrength("Advisor"));
+            assertEquals("Initial force placement complete.", chat.getMessages().getLast());
         }
     }
 
@@ -316,6 +346,13 @@ class BGFactionTest extends FactionTestTemplate {
         }
 
         @Test
+        public void testResponseMessage() throws InvalidGameStateException {
+            faction.advise(game, carthag, 1);
+            assertEquals("You sent 1 " + Emojis.BG_ADVISOR + " to Carthag.", chat.getMessages().getLast());
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
         public void testAdvisorCannotBeSentToTerritoryWithBGFighter() {
             carthag.addForces("BG", 1);
             assertThrows(InvalidGameStateException.class, () -> faction.advise(game, carthag, 1));
@@ -433,7 +470,7 @@ class BGFactionTest extends FactionTestTemplate {
         Territory arrakeen;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws IOException {
             super.setUp();
             arrakeen = game.getTerritory("Arrakeen");
         }
@@ -445,6 +482,16 @@ class BGFactionTest extends FactionTestTemplate {
             assertEquals(Emojis.BG + ": 2 " + Emojis.BG_ADVISOR + " placed on Arrakeen for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
             assertEquals(3, arrakeen.getForceStrength("Advisor"));
             assertEquals(0, arrakeen.getForceStrength("BG"));
+        }
+
+        @Test
+        @Override
+        void testBGGetFlipMessage() {
+        }
+
+        @Test
+        @Override
+        void testBGGetAdviseMessage() {
         }
     }
 
@@ -466,6 +513,15 @@ class BGFactionTest extends FactionTestTemplate {
             assertEquals(Emojis.BG + ": 1 " + Emojis.BG_ADVISOR + " placed on Sietch Tabr for 1 " + Emojis.SPICE, turnSummary.getMessages().getLast());
             assertEquals(3, sietchTabr.getForceStrength("Advisor"));
             assertEquals(0, sietchTabr.getForceStrength("BG"));
+        }
+    }
+
+    @Nested
+    @DisplayName("#executeMovement")
+    class ExecuteMovement extends FactionTestTemplate.ExecuteMovement {
+        @Test
+        @Override
+        void testBGGetFlipMessage() {
         }
     }
 }

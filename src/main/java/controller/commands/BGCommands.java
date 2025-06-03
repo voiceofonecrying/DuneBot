@@ -1,13 +1,10 @@
 package controller.commands;
 
-import constants.Emojis;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
-import model.factions.BGFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
@@ -56,10 +53,8 @@ public class BGCommands {
     }
 
     public static void advise(DiscordGame discordGame, Game game, Territory territory, int amount) throws ChannelNotFoundException, IOException, InvalidGameStateException {
-        ((BGFaction) game.getFaction("BG")).advise(game, territory, amount);
-        discordGame.queueMessage("You sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
+        game.getBGFaction().advise(game, territory, amount);
         discordGame.pushGame();
-        game.setUpdated(UpdateType.MAP);
     }
 
     public static void flip(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
