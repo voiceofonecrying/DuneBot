@@ -436,7 +436,7 @@ public class ReportsCommands {
             allPlayerPerformance.add(playerPerformance(gameResults, player));
         }
         allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
-        StringBuilder playerStatsString = new StringBuilder("__Supreme Ruler of Arrakis__");
+        StringBuilder playerStatsString = new StringBuilder("__Top 10 Winners__");
         for (PlayerPerformance pp : allPlayerPerformance) {
             String winPercentage = new DecimalFormat("#0.0%").format(pp.winPercentage);
             int tensDigit = pp.numWins % 100 / 10;
@@ -456,15 +456,15 @@ public class ReportsCommands {
         }
 //        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
         allPlayerPerformance.sort((a, b) -> Float.compare(b.winsOverExpectation, a.winsOverExpectation));
-        StringBuilder playerStatsString = new StringBuilder("__Top 15 Players With Wins Over Expected Based On Factions In Games__");
-        playerStatsString.append("\n*Players must have played in a game that ended in the past year*");
+        StringBuilder playerStatsString = new StringBuilder("__Supreme Rulers of Arrakis__");
+//        playerStatsString.append("\n*Players must have played in a game that ended in the past year*");
         for (PlayerPerformance pp : allPlayerPerformance) {
             if (LocalDate.parse(pp.lastGameEnd).isBefore(LocalDate.now().minusYears(1)))
                 continue;
             String numExpectedWins = new DecimalFormat("#0.0").format(pp.numExpectedWins);
             String winsOverExpectation = new DecimalFormat("#0.0").format(pp.winsOverExpectation);
             String player = getPlayerString(guild, pp.playerName, members);
-            playerStatsString.append("\n").append(winsOverExpectation).append(" - ").append(player).append(" - ").append(" Expected: ").append(numExpectedWins).append(", Actual: ").append(pp.numWins);
+            playerStatsString.append("\n").append(winsOverExpectation).append(" - ").append(player).append(" - ").append(" Expected wins: ").append(numExpectedWins).append(", Actual: ").append(pp.numWins);
         }
         return playerStatsString.toString();
     }
@@ -593,10 +593,10 @@ public class ReportsCommands {
         }
 
         modAndAverageTurns.sort((a, b) -> Float.compare(b.getRight(), a.getRight()));
-        moderatorsString.append("\n\n__Average number of turns__");
-        for (Pair<String, Float> p : modAndAverageTurns) {
-            moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
-        }
+//        moderatorsString.append("\n\n__Average number of turns__");
+//        for (Pair<String, Float> p : modAndAverageTurns) {
+//            moderatorsString.append("\n").append(new DecimalFormat("#0.0").format(p.getRight())).append(" - ").append(p.getLeft());
+//        }
         return moderatorsString.toString();
     }
 
@@ -766,12 +766,12 @@ public class ReportsCommands {
             factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(winPercentage).append(" - ").append(fs.numWins).append("/").append(fs.numGames)
                     ;//.append(", Average number of turns with faction win = ").append(fs.averageWinsTurns);
         }
-        factionStatsString.append("\n\n__Average Turns with Faction__ (includes " + Emojis.GUILD + " and " + Emojis.FREMEN + " special victories as 10 turns)");
-        for (FactionPerformance fs : allFactionPerformance) {
-            String averageTurns = new DecimalFormat("#0.0").format(fs.averageTurns);
-            String averageTurnsWins = new DecimalFormat("#0.0").format(fs.averageWinsTurns);
-            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(averageTurns).append(" per game, ").append(averageTurnsWins).append(" per win");
-        }
+//        factionStatsString.append("\n\n__Average Turns with Faction__ (includes " + Emojis.GUILD + " and " + Emojis.FREMEN + " special victories as 10 turns)");
+//        for (FactionPerformance fs : allFactionPerformance) {
+//            String averageTurns = new DecimalFormat("#0.0").format(fs.averageTurns);
+//            String averageTurnsWins = new DecimalFormat("#0.0").format(fs.averageWinsTurns);
+//            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(averageTurns).append(" per game, ").append(averageTurnsWins).append(" per win");
+//        }
         return tagEmojis(guild, factionStatsString.toString());
     }
 
@@ -1132,10 +1132,28 @@ public class ReportsCommands {
         messageHistory = MessageHistory.getHistoryFromBeginning(playerStatsChannel).complete();
         messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
+        playerStatsChannel.sendMessage("Use **/my-record** to check your own wins and faction plays and **/reports player-record** for other players on the server.").queue();
         StringBuilder playerStatsString = new StringBuilder();
-        String[] playerStatsLines = writePlayerStats(guild, grList, members).split("\n");
-        int mentions = 0;
+        String[] playerStatsLines = writeTopWinsAboveExpected(guild, grList, members).split("\n");
+        int expectLines = 0;
         for (String s : playerStatsLines) {
+            if (expectLines == 12)
+                break;
+            if (!playerStatsString.isEmpty())
+                playerStatsString.append("\n");
+            playerStatsString.append(s);
+            expectLines++;
+        }
+        if (!playerStatsString.isEmpty())
+            playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
+
+        playerStatsString = new StringBuilder();
+        playerStatsLines = writePlayerStats(guild, grList, members).split("\n");
+        int mentions = 0;
+        expectLines = 0;
+        for (String s : playerStatsLines) {
+            if (expectLines == 11)
+                break;
             if (playerStatsString.length() + 1 + s.length() > 2000 || mentions == 20) {
                 playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
                 playerStatsString = new StringBuilder();
@@ -1146,19 +1164,6 @@ public class ReportsCommands {
             playerStatsString.append(s);
             if (s.contains("<@"))
                 mentions++;
-        }
-        if (!playerStatsString.isEmpty())
-            playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
-
-        playerStatsString = new StringBuilder();
-        playerStatsLines = writeTopWinsAboveExpected(guild, grList, members).split("\n");
-        int expectLines = 0;
-        for (String s : playerStatsLines) {
-            if (expectLines == 17)
-                break;
-            if (!playerStatsString.isEmpty())
-                playerStatsString.append("\n");
-            playerStatsString.append(s);
             expectLines++;
         }
         if (!playerStatsString.isEmpty())
@@ -1174,9 +1179,8 @@ public class ReportsCommands {
         playerStatsChannel.sendMessage("__High Faction Plays__\n" + highFactionGames(guild, grList, members, false)).queue();
 //        playerStatsChannel.sendMessage(playerSoloVictories(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
-        playerStatsChannel.sendMessage("__**NEW!** Played Original 6 Multiple Times__\n" + playedAllOriginalSixMultipleTimes(guild, grList, members)).queue();
-        playerStatsChannel.sendMessage("__**NEW!** Played Expansion 6 Multiple Times__\n" + playedAllExpansionMultipleTimes(guild, grList, members)).queue();
-        playerStatsChannel.sendMessage("(You can check your own counts with **/my-record** and your friend's counts with **/reports player-record**)").queue();
+//        playerStatsChannel.sendMessage("__Played Original 6 Multiple Times__\n" + playedAllOriginalSixMultipleTimes(guild, grList, members)).queue();
+//        playerStatsChannel.sendMessage("__Played Expansion 6 Multiple Times__\n" + playedAllExpansionMultipleTimes(guild, grList, members)).queue();
 
         FileUpload fileUpload;
         fileUpload = FileUpload.fromData(
