@@ -349,7 +349,7 @@ class BGFactionTest extends FactionTestTemplate {
         public void testResponseMessage() throws InvalidGameStateException {
             faction.advise(game, carthag, 1);
             assertEquals("You sent 1 " + Emojis.BG_ADVISOR + " to Carthag.", chat.getMessages().getLast());
-            assertTrue(faction.getUpdateTypes().contains(UpdateType.MAP));
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }
 
         @Test
