@@ -187,12 +187,19 @@ class RicheseFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("#shipNoField")
     class ShipNoField {
+        BGFaction bg;
         ChoamFaction choam;
+        TestTopic bgChat;
         Territory sietchTabr;
 
         @BeforeEach
         public void setUp() throws IOException {
             sietchTabr = game.getTerritory("Sietch Tabr");
+            bg = new BGFaction("p", "u");
+            bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            bg.setLedger(new TestTopic());
+            game.addFaction(bg);
             choam = new ChoamFaction("p", "u");
             choam.setLedger(new TestTopic());
             game.addFaction(choam);
@@ -231,6 +238,19 @@ class RicheseFactionTest extends FactionTestTemplate {
             faction.shipNoField(faction, sietchTabr, 3, false, false, 1);
             assertEquals(3, sietchTabr.getRicheseNoField());
             assertEquals(1, sietchTabr.getForceStrength("Richese"));
+        }
+
+        @Test
+        void testBGGetFlipMessage() throws InvalidGameStateException {
+            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            faction.shipNoField(faction, sietchTabr, 3, false, false, 0);
+            assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr? p", bgChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testBGGetAdviseMessage() throws InvalidGameStateException {
+            faction.shipNoField(faction, sietchTabr, 3, false, false, 0);
+            assertEquals("Would you like to advise the shipment to Sietch Tabr? p", bgChat.getMessages().getLast());
         }
     }
 

@@ -22,7 +22,7 @@ public class BGFaction extends Faction {
     private String predictionFactionName;
     private int predictionRound;
     private boolean denyingAllyVoice;
-    private Set<String> intrudedTerritories;
+    private final Set<String> intrudedTerritories;
 
     public BGFaction(String player, String userName) throws IOException {
         super("BG", player, userName);
@@ -121,14 +121,14 @@ public class BGFaction extends Faction {
     }
 
     @Override
-    public boolean placeChosenStartingForces() throws InvalidGameStateException {
+    public boolean placeChosenStartingForces() {
         chat.reply("Initial force placement complete.");
         String territoryName = shipment.getTerritoryName();
         Territory territory = game.getTerritory(territoryName);
         if (territory.getForces().isEmpty())
-            executeShipment(game, false, true);
+            placeForceFromReserves(game, territory, 1, false);
         else
-            advise(game, territory, 1);
+            placeAdvisorsFromReserves(game, territory, 1);
         return true;
     }
 
@@ -202,9 +202,6 @@ public class BGFaction extends Faction {
         String from, to;
 
         if (territory.hasForce("BG")) {
-            // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
-            if (intrudedTerritories == null)
-                intrudedTerritories = new HashSet<>();
             intrudedTerritories.remove(territory.getTerritoryName());
             from = "BG";
             to = "Advisor";
@@ -222,9 +219,6 @@ public class BGFaction extends Faction {
     }
 
     public void dontFlipFighters(Game game, String territoryName) {
-        // Creation can be removed after games 82, 87, 89, 90, 93, and 94 have created the HashSet
-        if (intrudedTerritories == null)
-            intrudedTerritories = new HashSet<>();
         intrudedTerritories.remove(territoryName);
         game.getTurnSummary().publish(emoji + " don't flip in " + territoryName);
         chat.reply("You will not flip.");
@@ -281,6 +275,8 @@ public class BGFaction extends Faction {
 
         game.getTurnSummary().publish(Emojis.BG + " sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName());
         game.checkForTerrorTrigger(territory, this, amount);
+        chat.reply("You sent " + amount + " " + Emojis.BG_ADVISOR + " to " + territory.getTerritoryName() + ".");
+        game.setUpdated(UpdateType.MAP);
     }
 
     public void presentFlipMessage(Game game, String territoryName) {

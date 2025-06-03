@@ -34,7 +34,7 @@ public class BGButtons implements Pressable {
     private static void bgFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         discordGame.getTurnSummary().queueMessage(Emojis.BG + " flip in " + event.getComponentId().split("-")[2]);
         Territory territory = game.getTerritory(event.getComponentId().split("-")[2]);
-        ((BGFaction) game.getFaction("BG")).flipForces(territory);
+        game.getBGFaction().flipForces(territory);
         discordGame.queueMessageToEphemeral("You will flip.");
         discordGame.queueDeleteMessage();
         if (game.getPhase() == 7 && game.allFactionsHaveMoved()) {
@@ -47,8 +47,7 @@ public class BGButtons implements Pressable {
 
     private static void dontFlip(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String territoryName = event.getComponentId().split("-")[3];
-        BGFaction bg = ((BGFaction) game.getFaction("BG"));
-        bg.dontFlipFighters(game, territoryName);
+        game.getBGFaction().dontFlipFighters(game, territoryName);
         discordGame.queueDeleteMessage();
         if (game.getPhase() == 7 && game.allFactionsHaveMoved()) {
             RunCommands.advance(discordGame, game);
