@@ -38,6 +38,17 @@ class BattleTest extends DuneTest {
         }
 
         @Test
+        void testSardaukarNegatedByOccupation() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory salusaSecundus = game.getTerritory("Salusa Secundus");
+            emperor.placeForces(carthag, 0, 5, true, true, true, game, false, false);
+            bg.placeForces(salusaSecundus, 1, 0, true, true, true, game, false, false);
+            assertTrue(emperor.isSecundusOccupied());
+            Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+            assertTrue(battle.isSardaukarNegated());
+        }
+
+        @Test
         void testNoFieldInBattlePlanFewerForcesInReserves() {
             richese.addTreacheryCard(cheapHero);
             richese.addTreacheryCard(chaumas);
@@ -612,6 +623,40 @@ class BattleTest extends DuneTest {
                 assertFalse(currentBattle.isCyborgsNegated());
                 currentBattle.negateSpecialForces(game, ix);
                 assertTrue(currentBattle.isCyborgsNegated());
+            }
+        }
+
+        @Nested
+        @DisplayName("#emperorNexusCunning")
+        class EmperorNexusCunning {
+            Battle battle;
+
+            @BeforeEach
+            void setUp() {
+                game.addFaction(emperor);
+                game.addFaction(harkonnen);
+                emperor.setNexusCard(new NexusCard("Emperor"));
+                emperor.placeForceFromReserves(game, carthag, 2, false);
+                battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
+                assertFalse(battle.isSardaukarNegated());
+            }
+
+            @Test
+            void testEmperorNexusCunningPlayed() {
+                battle.emperorNexusCunning(game, true);
+                assertNull(emperor.getNexusCard());
+                assertEquals("You played the " + Emojis.EMPEROR + " Nexus Card. Up to 5 " + Emojis.EMPEROR_TROOP + " will count as " + Emojis.EMPEROR_SARDAUKAR, emperorChat.getMessages().getLast());
+                assertEquals(Emojis.EMPEROR + " may count up to 5 " + Emojis.EMPEROR_TROOP + " as " + Emojis.EMPEROR_SARDAUKAR + " in this battle.", turnSummary.getMessages().getLast());
+            }
+
+            @Test
+            void testEmperorNexusCunningNotPlayed() {
+                turnSummary.clear();
+                battle.emperorNexusCunning(game, false);
+                assertFalse(battle.isSardaukarNegated());
+                assertEquals("Emperor", emperor.getNexusCard().name());
+                assertEquals("You will not play the " + Emojis.EMPEROR + " Nexus Card.", emperorChat.getMessages().getLast());
+                assertTrue(turnSummary.getMessages().isEmpty());
             }
         }
 

@@ -1273,8 +1273,9 @@ public class Bidding {
             return false;
         }
 
-        if (game.hasFaction("Emperor"))
-            ((EmperorFaction) game.getFaction("Emperor")).presentKaitainHighThresholdChoices();
+        EmperorFaction emperor = game.getEmperorFactionOrNull();
+        if (emperor != null)
+            emperor.presentKaitainHighThresholdChoices();
 
         game.endBidding();
         game.getFactions().forEach(f -> f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD));

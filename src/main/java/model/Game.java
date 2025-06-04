@@ -580,6 +580,25 @@ public class Game {
     }
 
     /**
+     * Get the Emperor faction object
+     *
+     * @return the EmperorFaction object if Emperor is in the game or null if Emperor is not in the game
+     */
+    public EmperorFaction getEmperorFactionOrNull() {
+        return (EmperorFaction) getFactionOrNull("Emperor");
+    }
+
+    /**
+     * Get the Emperor faction object
+     *
+     * @return the EmperorFaction object if Emperor is in the game
+     * @throws IllegalArgumentException if Emperor is not in the game
+     */
+    public EmperorFaction getEmperorFaction() {
+        return (EmperorFaction) getFaction("Emperor");
+    }
+
+    /**
      * Get the Harkonnen faction object
      *
      * @return the HarkonnenFaction object if Harkonnen is in the game
@@ -705,6 +724,10 @@ public class Game {
 
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
+    }
+
+    public boolean hasBGFaction() {
+        return hasFaction("BG");
     }
 
     public boolean hasHarkonnenFaction() {

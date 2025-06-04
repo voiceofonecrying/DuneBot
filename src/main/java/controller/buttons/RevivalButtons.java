@@ -7,7 +7,6 @@ import controller.DiscordGame;
 import exceptions.InvalidGameStateException;
 import model.Game;
 import model.factions.BTFaction;
-import model.factions.EmperorFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
@@ -26,12 +25,7 @@ public class RevivalButtons implements Pressable {
 
     private static void reviveEmperorAlly(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         int numForces = Integer.parseInt(event.getComponentId().replace("revival-emp-ally-", ""));
-        EmperorFaction emperor = (EmperorFaction) game.getFaction("Emperor");
-        emperor.reviveAllyForces(numForces);
-        if (numForces == 0)
-            discordGame.queueMessage("You will not revive any extra forces for your ally.");
-        else
-            discordGame.queueMessage("Your revival request for your ally has been submitted to the " + Emojis.BT);
+        game.getEmperorFaction().reviveAllyForces(numForces);
         discordGame.pushGame();
     }
 

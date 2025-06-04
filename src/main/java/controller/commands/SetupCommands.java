@@ -159,7 +159,7 @@ public class SetupCommands {
             );
         }
 
-        if (game.hasFaction("BG")) {
+        if (game.hasBGFaction()) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.FACTION_POSITIONS) + 1,
                     SetupStep.BG_PREDICTION

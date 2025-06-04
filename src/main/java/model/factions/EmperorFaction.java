@@ -304,12 +304,12 @@ public class EmperorFaction extends Faction {
     }
 
     public void reviveAllyForces(int numForces) throws InvalidGameStateException {
-        // TODO: Entire function needs automated tests
         paidRevivalTBD = false;
         if (!hasAlly())
             throw new InvalidGameStateException("Emperor does not have an ally.");
         Faction allyFaction = game.getFaction(ally);
         if (numForces == 0) {
+            chat.publish("You will not revive any extra forces for your ally.");
             game.getTurnSummary().publish(Emojis.EMPEROR + " does not purchase extra revivals for " + allyFaction.getEmoji());
             return;
         }
@@ -317,15 +317,16 @@ public class EmperorFaction extends Faction {
         String revivalString;
         if (allyFaction instanceof IxFaction) {
             int numCyborgsInTanks = game.getTleilaxuTanks().getForceStrength("Ix*");
-            int numCyborgsToRevive = Math.min(numForces, numCyborgsInTanks);
-            int numSuboidsToRevive = numForces - numCyborgsToRevive;
+            int numCyborgsToRevive = Math.min(Math.min(numForces, numCyborgsInTanks), spice / 3);
+            int numSuboidsInTanks = game.getTleilaxuTanks().getForceStrength("Ix");
+            int numSuboidsToRevive = Math.min(numForces - numCyborgsToRevive, numSuboidsInTanks);
             game.reviveForces(allyFaction, false, numSuboidsToRevive, numCyborgsToRevive, true);
             cost = allyFaction.revivalCost(numSuboidsToRevive, numCyborgsToRevive);
-            revivalString = " to revive " + numSuboidsToRevive + " " + Emojis.IX_SUBOID + " " + numCyborgsToRevive + Emojis.IX_CYBORG;
+            revivalString = " to revive " + allyFaction.forcesString(numSuboidsToRevive, numCyborgsToRevive);
         } else {
             game.reviveForces(allyFaction, false, numForces, 0, true);
             cost = allyFaction.revivalCost(numForces, 0);
-            revivalString = " to revive " + numForces + " " + allyFaction.getEmoji();
+            revivalString = " to revive " + allyFaction.forcesString(numForces, 0);
         }
         subtractSpice(cost, allyFaction.getEmoji() + " revivals");
         String costString = cost + " " + Emojis.SPICE;
@@ -334,6 +335,7 @@ public class EmperorFaction extends Faction {
             costString += " to " + bt.getEmoji();
             bt.addSpice(cost, allyFaction.getEmoji() + " revivals, " + Emojis.EMPEROR + " alliance power");
         }
+        chat.publish("Your revival request for your ally has been submitted to the " + Emojis.BT);
         game.getTurnSummary().publish(Emojis.EMPEROR + " pays " + costString + revivalString);
     }
 

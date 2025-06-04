@@ -66,11 +66,9 @@ public class Battle {
         this.resolutionPublished = false;
         this.fedaykinNegated = false;
         this.sardaukarNegated = battleFactionsInStormOrder.stream().anyMatch(f -> f instanceof FremenFaction);
-        try {
-            EmperorFaction emperor = (EmperorFaction) game.getFaction("Emperor");
-            if (emperor.isSecundusOccupied())
-                this.sardaukarNegated = true;
-        } catch (IllegalArgumentException ignored) {}
+        EmperorFaction emperor = game.getEmperorFactionOrNull();
+        if (emperor != null && emperor.isSecundusOccupied())
+            this.sardaukarNegated = true;
         this.cyborgsNegated = false;
         this.fremenMustPay = false;
         this.emperorCunning = false;
@@ -1853,7 +1851,7 @@ public class Battle {
     }
 
     public void emperorNexusCunning(Game game, boolean useNexusCard) {
-        Faction emperor = game.getFaction("Emperor");
+        Faction emperor = game.getEmperorFaction();
         emperorCunning = useNexusCard;
         if (useNexusCard) {
             game.discardNexusCard(emperor);
