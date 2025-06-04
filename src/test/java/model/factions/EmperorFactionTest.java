@@ -388,6 +388,115 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#reviveAllyForces")
+    class ReviveAllyForces {
+        BTFaction bt;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            bt = new BTFaction("bt", "bt");
+            bt.setLedger(new TestTopic());
+        }
+
+        @Nested
+        @DisplayName("atreidesAsAlly")
+        class AtreidesAsAlly {
+            AtreidesFaction atreides;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                atreides = new AtreidesFaction("at", "at");
+                atreides.setLedger(new TestTopic());
+                game.addFaction(atreides);
+                game.createAlliance(faction, atreides);
+            }
+
+            @Test
+            void testAllyHasNoForcesInTanks() {
+                assertThrows(IllegalArgumentException.class, () -> faction.reviveAllyForces(3));
+            }
+
+            @Test
+            void testEmperorDoesNotReviveAllyForces() throws InvalidGameStateException {
+                game.removeForces("Caladan", atreides, 3, false, true);
+                faction.reviveAllyForces(0);
+                assertEquals("You will not revive any extra forces for your ally.", chat.getMessages().getLast());
+                assertEquals(Emojis.EMPEROR + " does not purchase extra revivals for " + Emojis.ATREIDES, turnSummary.getMessages().getLast());
+                assertEquals(10, faction.getSpice());
+            }
+
+            @Test
+            void testEmperorRevivesTwoAllyForces() throws InvalidGameStateException {
+                game.removeForces("Caladan", atreides, 3, false, true);
+                faction.reviveAllyForces(2);
+                assertEquals("Your revival request for your ally has been submitted to the " + Emojis.BT, chat.getMessages().getLast());
+                assertEquals(Emojis.EMPEROR + " pays 4 " + Emojis.SPICE + " to revive 2 " + Emojis.ATREIDES_TROOP, turnSummary.getMessages().getLast());
+                assertEquals(6, faction.getSpice());
+            }
+
+            @Test
+            void testEmperorRevivesTwoAllyForcesWithBTInTheGame() throws InvalidGameStateException {
+                game.addFaction(bt);
+                game.removeForces("Caladan", atreides, 3, false, true);
+                faction.reviveAllyForces(2);
+                assertEquals(Emojis.EMPEROR + " pays 4 " + Emojis.SPICE + " to " + Emojis.BT + " to revive 2 " + Emojis.ATREIDES_TROOP, turnSummary.getMessages().getLast());
+                assertEquals(6, faction.getSpice());
+                assertEquals(9, bt.getSpice());
+            }
+
+            @Test
+            void testEmperorDoesNotHaveEnoughSpice() {
+                faction.subtractSpice(7, "Test");
+                game.removeForces("Caladan", atreides, 3, false, true);
+                assertThrows(IllegalStateException.class, () -> faction.reviveAllyForces(2));
+            }
+        }
+
+        @Nested
+        @DisplayName("ixAsAlly")
+        class IxAsAlly {
+            IxFaction ix;
+
+            @BeforeEach
+            void setUp() throws IOException {
+                ix = new IxFaction("ix", "ix");
+                ix.setLedger(new TestTopic());
+                game.addFaction(ix);
+                game.createAlliance(faction, ix);
+                game.removeForces("Ix", ix, 1, 2, true);
+            }
+
+            @Test
+            void testCyborgRevivalPreferred() throws InvalidGameStateException {
+                faction.reviveAllyForces(2);
+                assertEquals(Emojis.EMPEROR + " pays 6 " + Emojis.SPICE + " to revive 2 " + Emojis.IX_CYBORG, turnSummary.getMessages().getLast());
+                assertEquals(4, faction.getSpice());
+                assertEquals(1, game.getTleilaxuTanks().getForceStrength("Ix"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Ix*"));
+            }
+
+            @Test
+            void testReviveCyborgsAndSuboid() throws InvalidGameStateException {
+                faction.reviveAllyForces(3);
+                assertEquals(Emojis.EMPEROR + " pays 8 " + Emojis.SPICE + " to revive 1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG, turnSummary.getMessages().getLast());
+                assertEquals(2, faction.getSpice());
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Ix"));
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Ix*"));
+            }
+
+            @Test
+            void testNotEnoughSpiceForTwoCyborgs() throws InvalidGameStateException {
+                faction.subtractSpice(5, "Test");
+                faction.reviveAllyForces(2);
+                assertEquals(Emojis.EMPEROR + " pays 5 " + Emojis.SPICE + " to revive 1 " + Emojis.IX_SUBOID + " 1 " + Emojis.IX_CYBORG, turnSummary.getMessages().getLast());
+                assertEquals(0, faction.getSpice());
+                assertEquals(0, game.getTleilaxuTanks().getForceStrength("Ix"));
+                assertEquals(1, game.getTleilaxuTanks().getForceStrength("Ix*"));
+            }
+        }
+    }
+
+    @Nested
     @DisplayName("#placeForces")
     class PlaceForces extends FactionTestTemplate.PlaceForces {
         @Test
@@ -480,9 +589,8 @@ class EmperorFactionTest extends FactionTestTemplate {
 
         assertEquals(8, faction.getSpice());
         assertFalse(faction.hasTreacheryCard("Kulon"));
-        assertEquals(Emojis.EMPEROR + " discards Kulon and pays 2 " + Emojis.SPICE + " with Kaitain High Threshold ability.",
-                turnSummary.getMessages().getFirst()
-        );
+        assertEquals("You discarded Kulon.", chat.getMessages().getLast());
+        assertEquals(Emojis.EMPEROR + " discards Kulon and pays 2 " + Emojis.SPICE + " with Kaitain High Threshold ability.", turnSummary.getMessages().getFirst());
     }
 
     @Test

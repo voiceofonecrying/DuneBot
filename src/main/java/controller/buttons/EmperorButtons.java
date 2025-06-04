@@ -3,7 +3,6 @@ package controller.buttons;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
-import model.factions.EmperorFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
 public class EmperorButtons implements Pressable {
@@ -22,7 +21,7 @@ public class EmperorButtons implements Pressable {
 
     private static void discardCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         String cardName = event.getComponentId().split("-")[2];
-        ((EmperorFaction) game.getFaction("Emperor")).kaitainHighDiscard(cardName);
+        game.getEmperorFaction().kaitainHighDiscard(cardName);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
