@@ -136,6 +136,16 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         assertEquals(4, fremen.getHandLimit());
     }
 
+    @Test
+    void testFremenSeeHieregToken() {
+        game.addGameOption(GameOption.DISCOVERY_TOKENS);
+        game.addFaction(fremen);
+        game.getSpiceDeck().addFirst(new SpiceCard("Sihaya Ridge", 8, 6, "Hiereg", "Cielago East (West Sector)"));
+        game.drawSpiceBlow("A", false);
+        String tokenName = game.getTerritory("Cielago East (West Sector)").getDiscoveryToken();
+        assertEquals("The Hiereg Token in Cielago East (West Sector) is " + tokenName + ".", fremenChat.getMessages().getLast());
+    }
+
     @Nested
     @DisplayName("#wormThenSandtroutThenWorm")
     class WormThenSandtroutThenWorm {

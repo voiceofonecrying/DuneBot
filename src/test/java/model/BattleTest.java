@@ -1168,6 +1168,44 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#karamaFremenMustPay")
+    class KaramaFremenMustPay {
+        Battle battle;
+        Battle battleWithoutFremen;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(fremen);
+            game.addFaction(harkonnen);
+            game.addFaction(atreides);
+            fremen.placeForceFromReserves(game, carthag, 2, false);
+            fremen.placeForceFromReserves(game, carthag, 2, true);
+            battle = new Battle(game, List.of(carthag), List.of(fremen, harkonnen));
+            harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+            battleWithoutFremen = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
+        }
+
+        @Test
+        void testBeforeBattlePlanSubmitted() throws InvalidGameStateException {
+            battle.karamaFremenMustPay(game);
+            assertEquals("Your free dial advantage has been negated by Karama. fr", fremenChat.getMessages().getLast());
+        }
+
+        @Test
+        void testAfterBattlePlanSubmitted() throws InvalidGameStateException {
+            battle.setBattlePlan(game, fremen, chani, null, false, 0, false, 0, null, null);
+            assertNotNull(battle.getAggressorBattlePlan());
+            battle.karamaFremenMustPay(game);
+            assertEquals("Your free dial advantage has been negated by Karama.\nYou must submit a new battle plan. fr", fremenChat.getMessages().getLast());
+            assertNull(battle.getAggressorBattlePlan());
+        }
+
+        @Test
+        void testFremenNotInTheBattle() {
+        }
+    }
+
+    @Nested
     @DisplayName("#lasgunShieldOnHomeworld")
     class LasgunShieldOnHomeworld {
         Battle battle;

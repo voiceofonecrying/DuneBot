@@ -666,7 +666,7 @@ public class ShowCommands {
         }
 
         // Add border to show where Fremen can ship
-        if (game.hasFaction("Fremen")) {
+        if (game.hasFremenFaction()) {
             BufferedImage fremenShipBorder = getResourceImage("Fremen Ship Border");
             fremenShipBorder = resize(fremenShipBorder, 461, 716);
             Point coordinates = new Point(316, 475);

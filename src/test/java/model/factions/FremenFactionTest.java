@@ -35,6 +35,50 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#placeWorm")
+    class PlaceWorm {
+        @BeforeEach
+        public void setUp() {
+            game.setTurn(2);
+            faction.placeForceFromReserves(game, game.getTerritory("Sietch Tabr"), 17, false);
+            faction.presentWormPlacementChoices("Gara Kulon", "Shai-Hulud");
+            assertEquals(1, faction.getWormsToPlace());
+        }
+
+        @Test
+        public void testPlaceShaiHulud() {
+            faction.placeWorm(false, game.getTerritory("Funeral Plain"), false);
+            assertEquals("Shai-Hulud has been placed in Funeral Plain\n", turnSummary.getMessages().getFirst());
+            assertEquals("You placed Shai-Hulud in Funeral Plain.", chat.getMessages().getLast());
+            assertEquals(0, faction.getWormsToPlace());
+        }
+
+        @Test
+        public void testPlaceGreatMaker() {
+            faction.placeWorm(true, game.getTerritory("Funeral Plain"), false);
+            assertEquals("Great Maker has been placed in Funeral Plain\nAfter the Nexus, 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n", turnSummary.getMessages().getFirst());
+            assertEquals("You placed Great Maker in Funeral Plain.", chat.getMessages().getLast());
+            assertEquals(0, faction.getWormsToPlace());
+        }
+
+        @Test
+        public void testLeaveShaiHuludWhereItIs() {
+            faction.placeWorm(false, game.getTerritory("Funeral Plain"), true);
+            assertEquals("Shai-Hulud has been placed in Funeral Plain\n", turnSummary.getMessages().getFirst());
+            assertEquals("You left Shai-Hulud in Funeral Plain.", chat.getMessages().getLast());
+            assertEquals(0, faction.getWormsToPlace());
+        }
+
+        @Test
+        public void testLeaveGreatMakerWhereItIs() {
+            faction.placeWorm(true, game.getTerritory("Funeral Plain"), true);
+            assertEquals("Great Maker has been placed in Funeral Plain\nAfter the Nexus, 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n", turnSummary.getMessages().getFirst());
+            assertEquals("You left Great Maker in Funeral Plain.", chat.getMessages().getLast());
+            assertEquals(0, faction.getWormsToPlace());
+        }
+    }
+
+    @Nested
     @DisplayName("#placeForces")
     class PlaceForces extends FactionTestTemplate.PlaceForces {
         @Test
@@ -150,6 +194,15 @@ class FremenFactionTest extends FactionTestTemplate {
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(7, faction.getFreeRevival());
+    }
+
+    @Test
+    public void testPlaceFreeRevivalWithHighThreshold() throws InvalidGameStateException {
+        faction.removeForces("Southern Hemisphere", 2, true, true);
+        faction.placeFreeRevivalWithHighThreshold("Sietch Tabr");
+        assertEquals(1, game.getTerritory("Sietch Tabr").getForceStrength("Fremen*"));
+        assertEquals(Emojis.FREMEN + " place their revived " + Emojis.FREMEN_FEDAYKIN + " with their forces in Sietch Tabr.", turnSummary.getMessages().getLast());
+        assertEquals("Your " + Emojis.FREMEN_FEDAYKIN + " has left for the northern hemisphere.", chat.getMessages().getLast());
     }
 
     @Nested

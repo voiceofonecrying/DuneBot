@@ -156,18 +156,20 @@ public class FremenFaction extends Faction {
         choices.add(new DuneChoice("other" + buttonSuffix, "Other Sand Territories"));
         choices.add(new DuneChoice("secondary", "pass-shipment" + buttonSuffix, "Keep it in " + territoryName));
         chat.publish("Where would you like to place " + wormName + "? " + player, choices);
-    }
-
-    public void addWormToPlace() {
         wormsToPlace++;
-    }
-
-    public void wormWasPlaced() {
-        wormsToPlace--;
     }
 
     public int getWormsToPlace() {
         return wormsToPlace;
+    }
+
+    public void placeWorm(boolean greatMaker, Territory territory, boolean leftWhereItAppeared) {
+        String wormName = greatMaker ? "Great Maker" : "Shai-Hulud";
+        String action = leftWhereItAppeared ? "left " : "placed ";
+        String territoryName = territory.getTerritoryName();
+        game.placeShaiHulud(territoryName, wormName, false);
+        wormsToPlace--;
+        chat.reply("You " + action + wormName + " in " + territoryName + ".");
     }
 
     public int countFreeStarredRevival() {
@@ -194,5 +196,12 @@ public class FremenFaction extends Faction {
             return emoji + " has no revivable forces in the tanks";
         else
             return emoji + " has no forces in the tanks";
+    }
+
+    public void placeFreeRevivalWithHighThreshold(String territoryName) throws InvalidGameStateException {
+        Territory territory = game.getTerritory(territoryName);
+        placeForces(territory, 0, 1, false, true, true, game, false, false);
+        game.getTurnSummary().publish(Emojis.FREMEN + " place their revived " + Emojis.FREMEN_FEDAYKIN + " with their forces in " + territory.getTerritoryName() + ".");
+        chat.reply("Your " + Emojis.FREMEN_FEDAYKIN + " has left for the northern hemisphere.");
     }
 }

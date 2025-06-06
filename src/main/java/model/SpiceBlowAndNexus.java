@@ -26,14 +26,11 @@ public class SpiceBlowAndNexus {
     }
 
     public boolean nextStep(Game game) throws IOException {
-        FremenFaction fremen = null;
+        FremenFaction fremen = game.getFremenFactionOrNull();
         fremenRidesComplete = true;
-        if (game.hasFaction("Fremen")) {
-            fremen = (FremenFaction) game.getFaction("Fremen");
-            if (fremen.hasRidesRemaining()) {
-                fremenRidesComplete = false;
-                fremen.presentNextWormRideChoices();
-            }
+        if (fremen != null && fremen.hasRidesRemaining()) {
+            fremenRidesComplete = false;
+            fremen.presentNextWormRideChoices();
         }
         if (numDecksDrawn == 0 && thumperResolved) {
             List<String> spiceBlowQuotes = game.getQuotes().get(2);
