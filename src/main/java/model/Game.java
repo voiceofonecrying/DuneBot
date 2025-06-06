@@ -582,6 +582,16 @@ public class Game {
     /**
      * Get the Emperor faction object
      *
+     * @return the EmperorFaction object if Emperor is in the game
+     * @throws IllegalArgumentException if Emperor is not in the game
+     */
+    public EmperorFaction getEmperorFaction() {
+        return (EmperorFaction) getFaction("Emperor");
+    }
+
+    /**
+     * Get the Emperor faction object
+     *
      * @return the EmperorFaction object if Emperor is in the game or null if Emperor is not in the game
      */
     public EmperorFaction getEmperorFactionOrNull() {
@@ -589,13 +599,22 @@ public class Game {
     }
 
     /**
-     * Get the Emperor faction object
+     * Get the Fremen faction object
      *
-     * @return the EmperorFaction object if Emperor is in the game
-     * @throws IllegalArgumentException if Emperor is not in the game
+     * @return the FremenFaction object if Fremen is in the game
+     * @throws IllegalArgumentException if Fremen is not in the game
      */
-    public EmperorFaction getEmperorFaction() {
-        return (EmperorFaction) getFaction("Emperor");
+    public FremenFaction getFremenFaction() {
+        return (FremenFaction) getFaction("Fremen");
+    }
+
+    /**
+     * Get the Fremen faction object
+     *
+     * @return the FremenFaction object if Fremen is in the game or null if Fremen is not in the game
+     */
+    public FremenFaction getFremenFactionOrNull() {
+        return (FremenFaction) getFactionOrNull("Fremen");
     }
 
     /**
@@ -728,6 +747,10 @@ public class Game {
 
     public boolean hasBGFaction() {
         return hasFaction("BG");
+    }
+
+    public boolean hasFremenFaction() {
+        return hasFaction("Fremen");
     }
 
     public boolean hasHarkonnenFaction() {
@@ -1302,8 +1325,9 @@ public class Game {
         }
         turnSummary.showMap(this);
         stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()));
-        if (hasFaction("Fremen"))
-            getFaction("Fremen").getChat().publish("The storm will move " + stormMovement + " sectors next turn.");
+        FremenFaction fremen = getFremenFactionOrNull();
+        if (fremen != null)
+            fremen.getChat().publish("The storm will move " + stormMovement + " sectors next turn.");
     }
 
     public SpiceBlowAndNexus startSpiceBlowPhase() throws InvalidGameStateException, IOException {
@@ -1325,16 +1349,10 @@ public class Game {
     public boolean spiceBlowPhaseNextStep() throws InvalidGameStateException, IOException {
         if (spiceBlowAndNexus == null)
             throw new InvalidGameStateException("Spice Blow and Nexus Phase has not started.");
-        int wormsToPlace = 0;
-        boolean wormToRide = false;
-        if (hasFaction("Fremen")) {
-            FremenFaction fremen = (FremenFaction) getFaction("Fremen");
-            wormsToPlace = fremen.getWormsToPlace();
-            wormToRide = fremen.isWormRideActive();
-        }
-        if (wormsToPlace > 0)
-            throw new InvalidGameStateException("Fremen must place " + wormsToPlace + " worms before the game can advance.");
-        if (wormToRide)
+        FremenFaction fremen = getFremenFactionOrNull();
+        if (fremen != null && fremen.getWormsToPlace() > 0)
+            throw new InvalidGameStateException("Fremen must place " + fremen.getWormsToPlace() + " worms before the game can advance.");
+        if (fremen != null && fremen.isWormRideActive())
             throw new InvalidGameStateException("Fremen must decide whether to ride the worm before the game can advance.");
         if (spiceBlowAndNexus.isHarvesterActive())
             throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Harvester").getName() + " must decide if they will play Harvester before the game can advance.");
@@ -1407,17 +1425,14 @@ public class Game {
                         greatMaker = true;
                 } else {
                     spiceMultiplier = 1;
-                    FremenFaction fremen = null;
-                    if (hasFaction("Fremen"))
-                        fremen = (FremenFaction) getFaction("Fremen");
                     message.append(Emojis.WORM).append(" ").append(drawn.name()).append(" has been ").append(spotted).append("!");
                     nexus = true;
                     if (cardIsGreatMaker)
                         greatMaker = true;
+                    FremenFaction fremen = getFremenFactionOrNull();
                     if (fremen != null) {
                         message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
                         fremen.presentWormPlacementChoices(Objects.requireNonNull(lastCard).name(), drawn.name());
-                        fremen.addWormToPlace();
                     }
                     message.append("\n");
                 }
@@ -1469,9 +1484,10 @@ public class Game {
             else getTerritory(drawn.tokenLocation()).setDiscoveryToken(smugglerTokens.removeFirst());
             getTerritory(drawn.tokenLocation()).setDiscovered(false);
             if (hasFaction("Guild") && drawn.discoveryToken().equals("Smuggler")) getFaction("Guild").getChat()
-                    .publish("The discovery token at " + drawn.tokenLocation() + " is **" + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + "**");
-            if (hasFaction("Fremen") && drawn.discoveryToken().equals("Hiereg")) getFaction("Fremen").getChat()
-                    .publish("The discovery token at " + drawn.tokenLocation() + " is **" + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + "**");
+                    .publish("The Smuggler Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
+            FremenFaction fremen = getFremenFactionOrNull();
+            if (fremen != null && drawn.discoveryToken().equals("Hiereg"))
+                fremen.getChat().publish("The Hiereg Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
         }
         if (storm == drawn.sector()) getTerritory(drawn.name()).setSpice(0);
 

@@ -393,9 +393,7 @@ public class Territory {
             response += spice + " " + Emojis.SPICE + " is eaten by the worm!\n";
         spice = 0;
 
-        FremenFaction fremen = null;
-        if (game.hasFaction("Fremen"))
-            fremen = (FremenFaction) game.getFaction("Fremen");
+        FremenFaction fremen = game.getFremenFactionOrNull();
         if (countFactions() > 0) {
             List<Force> forcesToRemove = new ArrayList<>();
             StringBuilder message = new StringBuilder();

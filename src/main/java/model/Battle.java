@@ -331,10 +331,10 @@ public class Battle {
             defenderBattlePlan = null;
             battlePlanRemoved = true;
         }
-        Faction fremen = game.getFaction("Fremen");
         String message = "Your free dial advantage has been negated by Karama.";
         if (battlePlanRemoved)
             message += "\nYou must submit a new battle plan.";
+        Faction fremen = game.getFremenFaction();
         fremen.getChat().publish(message + " " + fremen.getPlayer());
     }
 

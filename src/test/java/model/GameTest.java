@@ -68,6 +68,50 @@ class GameTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#spiceBlowPhaseNextStep")
+    class SpiceBlowPhaseNextStep {
+        @BeforeEach
+        void setUp() throws InvalidGameStateException, IOException {
+            game.startSpiceBlowPhase();
+            game.addFaction(fremen);
+        }
+
+        @Test
+        void testWormRideActive() {
+//            fremen.presentWormRideChoices("Funeral Plain");
+            fremen.setWormRideActive(true);
+            assertThrows(InvalidGameStateException.class, () -> game.spiceBlowPhaseNextStep());
+        }
+
+        @Test
+        void testRideAllowsNextStep() {
+//            fremen.presentWormRideChoices("Funeral Plain");
+            fremen.setWormRideActive(true);
+            fremen.setWormRideActive(false);
+            assertDoesNotThrow(() -> game.spiceBlowPhaseNextStep());
+        }
+
+        @Test
+        void testWormsToPlace() {
+            fremen.presentWormPlacementChoices("Funeral Plain", "Shai-Hulud");
+//            fremen.addWormToPlace();
+            assertThrows(InvalidGameStateException.class, () -> game.spiceBlowPhaseNextStep());
+        }
+
+        @Test
+        void testWormsWerePlaced() {
+            fremen.presentWormPlacementChoices("Funeral Plain", "Shai-Hulud");
+            fremen.presentWormPlacementChoices("The Great Flat", "Shai-Hulud");
+//            fremen.addWormToPlace();
+//            fremen.addWormToPlace();
+            fremen.placeWorm(false, sietchTabr, false);
+            assertThrows(InvalidGameStateException.class, () -> game.spiceBlowPhaseNextStep());
+            fremen.placeWorm(false, garaKulon, false);
+            assertDoesNotThrow(() -> game.spiceBlowPhaseNextStep());
+        }
+    }
+
+    @Nested
     @DisplayName("#choamCharityPhase")
     class ChoamCharity {
         @BeforeEach
@@ -1245,6 +1289,13 @@ class GameTest extends DuneTest {
             game.endStormPhase();
             assertEquals(2, game.getStorm());
             assertEquals("The storm moves 4 sectors this turn.", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testFremenGetsNextStormMovement() throws IOException {
+            game.addFaction(fremen);
+            game.endStormPhase();
+            assertEquals("The storm will move " + game.getStormMovement() + " sectors next turn.", fremenChat.getMessages().getLast());
         }
 
         @Test

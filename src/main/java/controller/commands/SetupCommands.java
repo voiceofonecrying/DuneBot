@@ -170,7 +170,7 @@ public class SetupCommands {
             );
         }
 
-        if (game.hasFaction("Fremen")) {
+        if (game.hasFremenFaction()) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.TRAITORS) + 1,
                     SetupStep.FREMEN_FORCES
@@ -438,9 +438,9 @@ public class SetupCommands {
     }
 
     public static StepStatus fremenForcesStep(Game game) {
-        Faction fremen = game.getFaction("Fremen");
+        FremenFaction fremen = game.getFremenFaction();
         game.getGameActions().publish(fremen.getEmoji() + " will place their starting 10 " + Emojis.FREMEN_TROOP + " and " + Emojis.FREMEN_FEDAYKIN);
-        ((FremenFaction) fremen).presentStartingForcesChoices();
+        fremen.presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 

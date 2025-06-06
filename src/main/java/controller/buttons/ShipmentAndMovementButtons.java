@@ -528,11 +528,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         ).findFirst().orElseThrow();
 
         if (shaiHuludPlacement || greatMakerPlacement) {
-            String wormName = shaiHuludPlacement ? "Shai-Hulud" : "Great Maker";
-            String territoryName = territory.getTerritoryName();
-            game.placeShaiHulud(territoryName, wormName, false);
-            ((FremenFaction) game.getFaction("Fremen")).wormWasPlaced();
-            discordGame.queueMessage("You placed " + wormName + " in " + territoryName);
+            game.getFremenFaction().placeWorm(greatMakerPlacement, territory, false);
             discordGame.pushGame();
             return;
         } else if (btHTPlacement) {
@@ -847,11 +843,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
         if (territory.size() == 1) {
             if (shaiHuludPlacement || greatMakerPlacement) {
-                String wormName = shaiHuludPlacement ? "Shai-Hulud" : "Great Maker";
-                String territoryName = territory.getFirst().getTerritoryName();
-                game.placeShaiHulud(territoryName, wormName, false);
-                ((FremenFaction) game.getFaction("Fremen")).wormWasPlaced();
-                discordGame.queueMessage("You placed " + wormName + " in " + territoryName);
+                game.getFremenFaction().placeWorm(greatMakerPlacement, territory.getFirst(), false);
                 discordGame.pushGame();
                 return;
             }
@@ -1115,10 +1107,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
             }
             case "-place-shai-hulud", "-place-great-maker" -> {
-                String wormName = buttonSuffix.equals("-place-shai-hulud") ? "Shai-Hulud" : "Great Maker";
-                discordGame.queueMessage("You will keep " + wormName + " in " + faction.getMovement().getMovingFrom() + ".");
-                game.placeShaiHulud(faction.getMovement().getMovingFrom(), wormName, false);
-                ((FremenFaction) game.getFaction("Fremen")).wormWasPlaced();
+                game.getFremenFaction().placeWorm(buttonSuffix.equals("-place-great-maker"), game.getTerritory(faction.getMovement().getMovingFrom()), true);
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
             }
             case "-guild-ambassador" -> {
