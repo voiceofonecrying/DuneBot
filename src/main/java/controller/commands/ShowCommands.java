@@ -372,7 +372,7 @@ public class ShowCommands {
             Territory territory = game.getTerritories().values().stream()
                     .filter(Territory::hasRicheseNoField)
                     .findFirst().orElse(null);
-            if (territory != null) {
+            if (territory != null && (game.getPhase() < 8 || game.allFactionsHaveMoved())) {
                 int noField = territory.getRicheseNoField();
                 Button button = Button.success("richese-reveal-no-field", "Reveal " + noField + " No-Field in " + territory.getTerritoryName());
                 button = button.withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.NO_FIELD)));
