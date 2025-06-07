@@ -869,6 +869,7 @@ abstract class FactionTestTemplate {
         Territory theGreatFlat;
         Territory funeralPlain;
         Movement movement;
+        TestTopic bgChat;
 
         @BeforeEach
         void setUp() {
@@ -886,7 +887,7 @@ abstract class FactionTestTemplate {
         @Test
         void testBGGetFlipMessage() throws IOException {
             BGFaction bg = new BGFaction("p", "u");
-            TestTopic bgChat = new TestTopic();
+            bgChat = new TestTopic();
             bg.setChat(bgChat);
             bg.setLedger(new TestTopic());
             game.addFaction(bg);

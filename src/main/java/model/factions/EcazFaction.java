@@ -340,7 +340,7 @@ public class EcazFaction extends Faction {
             choices.add(new DuneChoice("ecaz-trigger-ambassador-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
             choices.add(new DuneChoice("danger", "ecaz-don't-trigger-ambassador", "Don't Trigger"));
             game.getTurnSummary().publish(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " Ambassador.");
-            chat.publish("Will you trigger your " + ambassador + " Ambassador against " + targetFaction.getEmoji() + " in " + targetTerritory.getTerritoryName() + "? " + player, choices);
+            chat.publish("Will you trigger your " + ambassador + " Ambassador in " + targetTerritory.getTerritoryName() + " against " + targetFaction.getEmoji() + "? " + player, choices);
         }
     }
 

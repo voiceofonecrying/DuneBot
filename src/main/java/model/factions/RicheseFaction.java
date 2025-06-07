@@ -127,6 +127,19 @@ public class RicheseFaction extends Faction {
         return game.getTerritories().values().stream().filter(Territory::hasRicheseNoField).findFirst().orElse(null);
     }
 
+    public void moveNoField(String toTerritoryName, boolean triggerTokensAndFlips) throws InvalidGameStateException {
+        Territory fromTerritory = getTerritoryWithNoFieldOrNull();
+        if (fromTerritory == null)
+            throw new InvalidGameStateException("No Territory has a No-Field token.");
+        Territory toTerritory = game.getTerritory(toTerritoryName);
+        toTerritory.setRicheseNoField(fromTerritory.getRicheseNoField());
+        fromTerritory.setRicheseNoField(null);
+        game.getTurnSummary().publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + toTerritory.getTerritoryName() + ".");
+        if (toTerritory.hasActiveFaction("BG"))
+            game.getBGFaction().presentFlipMessage(game, toTerritory.getTerritoryName());
+        game.checkForTriggers(toTerritory, this, 1);
+    }
+
     public void revealNoField(Game game, Faction factionShippedWithNoField) {
         Territory territory = getTerritoryWithNoFieldOrNull();
         if (territory != null) {

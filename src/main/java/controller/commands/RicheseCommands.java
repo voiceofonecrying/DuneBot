@@ -26,6 +26,7 @@ public class RicheseCommands {
                                 "place-no-fields-token",
                                 "Place a No-Fields token on the map."
                         ).addOptions(richeseNoFields, CommandOptions.territory),
+                        new SubcommandData("move-no-field", "Move the No Field to a different territory").addOptions(territory),
                         new SubcommandData("reveal-no-field", "Replace the No Field with Richese forces and move it to front of shield").addOptions(ecazAllyNoField),
                         new SubcommandData("card-bid", "Start bidding on a Richese card")
                                 .addOptions(richeseCard, richeseBidType),
@@ -53,6 +54,7 @@ public class RicheseCommands {
             case "karama-buy" -> karamaBuy(discordGame, game);
             case "karama-block-cache-card" -> karamaBlockCacheCard(discordGame, game);
             case "place-no-fields-token" -> placeNoFieldToken(discordGame, game);
+            case "move-no-field" -> moveNoField(discordGame, game);
             case "reveal-no-field" -> revealNoField(discordGame, game);
         }
     }
@@ -116,6 +118,12 @@ public class RicheseCommands {
         Territory territory = game.getTerritories().get(territoryName);
         RicheseFaction richese = game.getRicheseFaction();
         richese.shipNoField(richese, territory, noField, false, false, 0);
+        discordGame.pushGame();
+    }
+
+    public static void moveNoField(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        String territoryName = discordGame.required(territory).getAsString();
+        game.getRicheseFaction().moveNoField(territoryName, true);
         discordGame.pushGame();
     }
 
