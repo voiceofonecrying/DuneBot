@@ -832,8 +832,8 @@ public class Faction {
         }
         String noFieldString = noField ? Emojis.NO_FIELD + " " : "";
         subtractSpice(spice - support, noFieldString + "shipment to " + territory.getTerritoryName());
-        if (!karamaShipment && !(this instanceof GuildFaction) && game.hasFaction("Guild")) {
-            Faction guild = game.getFaction("Guild");
+        Faction guild = game.getGuildFactionOrNull();
+        if (!karamaShipment && !(this instanceof GuildFaction) && guild != null) {
             int spicePaidToGuild = spice - guildSupport;
             if (!guild.isHighThreshold())
                 spicePaidToGuild = Math.ceilDiv(spicePaidToGuild, 2);

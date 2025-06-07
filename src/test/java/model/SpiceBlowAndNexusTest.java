@@ -146,6 +146,16 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         assertEquals("The Hiereg Token in Cielago East (West Sector) is " + tokenName + ".", fremenChat.getMessages().getLast());
     }
 
+    @Test
+    void testGuildSeeSmugglerToken() {
+        game.addGameOption(GameOption.DISCOVERY_TOKENS);
+        game.addFaction(guild);
+        game.getSpiceDeck().addFirst(new SpiceCard("Funeral Plain", 14, 6, "Smuggler", "Pasty Mesa (North Sector)"));
+        game.drawSpiceBlow("A", false);
+        String tokenName = game.getTerritory("Pasty Mesa (North Sector)").getDiscoveryToken();
+        assertEquals("The Smuggler Token in Pasty Mesa (North Sector) is " + tokenName + ".", guildChat.getMessages().getLast());
+    }
+
     @Nested
     @DisplayName("#wormThenSandtroutThenWorm")
     class WormThenSandtroutThenWorm {

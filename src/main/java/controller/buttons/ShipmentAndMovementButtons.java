@@ -27,7 +27,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
         if (event.getComponentId().startsWith("ship-sector-")) filterBySector(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("ship-to-reserves-")) {
-            queueForcesButtons(event, game, discordGame, game.getFaction("Guild"), true, false, false, false, false);
+            queueForcesButtons(event, game, discordGame, game.getGuildFaction(), true, false, false, false, false);
             discordGame.pushGame();
         }
         else if (event.getComponentId().startsWith("cross-ship-from-")) setCrossShipFrom(event, game, discordGame);
@@ -192,7 +192,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         String from = game.getTerritory(event.getComponentId().replace("cross-ship-from-", "")).getTerritoryName();
         faction.getShipment().setCrossShipFrom(from);
         queueShippingButtons(event, game, discordGame);
-        game.getFaction("Guild").getShipment().setToReserves(false);
+        game.getGuildFaction().getShipment().setToReserves(false);
         discordGame.pushGame();
     }
 
@@ -203,7 +203,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 buttons.add(Button.primary("ship-to-reserves-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
         arrangeButtonsAndSend("Where would you like to ship to reserves from?", buttons, discordGame);
-        game.getFaction("Guild").getShipment().setToReserves(true);
+        game.getGuildFaction().getShipment().setToReserves(true);
         discordGame.pushGame();
     }
 
@@ -215,7 +215,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 buttons.add(Button.primary("cross-ship-from-" + territory.getTerritoryName(), territory.getTerritoryName()));
         }
         arrangeButtonsAndSend("Where would you like to ship from?", buttons, discordGame);
-        game.getFaction("Guild").getShipment().setToReserves(true);
+        game.getGuildFaction().getShipment().setToReserves(true);
         discordGame.pushGame();
     }
 
