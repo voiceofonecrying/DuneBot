@@ -1485,11 +1485,12 @@ public class Faction {
         Territory from = game.getTerritory(movingFrom);
         Territory to = game.getTerritory(movingTo);
         if (movingNoField) {
+//            game.getRicheseFaction().moveNoField(movingTo, false);
             to.setRicheseNoField(from.getRicheseNoField());
             from.setRicheseNoField(null);
-            game.getTurnSummary().publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName());
-            if (to.hasActiveFaction("BG") && !(this instanceof BGFaction))
-                game.getBGFaction().presentFlipMessage(game, to.getTerritoryName());
+            game.getTurnSummary().publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + to.getTerritoryName() + ".");
+//            if (to.hasActiveFaction("BG") && !(this instanceof BGFaction))
+//                game.getBGFaction().presentFlipMessage(game, to.getTerritoryName());
             game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
         } else {
             game.moveForces(this, from, to, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);

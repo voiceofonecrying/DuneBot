@@ -255,6 +255,65 @@ class RicheseFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#moveNoField")
+    class MoveNoField {
+        Territory ixHomeworld;
+        Territory sietchTabr;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(new IxFaction("ix", "ix"));
+            ixHomeworld = game.getTerritory("Ix");
+            sietchTabr = game.getTerritory("Sietch Tabr");
+            ixHomeworld.setRicheseNoField(0);
+        }
+
+        @Test
+        void testNoFieldGoesToNewTerritory() throws InvalidGameStateException {
+            assertNull(sietchTabr.getRicheseNoField());
+            faction.moveNoField("Sietch Tabr", true);
+            assertNull(ixHomeworld.getRicheseNoField());
+            assertEquals(0, sietchTabr.getRicheseNoField());
+            assertEquals(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to Sietch Tabr.", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        void testBGCanFlipToAdvisors() throws IOException, InvalidGameStateException {
+            BGFaction bg = new BGFaction("bg", "bg");
+            TestTopic bgChat = new TestTopic();
+            bg.setChat(bgChat);
+            bg.setLedger(new TestTopic());
+            game.addFaction(bg);
+            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            faction.moveNoField("Sietch Tabr", true);
+            assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr? bg", bgChat.getMessages().getLast());
+        }
+
+        @Test
+        void testNoFieldTriggersTerrorToken() throws IOException, InvalidGameStateException {
+            MoritaniFaction moritani = new MoritaniFaction("mo", "mo");
+            TestTopic moritaniChat = new TestTopic();
+            moritani.setChat(moritaniChat);
+            game.addFaction(moritani);
+            sietchTabr.addTerrorToken(game, "Robbery");
+            faction.moveNoField("Sietch Tabr", true);
+            assertEquals("Will you trigger your Robbery Terror Token in Sietch Tabr against " + Emojis.RICHESE + "? mo", moritaniChat.getMessages().getLast());
+        }
+
+        @Test
+        void testNoFieldTriggersAmbassador() throws IOException, InvalidGameStateException {
+            EcazFaction ecaz = new EcazFaction("ec", "ec");
+            TestTopic ecazChat = new TestTopic();
+            ecaz.setChat(ecazChat);
+            game.addFaction(ecaz);
+            sietchTabr.setEcazAmbassador("Atreides");
+            faction.moveNoField("Sietch Tabr", true);
+            assertEquals("Will you trigger your Atreides Ambassador in Sietch Tabr against " + Emojis.RICHESE + "? ec", ecazChat.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#revealNoField")
     class RevealNoField {
         Territory sietchTabr;
@@ -347,6 +406,19 @@ class RicheseFactionTest extends FactionTestTemplate {
             assertEquals("The 5 " + Emojis.NO_FIELD + " in Sietch Tabr reveals 3 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR,
                     turnSummary.getMessages().getLast());
             assertEquals(5, faction.getFrontOfShieldNoField());
+        }
+    }
+
+    @Nested
+    @DisplayName("#executeMovement")
+    class ExecuteMovement extends FactionTestTemplate.ExecuteMovement {
+        @Test
+        @Override
+        void testBGGetFlipMessage() throws IOException {
+            theGreatFlat.setRicheseNoField(3);
+            movement.setMovingNoField(true);
+            super.testBGGetFlipMessage();
+            assertEquals(1, bgChat.getMessages().size());
         }
     }
 }

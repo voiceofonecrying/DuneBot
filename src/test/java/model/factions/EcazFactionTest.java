@@ -258,7 +258,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         void testOtherFactionTriggers() {
             faction.checkForAmbassadorTrigger(carthag, atreides);
             assertEquals(Emojis.ECAZ + " has an opportunity to trigger their BG Ambassador.", turnSummary.getMessages().getFirst());
-            assertTrue(chat.getMessages().getFirst().contains("Will you trigger your BG Ambassador against " + Emojis.ATREIDES + " in Carthag?"));
+            assertTrue(chat.getMessages().getFirst().contains("Will you trigger your BG Ambassador in Carthag against " + Emojis.ATREIDES + "?"));
             assertEquals(2, chat.getChoices().getFirst().size());
         }
 
