@@ -870,6 +870,8 @@ abstract class FactionTestTemplate {
         Territory funeralPlain;
         Movement movement;
         TestTopic bgChat;
+        TestTopic ecazChat;
+        TestTopic moritaniChat;
 
         @BeforeEach
         void setUp() {
@@ -885,7 +887,7 @@ abstract class FactionTestTemplate {
         }
 
         @Test
-        void testBGGetFlipMessage() throws IOException {
+        void testBGGetFlipMessage() throws IOException, InvalidGameStateException {
             BGFaction bg = new BGFaction("p", "u");
             bgChat = new TestTopic();
             bg.setChat(bgChat);
@@ -894,6 +896,28 @@ abstract class FactionTestTemplate {
             bg.placeForceFromReserves(game, funeralPlain, 1, false);
             faction.executeMovement(game);
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Funeral Plain? p", bgChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testEcazGetAmbassadorMessage() throws IOException, InvalidGameStateException {
+            EcazFaction ecaz = new EcazFaction("ec", "ec");
+            ecazChat = new TestTopic();
+            ecaz.setChat(ecazChat);
+            game.addFaction(ecaz);
+            funeralPlain.setEcazAmbassador("Ecaz");
+            faction.executeMovement(game);
+            assertEquals("Will you trigger your Ecaz Ambassador in Funeral Plain against " + faction.getEmoji() + "? ec", ecazChat.getMessages().getFirst());
+        }
+
+        @Test
+        void testMoritaniGetTerrorTokenMessage() throws IOException, InvalidGameStateException {
+            MoritaniFaction moritani = new MoritaniFaction("mo", "mo");
+            moritaniChat = new TestTopic();
+            moritani.setChat(moritaniChat);
+            game.addFaction(moritani);
+            funeralPlain.addTerrorToken(game, "Robbery");
+            faction.executeMovement(game);
+            assertEquals("Will you trigger your Robbery Terror Token in Funeral Plain against " + faction.getEmoji() + "? mo", moritaniChat.getMessages().getFirst());
         }
     }
 

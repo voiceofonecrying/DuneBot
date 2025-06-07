@@ -765,6 +765,15 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#executeMovement")
+    class ExecuteMovement extends FactionTestTemplate.ExecuteMovement {
+        @Test
+        @Override
+        void testEcazGetAmbassadorMessage() {
+        }
+    }
+
+    @Nested
     @DisplayName("#occupierTakesDukeVidal")
     class OccupierTakesDukeVidal {
         HomeworldTerritory ecazHomeworld;

@@ -149,6 +149,20 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#executeMovement")
+    class ExecuteMovement extends FactionTestTemplate.ExecuteMovement {
+        @Test
+        @Override
+        void testEcazGetAmbassadorMessage() {
+        }
+
+        @Test
+        @Override
+        void testMoritaniGetTerrorTokenMessage() {
+        }
+    }
+
+    @Nested
     @DisplayName("#assassinateLeader")
     class AssassinateLeader {
         BTFaction bt;

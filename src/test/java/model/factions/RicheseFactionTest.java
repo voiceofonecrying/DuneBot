@@ -412,13 +412,33 @@ class RicheseFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("#executeMovement")
     class ExecuteMovement extends FactionTestTemplate.ExecuteMovement {
-        @Test
+        @BeforeEach
         @Override
-        void testBGGetFlipMessage() throws IOException {
+        void setUp() {
+            super.setUp();
             theGreatFlat.setRicheseNoField(3);
             movement.setMovingNoField(true);
+        }
+
+        @Test
+        @Override
+        void testBGGetFlipMessage() throws IOException, InvalidGameStateException {
             super.testBGGetFlipMessage();
             assertEquals(1, bgChat.getMessages().size());
+        }
+
+        @Test
+        @Override
+        void testEcazGetAmbassadorMessage() throws InvalidGameStateException, IOException {
+            super.testEcazGetAmbassadorMessage();
+            assertEquals(1, ecazChat.getMessages().size());
+        }
+
+        @Test
+        @Override
+        void testMoritaniGetTerrorTokenMessage() throws InvalidGameStateException, IOException {
+            super.testMoritaniGetTerrorTokenMessage();
+            assertEquals(1, moritaniChat.getMessages().size());
         }
     }
 }
