@@ -135,9 +135,11 @@ public class RicheseFaction extends Faction {
         toTerritory.setRicheseNoField(fromTerritory.getRicheseNoField());
         fromTerritory.setRicheseNoField(null);
         game.getTurnSummary().publish(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to " + toTerritory.getTerritoryName() + ".");
-        if (toTerritory.hasActiveFaction("BG"))
-            game.getBGFaction().presentFlipMessage(game, toTerritory.getTerritoryName());
-        game.checkForTriggers(toTerritory, this, 1);
+        if (triggerTokensAndFlips) {
+            if (toTerritory.hasActiveFaction("BG"))
+                game.getBGFaction().presentFlipMessage(game, toTerritory.getTerritoryName());
+            game.checkForTriggers(toTerritory, this, 1);
+        }
     }
 
     public void revealNoField(Game game, Faction factionShippedWithNoField) {
