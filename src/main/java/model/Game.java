@@ -618,6 +618,25 @@ public class Game {
     }
 
     /**
+     * Get the Guild faction object
+     *
+     * @return the GuildFaction object if Guild is in the game
+     * @throws IllegalArgumentException if Guild is not in the game
+     */
+    public GuildFaction getGuildFaction() {
+        return (GuildFaction) getFaction("Guild");
+    }
+
+    /**
+     * Get the Guild faction object
+     *
+     * @return the GuildFaction object if Guild is in the game or null if Guild is not in the game
+     */
+    public GuildFaction getGuildFactionOrNull() {
+        return (GuildFaction) getFactionOrNull("Guild");
+    }
+
+    /**
      * Get the Harkonnen faction object
      *
      * @return the HarkonnenFaction object if Harkonnen is in the game
@@ -1483,8 +1502,9 @@ public class Game {
                 getTerritory(drawn.tokenLocation()).setDiscoveryToken(hieregTokens.removeFirst());
             else getTerritory(drawn.tokenLocation()).setDiscoveryToken(smugglerTokens.removeFirst());
             getTerritory(drawn.tokenLocation()).setDiscovered(false);
-            if (hasFaction("Guild") && drawn.discoveryToken().equals("Smuggler")) getFaction("Guild").getChat()
-                    .publish("The Smuggler Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
+            GuildFaction guild = getGuildFactionOrNull();
+            if (guild != null && drawn.discoveryToken().equals("Smuggler"))
+                guild.getChat().publish("The Smuggler Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
             FremenFaction fremen = getFremenFactionOrNull();
             if (fremen != null && drawn.discoveryToken().equals("Hiereg"))
                 fremen.getChat().publish("The Hiereg Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
