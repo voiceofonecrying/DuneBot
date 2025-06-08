@@ -772,6 +772,10 @@ public class Game {
         return hasFaction("Fremen");
     }
 
+    public boolean hasGuildFaction() {
+        return hasFaction("Guild");
+    }
+
     public boolean hasHarkonnenFaction() {
         return hasFaction("Harkonnen");
     }
@@ -1535,7 +1539,7 @@ public class Game {
         }
         turnOrder.clear();
         turnOrder.addAll(getFactionsInStormOrder().stream().map(Faction::getName).toList());
-        boolean hasGuild = hasFaction("Guild");
+        boolean hasGuild = hasGuildFaction();
         if (hasGuild) {
             turnOrder.remove("Guild");
             turnOrder.addFirst("AskGuild");
@@ -1596,7 +1600,7 @@ public class Game {
 
     public int numFactionsLeftToMove() {
         int factionsLeftToGo = turnOrder.size();
-        if (hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild"))
+        if (isGuildNeedsToShip())
             factionsLeftToGo++;
         return factionsLeftToGo;
     }
@@ -1606,11 +1610,10 @@ public class Game {
             guildTakeTurn();
             return;
         }
-
         turnOrder.pollFirst();
         String nextToShip = turnOrder.peekFirst();
         turnOrder.addFirst("AskGuild");
-        DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn next.");
+        DuneChoice takeTurn = new DuneChoice("guild-take-turn", "Take turn now.");
         DuneChoice defer = new DuneChoice("guild-defer", "Defer to " + nextToShip + ".");
         DuneChoice select = new DuneChoice("guild-select", "Defer to another faction.");
         DuneChoice last = new DuneChoice("guild-wait-last", "Take turn last.");
@@ -1620,8 +1623,8 @@ public class Game {
             select.setDisabled(turnOrder.size() == 3);
         } else
             select.setDisabled(turnOrder.size() == 2);
-        Faction guild = getFaction("Guild");
-        guild.getChat().publish("Use buttons to take your turn out of order. " + guild.getPlayer(), List.of(takeTurn, defer, select, last));
+        Faction guild = getGuildFaction();
+        guild.getChat().publish("Would you like to ship now or take your turn out of order. " + guild.getPlayer(), List.of(takeTurn, defer, select, last));
     }
 
     public void promptGuildToSelectFactionToDeferTo() {
@@ -1636,7 +1639,7 @@ public class Game {
         if (juiceOfSaphoLast)
             choices.getLast().setDisabled(true);
         choices.add(new DuneChoice("secondary", "guild-take-turn", "Take turn next."));
-        Faction guild = getFaction("Guild");
+        Faction guild = getGuildFaction();
         guild.getChat().reply("Which faction would you like to defer to? " + guild.getPlayer(), choices);
     }
 
@@ -1649,8 +1652,7 @@ public class Game {
         turnOrder.addFirst(factionToDeferTo);
         turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
         promptNextFactionToShip();
-        Faction guild = getFaction("Guild");
-        guild.getChat().reply("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
+        getGuildFaction().getChat().reply("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
     }
 
     public void guildDeferUntilAfter(String factionToDeferTo) throws InvalidGameStateException {
@@ -1669,8 +1671,7 @@ public class Game {
             turnOrder.addFirst(earlyFactions.pollLast());
         turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
         promptNextFactionToShip();
-        Faction guild = getFaction("Guild");
-        guild.getChat().reply("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
+        getGuildFaction().getChat().reply("You will defer to " + Emojis.getFactionEmoji(factionToDeferTo));
     }
 
     public void guildWaitLast() {
@@ -1678,8 +1679,7 @@ public class Game {
         turnSummary.publish(Emojis.GUILD + " does not ship at this time.");
         turnOrder.pollFirst();
         promptNextFactionToShip();
-        Faction guild = getFaction("Guild");
-        guild.getChat().reply("You will take your turn last.");
+        getGuildFaction().getChat().reply("You will take your turn last.");
     }
 
     public void guildTakeTurn() {
@@ -1687,8 +1687,7 @@ public class Game {
         turnOrder.addFirst("Guild");
         promptNextFactionToShip();
         getTurnSummary().publish(Emojis.GUILD + " will take their turn next.");
-        Faction guild = getFaction("Guild");
-        guild.getChat().reply("You will take your turn now.");
+        getGuildFaction().getChat().reply("You will take your turn now.");
     }
 
     public void juiceOfSaphoDontPlay(Faction faction) throws InvalidGameStateException {
@@ -1720,7 +1719,8 @@ public class Game {
     }
 
     public boolean isGuildNeedsToShip() {
-        return hasFaction("Guild") && !getFaction("Guild").getShipment().hasShipped() && !turnOrder.contains("Guild");
+        GuildFaction guild = getGuildFactionOrNull();
+        return guild != null && !guild.getShipment().hasShipped() && !turnOrder.contains("Guild");
     }
 
     public void promptNextFactionToShip() {
