@@ -342,6 +342,142 @@ class GameTest extends DuneTest {
         }
 
         @Nested
+        @DisplayName("promptGuildShippingDecision")
+        class PromptGuildShippingDecision {
+            @BeforeEach
+            void setUp() {
+                game.startShipmentPhase();
+            }
+
+            @Test
+            void testAskGuildFirst() {
+                game.promptGuildShippingDecision();
+                assertEquals("Would you like to ship now or take your turn out of order. gu", guildChat.getMessages().getLast());
+                assertEquals(4, guildChat.getChoices().getLast().size());
+                assertFalse(guildChat.getChoices().getLast().get(1).isDisabled());
+                assertFalse(guildChat.getChoices().getLast().get(2).isDisabled());
+                assertFalse(guildChat.getChoices().getLast().get(3).isDisabled());
+            }
+
+            @Test
+            void testDeferSelectionDisabledWithOnlyOneOtherFactionLeft() throws InvalidGameStateException {
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.promptGuildShippingDecision();
+                assertEquals("Would you like to ship now or take your turn out of order. gu", guildChat.getMessages().getLast());
+                assertEquals(4, guildChat.getChoices().getLast().size());
+                assertFalse(guildChat.getChoices().getLast().get(1).isDisabled());
+                assertTrue(guildChat.getChoices().getLast().get(2).isDisabled());
+                assertFalse(guildChat.getChoices().getLast().get(3).isDisabled());
+            }
+
+            @Test
+            void testDeferAsLongAsPossible() throws InvalidGameStateException {
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                guildChat.clear();
+                game.promptGuildShippingDecision();
+                assertTrue(guildChat.getMessages().stream().noneMatch(m -> m.equals("Would you like to ship now or take your turn out of order. gu")));
+                assertEquals("Use buttons to perform Shipment and Movement actions on your turn. gu", guildChat.getMessages().getFirst());
+                assertEquals(2, guildChat.getChoices().getLast().size());
+                assertEquals("You will take your turn now.", guildChat.getMessages().getLast());
+            }
+
+            @Test
+            void testJuiceOfSaphoGoesLast() throws InvalidGameStateException {
+                emperor.addTreacheryCard(new TreacheryCard("Juice of Sapho"));
+                // The next line is a bit of a hack
+                emperor.getShipment().setMayPlaySapho(true);
+                game.guildDefer();
+                game.playJuiceOfSapho(emperor, true);
+                game.promptGuildShippingDecision();
+                assertEquals("Would you like to ship now or take your turn out of order. gu", guildChat.getMessages().getLast());
+                assertEquals(4, guildChat.getChoices().getLast().size());
+                assertFalse(guildChat.getChoices().getLast().get(1).isDisabled());
+                assertFalse(guildChat.getChoices().getLast().get(2).isDisabled());
+                assertTrue(guildChat.getChoices().getLast().get(3).isDisabled());
+            }
+
+            @Test
+            void testJuiceOfSaphoDeferAsLongAsPossible() throws InvalidGameStateException {
+                emperor.addTreacheryCard(new TreacheryCard("Juice of Sapho"));
+                // The next line is a bit of a hack
+                emperor.getShipment().setMayPlaySapho(true);
+                game.guildDefer();
+                game.playJuiceOfSapho(emperor, true);
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.promptGuildShippingDecision();
+                assertEquals("Would you like to ship now or take your turn out of order. gu", guildChat.getMessages().getLast());
+                assertEquals(4, guildChat.getChoices().getLast().size());
+                assertTrue(guildChat.getChoices().getLast().get(1).isDisabled());
+                assertTrue(guildChat.getChoices().getLast().get(2).isDisabled());
+                assertTrue(guildChat.getChoices().getLast().get(3).isDisabled());
+            }
+        }
+
+        @Nested
+        @DisplayName("promptGuildToSelectFactionToDeferTo")
+        class PromptGuildToSelectFactionToDeferTo {
+            @BeforeEach
+            void setUp() {
+                game.startShipmentPhase();
+            }
+
+            @Test
+            void testPromptGuildToSelectAtStart() {
+                game.promptGuildToSelectFactionToDeferTo();
+                assertEquals("Which faction would you like to defer to? gu", guildChat.getMessages().getLast());
+                assertEquals(6, guildChat.getChoices().getLast().size());
+            }
+
+            @Test
+            void testPromptGuildToSelectAfterTwoHaveMoved() throws InvalidGameStateException {
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.guildDefer();
+                game.completeCurrentFactionMovement();
+                game.promptGuildToSelectFactionToDeferTo();
+                assertEquals("Which faction would you like to defer to? gu", guildChat.getMessages().getLast());
+                assertEquals(4, guildChat.getChoices().getLast().size());
+            }
+
+            @Test
+            void testJuiceOfSaphoFactionDisabled() throws InvalidGameStateException {
+                emperor.addTreacheryCard(new TreacheryCard("Juice of Sapho"));
+                // The next line is a bit of a hack
+                emperor.getShipment().setMayPlaySapho(true);
+                game.guildDefer();
+                game.playJuiceOfSapho(emperor, true);
+                game.promptGuildToSelectFactionToDeferTo();
+                assertEquals("Which faction would you like to defer to? gu", guildChat.getMessages().getLast());
+                assertEquals(6, guildChat.getChoices().getLast().size());
+                assertEquals(Emojis.EMPEROR, guildChat.getChoices().getLast().get(4).getEmoji());
+                assertTrue(guildChat.getChoices().getLast().get(4).isDisabled());
+            }
+        }
+
+        @Nested
         @DisplayName("#guildDefer")
         class GuildDefer {
             @BeforeEach
@@ -357,6 +493,7 @@ class GameTest extends DuneTest {
             @Test
             void testDeferOnce() throws InvalidGameStateException {
                 game.guildDefer();
+                assertEquals("You will defer to " + Emojis.EMPEROR, guildChat.getMessages().getLast());
                 assertFalse(game.getTurnOrder().contains("Guild"));
                 assertEquals(1, emperorChat.getMessages().size());
                 assertEquals("Use buttons to perform Shipment and Movement actions on your turn. em", emperorChat.getMessages().getFirst());
@@ -369,7 +506,7 @@ class GameTest extends DuneTest {
                 game.completeCurrentFactionMovement();
                 assertFalse(game.allFactionsHaveMoved());
                 assertFalse(game.getTurnOrder().contains("Emperor"));
-                assertEquals("Use buttons to take your turn out of order. gu", guildChat.getMessages().getLast());
+                assertEquals("Would you like to ship now or take your turn out of order. gu", guildChat.getMessages().getLast());
             }
 
             @Test
@@ -377,6 +514,7 @@ class GameTest extends DuneTest {
                 game.guildDefer();
                 game.completeCurrentFactionMovement();
                 game.guildTakeTurn();
+                assertEquals("You will take your turn now.", guildChat.getMessages().getLast());
                 assertEquals("Guild", game.getTurnOrder().getFirst());
             }
 
@@ -384,18 +522,20 @@ class GameTest extends DuneTest {
             void testDeferUntilAfterFremen() throws InvalidGameStateException {
                 assertEquals(List.of("AskGuild", "Emperor", "Richese", "Fremen", "Atreides", "BG"), game.getTurnOrder());
                 game.guildDeferUntilAfter("Fremen");
+                assertEquals("You will defer to " + Emojis.FREMEN, guildChat.getMessages().getLast());
                 guildChat.clear();
                 assertEquals(List.of("Emperor", "Richese", "Fremen", "AskGuild", "Atreides", "BG"), game.getTurnOrder());
                 game.completeCurrentFactionMovement();
                 game.completeCurrentFactionMovement();
                 assertTrue(guildChat.getMessages().isEmpty());
                 game.completeCurrentFactionMovement();
-                assertEquals("Use buttons to take your turn out of order. gu", guildChat.getMessages().getLast());
+                assertEquals("Would you like to ship now or take your turn out of order. gu", guildChat.getMessages().getLast());
             }
 
             @Test
             void testGuildGoesLast() {
                 game.guildWaitLast();
+                assertEquals("You will take your turn last.", guildChat.getMessages().getLast());
                 assertNotEquals("Guild", game.getTurnOrder().getFirst());
                 assertEquals("Guild", game.getTurnOrder().getLast());
             }
@@ -441,6 +581,32 @@ class GameTest extends DuneTest {
                 assertNotEquals("Atreides", game.getTurnOrder().getFirst());
                 assertTrue(game.getTurnOrder().contains("Atreides"));
                 assertEquals("BG", game.getTurnOrder().getFirst());
+            }
+        }
+
+        @Nested
+        @DisplayName("#juiceOfSapho2")
+        class JuiceOfSapho2 {
+            @BeforeEach
+            void setUp() {
+                bg.addTreacheryCard(new TreacheryCard("Juice of Sapho"));
+                game.startShipmentPhase();
+            }
+
+            @Test
+            void testJuiceOfSaphoButAlreadyLast() throws InvalidGameStateException {
+                game.juiceOfSaphoDontPlay(bg);
+                game.guildTakeTurn();
+                // This next line really should not be necessary
+                guild.getShipment().setShipped(true);
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                game.completeCurrentFactionMovement();
+                assertEquals("BG", game.getTurnOrder().getFirst());
+                assertEquals("Play Juice of Sapho to go last", bgChat.getChoices().getLast().getLast().getLabel());
+                assertTrue(bgChat.getChoices().getLast().getLast().isDisabled());
             }
         }
 
