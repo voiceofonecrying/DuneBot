@@ -1704,10 +1704,10 @@ public class ReportsCommands {
                 playedMax = new StringBuilder();
             }
             String playerTag = getPlayerString(guild, playerName, members);
-            if (factionsPlayed == maxFactionsPlayed) {
-                playedMax.append(maxFactionsPlayed).append(" - ");
+            if (factionsPlayed >= maxFactionsPlayed-3) {
+                playedMax.append(factionsPlayed).append(" - ").append(playerTag);
                 if (factionsPlayed != 12)
-                    playedMax.append(playerTag).append(", missing only ").append(missedFactionEmojis);
+                    playedMax.append(", missing only ").append(missedFactionEmojis);
                 playedMax.append("\n");
             }
         }
