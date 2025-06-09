@@ -1704,8 +1704,12 @@ public class ReportsCommands {
                 playedMax = new StringBuilder();
             }
             String playerTag = getPlayerString(guild, playerName, members);
-            if (factionsPlayed == maxFactionsPlayed)
-                playedMax.append(maxFactionsPlayed).append(" - ").append(playerTag).append(", missing only ").append(missedFactionEmojis).append("\n");
+            if (factionsPlayed == maxFactionsPlayed) {
+                playedMax.append(maxFactionsPlayed).append(" - ");
+                if (factionsPlayed != 12)
+                    playedMax.append(playerTag).append(", missing only ").append(missedFactionEmojis);
+                playedMax.append("\n");
+            }
         }
         if (playedMax.isEmpty())
             return "No players have played.";
