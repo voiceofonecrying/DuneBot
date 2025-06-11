@@ -225,22 +225,22 @@ public class BGFaction extends Faction {
     }
 
     public void presentAdvisorChoices(Game game, Faction targetFaction, Territory targetTerritory) {
-        if (!(targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
-                && !(game.hasGameOption(GameOption.HOMEWORLDS)
-                        && !isHighThreshold()
-                        && !(targetTerritory instanceof HomeworldTerritory)
-        )) {
-            List<DuneChoice> choices = new LinkedList<>();
-            String territoryName = targetTerritory.getTerritoryName();
-            DuneChoice adviseChoice = new DuneChoice("bg-advise-" + territoryName, "Advise");
-            adviseChoice.setDisabled(!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && targetFaction.getName().equals(ally) && !targetFaction.getName().equals("Ecaz") && targetTerritory.hasActiveFaction(targetFaction));
-            choices.add(adviseChoice);
-            choices.add(new DuneChoice("secondary", "bg-advise-Polar Sink", "Advise to Polar Sink"));
-            if (game.hasGameOption(GameOption.HOMEWORLDS))
-                choices.add(new DuneChoice("secondary", "bg-ht", "Advise 2 to Polar Sink"));
-            choices.add(new DuneChoice("danger", "bg-dont-advise-" + territoryName, "No"));
-            chat.publish("Would you like to advise the shipment to " + territoryName + "? " + player, choices);
-        }
+        if (targetFaction instanceof BGFaction || targetFaction instanceof FremenFaction)
+            return;
+        if (targetTerritory instanceof HomeworldTerritory || targetTerritory.getTerritoryName().equals("Polar Sink"))
+            return;
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && !isHighThreshold)
+            return;
+        List<DuneChoice> choices = new LinkedList<>();
+        String territoryName = targetTerritory.getTerritoryName();
+        DuneChoice adviseChoice = new DuneChoice("bg-advise-" + territoryName, "Advise");
+        adviseChoice.setDisabled(!game.hasGameOption(GameOption.BG_COEXIST_WITH_ALLY) && targetFaction.getName().equals(ally) && !targetFaction.getName().equals("Ecaz") && targetTerritory.hasActiveFaction(targetFaction));
+        choices.add(adviseChoice);
+        choices.add(new DuneChoice("secondary", "bg-advise-Polar Sink", "Advise to Polar Sink"));
+        if (game.hasGameOption(GameOption.HOMEWORLDS))
+            choices.add(new DuneChoice("secondary", "bg-ht", "Advise 2 to Polar Sink"));
+        choices.add(new DuneChoice("danger", "bg-dont-advise-" + territoryName, "No"));
+        chat.publish("Would you like to advise the shipment to " + territoryName + "? " + player, choices);
     }
 
     /**
@@ -280,7 +280,7 @@ public class BGFaction extends Faction {
     }
 
     public void presentFlipMessage(Game game, String territoryName) {
-        if (territoryName.equals("Polar Sink"))
+        if (territoryName.equals("Polar Sink") || game.getTerritory(territoryName) instanceof HomeworldTerritory)
             return;
         intrudedTerritories.add(territoryName);
         List<DuneChoice> choices = new LinkedList<>();
