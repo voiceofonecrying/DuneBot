@@ -319,6 +319,13 @@ class BGFactionTest extends FactionTestTemplate {
         }
     }
 
+    @Test
+    public void testBGDontGetFlipMessageOnHomeworlds() {
+        game.addGameOption(GameOption.HOMEWORLDS);
+        faction.presentFlipMessage(game, "Wallach IX");
+        assertTrue(chat.getMessages().isEmpty());
+    }
+
     @Nested
     @DisplayName("#homeworld")
     class Homeworld extends FactionTestTemplate.Homeworld {
@@ -328,6 +335,72 @@ class BGFactionTest extends FactionTestTemplate {
             assertEquals(0, faction.homeworldDialAdvantage(game, territory));
             game.addGameOption(GameOption.HOMEWORLDS);
             assertEquals(3, faction.homeworldDialAdvantage(game, territory));
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentAdvisorChoices")
+    class PresentAdvisorChoices {
+        HarkonnenFaction harkonnen;
+        Territory carthag;
+        Territory polarSink;
+
+        @BeforeEach
+        public void setUp() throws IOException {
+            harkonnen = new HarkonnenFaction("ha", "ha");
+            game.addFaction(harkonnen);
+            carthag = game.getTerritory("Carthag");
+            polarSink = game.getTerritory("Polar Sink");
+        }
+
+        @Test
+        public void testBGDoesNotGetAskedForTheirOwnShipment() {
+            faction.presentAdvisorChoices(game, faction, carthag);
+            assertTrue(chat.getMessages().isEmpty());
+        }
+
+        @Test
+        public void testBGDoesNotGetAskedForFremenShipment() throws IOException {
+            FremenFaction fremen = new FremenFaction("fr", "fr");
+            faction.presentAdvisorChoices(game, fremen, carthag);
+            assertTrue(chat.getMessages().isEmpty());
+        }
+
+        @Test
+        public void testBGGetsAskedForOtherFacitonsShipment() {
+            faction.presentAdvisorChoices(game, harkonnen, carthag);
+            assertEquals("Would you like to advise the shipment to Carthag? player", chat.getMessages().getFirst());
+        }
+
+        @Test
+        public void testBGDoesNotGetAskedInPolarSink() {
+            faction.presentAdvisorChoices(game, harkonnen, polarSink);
+            assertTrue(chat.getMessages().isEmpty());
+        }
+
+        @Test
+        public void testBGDoesNotGetAskedAtLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.placeForceFromReserves(game, polarSink, 20, false);
+            faction.presentAdvisorChoices(game, harkonnen, carthag);
+            assertTrue(chat.getMessages().isEmpty());
+        }
+
+        @Test
+        public void testBGDoesNotGetAskedToAdviseShipmentsToWallachIX() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory wallachIX = game.getTerritory("Wallach IX");
+            faction.presentAdvisorChoices(game, harkonnen, wallachIX);
+            assertTrue(chat.getMessages().isEmpty());
+        }
+
+        @Test
+        public void testBGDoesNotGetAskedToAdviseShipmentsToOtherHomeworld() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            Territory giediPrime = game.getTerritory("Giedi Prime");
+            faction.placeForceFromReserves(game, giediPrime, 1, false);
+            faction.presentAdvisorChoices(game, harkonnen, giediPrime);
+            assertTrue(chat.getMessages().isEmpty());
         }
     }
 
