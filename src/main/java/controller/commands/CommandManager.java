@@ -34,11 +34,13 @@ import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
+import java.awt.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
@@ -160,6 +162,9 @@ public class CommandManager extends ListenerAdapter {
         try {
             if (name.equals("new-game") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 newGame(event);
+                event.getHook().editOriginal("Command Done.").queue();
+            } else if (name.equals("new-game-create-roles")) {
+                newGame2(event);
                 event.getHook().editOriginal("Command Done.").queue();
             } else if (name.equals("waiting-list")) {
                 waitingList(event);
@@ -482,6 +487,26 @@ public class CommandManager extends ListenerAdapter {
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
         Role gameRoleValue = Objects.requireNonNull(event.getOption(gameRole.getName())).getAsRole();
         Role modRoleValue = Objects.requireNonNull(event.getOption(modRole.getName())).getAsRole();
+        newGame(event, gameRoleValue, modRoleValue);
+    }
+
+    public void newGame2(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
+        Role gameRoleValue = Objects.requireNonNull(event.getGuild()).createRole()
+                .setName("Create Test Game Role")
+                .setColor(Color.red)
+                .setHoisted(true)
+                .setPermissions(Permission.ADMINISTRATOR)
+                .complete();
+        Role modRoleValue = Objects.requireNonNull(event.getGuild()).createRole()
+                .setName("Create Test Mod Role")
+                .setColor(Color.blue)
+                .setHoisted(true)
+                .setPermissions(Permission.ADMINISTRATOR)
+                .complete();
+        newGame(event, gameRoleValue, modRoleValue);
+    }
+
+    public void newGame(SlashCommandInteractionEvent event, Role gameRoleValue, Role modRoleValue) throws ChannelNotFoundException, IOException {
         Role observerRole = Objects.requireNonNull(event.getGuild()).getRolesByName("Observer", true).getFirst();
         Role pollBot = event.getGuild().getRolesByName("EasyPoll", true).getFirst();
         String name = Objects.requireNonNull(event.getOption(gameName.getName())).getAsString();
