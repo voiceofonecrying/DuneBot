@@ -10,10 +10,7 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.*;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
-import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -41,6 +38,7 @@ public class SetupCommands {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(
                 Commands.slash("setup", "Commands related to game setup.").addSubcommands(
+                        new SubcommandData("add-player-to-game-role", "Add a player to the game role").addOptions(user),
                         new SubcommandData("faction", "Register a user to a faction in a game")
                                 .addOptions(allFactions, user),
                         new SubcommandData("show-game-options", "Show the selected game options"),
@@ -71,6 +69,7 @@ public class SetupCommands {
 
         game.modExecutedACommand(event.getUser().getAsMention());
         switch (name) {
+            case "add-player-to-game-role" -> addPlayerToGameRole(event, discordGame, game);
             case "faction" -> addFaction(event, discordGame, game);
             case "show-game-options" -> showGameOptions(game);
             case "add-game-option" -> addGameOption(discordGame, game);
@@ -258,6 +257,40 @@ public class SetupCommands {
         return stepStatus;
     }
 
+    public static void removePlayerFromWaitingList(SlashCommandInteractionEvent event, DiscordGame discordGame, String playerName) {
+        TextChannel waitingList = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).getFirst();
+        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(waitingList).complete();
+        List<Message> messagesToDelete = new ArrayList<>();
+        for (Message m : messageHistory.getRetrievedHistory()) {
+            for (String playerNameInWL : CommandManager.findPlayerTags(m.getContentRaw())) {
+                if (playerNameInWL.equalsIgnoreCase(playerName)) {
+                    messagesToDelete.add(m);
+                }
+            }
+        }
+        for (Message mtd : messagesToDelete) {
+            try {
+                discordGame.queueDeleteMessage(mtd);
+            } catch (Exception e) {
+                // Message was already deleted
+            }
+        }
+    }
+
+    public static void addPlayerToGameRole(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
+        if (rolesWithName.isEmpty())
+            throw new IllegalArgumentException("No Role with name " + game.getGameRole());
+        if (rolesWithName.size() > 1)
+            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + game.getGameRole());
+        Role gameRole = rolesWithName.getFirst();
+        Member player = discordGame.required(user).getAsMember();
+        event.getGuild().addRoleToMember(Objects.requireNonNull(player), Objects.requireNonNull(event.getJDA().getRoleById(gameRole.getId()))).queue();
+
+        String playerName = discordGame.required(user).getAsUser().getAsMention();
+        removePlayerFromWaitingList(event, discordGame, playerName);
+    }
+
     public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String factionName = discordGame.required(allFactions).getAsString();
         String playerName = discordGame.required(user).getAsUser().getAsMention();
@@ -314,24 +347,7 @@ public class SetupCommands {
         discordGame.createPrivateThread(channel, "ledger", List.of(playerName));
         discordGame.getTurnSummary().addUser(game.getModRoleMention());
         discordGame.getTurnSummary().addUser(playerName);
-
-        TextChannel waitingList = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).getFirst();
-        MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(waitingList).complete();
-        List<Message> messagesToDelete = new ArrayList<>();
-        for (Message m : messageHistory.getRetrievedHistory()) {
-            for (String playerNameInWL : CommandManager.findPlayerTags(m.getContentRaw())) {
-                if (playerNameInWL.equalsIgnoreCase(playerName)) {
-                    messagesToDelete.add(m);
-                }
-            }
-        }
-        for (Message mtd : messagesToDelete) {
-            try {
-                discordGame.queueDeleteMessage(mtd);
-            } catch (Exception e) {
-                // Message was already deleted
-            }
-        }
+        removePlayerFromWaitingList(event, discordGame, playerName);
     }
 
     public static void showGameOptions(Game game) {
