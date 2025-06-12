@@ -13,6 +13,7 @@ import exceptions.InvalidGameStateException;
 import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
@@ -485,8 +486,14 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
+        Guild guild = Objects.requireNonNull(event.getGuild());
         Role gameRoleValue = Objects.requireNonNull(event.getOption(gameRole.getName())).getAsRole();
         Role modRoleValue = Objects.requireNonNull(event.getOption(modRole.getName())).getAsRole();
+        Member mentat = guild.getMemberById("994020136266776647");
+        if (mentat == null)
+            mentat = guild.getMemberById("1117428381600985168");
+        guild.addRoleToMember(Objects.requireNonNull(mentat), modRoleValue).complete();
+        guild.addRoleToMember(Objects.requireNonNull(event.getMember()), modRoleValue).complete();
         newGame(event, gameRoleValue, modRoleValue);
     }
 
