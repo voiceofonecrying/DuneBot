@@ -288,6 +288,9 @@ public class SetupCommands {
         event.getGuild().addRoleToMember(Objects.requireNonNull(player), Objects.requireNonNull(event.getJDA().getRoleById(gameRole.getId()))).queue();
 
         String playerName = discordGame.required(user).getAsUser().getAsMention();
+        game.getTurnSummary().publish(playerName);
+        if (game.getTurn() > 0)
+            game.getWhispers().publish(playerName);
         removePlayerFromWaitingList(event, discordGame, playerName);
     }
 
