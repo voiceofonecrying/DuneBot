@@ -436,8 +436,10 @@ public class ReportsCommands {
             allPlayerPerformance.add(playerPerformance(gameResults, player));
         }
         allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
-        StringBuilder playerStatsString = new StringBuilder("__Top 10 Winners__");
+        StringBuilder playerStatsString = new StringBuilder("__Top Winners__");
         for (PlayerPerformance pp : allPlayerPerformance) {
+            if (pp.numWins < 3)
+                break;
             String winPercentage = new DecimalFormat("#0.0%").format(pp.winPercentage);
             int tensDigit = pp.numWins % 100 / 10;
             String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
@@ -1150,10 +1152,7 @@ public class ReportsCommands {
         playerStatsString = new StringBuilder();
         playerStatsLines = writePlayerStats(guild, grList, members).split("\n");
         int mentions = 0;
-        expectLines = 0;
         for (String s : playerStatsLines) {
-            if (expectLines == 11)
-                break;
             if (playerStatsString.length() + 1 + s.length() > 2000 || mentions == 20) {
                 playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
                 playerStatsString = new StringBuilder();
@@ -1164,7 +1163,6 @@ public class ReportsCommands {
             playerStatsString.append(s);
             if (s.contains("<@"))
                 mentions++;
-            expectLines++;
         }
         if (!playerStatsString.isEmpty())
             playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
@@ -1689,8 +1687,11 @@ public class ReportsCommands {
     }
 
     public static String wonAsMostFactions(Guild guild, GRList gameResults, List<Member> members) {
-        int maxFactionsPlayed = 0;
+        int maxFactionsPlayed = 12;
         StringBuilder playedMax = new StringBuilder();
+        StringBuilder maxMinusOne = new StringBuilder();
+        StringBuilder maxMinusTwo = new StringBuilder();
+        StringBuilder maxMinusThree = new StringBuilder();
         for (String playerName : getAllPlayers(gameResults)) {
             int factionsPlayed = 0;
             StringBuilder missedFactionEmojis = new StringBuilder();
@@ -1699,18 +1700,17 @@ public class ReportsCommands {
                 if (gameResults.gameResults.stream().filter(gr -> gr.isFactionPlayer(factionName, playerName) && gr.isWinningPlayer(playerName)).toList().isEmpty())
                     missedFactionEmojis.append(Emojis.getFactionEmoji(factionName)).append(" ");
             });
-            if (factionsPlayed > maxFactionsPlayed) {
-                maxFactionsPlayed = factionsPlayed;
-                playedMax = new StringBuilder();
-            }
             String playerTag = getPlayerString(guild, playerName, members);
-            if (factionsPlayed >= maxFactionsPlayed-3) {
-                playedMax.append(factionsPlayed).append(" - ").append(playerTag);
-                if (factionsPlayed != 12)
-                    playedMax.append(", missing only ").append(missedFactionEmojis);
-                playedMax.append("\n");
-            }
+            if (factionsPlayed == maxFactionsPlayed)
+                playedMax.append(factionsPlayed).append(" - ").append(playerTag).append("\n");
+            else if (factionsPlayed == maxFactionsPlayed - 1)
+                maxMinusOne.append(factionsPlayed).append(" - ").append(playerTag).append(", missing only ").append(missedFactionEmojis).append("\n");
+            else if (factionsPlayed == maxFactionsPlayed - 2)
+                maxMinusTwo.append(factionsPlayed).append(" - ").append(playerTag).append(", missing only ").append(missedFactionEmojis).append("\n");
+            else if (factionsPlayed == maxFactionsPlayed - 3)
+                maxMinusThree.append(factionsPlayed).append(" - ").append(playerTag).append(", missing only ").append(missedFactionEmojis).append("\n");
         }
+        playedMax.append(maxMinusOne).append(maxMinusTwo).append(maxMinusThree);
         if (playedMax.isEmpty())
             return "No players have played.";
         return tagEmojis(guild, playedMax.toString());
