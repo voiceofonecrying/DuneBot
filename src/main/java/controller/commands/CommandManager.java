@@ -492,8 +492,8 @@ public class CommandManager extends ListenerAdapter {
         Member mentat = guild.getMemberById("994020136266776647");
         if (mentat == null)
             mentat = guild.getMemberById("1117428381600985168");
-        guild.addRoleToMember(Objects.requireNonNull(mentat), modRoleValue).complete();
-        guild.addRoleToMember(Objects.requireNonNull(event.getMember()), modRoleValue).complete();
+//        guild.addRoleToMember(Objects.requireNonNull(mentat), modRoleValue).complete();
+//        guild.addRoleToMember(Objects.requireNonNull(event.getMember()), modRoleValue).complete();
         newGame(event, gameRoleValue, modRoleValue);
     }
 
