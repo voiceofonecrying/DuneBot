@@ -436,8 +436,10 @@ public class ReportsCommands {
             allPlayerPerformance.add(playerPerformance(gameResults, player));
         }
         allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
-        StringBuilder playerStatsString = new StringBuilder("__Top 10 Winners__");
+        StringBuilder playerStatsString = new StringBuilder("__Top Winners__");
         for (PlayerPerformance pp : allPlayerPerformance) {
+            if (pp.numWins < 3)
+                continue;
             String winPercentage = new DecimalFormat("#0.0%").format(pp.winPercentage);
             int tensDigit = pp.numWins % 100 / 10;
             String tensEmoji = tensDigit == 0 ? ":black_small_square:" : numberBoxes.get(tensDigit);
@@ -1152,8 +1154,6 @@ public class ReportsCommands {
         int mentions = 0;
         expectLines = 0;
         for (String s : playerStatsLines) {
-            if (expectLines == 11)
-                break;
             if (playerStatsString.length() + 1 + s.length() > 2000 || mentions == 20) {
                 playerStatsChannel.sendMessage(playerStatsString.toString()).queue();
                 playerStatsString = new StringBuilder();
