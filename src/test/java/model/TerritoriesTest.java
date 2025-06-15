@@ -280,21 +280,31 @@ public class TerritoriesTest extends DuneTest {
         @BeforeEach
         void setUp() {
             game.addFaction(bg);
+            game.addFaction(harkonnen);
         }
 
         @Test
         void testAdvisorsAlone() {
-            carthag.addForces("Advisor", 1);
+            sietchTabr.addForces("Advisor", 1);
             territories.flipAdvisorsIfAlone(game);
-            assertTrue(carthag.hasForce("BG"));
-            assertFalse(carthag.hasForce("Advisor"));
-            assertEquals(Emojis.BG_ADVISOR + " are alone in Carthag and have flipped to " + Emojis.BG_FIGHTER, turnSummary.getMessages().getFirst());
+            assertTrue(sietchTabr.hasForce("BG"));
+            assertFalse(sietchTabr.hasForce("Advisor"));
+            assertEquals(Emojis.BG_ADVISOR + " are alone in Sietch Tabr and have flipped to " + Emojis.BG_FIGHTER, turnSummary.getMessages().getFirst());
         }
 
         @Test
         void testAdvisorsNotAlone() {
             carthag.addForces("Advisor", 1);
-            carthag.addForces("Harkonnen", 1);
+            territories.flipAdvisorsIfAlone(game);
+            assertFalse(carthag.hasForce("BG"));
+            assertTrue(carthag.hasForce("Advisor"));
+            assertTrue(turnSummary.getMessages().isEmpty());
+        }
+
+        @Test
+        void testAdvisorsNotAloneIfUnderStormTogether() {
+            game.setStorm(10);
+            carthag.addForces("Advisor", 1);
             territories.flipAdvisorsIfAlone(game);
             assertFalse(carthag.hasForce("BG"));
             assertTrue(carthag.hasForce("Advisor"));

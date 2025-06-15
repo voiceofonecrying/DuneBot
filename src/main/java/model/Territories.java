@@ -112,7 +112,7 @@ public class Territories extends HashMap<String, Territory> {
 
     public void flipAdvisorsIfAlone(Game game, Territory territory) {
         if (territory.hasForce("Advisor")) {
-            List<List<Territory>> sectorsLists = getAggregateTerritoryList(territory.getAggregateTerritoryName(), game.getStorm(), false);
+            List<List<Territory>> sectorsLists = getAggregateTerritoryList(territory.getAggregateTerritoryName(), game.getStorm(), true);
             List<Territory> connectedSectors = sectorsLists.stream().filter(sectors -> sectors.contains(territory)).findFirst().orElse(new ArrayList<>());
             if (getFighterNamesInAggTerritory(connectedSectors).isEmpty()) {
                 BGFaction bg = game.getBGFactionOrNull();
