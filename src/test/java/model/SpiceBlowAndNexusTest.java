@@ -120,6 +120,21 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             assertFalse(fremenChat.getChoices().getFirst().isEmpty());
             assertEquals("The Great Flat", game.getSpiceDiscardB().getLast().name());
         }
+
+        @Test
+        void testFremenDeclinesThumperOnDeckAAndDeckB() throws IOException {
+            game.addGameOption(GameOption.THUMPER_ON_DECK_B);
+//            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
+            spiceBlowAndNexus.declineThumper(game, fremen);
+            spiceBlowAndNexus.nextStep(game);
+            assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
+            fremenChat.clear();
+            spiceBlowAndNexus.nextStep(game);
+            fremenChat.clear();
+            spiceBlowAndNexus.declineThumper(game, fremen);
+            assertTrue(fremenChat.getChoices().getFirst().isEmpty());
+            assertEquals(0, game.getPhase());
+        }
     }
 
     @Test

@@ -47,9 +47,9 @@ public class SpiceBlowAndNexus {
             numDecksDrawn++;
             checkOnHarvester(game);
             fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
-        } else if (numDecksDrawn == 1 && fremenRidesComplete && harvesterResolved) {
             if (game.hasGameOption(GameOption.THUMPER_ON_DECK_B))
                 checkOnThumper(game, "B");
+        } else if (numDecksDrawn == 1 && fremenRidesComplete && harvesterResolved) {
             if (thumperResolved) {
                 Pair<SpiceCard, Integer> spiceBlow = game.drawSpiceBlow("B", thumperWasPlayed);
                 spiceCard = spiceBlow.getLeft();

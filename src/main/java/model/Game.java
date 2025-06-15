@@ -1493,7 +1493,7 @@ public class Game {
         else {
             getTerritory(drawn.name()).setSpice(6 * spiceMultiplier);
             if (getTerritory(drawn.name()).countFactions() > 0) {
-                message.append("all forces in the territory were killed in the spice blow!\n");
+                message.append("All forces in the territory were killed in the spice blow!\n");
                 List<Force> forcesToRemove = new ArrayList<>(getTerritory(drawn.name()).getForces());
                 for (Force force : forcesToRemove) {
                     // Is this removing Advisors and No-Fields?

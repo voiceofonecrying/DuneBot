@@ -1728,7 +1728,7 @@ class GameTest extends DuneTest {
             assertEquals(0, funeralPlain.getForceStrength("Fremen"));
             assertEquals(3, tanks.getForceStrength("Fremen*"));
             assertEquals(5, tanks.getForceStrength("Fremen"));
-            assertNotEquals(-1, turnSummary.messages.getFirst().indexOf("all forces in the territory were killed in the spice blow!\n"));
+            assertNotEquals(-1, turnSummary.messages.getFirst().indexOf("All forces in the territory were killed in the spice blow!\n"));
         }
 
         @Test
