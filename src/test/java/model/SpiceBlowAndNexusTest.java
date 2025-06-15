@@ -114,10 +114,9 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             spiceBlowAndNexus.declineThumper(game, fremen);
             spiceBlowAndNexus.nextStep(game);
             assertEquals("Red Chasm", game.getSpiceDiscardA().getLast().name());
-            fremenChat.clear();
             spiceBlowAndNexus.nextStep(game);
-            assertEquals("Would you like to play Thumper in The Great Flat? fr", fremenChat.getMessages().getFirst());
-            assertFalse(fremenChat.getChoices().getFirst().isEmpty());
+            assertEquals("Would you like to play Thumper in The Great Flat? fr", fremenChat.getMessages().getLast());
+            assertFalse(fremenChat.getChoices().getLast().isEmpty());
             assertEquals("The Great Flat", game.getSpiceDiscardB().getLast().name());
         }
 
@@ -132,7 +131,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             spiceBlowAndNexus.nextStep(game);
             fremenChat.clear();
             spiceBlowAndNexus.declineThumper(game, fremen);
-            assertTrue(fremenChat.getChoices().getFirst().isEmpty());
+            assertTrue(fremenChat.getChoices().isEmpty());
             assertEquals(0, game.getPhase());
         }
     }
