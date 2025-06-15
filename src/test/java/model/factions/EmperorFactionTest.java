@@ -502,7 +502,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         @Test
         @Override
         void testForcesStringInTurnSummaryMessage() throws InvalidGameStateException {
-            faction.placeForces(territory, 3, 2, false, false, false, game, false, false);
+            faction.placeForces(territory, 3, 2, false, false, false, false, false);
             assertEquals(faction.getEmoji() + ": 3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " placed on The Great Flat", turnSummary.getMessages().getFirst());
         }
     }

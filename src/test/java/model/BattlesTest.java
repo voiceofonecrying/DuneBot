@@ -423,7 +423,7 @@ public class BattlesTest extends DuneTest {
 
         @Test
         void testEcazLowThresholdAggressorEcazBeforeAlly() throws InvalidGameStateException {
-            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, false, false);
             assertFalse(ecaz.isHighThreshold());
             sietchTabr.addForces("BT", 1);
             sietchTabr.addForces("Moritani", 1);
@@ -437,7 +437,7 @@ public class BattlesTest extends DuneTest {
 
         @Test
         void testEcazLowThresholdAggressorEcazAfterAlly() throws InvalidGameStateException {
-            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, false, false);
             assertFalse(ecaz.isHighThreshold());
             sietchTabr.addForces("BT", 1);
             sietchTabr.addForces("Moritani", 1);
@@ -453,7 +453,7 @@ public class BattlesTest extends DuneTest {
         @Test
         void testEcazLowThresholdDefenderBeforeAlly() throws InvalidGameStateException {
             game.setDotPosition("BT", 1);
-            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, false, false);
             assertFalse(ecaz.isHighThreshold());
             sietchTabr.addForces("BT", 1);
             sietchTabr.addForces("Moritani", 1);
@@ -468,7 +468,7 @@ public class BattlesTest extends DuneTest {
 
         @Test
         void testEcazLowThresholdDefenderEcazAfterAlly() throws InvalidGameStateException {
-            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, game, false, false);
+            ecaz.placeForces(sietchTabr, 14, 0, false, false, false, false, false);
             assertFalse(ecaz.isHighThreshold());
             sietchTabr.addForces("BT", 1);
             sietchTabr.addForces("Moritani", 1);

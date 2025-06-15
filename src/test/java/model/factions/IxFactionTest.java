@@ -68,7 +68,7 @@ class IxFactionTest extends FactionTestTemplate {
         @Test
         @Override
         void testForcesStringInTurnSummaryMessage() throws InvalidGameStateException {
-            faction.placeForces(territory, 3, 2, false, false, false, game, false, false);
+            faction.placeForces(territory, 3, 2, false, false, false, false, false);
             assertEquals(faction.getEmoji() + ": 3 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " placed on The Great Flat", turnSummary.getMessages().getFirst());
         }
     }

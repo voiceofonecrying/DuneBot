@@ -551,7 +551,7 @@ class BGFactionTest extends FactionTestTemplate {
         @Test
         void testPlaceInTerritoryWithAdvisors() throws InvalidGameStateException {
             arrakeen.addForces("Advisor", 1);
-            faction.placeForces(arrakeen, 2, 0, true, true, true, game, false, false);
+            faction.placeForces(arrakeen, 2, 0, true, true, true, false, false);
             assertEquals(Emojis.BG + ": 2 " + Emojis.BG_ADVISOR + " placed on Arrakeen for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
             assertEquals(3, arrakeen.getForceStrength("Advisor"));
             assertEquals(0, arrakeen.getForceStrength("BG"));

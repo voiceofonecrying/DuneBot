@@ -200,7 +200,7 @@ public class FremenFaction extends Faction {
 
     public void placeFreeRevivalWithHighThreshold(String territoryName) throws InvalidGameStateException {
         Territory territory = game.getTerritory(territoryName);
-        placeForces(territory, 0, 1, false, true, true, game, false, false);
+        placeForces(territory, 0, 1, false, true, true, false, false);
         game.getTurnSummary().publish(Emojis.FREMEN + " place their revived " + Emojis.FREMEN_FEDAYKIN + " with their forces in " + territory.getTerritoryName() + ".");
         chat.reply("Your " + Emojis.FREMEN_FEDAYKIN + " has left for the northern hemisphere.");
     }
