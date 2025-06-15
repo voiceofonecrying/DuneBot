@@ -156,6 +156,7 @@ class BGFactionTest extends FactionTestTemplate {
             assertEquals(0, carthag.getForceStrength("BG"));
             assertEquals(1, carthag.getForceStrength("Advisor"));
             assertEquals("Initial force placement complete.", chat.getMessages().getLast());
+            assertEquals(19, faction.getReservesStrength());
         }
     }
 
