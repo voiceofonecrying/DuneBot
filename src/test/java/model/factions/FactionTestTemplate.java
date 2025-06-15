@@ -796,13 +796,13 @@ abstract class FactionTestTemplate {
 
         @Test
         void testForcesStringInTurnSummaryMessage() throws InvalidGameStateException {
-            faction.placeForces(territory, 3, 0, false, false, false, game, false, false);
+            faction.placeForces(territory, 3, 0, false, false, false, false, false);
             assertEquals(faction.getEmoji() + ": 3 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat", turnSummary.getMessages().getFirst());
         }
 
         @Test
         void testSpiceCostInTurnSummaryMessage() throws InvalidGameStateException {
-            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            faction.placeForces(territory, 1, 0, true, true, true, false, false);
             assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
         }
 
@@ -811,7 +811,7 @@ abstract class FactionTestTemplate {
             game.addGameOption(GameOption.TECH_TOKENS);
             faction.addTechToken("Heighliners");
             faction.addTechToken("Axlotl Tanks");
-            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            faction.placeForces(territory, 1, 0, true, true, true, false, false);
             assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             assertEquals("2 " + Emojis.SPICE + " is placed on " + Emojis.HEIGHLINERS, turnSummary.getMessages().getLast());
         }
@@ -820,14 +820,14 @@ abstract class FactionTestTemplate {
         void testBGGetFlipMessage() throws InvalidGameStateException {
             game.addFaction(bg);
             bg.placeForceFromReserves(game, territory, 1, false);
-            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            faction.placeForces(territory, 1, 0, true, true, true, false, false);
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in The Great Flat? p", bgChat.getMessages().getFirst());
         }
 
         @Test
         void testBGGetAdviseMessage() throws InvalidGameStateException {
             game.addFaction(bg);
-            faction.placeForces(territory, 1, 0, true, true, true, game, false, false);
+            faction.placeForces(territory, 1, 0, true, true, true, false, false);
             assertEquals("Would you like to advise the shipment to The Great Flat? p", bgChat.getMessages().getLast());
         }
     }

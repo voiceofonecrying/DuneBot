@@ -41,8 +41,8 @@ class BattleTest extends DuneTest {
         void testSardaukarNegatedByOccupation() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory salusaSecundus = game.getTerritory("Salusa Secundus");
-            emperor.placeForces(carthag, 0, 5, true, true, true, game, false, false);
-            bg.placeForces(salusaSecundus, 1, 0, true, true, true, game, false, false);
+            emperor.placeForces(carthag, 0, 5, true, true, true, false, false);
+            bg.placeForces(salusaSecundus, 1, 0, true, true, true, false, false);
             assertTrue(emperor.isSecundusOccupied());
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             assertTrue(battle.isSardaukarNegated());

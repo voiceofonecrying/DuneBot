@@ -415,7 +415,7 @@ public class Faction {
         return numForces + " " + Emojis.getForceEmoji(name) + " ";
     }
 
-    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, Game game, boolean karama, boolean crossShip) throws InvalidGameStateException {
+    public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, boolean karama, boolean crossShip) throws InvalidGameStateException {
         String forcesPlaced = emoji + ": ";
         if (this instanceof BGFaction bg && targetTerritory.hasForce("Advisor")) {
             bg.placeAdvisorsFromReserves(game, targetTerritory, amountValue);
@@ -1453,10 +1453,10 @@ public class Faction {
                 game.getRicheseFaction().shipNoField(this, territory, noField, karama, !crossShipFrom.isEmpty(), force);
             } else if (!crossShipFrom.isEmpty()) {
                 game.removeForces(crossShipFrom, this, force, specialForce, false);
-                placeForces(territory, force, specialForce, true, true, true, game, false, true);
+                placeForces(territory, force, specialForce, true, true, true, false, true);
                 game.getTurnSummary().publish(emoji + " cross shipped from " + crossShipFrom + " to " + territoryName);
             } else if (force > 0 || specialForce > 0)
-                placeForces(territory, force, specialForce, !free, true, true, game, karama, false);
+                placeForces(territory, force, specialForce, !free, true, true, karama, false);
         }
         game.setUpdated(UpdateType.MAP);
         shipment.clear();

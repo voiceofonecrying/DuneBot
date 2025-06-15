@@ -118,7 +118,7 @@ public class RicheseFaction extends Faction {
             TechToken.addSpice(game, TechToken.HEIGHLINERS);
 
         if (accompanyingForce > 0)
-            placeForces(territory, accompanyingForce, 0, true, true, false, game, karama, false);
+            placeForces(territory, accompanyingForce, 0, true, true, false, karama, false);
         game.checkForTriggers(territory, faction, accompanyingForce + 1);
         game.setUpdated(UpdateType.MAP);
     }

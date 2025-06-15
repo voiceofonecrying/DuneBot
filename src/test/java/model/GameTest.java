@@ -683,7 +683,7 @@ class GameTest extends DuneTest {
         void testPaymentToGuildJunctionOccupied() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             guild.removeReserves(15);
-            emperor.placeForces(game.getTerritory("Junction"), 1, 0, false, false, false, game, false, false);
+            emperor.placeForces(game.getTerritory("Junction"), 1, 0, false, false, false, false, false);
             assertTrue(guild.isHomeworldOccupied());
             assertEquals(" for 9 " + Emojis.SPICE + ", 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD + ", 4 " + Emojis.SPICE + " paid to " + Emojis.EMPEROR,
                     emperor.payForShipment(game, 9, habbanyaSietch, false, false));
@@ -766,7 +766,7 @@ class GameTest extends DuneTest {
             game.addFaction(bg);
             game.addFaction(fremen);
             bg.placeForceFromReserves(game, sietchTabr, 1, false);
-            fremen.placeForces(sietchTabr, 1, 0, true, true, true, game, false, false);
+            fremen.placeForces(sietchTabr, 1, 0, true, true, true, false, false);
             game.endShipmentMovement();
             assertEquals("Shipment and Movement has been forced to end. \n" + Emojis.BG + " had flip decisions in Sietch Tabr.", modInfo.getMessages().getFirst());
         }
