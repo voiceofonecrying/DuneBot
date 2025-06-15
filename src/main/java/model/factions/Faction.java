@@ -416,25 +416,14 @@ public class Faction {
     }
 
     public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, boolean karama, boolean crossShip) throws InvalidGameStateException {
-        String forcesPlaced = emoji + ": ";
-        if (this instanceof BGFaction bg && targetTerritory.hasForce("Advisor")) {
-            bg.placeAdvisorsFromReserves(game, targetTerritory, amountValue);
-            forcesPlaced += amountValue + " " + Emojis.BG_ADVISOR;
-        } else {
-            if (amountValue > 0)
-                placeForceFromReserves(game, targetTerritory, amountValue, false);
-            if (starredAmountValue > 0)
-                placeForceFromReserves(game, targetTerritory, starredAmountValue, true);
-            forcesPlaced += forcesString(amountValue, starredAmountValue);
-        }
-        forcesPlaced += " placed on " + targetTerritory.getTerritoryName();
-
+        String forcesPlaced = placeAndReportWhatWasPlaced(targetTerritory, amountValue, starredAmountValue);
+        String placedWhere = " placed on " + targetTerritory.getTerritoryName();
+        String costString = "";
         if (isShipment) {
             getShipment().setShipped(true);
             int cost = game.shipmentCost(this, amountValue + starredAmountValue, targetTerritory, karama, crossShip);
-
             if (cost > 0)
-                forcesPlaced += payForShipment(game, cost, targetTerritory, karama, false);
+                costString = payForShipment(game, cost, targetTerritory, karama, false);
         }
 
         BGFaction bg = game.getBGFactionOrNull();
@@ -445,7 +434,7 @@ public class Faction {
                 bg.presentAdvisorChoices(game, this, targetTerritory);
         }
 
-        game.getTurnSummary().publish(forcesPlaced);
+        game.getTurnSummary().publish(forcesPlaced + placedWhere + costString);
 
         if (isShipment && !(this instanceof GuildFaction)
                 && !(this instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
@@ -454,6 +443,23 @@ public class Faction {
 
         if (canTrigger)
             game.checkForTriggers(targetTerritory, this, amountValue + starredAmountValue);
+    }
+
+    /**
+     * Places forces from reserves into this territory.
+     *
+     * @param territory The territory to place the force in.
+     * @param amount    The number of regular forces to place.
+     * @param starredAmount   The number of starred forces to place.
+     *
+     * @return A string with faction emoji and the number of forces placed.
+     */
+    protected String placeAndReportWhatWasPlaced(Territory territory, int amount, int starredAmount) {
+        if (amount > 0)
+            placeForceFromReserves(game, territory, amount, false);
+        if (starredAmount > 0)
+            placeForceFromReserves(game, territory, starredAmount, true);
+        return emoji + ": " + forcesString(amount, starredAmount);
     }
 
     /**

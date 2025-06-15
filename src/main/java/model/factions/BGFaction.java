@@ -154,6 +154,24 @@ public class BGFaction extends Faction {
     }
 
     /**
+     * Places forces or advisors from reserves into this territory.
+     *
+     * @param territory The territory to place the force in.
+     * @param amount    The number of regular forces or advisors to place.
+     * @param starredAmount   The number of starred forces to place. Always ignored for BGFaction
+     *
+     * @return A string with faction emoji and the number of forces or advisors placed.
+     */
+    @Override
+    protected String placeAndReportWhatWasPlaced(Territory territory, int amount, int starredAmount) {
+        if (territory.hasForce("Advisor")) {
+            placeAdvisorsFromReserves(game, territory, amount);
+            return emoji + ": " + amount + " " + Emojis.BG_ADVISOR;
+        } else
+            return super.placeAndReportWhatWasPlaced(territory, amount, starredAmount);
+    }
+
+    /**
      * Places BG advisors from reserves into this territory.
      * Reports removal from reserves to ledger.
      * Switches homeworld to low threshold if applicable.
