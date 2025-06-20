@@ -211,9 +211,10 @@ public class MoritaniButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void assassinateTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws InvalidGameStateException {
+    private static void assassinateTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws InvalidGameStateException, ChannelNotFoundException {
         String response = event.getComponentId().split("-")[3];
         game.getBattles().getCurrentBattle().assassinate(game, response.equals("yes"));
         discordGame.queueDeleteMessage();
+        discordGame.pushGame();
     }
 }
