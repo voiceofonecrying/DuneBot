@@ -292,6 +292,7 @@ public class CommandManager extends ListenerAdapter {
                 case "add-spice" -> addSpice(discordGame, game);
                 case "remove-spice" -> removeSpice(discordGame, game);
                 case "reassign-faction" -> reassignFaction(discordGame, game);
+                case "take-over-faction" -> takeOverFaction(event, discordGame, game);
                 case "reassign-mod" -> reassignMod(event, discordGame, game);
                 case "team-mod" -> teamMod(discordGame, game);
                 case "draw-nexus-card" -> drawNexusCard(discordGame, game);
@@ -435,6 +436,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("reassign-faction", "Assign the faction to a different player").addOptions(faction, user));
+        commandData.add(Commands.slash("take-over-faction", "Temporarily take controls of the faction").addOptions(faction));
         commandData.add(Commands.slash("reassign-mod", "Assign yourself as the mod to be tagged"));
         commandData.add(Commands.slash("team-mod", "Enable or disable team mod where all users with the game mod role get tagged").addOptions(teamModSwitch));
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
@@ -1114,6 +1116,15 @@ public class CommandManager extends ListenerAdapter {
         faction.setPlayer(playerName);
         faction.setUserName(userName);
 
+        discordGame.pushGame();
+    }
+
+    public void takeOverFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        Faction faction = game.getFaction(factionName);
+        String playerName = faction.getPlayer();
+        faction.setPlayer(event.getUser().getAsMention());
+        game.getModInfo().publish("", List.of(new DuneChoice("faction-restore-to-player-" + faction.getName() + "-" + playerName, "Restore " + faction.getName() + " to " + faction.getUserName())));
         discordGame.pushGame();
     }
 
