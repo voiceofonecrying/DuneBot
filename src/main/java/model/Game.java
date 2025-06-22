@@ -768,6 +768,10 @@ public class Game {
         return hasFaction("BG");
     }
 
+    public boolean hasEmperorFaction() {
+        return hasFaction("Emperor");
+    }
+
     public boolean hasFremenFaction() {
         return hasFaction("Fremen");
     }

@@ -637,9 +637,14 @@ public class ShowCommands {
         //If Homeworlds are in play, concatenate homeworlds under the board.
         if (game.hasGameOption(GameOption.HOMEWORLDS)) {
             BufferedImage homeworlds = new BufferedImage(1, 1024, BufferedImage.TYPE_INT_ARGB);
+            int sigilWidth = game.hasEmperorFaction() ? 350 : 300;
             for (Faction faction : game.getFactions()) {
                 BufferedImage homeworld = getResourceImage(faction.getHomeworld());
                 int offset = 0;
+                BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
+                sigil = resize(sigil, sigilWidth, 250);
+                Point sigilPlacement = new Point(500, 850);
+                homeworld = overlay(homeworld, sigil, sigilPlacement, 1);
                 for (Force force : game.getTerritory(faction.getHomeworld()).getForces()) {
                     BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                     forceImage = resize(forceImage, 376, 232);
@@ -651,6 +656,7 @@ public class ShowCommands {
                 homeworlds = concatenateHorizontally(homeworlds, homeworld);
                 if (faction instanceof EmperorFaction emperorFaction) {
                     BufferedImage salusa = getResourceImage("Salusa Secundus");
+                    salusa = overlay(salusa, sigil, sigilPlacement, 1);
                     for (Force force : game.getTerritory(emperorFaction.getSecondHomeworld()).getForces()) {
                         BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                         forceImage = resize(forceImage, 376, 232);
