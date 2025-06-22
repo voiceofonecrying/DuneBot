@@ -27,6 +27,7 @@ public class FactionButtons {
         else if (event.getComponentId().startsWith("faction-charity-")) charity(event, game, discordGame);
         else if (event.getComponentId().equals("faction-pay-extortion")) payExtortion(event, game, discordGame);
         else if (event.getComponentId().equals("faction-decline-extortion")) declineExtortion(event, game, discordGame);
+        else if (event.getComponentId().startsWith("faction-restore-to-player-")) restoreFactionToPlayer(event, game, discordGame);
     }
 
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -130,6 +131,15 @@ public class FactionButtons {
     private static void declineExtortion(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.declineExtortion();
+        discordGame.pushGame();
+    }
+
+    private static void restoreFactionToPlayer(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        String factionName = event.getComponentId().split("-")[4];
+        String playerName = event.getComponentId().split("-")[5];
+        Faction faction = game.getFaction(factionName);
+        faction.setPlayer(playerName);
+        discordGame.queueMessage(faction.getEmoji() + " has been restored to " + faction.getUserName());
         discordGame.pushGame();
     }
 }
