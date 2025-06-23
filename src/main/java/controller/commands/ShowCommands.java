@@ -644,11 +644,14 @@ public class ShowCommands {
                 BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
                 sigil = resize(sigil, sigilWidth, 250);
                 Point sigilPlacement = new Point(500, 850);
-                homeworld = overlay(homeworld, sigil, sigilPlacement, 1);
+                Point kaitainSigilPlacement = new Point(920, 950);
+                homeworld = overlay(homeworld, sigil, faction instanceof EmperorFaction ? kaitainSigilPlacement : sigilPlacement, 1);
                 for (Force force : game.getTerritory(faction.getHomeworld()).getForces()) {
                     BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                     forceImage = resize(forceImage, 376, 232);
-                    Point forcePlacement = new Point(500, 200 + offset);
+                    Point forcePlacement = new Point(500, 175 + offset);
+                    if (faction instanceof EmperorFaction)
+                        forcePlacement = new Point(920, 275 + offset);
                     homeworld = overlay(homeworld, forceImage, forcePlacement, 1);
                     offset += 240;
                 }
@@ -660,7 +663,7 @@ public class ShowCommands {
                     for (Force force : game.getTerritory(emperorFaction.getSecondHomeworld()).getForces()) {
                         BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
                         forceImage = resize(forceImage, 376, 232);
-                        Point forcePlacement = new Point(500, 200 + offset);
+                        Point forcePlacement = new Point(500, 175 + offset);
                         salusa = overlay(salusa, forceImage, forcePlacement, 1);
                         offset += 240;
                     }
