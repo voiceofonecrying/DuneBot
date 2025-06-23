@@ -1110,11 +1110,9 @@ public class CommandManager extends ListenerAdapter {
 
         if (player == null) throw new IllegalArgumentException("Not a valid user");
 
-        String userName = player.getNickname();
-
         Faction faction = game.getFaction(factionName);
         faction.setPlayer(playerName);
-        faction.setUserName(userName);
+        faction.setUserName(player.getEffectiveName());
 
         discordGame.pushGame();
     }

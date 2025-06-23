@@ -301,8 +301,6 @@ public class SetupCommands {
 
         if (player == null) throw new IllegalArgumentException("Not a valid user");
 
-        String userName = player.getNickname();
-
         if (game.getTurn() != 0) {
             discordGame.getModInfo().queueMessage("The game has already started, you can't add more factions!");
             return;
@@ -317,6 +315,7 @@ public class SetupCommands {
         }
         Faction faction;
 
+        String userName = player.getEffectiveName();
         switch (factionName.toUpperCase()) {
             case "ATREIDES" -> faction = new AtreidesFaction(playerName, userName);
             case "BG" -> faction = new BGFaction(playerName, userName);
