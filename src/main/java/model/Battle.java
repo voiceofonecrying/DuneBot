@@ -873,7 +873,7 @@ public class Battle {
                 choices.add(new DuneChoice("secondary", "battle-retain-discard-None", "No, leave in discard"));
                 faction.getChat().publish("Would you like to retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally? " + faction.getPlayer(), choices);
             } else
-                resolution += faction.getEmoji() + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally";
+                resolution += faction.getEmoji() + " may retain a discarded " + Emojis.TREACHERY + " as " + Emojis.MORITANI + " ally.\n";
         }
         resolution += handleJuiceofSaphoDiscard(faction, successfulTraitor, battlePlan, executeResolution);
 
@@ -1032,7 +1032,7 @@ public class Battle {
                 else
                     resolution += faction.getEmoji() + " discards " + battlePlan.getWeapon().name() + "\n";
                 if (faction.getAlly().equals("Moritani"))
-                    discards.add(battlePlan.getCheapHero().name());
+                    discards.add(battlePlan.getWeapon().name());
             }
         }
         return resolution;
@@ -1050,7 +1050,7 @@ public class Battle {
                 else
                     resolution += faction.getEmoji() + " discards " + battlePlan.getDefense().name() + "\n";
                 if (faction.getAlly().equals("Moritani"))
-                    discards.add(battlePlan.getCheapHero().name());
+                    discards.add(battlePlan.getDefense().name());
             }
         }
         return resolution;
