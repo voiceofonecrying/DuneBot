@@ -160,7 +160,8 @@ public class Revival {
                 if (!(faction instanceof BTFaction))
                     nonBTRevival = true;
             }
-            faction.presentPaidRevivalChoices(numFreeRevived);
+            if (!(faction instanceof BTFaction))
+                faction.presentPaidRevivalChoices(numFreeRevived);
             if (faction instanceof EmperorFaction emp)
                 emperor = emp;
         }
@@ -176,6 +177,8 @@ public class Revival {
                     .append(" from free revivals.\n");
             bt.addSpice(factionsWithRevivals, "for free revivals");
         }
+        if (bt != null)
+            bt.presentPaidRevivalChoices(0);
 
         if (!message.isEmpty()) {
             turnSummary.publish(message.toString());
