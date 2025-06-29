@@ -1464,6 +1464,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testTraitorCallNegatesLasgunShield() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, lasgun, null);
                 harkonnen.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
                 battle.getDefenderBattlePlan().setWillCallTraitor(true);
                 modInfo.clear();
@@ -2088,6 +2089,16 @@ class BattleTest extends DuneTest {
                 battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 4, false, 0, chaumas, null);
                 battle.getAggressorBattlePlan().setHarkWillCallTraitor(true);
+                assertFalse(battle.aggressorCallsTraitor(game));
+            }
+
+            @Test
+            void testCannotCallTraitorAgainstKH() throws InvalidGameStateException {
+                game.removeForcesAndReportToTurnSummary("Arrakeen", atreides, 7, 0, true, true);
+                bg.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
+                battle.setBattlePlan(game, bg, alia, null, false, 0, false, 0, null, null);
+                battle.setBattlePlan(game, atreides, duncanIdaho, null, true, 4, false, 0, chaumas, null);
+                battle.getAggressorBattlePlan().setWillCallTraitor(true);
                 assertFalse(battle.aggressorCallsTraitor(game));
             }
         }
