@@ -622,7 +622,9 @@ public class Battle {
 
     protected boolean aggressorCallsTraitor(Game game) {
         String opponentLeader = defenderBattlePlan.getLeaderNameForTraitor();
-        if (aggressorBattlePlan.isWillCallTraitor() && getAggressor(game).hasTraitor(opponentLeader))
+        if (defenderBattlePlan.hasKwisatzHaderach())
+            return false;
+        else if (aggressorBattlePlan.isWillCallTraitor() && getAggressor(game).hasTraitor(opponentLeader))
             return true;
         else
             return getAggressor(game).getAlly().equals("Harkonnen") && aggressorBattlePlan.isHarkWillCallTraitor() && game.getHarkonnenFaction().hasTraitor(opponentLeader);
@@ -630,7 +632,9 @@ public class Battle {
 
     protected boolean defenderCallsTraitor(Game game) {
         String opponentLeader = aggressorBattlePlan.getLeaderNameForTraitor();
-        if (defenderBattlePlan.isWillCallTraitor() && getDefender(game).hasTraitor(opponentLeader))
+        if (aggressorBattlePlan.hasKwisatzHaderach())
+            return false;
+        else if (defenderBattlePlan.isWillCallTraitor() && getDefender(game).hasTraitor(opponentLeader))
             return true;
         else
             return getDefender(game).getAlly().equals("Harkonnen") && defenderBattlePlan.isHarkWillCallTraitor() && game.getHarkonnenFaction().hasTraitor(opponentLeader);
