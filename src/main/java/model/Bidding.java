@@ -1071,9 +1071,9 @@ public class Bidding {
     private boolean richeseWinner(Game game, boolean allPlayersPassed) throws InvalidGameStateException {
         DuneTopic modInfo = game.getModInfo();
         DuneTopic biddingPhase = game.getBiddingPhase();
+        topBidderDeclared = true;
         if (allPlayersPassed) {
             if (richeseCacheCard) {
-                topBidderDeclared = true;
                 biddingPhase.publish("All players passed." + Emojis.RICHESE + " may take cache card for free or remove it from the game.");
                 modInfo.publish("Use /award-top-bidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game. " + game.getModOrRoleMention());
             } else {

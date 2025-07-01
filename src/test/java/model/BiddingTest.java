@@ -313,13 +313,12 @@ class BiddingTest extends DuneTest {
             bidding = game.startBidding();
             bidding.cardCountsInBiddingPhase(game);
             bidding.auctionNextCard(game, false);
+            turnSummary.clear();
         }
 
         @Test
         public void testWinnerPaysAll() throws InvalidGameStateException {
-            bidding.bid(game, atreides, true, 3, false, false);
-            turnSummary.clear();
-            bidding.awardTopBidder(game, false);
+            bidding.assignAndPayForCard(game, "Atreides", "Emperor", 3, false);
             assertEquals(7, atreides.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
@@ -328,9 +327,7 @@ class BiddingTest extends DuneTest {
         @Test
         public void testAllyPaysAll() throws InvalidGameStateException {
             emperor.setSpiceForAlly(5);
-            bidding.bid(game, atreides, true, 3, false, false);
-            turnSummary.clear();
-            bidding.awardTopBidder(game, false);
+            bidding.assignAndPayForCard(game, "Atreides", "Emperor", 3, false);
             assertEquals(10, atreides.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE + " (3 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
@@ -340,9 +337,7 @@ class BiddingTest extends DuneTest {
         public void testAllyPaysAll2() throws InvalidGameStateException {
             assertEquals(10, atreides.getSpice());
             emperor.setSpiceForAlly(5);
-            bidding.bid(game, atreides, true, 11, false, false);
-            turnSummary.clear();
-            bidding.awardTopBidder(game, false);
+            bidding.assignAndPayForCard(game, "Atreides", "Emperor", 11, false);
             assertEquals(4, atreides.getSpice());
             assertEquals(16, emperor.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 11 " + Emojis.SPICE + " (5 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().getFirst());
@@ -352,10 +347,7 @@ class BiddingTest extends DuneTest {
         @Test
         public void testAllyBuysCardCantAffordToSupport() throws InvalidGameStateException {
             emperor.setSpiceForAlly(5);
-            bidding.bid(game, atreides, true, 1, false, false);
-            bidding.bid(game, bg, true, 2, false, false);
-            bidding.bid(game, emperor, true, 10, false, false);
-            bidding.awardTopBidder(game, false);
+            bidding.assignAndPayForCard(game, "Emperor", "Bank", 10, false);
             assertEquals(0, emperor.getSpice());
             assertEquals(0, emperor.getSpiceForAlly());
             bidding.auctionNextCard(game, false);
@@ -374,9 +366,7 @@ class BiddingTest extends DuneTest {
         @Test
         public void testAllyPaysPart() throws InvalidGameStateException {
             emperor.setSpiceForAlly(2);
-            bidding.bid(game, atreides, true, 3, false, false);
-            turnSummary.clear();
-            bidding.awardTopBidder(game, false);
+            bidding.assignAndPayForCard(game, "Atreides", "Emperor", 3, false);
             assertEquals(9, atreides.getSpice());
             assertEquals(Emojis.ATREIDES + " wins R0:C1 for 3 " + Emojis.SPICE + " (2 from " + Emojis.EMPEROR + ")", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.EMPEROR + " is paid 3 " + Emojis.SPICE + " for R0:C1", turnSummary.getMessages().getLast());
@@ -390,7 +380,11 @@ class BiddingTest extends DuneTest {
             bidding.pass(game, fremen);
             bidding.pass(game, guild);
             bidding.bid(game, harkonnen, true, 3, false, false);
-            turnSummary.clear();
+            bidding.pass(game, atreides);
+            bidding.pass(game, bg);
+            bidding.pass(game, emperor);
+            bidding.pass(game, fremen);
+            bidding.pass(game, guild);
             bidding.awardTopBidder(game, false);
             assertEquals(Emojis.HARKONNEN + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             assertEquals(Emojis.HARKONNEN + " draws another card from the " + Emojis.TREACHERY + " deck.", turnSummary.getMessages().getLast());
@@ -404,7 +398,11 @@ class BiddingTest extends DuneTest {
             bidding.pass(game, fremen);
             bidding.pass(game, guild);
             bidding.bid(game, harkonnen, true, 3, false, false);
-            turnSummary.clear();
+            bidding.pass(game, atreides);
+            bidding.pass(game, bg);
+            bidding.pass(game, emperor);
+            bidding.pass(game, fremen);
+            bidding.pass(game, guild);
             bidding.awardTopBidder(game, true);
             assertEquals(Emojis.HARKONNEN + " wins R0:C1 for 3 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             assertEquals(Emojis.HARKONNEN + " bonus card was blocked by Karama.", turnSummary.getMessages().getLast());
@@ -1352,9 +1350,7 @@ class BiddingTest extends DuneTest {
             assertEquals(2, bidding.getNumCardsForBid());
             assertEquals(2, bidding.getMarket().size());
             bidding.auctionNextCard(game, false);
-            bidding.pass(game, bg);
-            bidding.bid(game, harkonnen, true, 1, null, null);
-            bidding.awardTopBidder(game, false);
+            bidding.assignAndPayForCard(game, "Harkonnen", "Bank", 1, false);
             assertEquals(4, bg.getTreacheryHand().size());
             assertEquals(8, harkonnen.getTreacheryHand().size());
             assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game, false));
@@ -1378,9 +1374,7 @@ class BiddingTest extends DuneTest {
             assertEquals(1, bidding.getMarket().size());
             bidding.setCacheCardDecisionInProgress(false);
             bidding.auctionNextCard(game, false);
-            bidding.pass(game, bg);
-            bidding.bid(game, harkonnen, true, 1, null, null);
-            bidding.awardTopBidder(game, false);
+            bidding.assignAndPayForCard(game, "Harkonnen", "Bank", 1, false);
             assertEquals(4, bg.getTreacheryHand().size());
             assertEquals(8, harkonnen.getTreacheryHand().size());
             assertThrows(InvalidGameStateException.class, () -> bidding.auctionNextCard(game, false));
@@ -1684,10 +1678,9 @@ class BiddingTest extends DuneTest {
             void setUp() throws InvalidGameStateException {
                 bidding.richeseCardLast(game);
                 bidding.auctionNextCard(game, false);
-                bidding.bid(game, richese, true, 1, false, false);
                 richeseChat.clear();
                 choamChat.clear();
-                bidding.awardTopBidder(game);
+                bidding.assignAndPayForCard(game, "Richese", "Bank", 1, false);
             }
 
             @Test
