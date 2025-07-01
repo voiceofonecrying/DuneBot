@@ -1049,6 +1049,8 @@ public class Bidding {
         awardTopBidder(game, false);
     }
     public void awardTopBidder(Game game, boolean harkBonusBlocked) throws InvalidGameStateException {
+        if (!topBidderDeclared)
+            throw new InvalidGameStateException("The winning bidder has not been determined. Use /award-bid to award the card anyway.");
         String winnerName = bidLeader;
         if (winnerName.isEmpty()) {
             if (richeseCacheCard || blackMarketCard)
