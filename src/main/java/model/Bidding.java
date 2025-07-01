@@ -1049,6 +1049,8 @@ public class Bidding {
         awardTopBidder(game, false);
     }
     public void awardTopBidder(Game game, boolean harkBonusBlocked) throws InvalidGameStateException {
+        if (!topBidderDeclared)
+            throw new InvalidGameStateException("The winning bidder has not been determined. Use /award-bid to award the card anyway.");
         String winnerName = bidLeader;
         if (winnerName.isEmpty()) {
             if (richeseCacheCard || blackMarketCard)
@@ -1069,9 +1071,9 @@ public class Bidding {
     private boolean richeseWinner(Game game, boolean allPlayersPassed) throws InvalidGameStateException {
         DuneTopic modInfo = game.getModInfo();
         DuneTopic biddingPhase = game.getBiddingPhase();
+        topBidderDeclared = true;
         if (allPlayersPassed) {
             if (richeseCacheCard) {
-                topBidderDeclared = true;
                 biddingPhase.publish("All players passed." + Emojis.RICHESE + " may take cache card for free or remove it from the game.");
                 modInfo.publish("Use /award-top-bidder to assign card back to " + Emojis.RICHESE + ". Use /richese remove-card to remove it from the game. " + game.getModOrRoleMention());
             } else {
