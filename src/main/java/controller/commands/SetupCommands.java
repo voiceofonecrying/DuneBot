@@ -294,6 +294,17 @@ public class SetupCommands {
         removePlayerFromWaitingList(event, discordGame, playerName);
     }
 
+    public static void removePlayerFromGameRole(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
+        if (rolesWithName.isEmpty())
+            throw new IllegalArgumentException("No Role with name " + game.getGameRole());
+        if (rolesWithName.size() > 1)
+            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + game.getGameRole());
+        Role gameRole = rolesWithName.getFirst();
+        Member player = discordGame.required(user).getAsMember();
+        event.getGuild().removeRoleFromMember(Objects.requireNonNull(player), Objects.requireNonNull(event.getJDA().getRoleById(gameRole.getId()))).queue();
+    }
+
     public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         String factionName = discordGame.required(allFactions).getAsString();
         String playerName = discordGame.required(user).getAsUser().getAsMention();
