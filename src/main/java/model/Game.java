@@ -2097,25 +2097,30 @@ public class Game {
                 turnSummary.publish(orgizFaction.getEmoji() + " collects 1 " + Emojis.SPICE + " from " + territory.getTerritoryName() + " with Orgiz Processing Station");
             }
 
-            Faction faction = territory.getActiveFactions(this).getFirst();
-            int spice = faction.getSpiceCollectedFromTerritory(territory);
-            if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
-                faction.getOccupier().addSpice(Math.floorDiv(spice, 2),
-                        "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).");
-                turnSummary.publish(faction.getEmoji() +
-                        " collects " + Math.floorDiv(spice, 2) + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection at " + territory.getTerritoryName());
-                spice = Math.ceilDiv(spice, 2);
-            }
-            faction.addSpice(spice, "for Spice Blow");
-            territory.setSpice(territory.getSpice() - spice);
+            for (Faction faction : territory.getActiveFactions(this)) {
+                int spice = faction.getSpiceCollectedFromTerritory(territory);
+                if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
+                    faction.getOccupier().addSpice(Math.floorDiv(spice, 2),
+                            "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).");
+                    turnSummary.publish(faction.getEmoji() +
+                            " collects " + Math.floorDiv(spice, 2) + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection at " + territory.getTerritoryName());
+                    spice = Math.ceilDiv(spice, 2);
+                }
+                faction.addSpice(spice, "for Spice Blow");
+                territory.setSpice(territory.getSpice() - spice);
 
-            if (hasGameOption(GameOption.TECH_TOKENS) && hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
-                    && (!(faction instanceof FremenFaction) || hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
-                altSpiceProductionTriggered = true;
-            turnSummary.publish(faction.getEmoji() +
-                    " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
-            if (hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction && faction.isHighThreshold())
-                harkonnenCollectsForHighThreshold = true;
+                if (hasGameOption(GameOption.TECH_TOKENS) && hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
+                        && (!(faction instanceof FremenFaction) || hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
+                    altSpiceProductionTriggered = true;
+                turnSummary.publish(faction.getEmoji() +
+                        " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
+                if (hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction && faction.isHighThreshold())
+                    harkonnenCollectsForHighThreshold = true;
+            }
+            if (territory.getActiveFactions(this).size() == 2) {
+                EcazFaction ecaz = getEcazFaction();
+                turnSummary.publish(ecaz.getEmoji() + " " + Emojis.getFactionEmoji(ecaz.getAlly()) + " may divide the " + territory.getTerritoryName() + " " + Emojis.SPICE + " Blow as they wish.");
+            }
         }
         if (harkonnenCollectsForHighThreshold) {
             getHarkonnenFaction().addSpice(2, "for High Threshold advantage");

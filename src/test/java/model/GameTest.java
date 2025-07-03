@@ -2489,6 +2489,21 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testEcazAllyCoOccupyBothCollectSpice() throws InvalidGameStateException {
+            game.addFaction(ecaz);
+            game.addFaction(harkonnen);
+            game.createAlliance(ecaz, harkonnen);
+            Territory haggaBasinWest = game.getTerritory("Hagga Basin (West Sector)");
+            ecaz.placeForceFromReserves(game, haggaBasinWest, 2, false);
+            harkonnen.placeForceFromReserves(game, haggaBasinWest, 2, false);
+            haggaBasinWest.setSpice(6);
+            game.startSpiceHarvest();
+            assertEquals(16, ecaz.getSpice());
+            assertEquals(14, harkonnen.getSpice());
+            assertEquals(Emojis.ECAZ + " " + Emojis.HARKONNEN + " may divide the Hagga Basin (West Sector) " + Emojis.SPICE + " Blow as they wish.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
         void testAdvisorsAloneFlipWithGF9Rules() throws InvalidGameStateException {
             game.startSpiceHarvest();
             assertEquals(advisorFlipMessage, turnSummary.getMessages().getLast());
