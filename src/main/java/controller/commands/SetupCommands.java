@@ -285,7 +285,7 @@ public class SetupCommands {
             throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + game.getGameRole());
         Role gameRole = rolesWithName.getFirst();
         Member player = discordGame.required(user).getAsMember();
-        event.getGuild().addRoleToMember(Objects.requireNonNull(player), Objects.requireNonNull(event.getJDA().getRoleById(gameRole.getId()))).queue();
+        event.getGuild().addRoleToMember(Objects.requireNonNull(player), gameRole).queue();
 
         String playerName = discordGame.required(user).getAsUser().getAsMention();
         game.getTurnSummary().publish(playerName);
@@ -294,15 +294,14 @@ public class SetupCommands {
         removePlayerFromWaitingList(event, discordGame, playerName);
     }
 
-    public static void removePlayerFromGameRole(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+    public static void removePlayerFromGameRole(SlashCommandInteractionEvent event, Game game, Member player) {
         List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
         if (rolesWithName.isEmpty())
             throw new IllegalArgumentException("No Role with name " + game.getGameRole());
         if (rolesWithName.size() > 1)
             throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + game.getGameRole());
         Role gameRole = rolesWithName.getFirst();
-        Member player = discordGame.required(user).getAsMember();
-        event.getGuild().removeRoleFromMember(Objects.requireNonNull(player), Objects.requireNonNull(event.getJDA().getRoleById(gameRole.getId()))).queue();
+        event.getGuild().removeRoleFromMember(Objects.requireNonNull(player), gameRole).complete();
     }
 
     public static void addFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
