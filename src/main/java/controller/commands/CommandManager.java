@@ -32,7 +32,6 @@ import net.dv8tion.jda.api.interactions.commands.DefaultMemberPermissions;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
-import net.dv8tion.jda.api.requests.restaction.PermissionOverrideAction;
 import org.jetbrains.annotations.NotNull;
 import templates.ChannelPermissions;
 
@@ -292,9 +291,8 @@ public class CommandManager extends ListenerAdapter {
                 case "destroy-shield-wall" -> destroyShieldWall(discordGame, game);
                 case "add-spice" -> addSpice(discordGame, game);
                 case "remove-spice" -> removeSpice(discordGame, game);
-                case "reassign-faction" -> reassignFaction(discordGame, game);
-                case "dont-use-this" -> dontUseThis(event, discordGame, game);
-                case "dont-use-this2" -> dontUseThis2(event, discordGame, game);
+                case "reassign-faction-deprecated" -> reassignFaction(discordGame, game);
+                case "reassign-faction-to-new-player" -> reassignFactionToNewPlayer(event, discordGame, game);
                 case "take-over-faction" -> takeOverFaction(event, discordGame, game);
                 case "reassign-mod" -> reassignMod(event, discordGame, game);
                 case "team-mod" -> teamMod(discordGame, game);
@@ -438,8 +436,8 @@ public class CommandManager extends ListenerAdapter {
 
         commandData.add(Commands.slash("add-spice", "Add spice to a faction").addOptions(faction, amount, message, frontOfShield));
         commandData.add(Commands.slash("remove-spice", "Remove spice from a faction").addOptions(faction, amount, message, frontOfShield));
-        commandData.add(Commands.slash("reassign-faction", "Assign the faction to a different player").addOptions(faction, user));
-        commandData.add(Commands.slash("dont-use-this", "Assign the faction to a different player and grant permissions").addOptions(faction, user));
+        commandData.add(Commands.slash("reassign-faction-deprecated", "Assign the faction to a different player").addOptions(faction, user));
+        commandData.add(Commands.slash("reassign-faction-to-new-player", "Assign the faction to a different player and grant permissions").addOptions(faction, user));
         commandData.add(Commands.slash("take-over-faction", "Temporarily take controls of the faction").addOptions(faction));
         commandData.add(Commands.slash("reassign-mod", "Assign yourself as the mod to be tagged"));
         commandData.add(Commands.slash("team-mod", "Enable or disable team mod where all users with the game mod role get tagged").addOptions(teamModSwitch));
@@ -1107,39 +1105,37 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void dontUseThis(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void reassignFactionToNewPlayer(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String factionName = discordGame.required(faction).getAsString();
         String playerName = discordGame.required(user).getAsUser().getAsMention();
         Member player = discordGame.required(user).getAsMember();
-
         if (player == null)
             throw new IllegalArgumentException("Not a valid user");
+
+        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getModRole(), false);
+        if (rolesWithName.isEmpty())
+            throw new IllegalArgumentException("No Mod Role with name " + game.getGameRole());
+        if (rolesWithName.size() > 1)
+            throw new IllegalArgumentException(rolesWithName.size() + " Mod Roles with name " + game.getGameRole());
+        Role modRole = rolesWithName.getFirst();
+        if (player.getRoles().contains(modRole))
+            throw new IllegalArgumentException("You cannot assign a mod in this game to be a player.");
+
+        Faction faction = game.getFaction(factionName);
+        TextChannel info = discordGame.getTextChannel(factionName.toLowerCase() + "-info");
+        Member oldPlayer = members.stream().filter(m -> m.getUser().getAsMention().equals(faction.getPlayer())).findFirst().orElse(null);
+        if (oldPlayer != null) {
+            SetupCommands.removePlayerFromGameRole(event, game, oldPlayer);
+            info.upsertPermissionOverride(oldPlayer).deny(ChannelPermissions.readWriteAllow).complete();
+            // The following only works if the Member is cached.
+            info.getPermissionOverrides().stream().filter(o -> o.getMember() == oldPlayer).findFirst().ifPresent(po -> po.delete().complete());
+        }
+
         SetupCommands.addPlayerToGameRole(event, discordGame, game);
-
-//        Faction faction = game.getFaction(factionName);
-//        faction.setPlayer(playerName);
-//        faction.setUserName(player.getEffectiveName());
-
-        TextChannel info = discordGame.getTextChannel(factionName.toLowerCase() + "-info");
-        PermissionOverrideAction poa = info.upsertPermissionOverride(player);
-        poa.setAllowed(ChannelPermissions.readWriteAllow).queue();
-        poa.setDenied(ChannelPermissions.readWriteDeny).queue();
-
-        discordGame.pushGame();
-    }
-
-    public void dontUseThis2(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String factionName = discordGame.required(faction).getAsString();
-        String playerName = discordGame.required(user).getAsUser().getAsMention();
-        Member player = discordGame.required(user).getAsMember();
-
-        if (player == null)
-            throw new IllegalArgumentException("Not a valid user");
-        SetupCommands.removePlayerFromGameRole(event, discordGame, game);
-
-        TextChannel info = discordGame.getTextChannel(factionName.toLowerCase() + "-info");
-        PermissionOverrideAction poa = info.upsertPermissionOverride(player);
-        poa.setAllowed(ChannelPermissions.readWriteDeny).queue();
+        info.upsertPermissionOverride(player).grant(ChannelPermissions.readWriteAllow).complete();
+        info.upsertPermissionOverride(player).deny(ChannelPermissions.readWriteDeny).complete();
+        faction.setPlayer(playerName);
+        faction.setUserName(player.getEffectiveName());
 
         discordGame.pushGame();
     }
