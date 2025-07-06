@@ -39,6 +39,8 @@ public class SetupCommands {
         commandData.add(
                 Commands.slash("setup", "Commands related to game setup.").addSubcommands(
                         new SubcommandData("add-player-to-game-role", "Add a player to the game role").addOptions(user),
+                        new SubcommandData("add-mod", "Add a user to the mod role").addOptions(user),
+                        new SubcommandData("remove-mod", "Remove a user from the mod role").addOptions(user),
                         new SubcommandData("faction", "Register a user to a faction in a game")
                                 .addOptions(allFactions, user),
                         new SubcommandData("show-game-options", "Show the selected game options"),
@@ -70,6 +72,8 @@ public class SetupCommands {
         game.modExecutedACommand(event.getUser().getAsMention());
         switch (name) {
             case "add-player-to-game-role" -> addPlayerToGameRole(event, discordGame, game);
+            case "add-mod" -> addUserToModRole(event, discordGame, game);
+            case "remove-mod" -> removeUserFromModRole(event, discordGame, game);
             case "faction" -> addFaction(event, discordGame, game);
             case "show-game-options" -> showGameOptions(game);
             case "add-game-option" -> addGameOption(discordGame, game);
@@ -278,14 +282,17 @@ public class SetupCommands {
     }
 
     public static void addPlayerToGameRole(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
-        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
-        if (rolesWithName.isEmpty())
-            throw new IllegalArgumentException("No Role with name " + game.getGameRole());
-        if (rolesWithName.size() > 1)
-            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + game.getGameRole());
-        Role gameRole = rolesWithName.getFirst();
         Member player = discordGame.required(user).getAsMember();
-        event.getGuild().addRoleToMember(Objects.requireNonNull(player), gameRole).queue();
+        if (player == null)
+            throw new IllegalArgumentException("No such player on the server.");
+        String gameRoleName = game.getGameRole();
+        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(gameRoleName, false);
+        if (rolesWithName.isEmpty())
+            throw new IllegalArgumentException("No Role with name " + gameRoleName);
+        if (rolesWithName.size() > 1)
+            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + gameRoleName);
+        Role gameRole = rolesWithName.getFirst();
+        event.getGuild().addRoleToMember(player, gameRole).queue();
 
         String playerName = discordGame.required(user).getAsUser().getAsMention();
         game.getTurnSummary().publish(playerName);
@@ -295,11 +302,48 @@ public class SetupCommands {
     }
 
     public static void removePlayerFromGameRole(SlashCommandInteractionEvent event, Game game, Member player) {
-        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(game.getGameRole(), false);
+        String gameRoleName = game.getGameRole();
+        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(gameRoleName, false);
         if (rolesWithName.isEmpty())
-            throw new IllegalArgumentException("No Role with name " + game.getGameRole());
+            throw new IllegalArgumentException("No Role with name " + gameRoleName);
         if (rolesWithName.size() > 1)
-            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + game.getGameRole());
+            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + gameRoleName);
+        Role gameRole = rolesWithName.getFirst();
+        event.getGuild().removeRoleFromMember(Objects.requireNonNull(player), gameRole).complete();
+    }
+
+    public static void addUserToModRole(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+        Member player = discordGame.required(user).getAsMember();
+        if (player == null)
+            throw new IllegalArgumentException("No such player on the server.");
+        String gameRoleName = game.getGameRole();
+        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(gameRoleName, false);
+        for (Role r : rolesWithName) {
+            if (player.getRoles().contains(r))
+                throw new IllegalArgumentException("You cannot add a player in the game to the mod role.");
+        }
+        String modRoleName = game.getModRole();
+        rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(modRoleName, false);
+        if (rolesWithName.isEmpty())
+            throw new IllegalArgumentException("No Role with name " + modRoleName);
+        if (rolesWithName.size() > 1)
+            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + modRoleName);
+        Role modRole = rolesWithName.getFirst();
+        event.getGuild().addRoleToMember(player, modRole).queue();
+    }
+
+    public static void removeUserFromModRole(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+        Member player = discordGame.required(user).getAsMember();
+        if (player == null)
+            throw new IllegalArgumentException("No such player on the server.");
+        if (game.getMod().equals(player.getAsMention()))
+            throw new IllegalArgumentException("You cannot remove the primary mod from the mod role.");
+        String modRoleName = game.getModRole();
+        List<Role> rolesWithName = Objects.requireNonNull(event.getGuild()).getRolesByName(modRoleName, false);
+        if (rolesWithName.isEmpty())
+            throw new IllegalArgumentException("No Role with name " + modRoleName);
+        if (rolesWithName.size() > 1)
+            throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + modRoleName);
         Role gameRole = rolesWithName.getFirst();
         event.getGuild().removeRoleFromMember(Objects.requireNonNull(player), gameRole).complete();
     }
