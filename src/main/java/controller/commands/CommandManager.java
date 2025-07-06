@@ -1067,7 +1067,7 @@ public class CommandManager extends ListenerAdapter {
                 }
                 if (category != null)
                     categoryName = category.getName();
-                String state = ReportsCommands.activeGame(event.getGuild(), game, categoryName, true);
+                String state = ReportsCommands.activeGame(event.getGuild(), game, categoryName, true, false);
                 discordGame.getModInfo().queueMessage(state);
             }
         }
