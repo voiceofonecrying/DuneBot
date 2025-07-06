@@ -8,13 +8,10 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import helpers.GameResult;
-import io.github.cdimascio.dotenv.Dotenv;
 import model.Bidding;
 import model.Game;
-import model.factions.BGFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.JDA;
-import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -59,7 +56,7 @@ public class ReportsCommands {
 
         commandData.add(Commands.slash("reports", "Commands for statistics about Dune: Play by Discord games.").addSubcommands(
                 new SubcommandData("games-per-player", "Show the games each player is in listing those on waiting list first.").addOptions(months),
-                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions, optionalAllFactions),
+                new SubcommandData("active-games", "Show active games with turn, phase, and subphase.").addOptions(showFactions, showUserNames, optionalAllFactions),
                 new SubcommandData("active-game-roles", "Show player and mod roles in active games."),
                 new SubcommandData("inactive-game-roles", "Show player and mod roles that are not in use."),
                 new SubcommandData("player-record", "Show the overall per faction record for the player").addOptions(user),
@@ -291,7 +288,7 @@ public class ReportsCommands {
         };
     }
 
-    public static String activeGame(Guild guild, Game game, String categoryName, boolean showFactionsinGames) throws InvalidGameStateException {
+    public static String activeGame(Guild guild, Game game, String categoryName, boolean showFactionsInGames, boolean showUsernamesInGames) throws InvalidGameStateException {
         StringBuilder response = new StringBuilder();
         response.append(categoryName).append("\nTurn ").append(game.getTurn()).append(", ");
         if (game.getTurn() != 0) {
@@ -305,14 +302,18 @@ public class ReportsCommands {
             }
         }
         response.append("\nMod: ").append(game.getMod());
-        if (showFactionsinGames)
+        if (showFactionsInGames)
             response.append("\nFactions: ").append(String.join(", ", game.getFactions().stream().map(Faction::getName).toList()));
+        if (showUsernamesInGames)
+            response.append("\nUsernames: ").append(String.join(", ", game.getFactions().stream().map(Faction::getUserName).toList()));
         return response.toString();
     }
 
     public static String activeGames(SlashCommandInteractionEvent event) {
         OptionMapping optionMapping = event.getOption(showFactions.getName());
         boolean showFactionsinGames = (optionMapping != null && optionMapping.getAsBoolean());
+        optionMapping = event.getOption(showUserNames.getName());
+        boolean showUserNamesinGames = (optionMapping != null && optionMapping.getAsBoolean());
         optionMapping = event.getOption(optionalAllFactions.getName());
         String selectedFaction = (optionMapping == null) ? null : optionMapping.getAsString();
         StringBuilder response = new StringBuilder();
@@ -323,7 +324,7 @@ public class ReportsCommands {
                 DiscordGame discordGame = new DiscordGame(category, false);
                 Game game = discordGame.getGame();
                 if (selectedFaction == null || game.hasFaction(selectedFaction)) {
-                    response.append(activeGame(event.getGuild(), game, categoryName, showFactionsinGames));
+                    response.append(activeGame(event.getGuild(), game, categoryName, showFactionsinGames, showUserNamesinGames));
                     response.append("\n\n");
                 }
             } catch (Exception e) {

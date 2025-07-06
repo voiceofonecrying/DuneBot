@@ -268,6 +268,8 @@ public class CommandOptions {
 
     public static final OptionData showFactions =
             new OptionData(OptionType.BOOLEAN, "show-factions", "Show factions in each game", false);
+    public static final OptionData showUserNames =
+            new OptionData(OptionType.BOOLEAN, "show-user-names", "Show user names in each game", false);
 
     public static final OptionData forcePublish =
             new OptionData(OptionType.BOOLEAN, "force-publish", "Publish stats even if no new games were added", false);
