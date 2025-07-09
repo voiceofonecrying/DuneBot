@@ -194,8 +194,6 @@ public class CommandManager extends ListenerAdapter {
                 event.getHook().editOriginal(result).queue();
             } else if (name.equals("my-record")) {
                 event.getHook().editOriginal(ReportsCommands.playerRecord(event)).queue();
-            } else if (name.equals("random-dune-quote")) {
-                randomDuneQuote(event);
             } else {
                 String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
                 CompletableFuture<Void> future = Queue.getFuture(categoryName);
@@ -324,61 +322,6 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    private void randomDuneQuote(SlashCommandInteractionEvent event) throws IOException {
-        int lines = DiscordGame.required(CommandOptions.lines, event).getAsInt();
-        List<String> quotes;
-        if (DiscordGame.optional(search, event) == null) {
-            if (DiscordGame.optional(book, event) == null) {
-                quotes = getQuotesFromBook("Dune Books/Dune.txt");
-                Random random = new Random();
-                int start = DiscordGame.optional(startingLine, event) != null ? DiscordGame.required(startingLine, event).getAsInt() : random.nextInt(quotes.size() - lines + 1);
-                StringBuilder quote = new StringBuilder();
-
-                for (int i = 0; i < lines; i++) {
-                    quote.append(quotes.get(start + i));
-                }
-                event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
-
-            } else {
-                quotes = getQuotesFromBook("Dune Books/" + DiscordGame.required(book, event).getAsString());
-                Random random = new Random();
-                int start = DiscordGame.optional(startingLine, event) != null ? DiscordGame.required(startingLine, event).getAsInt() : random.nextInt(quotes.size() - lines + 1);
-                StringBuilder quote = new StringBuilder();
-
-                for (int i = 0; i < lines; i++) {
-                    quote.append(quotes.get(start + i));
-                }
-                event.getMessageChannel().sendMessage(quote + "\n\n(Line: " + start + ")").queue();
-            }
-        } else {
-            String search = DiscordGame.required(CommandOptions.search, event).getAsString();
-            quotes = new ArrayList<>();
-            quotes.addAll(getQuotesFromBook("Dune Books/Dune.txt"));
-            quotes.addAll(getQuotesFromBook("Dune Books/Messiah.txt"));
-            quotes.addAll(getQuotesFromBook("Dune Books/Children.txt"));
-            quotes.addAll(getQuotesFromBook("Dune Books/GeoD.txt"));
-            quotes.addAll(getQuotesFromBook("Dune Books/Heretics.txt"));
-            quotes.addAll(getQuotesFromBook("Dune Books/Chapterhouse.txt"));
-            List<String> matched = new LinkedList<>();
-
-            for (int i = 0; i < quotes.size() - lines; i+=lines) {
-                StringBuilder candidate = new StringBuilder();
-                for (int j = 0; j < lines; j++) {
-                    candidate.append(quotes.get(i + j));
-                }
-                if (candidate.toString().contains(search)) matched.add(candidate.toString());
-            }
-            if (matched.isEmpty()) {
-                event.getHook().sendMessage("No results.").queue();
-                return;
-            }
-            Random random = new Random();
-            int start = DiscordGame.optional(startingLine, event) != null ? DiscordGame.required(startingLine, event).getAsInt() - 1 : random.nextInt(matched.size() - 1);
-
-            event.getMessageChannel().sendMessage(matched.get(start) + "\n (Match " + (start + 1) + " of " + matched.size() + " for search term: '" + search + "')").queue();
-        }
-    }
-
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
         CompletableFuture.runAsync(() -> runCommandAutoCompleteInteraction(event));
@@ -444,7 +387,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("draw-nexus-card", "Draw a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("discard-nexus-card", "Discard a nexus card.").addOptions(faction));
         commandData.add(Commands.slash("moritani-assassinate-traitor", "Assassinate Moritani's Traitor"));
-        commandData.add(Commands.slash("random-dune-quote", "Will dispense a random line of text from the specified book.").addOptions(lines, book, startingLine, search));
         commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
         commandData.add(Commands.slash("save-game-bot-data", "Save the game bot data at the end of a game for future analysis"));
         commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(forcePublish));
