@@ -5919,4 +5919,21 @@ class BattleTest extends DuneTest {
             assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.contains("is no longer occupied")));
         }
     }
+
+    @Test
+    void testHarkonnenCannotCaptureKwisatzHaderach() {
+        game.addFaction(atreides);
+        game.addFaction(harkonnen);
+        arrakeen.addForces("Harkonnen", 1);
+        Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
+        game.killLeader(atreides, "Lady Jessica");
+        game.killLeader(atreides, "Thufir Hawat");
+        game.killLeader(atreides, "Gurney Halleck");
+        game.killLeader(atreides, "Duncan Idaho");
+        game.killLeader(atreides, "Dr. Yueh");
+        atreides.addForceLost(7);
+        assertTrue(atreides.isHasKH());
+        battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, duncanIdaho, false, true);
+        assertEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
+    }
 }
