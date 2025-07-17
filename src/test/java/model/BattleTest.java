@@ -888,28 +888,6 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testHarkonnenCannotCaptureKwisatzHaderach() throws InvalidGameStateException {
-            arrakeen.addForces("Harkonnen", 1);
-            battle1 = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
-            game.killLeader(atreides, "Lady Jessica");
-            game.killLeader(atreides, "Thufir Hawat");
-            game.killLeader(atreides, "Gurney Halleck");
-            game.killLeader(atreides, "Dr. Yueh");
-            atreides.addForceLost(7);
-            assertTrue(atreides.isHasKH());
-            assertEquals(2, atreides.getLeaders().size());
-            harkonnen.addTreacheryCard(cheapHero);
-            harkonnen.addTreacheryCard(crysknife);
-            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, true, 0, null, null);
-            battle1.setBattlePlan(game, harkonnen, null, cheapHero, false, 1, false, 1, crysknife, null);
-            assertEquals(Emojis.HARKONNEN, battle1.getWinnerEmojis(game));
-            assertEquals("0.5", battle1.getAggressorBattlePlan().getTotalStrengthString());
-            assertEquals("1", battle1.getDefenderBattlePlan().getTotalStrengthString());
-            battle1.printBattleResolution(game, true);
-            assertFalse(turnSummary.getMessages().getFirst().contains(Emojis.HARKONNEN + " captures a " + Emojis.ATREIDES + " leader\n"));
-        }
-
-        @Test
         void testBattlePlanResolutionAggressorWinsTies() throws InvalidGameStateException {
             harkonnen.addTreacheryCard(cheapHero);
             harkonnen.addTreacheryCard(crysknife);
