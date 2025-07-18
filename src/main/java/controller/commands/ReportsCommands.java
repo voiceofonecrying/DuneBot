@@ -1292,7 +1292,10 @@ public class ReportsCommands {
                 String channelString = raw.substring(0, modStart);
                 int channelIdStart = channelString.indexOf("<#");
                 boolean foundChannelId = false;
-                if (channelIdStart != -1) {
+                if (gameName.startsWith("PBD 126")) {
+                    channelString = "1389629843196612629";
+                    foundChannelId = true;
+                } else if (channelIdStart != -1) {
                     channelString = channelString.substring(channelString.indexOf("<#"));
                     channelString = channelString.substring(2, channelString.indexOf(">"));
                     foundChannelId = true;
