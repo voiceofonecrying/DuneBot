@@ -44,6 +44,14 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
 
         @Test
+        void testShaiHuludSecondInNewDeck() throws InvalidGameStateException, IOException {
+            game.spiceBlowPhaseNextStep();
+            game.getSpiceDeck().addFirst(shaiHulud);
+            game.advanceTurn();
+            assertDoesNotThrow(() -> game.startSpiceBlowPhase());
+        }
+
+        @Test
         void testDraw() {
             game.getSpiceDiscardA().clear();
             game.getSpiceDiscardB().clear();
