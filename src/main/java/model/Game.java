@@ -45,6 +45,7 @@ public class Game {
     private final LinkedList<SpiceCard> spiceDeck;
     private final LinkedList<SpiceCard> spiceDiscardA;
     private final LinkedList<SpiceCard> spiceDiscardB;
+    private SpiceCard discardATopBeforeReshuffle;
     private final LinkedList<TraitorCard> traitorDeck;
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
     private final LinkedList<NexusCard> nexusDeck;
@@ -1401,6 +1402,10 @@ public class Game {
         SpiceCard lastCard = null;
         if (!discard.isEmpty())
             lastCard = discard.getLast();
+        if (lastCard == null && spiceBlowDeckName.equals("A")) {
+            lastCard = discardATopBeforeReshuffle;
+            discardATopBeforeReshuffle = null;
+        }
         LinkedList<SpiceCard> wormsToReshuffle = new LinkedList<>();
 
         StringBuilder message = new StringBuilder();
@@ -1416,6 +1421,7 @@ public class Game {
 
         do {
             if (spiceDeck.isEmpty()) {
+                discardATopBeforeReshuffle = spiceDiscardA.getLast();
                 spiceDeck.addAll(spiceDiscardA);
                 spiceDeck.addAll(spiceDiscardB);
                 Collections.shuffle(spiceDeck);
