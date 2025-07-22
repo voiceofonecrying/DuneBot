@@ -5920,20 +5920,55 @@ class BattleTest extends DuneTest {
         }
     }
 
-    @Test
-    void testHarkonnenCannotCaptureKwisatzHaderach() {
-        game.addFaction(atreides);
-        game.addFaction(harkonnen);
-        arrakeen.addForces("Harkonnen", 1);
-        Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
-        game.killLeader(atreides, "Lady Jessica");
-        game.killLeader(atreides, "Thufir Hawat");
-        game.killLeader(atreides, "Gurney Halleck");
-        game.killLeader(atreides, "Duncan Idaho");
-        game.killLeader(atreides, "Dr. Yueh");
-        atreides.addForceLost(7);
-        assertTrue(atreides.isHasKH());
-        battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, duncanIdaho, false, true);
-        assertEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
+    @Nested
+    @DisplayName("#harkonnenLeaderCapture")
+    class HarkonnenLeaderCapture {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            arrakeen.addForces("Harkonnen", 1);
+            game.killLeader(atreides, "Lady Jessica");
+            game.killLeader(atreides, "Thufir Hawat");
+            game.killLeader(atreides, "Gurney Halleck");
+            game.killLeader(atreides, "Dr. Yueh");
+            battle = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
+        }
+
+        @Test
+        void testHarkonnenCanCaptureLeader() throws InvalidGameStateException {
+            battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, ladyJessica, false, true);
+            assertEquals("Will you keep or kill Duncan Idaho? ha", harkonnenChat.getMessages().getLast());
+            assertNotEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testHarkonnenCanCaptureLeaderUsedInSameTerritory() throws InvalidGameStateException {
+            battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, duncanIdaho, false, true);
+            assertEquals("Will you keep or kill Duncan Idaho? ha", harkonnenChat.getMessages().getLast());
+            assertNotEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testHarkonnenCannotCaptureLeaderUsedElsewhere() throws InvalidGameStateException {
+            carthag.addForces("Atreides", 1);
+            Battle battle2 = new Battle(game, List.of(carthag), List.of(atreides, harkonnen));
+            battle2.setBattlePlan(game, atreides, "Duncan Idaho", false, "0", 0, "None", "None");
+            battle2.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, ladyJessica, false, true);
+            assertTrue(harkonnenChat.getMessages().isEmpty());
+            assertEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testHarkonnenCannotCaptureKwisatzHaderach() {
+            atreides.addForceLost(7);
+            assertTrue(atreides.isHasKH());
+            game.killLeader(atreides, "Duncan Idaho");
+            battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, duncanIdaho, false, true);
+            assertEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
+        }
     }
 }
