@@ -273,6 +273,8 @@ public class CommandOptions {
 
     public static final OptionData forcePublish =
             new OptionData(OptionType.BOOLEAN, "force-publish", "Publish stats even if no new games were added", false);
+    public static final OptionData statsFileOnly =
+            new OptionData(OptionType.BOOLEAN, "stats-file-only", "Publish only the JSON file in parsed-results", false);
 
     public static List<Command.Choice> getCommandChoices(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String optionName = event.getFocusedOption().getName();
