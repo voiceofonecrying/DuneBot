@@ -625,7 +625,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         void testHomeworldsLowThreshold() {
             game.addGameOption(GameOption.HOMEWORLDS);
-            faction.placeForceFromReserves(game, carthag, 13, false);
+            faction.placeForcesFromReserves(carthag, 13, false);
             faction.sendTerrorTokenLocationMessage();
             assertEquals("Where would you like to place a Terror Token? player", chat.getMessages().getLast());
             DuneChoice arrakeenChoice = chat.getChoices().getLast().stream().filter(dc -> dc.getLabel().equals("Arrakeen")).findFirst().orElseThrow();
@@ -687,7 +687,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         @Test
         void testSecondTerrorTokenNotAllowedAtLowThreshold() {
             game.addGameOption(GameOption.HOMEWORLDS);
-            faction.placeForceFromReserves(game, carthag, 13, false);
+            faction.placeForcesFromReserves(carthag, 13, false);
             assertFalse(faction.isHighThreshold());
             assertThrows(InvalidGameStateException.class, () -> faction.placeTerrorToken(carthag, "Sabotage"));
         }
@@ -804,7 +804,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             game.createAlliance(emperor, harkonnen);
             Territory ecazHomeworld = game.getTerritory("Ecaz");
             ecazHomeworld.removeForces(game, "Ecaz", 14);
-            harkonnen.placeForceFromReserves(game, ecazHomeworld, 1, false);
+            harkonnen.placeForcesFromReserves(ecazHomeworld, 1, false);
             game.assignDukeVidalToAFaction("Emperor");
             emperor.acceptTerrorAlliance(moritani, "Arrakeen", "Robbery");
             assertTrue(emperor.getLeader("Duke Vidal").isEmpty());

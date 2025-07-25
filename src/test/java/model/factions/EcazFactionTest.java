@@ -524,7 +524,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory ecazHomeworld = game.getTerritory("Ecaz");
             ecazHomeworld.removeForces(game, "Ecaz", 14);
-            bt.placeForceFromReserves(game, ecazHomeworld, 2, false);
+            bt.placeForcesFromReserves(ecazHomeworld, 2, false);
             assertTrue(faction.isHomeworldOccupied());
             faction.triggerAmbassador(bt, "Ecaz");
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
@@ -616,7 +616,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.addFaction(atreides);
             Territory ecazHomeworld = game.getTerritory("Ecaz");
             ecazHomeworld.removeForces(game, "Ecaz", 14);
-            atreides.placeForceFromReserves(game, ecazHomeworld, 2, false);
+            atreides.placeForcesFromReserves(ecazHomeworld, 2, false);
             assertTrue(faction.isHomeworldOccupied());
             assertTrue(atreides.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());

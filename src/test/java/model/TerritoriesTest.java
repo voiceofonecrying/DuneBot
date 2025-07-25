@@ -45,8 +45,8 @@ public class TerritoriesTest extends DuneTest {
         @Test
         void testFremenLoseHalfForces() {
             game.addFaction(fremen);
-            fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
-            fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
+            fremen.placeForcesFromReserves(cielagoNorth_eastSector, 2, false);
+            fremen.placeForcesFromReserves(cielagoNorth_eastSector, 3, true);
             territories.moveStorm(game);
             assertEquals(Emojis.FREMEN + " lose 2 " + Emojis.FREMEN_TROOP + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.FREMEN + " lose 1 " + Emojis.FREMEN_FEDAYKIN + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getLast());
@@ -55,8 +55,8 @@ public class TerritoriesTest extends DuneTest {
         @Test
         void testOtherFactionLosesAllForces() {
             game.addFaction(emperor);
-            emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
-            emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
+            emperor.placeForcesFromReserves(cielagoNorth_eastSector, 2, false);
+            emperor.placeForcesFromReserves(cielagoNorth_eastSector, 3, true);
             territories.moveStorm(game);
             assertEquals(Emojis.EMPEROR + " lose 2 " + Emojis.EMPEROR_TROOP + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.EMPEROR + " lose 3 " + Emojis.EMPEROR_SARDAUKAR + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getLast());

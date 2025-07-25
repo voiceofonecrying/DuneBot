@@ -1769,9 +1769,9 @@ class BiddingTest extends DuneTest {
             @BeforeEach
             void setUp() throws InvalidGameStateException {
                 game.addGameOption(GameOption.HOMEWORLDS);
-                ix.placeForceFromReserves(game, arrakeen, 10, false);
-                ix.placeForceFromReserves(game, arrakeen, 4, true);
-                atreides.placeForceFromReserves(game, game.getTerritory("Ix"), 1, false);
+                ix.placeForcesFromReserves(arrakeen, 10, false);
+                ix.placeForcesFromReserves(arrakeen, 4, true);
+                atreides.placeForcesFromReserves(game.getTerritory("Ix"), 1, false);
                 assertTrue(ix.isHomeworldOccupied());
                 assertEquals(atreides, ix.getOccupier());
                 bidding = game.startBidding();

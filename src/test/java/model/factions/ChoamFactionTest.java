@@ -346,10 +346,10 @@ class ChoamFactionTest extends FactionTestTemplate {
         assertEquals(3, moritani.getHandLimit());
         // Now have Harkonnen occupy Tupile
         Territory tupile = game.getTerritory("Tupile");
-        faction.placeForceFromReserves(game, sietchTabr, 20, false);
+        faction.placeForcesFromReserves(sietchTabr, 20, false);
         assertEquals(0, tupile.getForce("CHOAM").getStrength());
         assertFalse(faction.isHighThreshold());
-        harkonnen.placeForceFromReserves(game, tupile, 1, false);
+        harkonnen.placeForcesFromReserves(tupile, 1, false);
         assertTrue(faction.isHomeworldOccupied());
         assertEquals(harkonnen, faction.getOccupier());
         assertEquals(8, harkonnen.getHandLimit());

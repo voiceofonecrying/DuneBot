@@ -253,7 +253,7 @@ class BGFactionTest extends FactionTestTemplate {
         Territory polarSink = game.getTerritory("Polar Sink");
         AtreidesFaction atreides = new AtreidesFaction("at", "at");
         game.addFaction(atreides);
-        faction.placeForceFromReserves(game, polarSink, 1, false);
+        faction.placeForcesFromReserves(polarSink, 1, false);
         game.moveForces(atreides, game.getTerritory("Arrakeen"), polarSink, 1, 0, false);
         assertTrue(turnSummary.getMessages().stream().noneMatch(m -> m.contains(Emojis.BG + " to decide whether they want to flip")));
         assertTrue(chat.getMessages().isEmpty());
@@ -382,7 +382,7 @@ class BGFactionTest extends FactionTestTemplate {
         @Test
         public void testBGDoesNotGetAskedAtLowThreshold() {
             game.addGameOption(GameOption.HOMEWORLDS);
-            faction.placeForceFromReserves(game, polarSink, 20, false);
+            faction.placeForcesFromReserves(polarSink, 20, false);
             faction.presentAdvisorChoices(game, harkonnen, carthag);
             assertTrue(chat.getMessages().isEmpty());
         }
@@ -399,7 +399,7 @@ class BGFactionTest extends FactionTestTemplate {
         public void testBGDoesNotGetAskedToAdviseShipmentsToOtherHomeworld() {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory giediPrime = game.getTerritory("Giedi Prime");
-            faction.placeForceFromReserves(game, giediPrime, 1, false);
+            faction.placeForcesFromReserves(giediPrime, 1, false);
             faction.presentAdvisorChoices(game, harkonnen, giediPrime);
             assertTrue(chat.getMessages().isEmpty());
         }

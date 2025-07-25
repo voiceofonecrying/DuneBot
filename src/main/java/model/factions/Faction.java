@@ -457,23 +457,22 @@ public class Faction {
      */
     protected String placeAndReportWhatWasPlaced(Territory territory, int amount, int starredAmount) {
         if (amount > 0)
-            placeForceFromReserves(game, territory, amount, false);
+            placeForcesFromReserves(territory, amount, false);
         if (starredAmount > 0)
-            placeForceFromReserves(game, territory, starredAmount, true);
+            placeForcesFromReserves(territory, starredAmount, true);
         return emoji + ": " + forcesString(amount, starredAmount);
     }
 
     /**
-     * Places a force from reserves into this territory.
+     * Places forces from reserves into this territory.
      * Reports removal from reserves to ledger.
      * Switches homeworld to low threshold if applicable.
      *
-     * @param game      The Game instance.
      * @param territory The territory to place the force in.
      * @param amount    The number of forces to place.
      * @param special   Whether the force is a special reserve.
      */
-    public void placeForceFromReserves(Game game, Territory territory, int amount, boolean special) {
+    public void placeForcesFromReserves(Territory territory, int amount, boolean special) {
         String forceName = name + (special ? "*" : "");
         if (special)
             removeSpecialReserves(amount);

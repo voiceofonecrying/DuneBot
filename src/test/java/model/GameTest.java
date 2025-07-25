@@ -308,7 +308,7 @@ class GameTest extends DuneTest {
                 game.completeCurrentFactionMovement();
                 game.completeCurrentFactionMovement();
                 game.completeCurrentFactionMovement();
-                bg.placeForceFromReserves(game, sietchTabr, 1, false);
+                bg.placeForcesFromReserves(sietchTabr, 1, false);
                 game.completeCurrentFactionMovement();
             }
 
@@ -321,7 +321,7 @@ class GameTest extends DuneTest {
             @Test
             void testGuildIntrudesOnBGAndBGFlips() {
                 // Really should replace these first three lines with a single function
-                guild.placeForceFromReserves(game, sietchTabr, 1, false);
+                guild.placeForcesFromReserves(sietchTabr, 1, false);
                 bg.presentFlipMessage(game, sietchTabr.getTerritoryName());
                 game.completeCurrentFactionMovement();
                 assertFalse(game.allFactionsHaveMoved());
@@ -332,7 +332,7 @@ class GameTest extends DuneTest {
             @Test
             void testGuildIntrudesOnBGAndBGDoesNotFlip() {
                 // Really should replace these first three lines with a single function
-                guild.placeForceFromReserves(game, sietchTabr, 1, false);
+                guild.placeForcesFromReserves(sietchTabr, 1, false);
                 bg.presentFlipMessage(game, sietchTabr.getTerritoryName());
                 game.completeCurrentFactionMovement();
                 assertFalse(game.allFactionsHaveMoved());
@@ -746,7 +746,7 @@ class GameTest extends DuneTest {
         void testBGGetFlipMessage() {
             game.addFaction(harkonnen);
             game.addFaction(bg);
-            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            bg.placeForcesFromReserves(sietchTabr, 1, false);
             game.moveForces(harkonnen, carthag, sietchTabr, 1, 0, true);
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr? bg", bgChat.getMessages().getLast());
         }
@@ -765,7 +765,7 @@ class GameTest extends DuneTest {
         void testBGHadFlipDecisionsRemaining() throws InvalidGameStateException {
             game.addFaction(bg);
             game.addFaction(fremen);
-            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            bg.placeForcesFromReserves(sietchTabr, 1, false);
             fremen.placeForces(sietchTabr, 1, 0, true, true, true, false, false);
             game.endShipmentMovement();
             assertEquals("Shipment and Movement has been forced to end. \n" + Emojis.BG + " had flip decisions in Sietch Tabr.", modInfo.getMessages().getFirst());
@@ -1467,8 +1467,8 @@ class GameTest extends DuneTest {
         @Test
         void testFremenLoseHalfForces() throws IOException {
             game.addFaction(fremen);
-            fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
-            fremen.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
+            fremen.placeForcesFromReserves(cielagoNorth_eastSector, 2, false);
+            fremen.placeForcesFromReserves(cielagoNorth_eastSector, 3, true);
             game.endStormPhase();
             assertEquals(Emojis.FREMEN + " lose 2 " + Emojis.FREMEN_TROOP + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().get(1));
             assertEquals(Emojis.FREMEN + " lose 1 " + Emojis.FREMEN_FEDAYKIN + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getLast());
@@ -1477,8 +1477,8 @@ class GameTest extends DuneTest {
         @Test
         void testOtherFactionLosesAllForces() throws IOException {
             game.addFaction(emperor);
-            emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 2, false);
-            emperor.placeForceFromReserves(game, cielagoNorth_eastSector, 3, true);
+            emperor.placeForcesFromReserves(cielagoNorth_eastSector, 2, false);
+            emperor.placeForcesFromReserves(cielagoNorth_eastSector, 3, true);
             game.endStormPhase();
             assertEquals(Emojis.EMPEROR + " lose 2 " + Emojis.EMPEROR_TROOP + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().get(1));
             assertEquals(Emojis.EMPEROR + " lose 3 " + Emojis.EMPEROR_SARDAUKAR + " to the storm in Cielago North (East Sector).", turnSummary.getMessages().getLast());
@@ -2385,10 +2385,10 @@ class GameTest extends DuneTest {
         void testAllyingWithTupileOccupier() {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory tupile = game.getTerritory("Tupile");
-            choam.placeForceFromReserves(game, sietchTabr, 20, false);
+            choam.placeForcesFromReserves(sietchTabr, 20, false);
             assertEquals(0, tupile.getForce("CHOAM").getStrength());
             assertFalse(choam.isHighThreshold());
-            guild.placeForceFromReserves(game, tupile, 1, false);
+            guild.placeForcesFromReserves(tupile, 1, false);
             assertTrue(choam.isHomeworldOccupied());
             assertEquals(guild, choam.getOccupier());
             assertEquals(5, guild.getHandLimit());
@@ -2462,11 +2462,11 @@ class GameTest extends DuneTest {
         void testLeaveTupileOccupier() {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory tupile = game.getTerritory("Tupile");
-            choam.placeForceFromReserves(game, sietchTabr, 20, false);
+            choam.placeForcesFromReserves(sietchTabr, 20, false);
             assertEquals(0, tupile.getForce("CHOAM").getStrength());
             assertFalse(choam.isHighThreshold());
             game.createAlliance(guild, fremen);
-            guild.placeForceFromReserves(game, tupile, 1, false);
+            guild.placeForcesFromReserves(tupile, 1, false);
             assertTrue(choam.isHomeworldOccupied());
             assertEquals(guild, choam.getOccupier());
             assertEquals(5, guild.getHandLimit());
@@ -2494,8 +2494,8 @@ class GameTest extends DuneTest {
             game.addFaction(harkonnen);
             game.createAlliance(ecaz, harkonnen);
             Territory haggaBasinWest = game.getTerritory("Hagga Basin (West Sector)");
-            ecaz.placeForceFromReserves(game, haggaBasinWest, 2, false);
-            harkonnen.placeForceFromReserves(game, haggaBasinWest, 2, false);
+            ecaz.placeForcesFromReserves(haggaBasinWest, 2, false);
+            harkonnen.placeForcesFromReserves(haggaBasinWest, 2, false);
             haggaBasinWest.setSpice(6);
             game.startSpiceHarvest();
             assertEquals(16, ecaz.getSpice());
@@ -2555,7 +2555,7 @@ class GameTest extends DuneTest {
         void testMoritaniLowThreshold() throws InvalidGameStateException {
             game.addFaction(moritani);
             game.addGameOption(GameOption.HOMEWORLDS);
-            moritani.placeForceFromReserves(game, habbanyaSietch, 13, false);
+            moritani.placeForcesFromReserves(habbanyaSietch, 13, false);
             moritani.placeTerrorToken(sietchTabr, "Assassination");
             moritaniChat.clear();
             game.startSpiceHarvest();
@@ -2564,21 +2564,21 @@ class GameTest extends DuneTest {
 
         @Test
         void testFactionInArrakeenHasMiningEquipment() throws InvalidGameStateException {
-            bg.placeForceFromReserves(game, arrakeen, 1, false);
+            bg.placeForcesFromReserves(arrakeen, 1, false);
             game.startSpiceHarvest();
             assertTrue(bg.hasMiningEquipment());
         }
 
         @Test
         void testFactionInCarthagHasMiningEquipment() throws InvalidGameStateException {
-            bg.placeForceFromReserves(game, carthag, 1, false);
+            bg.placeForcesFromReserves(carthag, 1, false);
             game.startSpiceHarvest();
             assertTrue(bg.hasMiningEquipment());
         }
 
         @Test
         void testFactionInTueksDoesNotHaveMiningEquipment() throws InvalidGameStateException {
-            bg.placeForceFromReserves(game, tueksSietch, 1, false);
+            bg.placeForcesFromReserves(tueksSietch, 1, false);
             game.startSpiceHarvest();
             assertFalse(bg.hasMiningEquipment());
         }
@@ -2589,7 +2589,7 @@ class GameTest extends DuneTest {
             Territory cistern = new Territory("Cistern", 1, true, false, true, false);
             sihayaRidge.setDiscoveryToken("Cistern");
             game.putTerritoryInAnotherTerritory(cistern, sihayaRidge);
-            bg.placeForceFromReserves(game, cistern, 1, false);
+            bg.placeForcesFromReserves(cistern, 1, false);
             game.startSpiceHarvest();
             assertFalse(bg.hasMiningEquipment());
         }
@@ -2600,7 +2600,7 @@ class GameTest extends DuneTest {
             game.addFaction(atreides);
             game.addFaction(richese);
             game.getTerritory("Caladan").setRicheseNoField(3);
-            atreides.placeForceFromReserves(game, arrakeen, 10, false);
+            atreides.placeForcesFromReserves(arrakeen, 10, false);
             assertTrue(atreides.isHomeworldOccupied());
             game.startSpiceHarvest();
             assertEquals(7, richese.getSpice());
@@ -2612,9 +2612,9 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(harkonnen);
             garaKulon.setSpice(6);
-            harkonnen.placeForceFromReserves(game, garaKulon, 1, false);
+            harkonnen.placeForcesFromReserves(garaKulon, 1, false);
             sihayaRidge.setSpice(6);
-            harkonnen.placeForceFromReserves(game, sihayaRidge, 1, false);
+            harkonnen.placeForcesFromReserves(sihayaRidge, 1, false);
             game.startSpiceHarvest();
             assertEquals(20, harkonnen.getSpice());
         }
@@ -2624,13 +2624,13 @@ class GameTest extends DuneTest {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
             game.addFaction(harkonnen);
-            atreides.placeForceFromReserves(game, arrakeen, 10, false);
-            harkonnen.placeForceFromReserves(game, game.getTerritory("Caladan"), 1, false);
+            atreides.placeForcesFromReserves(arrakeen, 10, false);
+            harkonnen.placeForcesFromReserves(game.getTerritory("Caladan"), 1, false);
             assertTrue(atreides.isHomeworldOccupied());
             assertEquals(10, harkonnen.getSpice());
             assertEquals(10, atreides.getSpice());
             garaKulon.setSpice(6);
-            harkonnen.placeForceFromReserves(game, garaKulon, 1, false);
+            harkonnen.placeForcesFromReserves(garaKulon, 1, false);
             game.startSpiceHarvest();
             assertEquals(19, harkonnen.getSpice());
             assertEquals(12, atreides.getSpice());

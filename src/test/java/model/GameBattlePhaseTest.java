@@ -156,7 +156,7 @@ public class GameBattlePhaseTest extends DuneTest {
             tueksSietch.addForces("BG", 1);
             Territory ecazHomeworld = game.getTerritory(ecaz.getHomeworld());
             ecazHomeworld.removeForces(game, "Ecaz", 14);
-            bg.placeForceFromReserves(game, ecazHomeworld, 1, false);
+            bg.placeForcesFromReserves(ecazHomeworld, 1, false);
 
             turnSummary.clear();
             game.startBattlePhase();

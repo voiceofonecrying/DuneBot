@@ -242,7 +242,7 @@ class RicheseFactionTest extends FactionTestTemplate {
 
         @Test
         void testBGGetFlipMessage() throws InvalidGameStateException {
-            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            bg.placeForcesFromReserves(sietchTabr, 1, false);
             faction.shipNoField(faction, sietchTabr, 3, false, false, 0);
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr? p", bgChat.getMessages().getFirst());
         }
@@ -285,7 +285,7 @@ class RicheseFactionTest extends FactionTestTemplate {
             bg.setChat(bgChat);
             bg.setLedger(new TestTopic());
             game.addFaction(bg);
-            bg.placeForceFromReserves(game, sietchTabr, 1, false);
+            bg.placeForcesFromReserves(sietchTabr, 1, false);
             faction.moveNoField("Sietch Tabr", true);
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Sietch Tabr? bg", bgChat.getMessages().getLast());
         }

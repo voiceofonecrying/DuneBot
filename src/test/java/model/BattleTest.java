@@ -55,7 +55,7 @@ class BattleTest extends DuneTest {
             garaKulon.setRicheseNoField(3);
             Territory richeseHomeworld = game.getTerritory("Richese");
             assertEquals(20, richeseHomeworld.getForceStrength("Richese"));
-            richese.placeForceFromReserves(game, garaKulon, 5, false);
+            richese.placeForcesFromReserves(garaKulon, 5, false);
             assertEquals(15, richeseHomeworld.getForceStrength("Richese"));
             richeseHomeworld.removeForces(game, "Richese", 13);
             assertEquals(2, richeseHomeworld.getForceStrength("Richese"));
@@ -636,7 +636,7 @@ class BattleTest extends DuneTest {
                 game.addFaction(emperor);
                 game.addFaction(harkonnen);
                 emperor.setNexusCard(new NexusCard("Emperor"));
-                emperor.placeForceFromReserves(game, carthag, 2, false);
+                emperor.placeForcesFromReserves(carthag, 2, false);
                 battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
                 assertFalse(battle.isSardaukarNegated());
             }
@@ -1178,10 +1178,10 @@ class BattleTest extends DuneTest {
             game.addFaction(fremen);
             game.addFaction(harkonnen);
             game.addFaction(atreides);
-            fremen.placeForceFromReserves(game, carthag, 2, false);
-            fremen.placeForceFromReserves(game, carthag, 2, true);
+            fremen.placeForcesFromReserves(carthag, 2, false);
+            fremen.placeForcesFromReserves(carthag, 2, true);
             battle = new Battle(game, List.of(carthag), List.of(fremen, harkonnen));
-            harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+            harkonnen.placeForcesFromReserves(arrakeen, 1, false);
             battleWithoutFremen = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
         }
 
@@ -2348,7 +2348,7 @@ class BattleTest extends DuneTest {
             @Test
             void testNoFactionHoldsHarkonnenNexusCard() throws InvalidGameStateException {
                 game.discardNexusCard(fremen);
-                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                harkonnen.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
                 battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2359,7 +2359,7 @@ class BattleTest extends DuneTest {
             @Test
             void testHarkonnenNotInTheBattle() throws InvalidGameStateException {
                 game.removeAlliance(harkonnen);
-                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                emperor.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
                 battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2369,7 +2369,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenDoesNotCallTraitor() throws InvalidGameStateException {
-                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                harkonnen.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
                 battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2378,7 +2378,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenAsAllyDoesNotCallTraitor() throws InvalidGameStateException {
-                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                emperor.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
                 battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2387,7 +2387,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenAsAggressorCalledTraitor() throws InvalidGameStateException {
-                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                harkonnen.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
                 battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2397,7 +2397,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenAsAllyAggressorCalledTraitor() throws InvalidGameStateException {
-                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                emperor.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(emperor, atreides));
                 battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2407,7 +2407,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenAsDefenderCalledTraitor() throws InvalidGameStateException {
-                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                harkonnen.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
                 battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2417,7 +2417,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenAsAllyDefenderCallsTraitor() throws InvalidGameStateException {
-                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                emperor.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
                 battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2442,7 +2442,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenCallsTraitor() throws InvalidGameStateException {
-                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                harkonnen.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
                 battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2458,7 +2458,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenHasWrongTraitor() throws InvalidGameStateException {
-                harkonnen.placeForceFromReserves(game, arrakeen, 1, false);
+                harkonnen.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(harkonnen, atreides));
                 battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
@@ -2471,7 +2471,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenCallsTraitorForAlly() throws InvalidGameStateException {
-                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                emperor.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
                 battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -2488,7 +2488,7 @@ class BattleTest extends DuneTest {
 
             @Test
             void testHarkonnenHasWrongTraitorForAlly() throws InvalidGameStateException {
-                emperor.placeForceFromReserves(game, arrakeen, 1, false);
+                emperor.placeForcesFromReserves(arrakeen, 1, false);
                 Battle battle = new Battle(game, List.of(arrakeen), List.of(atreides, emperor));
                 battle.setBattlePlan(game, emperor, burseg, null, false, 0, false, 0, null, null);
                 battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
@@ -5554,8 +5554,8 @@ class BattleTest extends DuneTest {
             atreides.addTreacheryCard(crysknife);
             atreides.addTreacheryCard(shield);
             atreides.addTreacheryCard(lasgun);
-            emperor.placeForceFromReserves(game, sietchTabr, 10, false);
-            atreides.placeForceFromReserves(game, sietchTabr, 10, false);
+            emperor.placeForcesFromReserves(sietchTabr, 10, false);
+            atreides.placeForcesFromReserves(sietchTabr, 10, false);
             battle = new Battle(game, List.of(sietchTabr), List.of(atreides, emperor));
             assertTrue(emperor.hasTreacheryCard("Cheap Heroine"));
             assertTrue(emperor.hasTreacheryCard("Chaumas"));
@@ -5804,7 +5804,7 @@ class BattleTest extends DuneTest {
         @Test
         void testHomeworldBecomesOccupied() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             assertNull(giediPrime.getOccupyingFaction());
             Battle battle = new Battle(game, List.of(giediPrime), List.of(atreides, harkonnen));
             battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
@@ -5817,7 +5817,7 @@ class BattleTest extends DuneTest {
         @Test
         void testAllForcesLostDoesNotEstablishOccupy() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             assertNull(giediPrime.getOccupyingFaction());
             Battle battle = new Battle(game, List.of(giediPrime), List.of(atreides, harkonnen));
             battle.setBattlePlan(game, harkonnen, ummanKudu, null, false, 0, false, 0, null, null);
@@ -5831,7 +5831,7 @@ class BattleTest extends DuneTest {
         @Test
         void testNativeEndsOccation() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             harkonnen.removeForces("Giedi Prime", 10, false, true);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
             harkonnen.reviveForces(false, 10);
@@ -5845,7 +5845,7 @@ class BattleTest extends DuneTest {
         @Test
         void testNativeDefeatsInvaderButLosesAllForces() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             harkonnen.removeForces("Giedi Prime", 9, false, true);
             Battle battle = new Battle(game, List.of(giediPrime), List.of(harkonnen, atreides));
             battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, true, 0, null, null);
@@ -5858,7 +5858,7 @@ class BattleTest extends DuneTest {
         @Test
         void testNativeEndsOccationButLosesAllForces() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             harkonnen.removeForces("Giedi Prime", 10, false, true);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
             harkonnen.reviveForces(false, 1);
@@ -5873,10 +5873,10 @@ class BattleTest extends DuneTest {
         @Test
         void testOccupierChanges() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             harkonnen.removeForces("Giedi Prime", 10, false, true);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
-            emperor.placeForceFromReserves(game, giediPrime, 1, false);
+            emperor.placeForcesFromReserves(giediPrime, 1, false);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
             Battle battle = new Battle(game, List.of(giediPrime), List.of(emperor, atreides));
             battle.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
@@ -5888,10 +5888,10 @@ class BattleTest extends DuneTest {
         @Test
         void testOccupierDoesNotChange() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             harkonnen.removeForces("Giedi Prime", 10, false, true);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
-            emperor.placeForceFromReserves(game, giediPrime, 1, false);
+            emperor.placeForcesFromReserves(giediPrime, 1, false);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
             Battle battle = new Battle(game, List.of(giediPrime), List.of(emperor, atreides));
             battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, false, 0, null, null);
@@ -5905,10 +5905,10 @@ class BattleTest extends DuneTest {
         @Test
         void testTwoNonNativeNoForcesRemain() throws InvalidGameStateException {
             HomeworldTerritory giediPrime = (HomeworldTerritory) game.getTerritory(harkonnen.getHomeworld());
-            atreides.placeForceFromReserves(game, giediPrime, 1, false);
+            atreides.placeForcesFromReserves(giediPrime, 1, false);
             harkonnen.removeForces("Giedi Prime", 10, false, true);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
-            emperor.placeForceFromReserves(game, giediPrime, 1, false);
+            emperor.placeForcesFromReserves(giediPrime, 1, false);
             assertEquals(atreides, giediPrime.getOccupyingFaction());
             Battle battle = new Battle(game, List.of(giediPrime), List.of(emperor, atreides));
             battle.setBattlePlan(game, atreides, ladyJessica, null, false, 0, true, 0, null, null);

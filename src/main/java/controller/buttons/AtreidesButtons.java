@@ -47,7 +47,7 @@ public class AtreidesButtons implements Pressable {
         String territoryName = event.getComponentId().split("-")[5];
         if (yesOrNo.equals("yes")) {
             discordGame.queueMessage("You will place 1 " + Emojis.ATREIDES_TROOP + " in " + territoryName);
-            atreides.placeForceFromReserves(game, game.getTerritory(territoryName), 1, false);
+            atreides.placeForcesFromReserves(game.getTerritory(territoryName), 1, false);
             game.getTurnSummary().publish(atreides.getEmoji() + " places 1 " + Emojis.ATREIDES_TROOP + " in " + territoryName + " with Caladan High Treshold.");
         } else {
             discordGame.queueMessage("You will not place 1 " + Emojis.ATREIDES_TROOP + " in " + territoryName);
