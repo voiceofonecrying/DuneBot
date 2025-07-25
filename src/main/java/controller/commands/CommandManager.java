@@ -389,7 +389,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("moritani-assassinate-traitor", "Assassinate Moritani's Traitor"));
         commandData.add(Commands.slash("game-result", "Generate the game-results message for this game.").addOptions(faction, otherWinnerFaction, guildSpecialWin, fremenSpecialWin, bgPredictionWin, ecazOccupyWin));
         commandData.add(Commands.slash("save-game-bot-data", "Save the game bot data at the end of a game for future analysis"));
-        commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(forcePublish));
+        commandData.add(Commands.slash("update-stats", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(forcePublish, statsFileOnly));
         commandData.add(Commands.slash("stats-diagnostic", "Update player, faction, and moderator stats if new games have been added to game-results.").addOptions(message));
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));

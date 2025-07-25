@@ -655,13 +655,13 @@ public class ReportsCommands {
         }
     }
 
-    public static String updateStats(Guild guild, JDA jda, boolean loadNewGames, List<Member> members, boolean publishIfNoNewGames) {
+    public static String updateStats(Guild guild, JDA jda, boolean loadNewGames, List<Member> members, boolean publishIfNoNewGames, boolean publishStatsFileOnly) {
         GameResults gameResults = gatherGameResults(guild);
         int numNewGames = 0;
         if (loadNewGames) {
             numNewGames = loadNewGames(guild, jda, gameResults.grList);
             if (numNewGames > 0 || publishIfNoNewGames)
-                publishStats(guild, gameResults.grList, members, numNewGames > 0);
+                publishStats(guild, gameResults.grList, members, publishStatsFileOnly);
         }
         return numNewGames + " new games were added to parsed results.";
     }
@@ -669,7 +669,9 @@ public class ReportsCommands {
     public static String updateStats(SlashCommandInteractionEvent event, List<Member> members) {
         OptionMapping optionMapping = event.getOption(forcePublish.getName());
         boolean publishIfNoNewGames = (optionMapping != null && optionMapping.getAsBoolean());
-        return updateStats(event.getGuild(), event.getJDA(), true, members, publishIfNoNewGames);
+        optionMapping = event.getOption(statsFileOnly.getName());
+        boolean publishStatsFileOnly = (optionMapping != null && optionMapping.getAsBoolean());
+        return updateStats(event.getGuild(), event.getJDA(), true, members, publishIfNoNewGames, publishStatsFileOnly);
     }
 
     public static String statsDiagnostic(SlashCommandInteractionEvent event, List<Member> members) throws InterruptedException {
@@ -1111,10 +1113,40 @@ public class ReportsCommands {
         return strippedEmoji;
     }
 
-    private static void publishStats(Guild guild, GRList grList, List<Member> members, boolean hasNewGames) {
+    private static void publishStats(Guild guild, GRList grList, List<Member> members, boolean publishStatsFileOnly) {
         Category category = getStatsCategory(guild);
         TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("player-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The player-stats channel was not found."));
         ThreadChannel parsedResults = playerStatsChannel.getThreadChannels().stream().filter(c -> c.getName().equalsIgnoreCase("parsed-results")).findFirst().orElseThrow(() -> new IllegalStateException("The parsed-results thread was not found."));
+
+        ExclusionStrategy strategy = new ExclusionStrategy() {
+            @Override
+            public boolean shouldSkipClass(Class<?> clazz) {
+                return false;
+            }
+
+            @Override
+            public boolean shouldSkipField(FieldAttributes field) {
+                return field.getAnnotation(Exclude.class) != null;
+            }
+        };
+
+        Gson gson = new GsonBuilder()
+                .addSerializationExclusionStrategy(strategy)
+                .create();
+        FileUpload jsonFileUpload = FileUpload.fromData(
+                gson.toJson(grList).getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
+        );
+        parsedResults.sendFiles(jsonFileUpload).queue();
+        if (publishStatsFileOnly)
+            return;
+
+        FileUpload csvFileUpload = FileUpload.fromData(
+                grList.generateCSV().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
+        );
+//        parsedResults.sendFiles(fileUpload).complete();
+        TextChannel statsDiscussionChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("stats-discussion")).findFirst().orElseThrow(() -> new IllegalStateException("The stats-discussion channel was not found."));
+        statsDiscussionChannel.sendFiles(csvFileUpload).queue();
+        statsDiscussionChannel.sendFiles(jsonFileUpload).queue();
 
         TextChannel factionStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("faction-stats")).findFirst().orElseThrow(() -> new IllegalStateException("The faction-stats channel was not found."));
         MessageHistory messageHistory = MessageHistory.getHistoryFromBeginning(factionStatsChannel).complete();
@@ -1180,35 +1212,6 @@ public class ReportsCommands {
         playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
 //        playerStatsChannel.sendMessage("__Played Original 6 Multiple Times__\n" + playedAllOriginalSixMultipleTimes(guild, grList, members)).queue();
 //        playerStatsChannel.sendMessage("__Played Expansion 6 Multiple Times__\n" + playedAllExpansionMultipleTimes(guild, grList, members)).queue();
-
-        FileUpload fileUpload;
-        fileUpload = FileUpload.fromData(
-                grList.generateCSV().getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.csv"
-        );
-//        parsedResults.sendFiles(fileUpload).complete();
-        TextChannel statsDiscussionChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("stats-discussion")).findFirst().orElseThrow(() -> new IllegalStateException("The stats-discussion channel was not found."));
-        statsDiscussionChannel.sendFiles(fileUpload).queue();
-
-        ExclusionStrategy strategy = new ExclusionStrategy() {
-            @Override
-            public boolean shouldSkipClass(Class<?> clazz) {
-                return false;
-            }
-
-            @Override
-            public boolean shouldSkipField(FieldAttributes field) {
-                return field.getAnnotation(Exclude.class) != null;
-            }
-        };
-
-        Gson gson = new GsonBuilder()
-                .addSerializationExclusionStrategy(strategy)
-                .create();
-        fileUpload = FileUpload.fromData(
-                gson.toJson(grList).getBytes(StandardCharsets.UTF_8), "dune-by-discord-results.json"
-        );
-        parsedResults.sendFiles(fileUpload).queue();
-        statsDiscussionChannel.sendFiles(fileUpload).queue();
     }
 
     public static String loadJsonString(Category category) {
