@@ -40,7 +40,7 @@ class FremenFactionTest extends FactionTestTemplate {
         @BeforeEach
         public void setUp() {
             game.setTurn(2);
-            faction.placeForceFromReserves(game, game.getTerritory("Sietch Tabr"), 17, false);
+            faction.placeForcesFromReserves(game.getTerritory("Sietch Tabr"), 17, false);
             faction.presentWormPlacementChoices("Gara Kulon", "Shai-Hulud");
             assertEquals(1, faction.getWormsToPlace());
         }

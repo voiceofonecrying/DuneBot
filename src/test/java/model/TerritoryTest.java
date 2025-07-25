@@ -664,7 +664,7 @@ public class TerritoryTest extends DuneTest {
         @Test
         void testSecondTerrorTokenNotAllowedWithMoritaniLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
-            game.getMoritaniFaction().placeForceFromReserves(game, sietchTabr, 13, false);
+            game.getMoritaniFaction().placeForcesFromReserves(sietchTabr, 13, false);
             sietchTabr.addTerrorToken(game, "Robbery");
             assertThrows(InvalidGameStateException.class, () -> sietchTabr.addTerrorToken(game, "Sabotage"));
         }

@@ -126,7 +126,7 @@ public class BGFaction extends Faction {
         String territoryName = shipment.getTerritoryName();
         Territory territory = game.getTerritory(territoryName);
         if (territory.getForces().isEmpty())
-            placeForceFromReserves(game, territory, 1, false);
+            placeForcesFromReserves(territory, 1, false);
         else
             placeAdvisorsFromReserves(game, territory, 1);
         return true;
@@ -285,7 +285,7 @@ public class BGFaction extends Faction {
             territory.addForces("BG", advisors);
             territory.removeForces(game, "Advisor", advisors);
         }
-        placeForceFromReserves(game, territory, amount, false);
+        placeForcesFromReserves(territory, amount, false);
         if (!isPolarSink) {
             int fighters = territory.getForceStrength("BG");
             territory.removeForces(game, "BG", fighters);

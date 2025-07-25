@@ -819,7 +819,7 @@ abstract class FactionTestTemplate {
         @Test
         void testBGGetFlipMessage() throws InvalidGameStateException {
             game.addFaction(bg);
-            bg.placeForceFromReserves(game, territory, 1, false);
+            bg.placeForcesFromReserves(territory, 1, false);
             faction.placeForces(territory, 1, 0, true, true, true, false, false);
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in The Great Flat? p", bgChat.getMessages().getFirst());
         }
@@ -829,6 +829,24 @@ abstract class FactionTestTemplate {
             game.addFaction(bg);
             faction.placeForces(territory, 1, 0, true, true, true, false, false);
             assertEquals("Would you like to advise the shipment to The Great Flat? p", bgChat.getMessages().getLast());
+        }
+    }
+
+    @Nested
+    @DisplayName("#placeForcesFromReserves")
+    class PlaceForcesFromReserves {
+        Faction faction;
+
+        @BeforeEach
+        void setUp() {
+            Territory sietchTabr = game.getTerritories().get("Sietch Tabr");
+            faction = getFaction();
+            faction.placeForcesFromReserves(sietchTabr, 1, false);
+        }
+
+        @Test
+        void testMapUpdated() {
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
         }
     }
 
@@ -878,7 +896,7 @@ abstract class FactionTestTemplate {
             faction = getFaction();
             theGreatFlat = game.getTerritories().get("The Great Flat");
             funeralPlain = game.getTerritories().get("Funeral Plain");
-            faction.placeForceFromReserves(game, theGreatFlat, 1, false);
+            faction.placeForcesFromReserves(theGreatFlat, 1, false);
             movement = faction.getMovement();
             movement.clear();
             movement.setForce(1);
@@ -893,7 +911,7 @@ abstract class FactionTestTemplate {
             bg.setChat(bgChat);
             bg.setLedger(new TestTopic());
             game.addFaction(bg);
-            bg.placeForceFromReserves(game, funeralPlain, 1, false);
+            bg.placeForcesFromReserves(funeralPlain, 1, false);
             faction.executeMovement(game);
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Funeral Plain? p", bgChat.getMessages().getFirst());
         }

@@ -122,7 +122,7 @@ public class RevivalTest extends DuneTest {
         void testBTLowThresholdFreeRevivalSpice() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(bt);
-            bt.placeForceFromReserves(game, sietchTabr, 20, false);
+            bt.placeForcesFromReserves(sietchTabr, 20, false);
             assertFalse(bt.isHighThreshold());
             game.removeForces("Kaitain", emperor, 6, 0, true);
             game.removeForces("Salusa Secundus", emperor, 0, 2, true);
