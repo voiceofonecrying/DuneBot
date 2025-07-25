@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Colors;
 import constants.Emojis;
+import enums.ChoamInflationType;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
@@ -857,6 +858,20 @@ public class Faction {
     }
 
     public void bribe(Game game, Faction recipientFaction, int amountValue, String reasonString) throws InvalidGameStateException {
+        ChoamFaction choam = game.getCHOAMFactionOrNull();
+        if (choam != null) {
+            boolean inflationDoubled = false;
+            if (game.getPhase() == 10 && choam.getInflationType(game.getTurn() + 1) == ChoamInflationType.DOUBLE)
+                inflationDoubled = true;
+            else if (choam.getInflationType(game.getTurn()) == ChoamInflationType.DOUBLE)
+                inflationDoubled = true;
+            if (inflationDoubled) {
+                if (amountValue > 0)
+                    throw new InvalidGameStateException("Bribes cannot be made when the Inflation Token is double side up.");
+                else
+                    game.getModInfo().publish("0 " + Emojis.SPICE + " deal made with Inflation Token double side up. Cancel if not allowed by your game. " + game.getModOrRoleMention());
+            }
+        }
         String message = emoji + " bribes " + recipientFaction.getEmoji() + " " + amountValue + " " + Emojis.SPICE;
         if (!reasonString.isBlank())
             message += " " + reasonString;
