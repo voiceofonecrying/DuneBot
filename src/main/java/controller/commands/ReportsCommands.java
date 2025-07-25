@@ -1898,16 +1898,16 @@ public class ReportsCommands {
         result += "> " + discordGame.getTextChannel("front-of-shield").getJumpUrl() + "\n";
         result += "Moderator:\n";
         String modCommandsExecuted = "";
+        result += "> " + game.getMod() + "\n";
         if (game.isTeamMod()) {
             List<Map.Entry<String, Integer>> list = new ArrayList<>(game.getModCommandExecutions().entrySet());
             list.sort(Map.Entry.comparingByValue());
-            result += "> " + Objects.requireNonNull(event.getGuild()).getJDA().getRolesByName("Moderators", false).getFirst().getAsMention() + "\n";
+            list.removeIf(e -> e.getKey().equals(game.getMod()));
             result += String.join("", list.reversed().stream().map(e -> "> " + e.getKey() + "\n").toList());
             modCommandsExecuted = String.join("", list.reversed().stream().map(e -> "\n" + e.getValue() + " - " + e.getKey()).toList());
             if (!game.getModCommandExecutions().containsKey(game.getMod()))
                 result += "> " + game.getMod() + "\n";
-        } else
-            result += "> " + game.getMod() + "\n";
+        }
         result += "Factions:\n";
         StringBuilder factions = new StringBuilder();
         for (Faction f : game.getFactions()) {
