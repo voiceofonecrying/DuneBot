@@ -857,8 +857,7 @@ public class Faction {
     }
 
     public void bribe(Game game, Faction recipientFaction, int amountValue, String reasonString) throws InvalidGameStateException {
-        String message = MessageFormat.format("{0} bribes {1}",
-                emoji, recipientFaction.getEmoji());
+        String message = emoji + " bribes " + recipientFaction.getEmoji() + " " + amountValue + " " + Emojis.SPICE;
         if (!reasonString.isBlank())
             message += " " + reasonString;
         game.addNewBribe(message);

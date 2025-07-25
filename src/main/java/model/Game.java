@@ -1986,8 +1986,9 @@ public class Game {
     public void addNewBribe(String bribeFactionsAndReason) {
         if (bribesThisTurn == null)
             bribesThisTurn = new ArrayList<>();
-        bribesThisTurn.add(bribeFactionsAndReason);
-        bribes.publish(bribeFactionsAndReason);
+        String labeledBribe = "R" + turn + ":B" + (bribesThisTurn.size() + 1) + " " + bribeFactionsAndReason;
+        bribesThisTurn.add(labeledBribe);
+        bribes.publish(labeledBribe);
     }
 
     public Battles startBattlePhase() {
