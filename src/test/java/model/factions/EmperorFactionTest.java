@@ -506,6 +506,17 @@ class EmperorFactionTest extends FactionTestTemplate {
             assertEquals(faction.getEmoji() + ": 3 " + Emojis.EMPEROR_TROOP + " 2 " + Emojis.EMPEROR_SARDAUKAR + " placed on The Great Flat", turnSummary.getMessages().getFirst());
         }
     }
+    @Nested
+    @DisplayName("#placeForcesFromReserves")
+    class PlaceForcesFromReserves extends FactionTestTemplate.PlaceForcesFromReserves {
+        @Test
+        void testFlipSalusaSecundusToLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.placeForcesFromReserves(sietchTabr, 5, true);
+            assertFalse(((EmperorFaction) faction).isSecundusHighThreshold());
+        }
+    }
+
 
     @Nested
     @DisplayName("#withdrawForces")
