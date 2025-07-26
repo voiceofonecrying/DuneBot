@@ -480,13 +480,11 @@ public class Faction {
             removeReserves(amount);
         ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(forceName)));
         territory.addForces(forceName, amount);
-        checkForLowThreshold();
         game.setUpdated(UpdateType.MAP);
     }
 
     public void addReserves(int amount) {
-        Territory territory = game.getTerritory(homeworld);
-        territory.addForces(name, amount);
+        game.getTerritory(homeworld).addForces(name, amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
@@ -496,14 +494,12 @@ public class Faction {
     }
 
     public void addSpecialReserves(int amount) {
-        Territory territory = game.getTerritory(homeworld);
-        territory.addForces(name + "*", amount);
+        game.getTerritory(homeworld).addForces(name + "*", amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
     public void removeSpecialReserves(int amount) {
-        Territory territory = game.getTerritory(homeworld);
-        territory.removeForces(game, name + "*", amount);
+        game.getTerritory(homeworld).removeForces(game, name + "*", amount);
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
@@ -1126,7 +1122,8 @@ public class Faction {
     }
 
     public void checkForLowThreshold() {
-        if (!game.hasGameOption(GameOption.HOMEWORLDS)) return;
+        if (!game.hasGameOption(GameOption.HOMEWORLDS))
+            return;
         if (isHighThreshold && getReservesStrength() + getSpecialReservesStrength() < highThreshold) {
             game.getTurnSummary().publish(homeworld + " has flipped to Low Threshold.");
             isHighThreshold = false;

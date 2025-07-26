@@ -836,17 +836,29 @@ abstract class FactionTestTemplate {
     @DisplayName("#placeForcesFromReserves")
     class PlaceForcesFromReserves {
         Faction faction;
+        HomeworldTerritory homeworld;
+        Territory sietchTabr;
 
         @BeforeEach
         void setUp() {
-            Territory sietchTabr = game.getTerritories().get("Sietch Tabr");
+            sietchTabr = game.getTerritories().get("Sietch Tabr");
             faction = getFaction();
+            homeworld = faction.getHomeworldTerritory();
             faction.placeForcesFromReserves(sietchTabr, 1, false);
         }
 
         @Test
         void testMapUpdated() {
             assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
+
+        @Test
+        void testFlipToLowThreshold() {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            assertTrue(faction.isHighThreshold());
+            int numForces = homeworld.getForceStrength(getFaction().getName());
+            faction.placeForcesFromReserves(sietchTabr, numForces, false);
+            assertFalse(faction.isHighThreshold());
         }
     }
 

@@ -113,6 +113,16 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#placeForcesFromReserves")
+    class PlaceForcesFromReserves extends FactionTestTemplate.PlaceForcesFromReserves {
+        @Test
+        void testFlipToLowThreshold() {
+            faction.placeForcesFromReserves(sietchTabr, 1, true);
+            super.testFlipToLowThreshold();
+        }
+    }
+
+    @Nested
     @DisplayName("#revival")
     class Revival extends FactionTestTemplate.Revival {
         @Test
