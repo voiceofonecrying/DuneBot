@@ -138,13 +138,8 @@ public class MoritaniFaction extends Faction {
                         game.removeForcesAndReportToTurnSummary(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, false);
                 }
                 String ambassador = location.getEcazAmbassador();
-                if (ambassador != null) {
-                    EcazFaction ecaz = game.getEcazFaction();
-                    ecaz.getAmbassadorSupply().add(ambassador);
-                    location.removeEcazAmbassador();
-                    game.getTurnSummary().publish(Emojis.ECAZ + " " + ambassador + " ambassador returned to supply.");
-                    ecaz.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-                }
+                if (ambassador != null)
+                    game.getEcazFaction().returnAmbassadorToSuppy(location, ambassador);
                 reduceHandLimitDueToAtomics(this);
                 if (ally != null)
                     reduceHandLimitDueToAtomics(game.getFaction(ally));

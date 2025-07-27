@@ -1781,12 +1781,8 @@ public class Battle {
                     }
                 }
                 if (ambassador != null) {
-                    Territory territoryWithAmbassador = allTerritorySectors.stream().filter(t -> t.getEcazAmbassador() != null).findFirst().orElse(null);
-                    if (territoryWithAmbassador != null) {
-                        game.getEcazFaction().getAmbassadorSupply().add(territoryWithAmbassador.getEcazAmbassador());
-                        territoryWithAmbassador.removeEcazAmbassador();
-                        game.getTurnSummary().publish(Emojis.ECAZ + " " + ambassador + " ambassador returned to supply.");
-                    }
+                    Territory territoryWithAmbassador = allTerritorySectors.stream().filter(t -> t.getEcazAmbassador() != null).findFirst().orElseThrow();
+                    game.getEcazFaction().returnAmbassadorToSuppy(territoryWithAmbassador, ambassador);
                 }
                 allTerritorySectors.stream().filter(t -> t.getSpice() > 0).forEach(t -> game.getTurnSummary().publish(t.lasgunShieldDestroysSpice()));
             } else {

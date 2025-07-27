@@ -2,6 +2,7 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import org.junit.jupiter.api.*;
@@ -5404,11 +5405,14 @@ class BattleTest extends DuneTest {
 
             @Test
             void testResolveRemovesAmbassador() throws InvalidGameStateException {
+                ecaz.getUpdateTypes().clear();
                 battle.printBattleResolution(game, false, true);
                 // Ambassador test really should be moved to a new test setup in a Stronghold
-                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ECAZ + " Fremen ambassador returned to supply.")));
                 assertNull(cielagoNorth_westSector.getEcazAmbassador());
                 assertTrue(ecaz.getAmbassadorSupply().contains("Fremen"));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ECAZ + " Fremen ambassador returned to supply.")));
+                assertTrue(ecaz.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+                assertTrue(ecaz.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
             }
         }
 
