@@ -536,6 +536,24 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertEquals(8, harkonnen.getHandLimit());
             assertEquals(4, atreides.getHandLimit());
         }
+
+        @Test
+        void testAtomicsSendsAmbassadorToEcazSupply() throws InvalidGameStateException, IOException {
+            EcazFaction ecaz = new EcazFaction("ec", "ec");
+            ecaz.setChat(new TestTopic());
+            ecaz.setLedger(new TestTopic());
+            game.addFaction(ecaz);
+            ecaz.placeAmbassador("Arrakeen", "Fremen", 1);
+            ecaz.getUpdateTypes().clear();
+            assertEquals("Fremen", arrakeen.getEcazAmbassador());
+            assertFalse(ecaz.getAmbassadorSupply().contains("Fremen"));
+            faction.triggerTerrorToken(atreides, arrakeen, "Atomics");
+            assertNull(arrakeen.getEcazAmbassador());
+            assertTrue(ecaz.getAmbassadorSupply().contains("Fremen"));
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ECAZ + " Fremen ambassador returned to supply.")));
+            assertTrue(ecaz.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
     }
 
     @Nested
