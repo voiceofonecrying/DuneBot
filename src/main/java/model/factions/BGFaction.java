@@ -278,6 +278,8 @@ public class BGFaction extends Faction {
                 throw new InvalidGameStateException("BG cannot co-exist with their ally.");
             if (territory.hasForce("BG"))
                 throw new InvalidGameStateException("BG cannot send an advisor to a territory with BG fighters.");
+            if (territory.isAftermathToken())
+                throw new InvalidGameStateException("BG cannot send an advisor to the Aftermath Token.");
         }
 
         if (territory.hasForce("Advisor")) {
