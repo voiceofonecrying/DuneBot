@@ -863,6 +863,68 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#payForShipment")
+    class PayForShipment {
+        int spiceBeforeShipment;
+        Territory habbanyaSietch;
+        GuildFaction guild;
+        EmperorFaction emperor;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            spiceBeforeShipment = faction.getSpice();
+            habbanyaSietch = game.getTerritory("Habbanya Sietch");
+            guild = new GuildFaction("gu", "gu");
+            guild.setLedger(new TestTopic());
+            emperor = new EmperorFaction("em", "em");
+            emperor.setLedger(new TestTopic());
+        }
+
+        @Test
+        void testFactionDoesNotHaveEnoughSpiceToShip() {
+            faction.subtractSpice(spiceBeforeShipment, "Test");
+            assertThrows(InvalidGameStateException.class, () -> faction.payForShipment(1, habbanyaSietch, false, false));
+        }
+
+        @Test
+        void testFactionDoesNotHaveEnoughSpiceEvenWithAllySupport() {
+            game.addFaction(emperor);
+            faction.subtractSpice(spiceBeforeShipment, "Test");
+            game.createAlliance(faction, emperor);
+            emperor.setSpiceForAlly(1);
+//            guild.setAllySpiceForShipping(true);
+            assertThrows(InvalidGameStateException.class, () -> faction.payForShipment(2, habbanyaSietch, false, false));
+        }
+
+        @Test
+        void testFactionCanPayWithAllySupport() throws InvalidGameStateException {
+            game.addFaction(guild);
+            game.addFaction(emperor);
+            faction.subtractSpice(spiceBeforeShipment - 1, "Test");
+            game.createAlliance(faction, emperor);
+            emperor.setSpiceForAlly(1);
+            assertEquals(" for 2 " + Emojis.SPICE + " (1 from " + Emojis.EMPEROR + ") paid to " + Emojis.GUILD, faction.payForShipment(2, habbanyaSietch, false, false));
+            assertEquals(0, faction.getSpice());
+            assertEquals(9, emperor.getSpice());
+            assertEquals(7, guild.getSpice());
+        }
+
+        @Test
+        void testNormalPaymentWithGuildInGame() throws InvalidGameStateException {
+            game.addFaction(guild);
+            assertEquals(" for 1 " + Emojis.SPICE + " paid to " + Emojis.GUILD, faction.payForShipment(1, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 1, faction.getSpice());
+            assertEquals(6, guild.getSpice());
+        }
+
+        @Test
+        void testNormalPaymentWithGuildNotInGame() throws InvalidGameStateException {
+            assertEquals(" for 1 " + Emojis.SPICE, faction.payForShipment(1, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 1, faction.getSpice());
+        }
+    }
+
+    @Nested
     @DisplayName("#executeShipment")
     class ExecuteShipment {
         Faction faction;

@@ -633,16 +633,17 @@ class GameTest extends DuneTest {
         @Test
         void testNormalPaymentToGuild() throws InvalidGameStateException {
             assertEquals(" for 10 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    emperor.payForShipment(game, 10, habbanyaSietch, false, false));
+                    emperor.payForShipment(10, habbanyaSietch, false, false));
             assertEquals(0, emperor.getSpice());
             assertEquals(15, guild.getSpice());
         }
 
         @Test
         void testNormalPaymentToGuildAsAlly() throws InvalidGameStateException {
+            // This should be tested by Game::shipmentCost, not Faction::payForShipment
             game.createAlliance(guild, emperor);
             assertEquals(" for 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
+                    emperor.payForShipment(5, habbanyaSietch, false, false));
             assertEquals(5, emperor.getSpice());
             assertEquals(10, guild.getSpice());
         }
@@ -653,17 +654,18 @@ class GameTest extends DuneTest {
             guild.setSpiceForAlly(3);
             guild.setAllySpiceForShipping(true);
             assertEquals(" for 5 " + Emojis.SPICE + " (3 from " + Emojis.GUILD + "), 2 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
+                    emperor.payForShipment(5, habbanyaSietch, false, false));
             assertEquals(8, emperor.getSpice());
             assertEquals(4, guild.getSpice());
         }
 
         @Test
         void testPaymentToGuildAsAllyGuildSupportNotForShipping() throws InvalidGameStateException {
+            // This test is wrong. The ally support would be used first.
             game.createAlliance(guild, emperor);
             guild.setSpiceForAlly(3);
             assertEquals(" for 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
+                    emperor.payForShipment(5, habbanyaSietch, false, false));
             assertEquals(5, emperor.getSpice());
             assertEquals(10, guild.getSpice());
         }
@@ -674,7 +676,7 @@ class GameTest extends DuneTest {
             guild.removeReserves(11);
             assertFalse(guild.isHighThreshold());
             assertEquals(" for 9 " + Emojis.SPICE + ", 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD,
-                    emperor.payForShipment(game, 9, habbanyaSietch, false, false));
+                    emperor.payForShipment(9, habbanyaSietch, false, false));
             assertEquals(1, emperor.getSpice());
             assertEquals(10, guild.getSpice());
         }
@@ -686,7 +688,7 @@ class GameTest extends DuneTest {
             emperor.placeForces(game.getTerritory("Junction"), 1, 0, false, false, false, false, false);
             assertTrue(guild.isHomeworldOccupied());
             assertEquals(" for 9 " + Emojis.SPICE + ", 5 " + Emojis.SPICE + " paid to " + Emojis.GUILD + ", 4 " + Emojis.SPICE + " paid to " + Emojis.EMPEROR,
-                    emperor.payForShipment(game, 9, habbanyaSietch, false, false));
+                    emperor.payForShipment(9, habbanyaSietch, false, false));
             assertEquals(5, emperor.getSpice());
             assertEquals(10, guild.getSpice());
         }
@@ -696,7 +698,7 @@ class GameTest extends DuneTest {
             game.createAlliance(fremen, emperor);
             fremen.setSpiceForAlly(3);
             assertEquals(" for 5 " + Emojis.SPICE + " (3 from " + Emojis.FREMEN + ") paid to " + Emojis.GUILD,
-                    emperor.payForShipment(game, 5, habbanyaSietch, false, false));
+                    emperor.payForShipment(5, habbanyaSietch, false, false));
             assertEquals(8, emperor.getSpice());
             assertEquals(0, fremen.getSpice());
             assertEquals(10, guild.getSpice());
@@ -707,10 +709,10 @@ class GameTest extends DuneTest {
             game.createAlliance(atreides, emperor);
             atreides.setSpiceForAlly(3);
             Territory carthag = game.getTerritory("Carthag");
-            atreides.payForShipment(game, 10, carthag, false, false);
+            atreides.payForShipment(10, carthag, false, false);
             assertEquals(0, atreides.getSpice());
             assertEquals(0, atreides.getSpiceForAlly());
-            assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(game, 11, habbanyaSietch, false, false));
+            assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(11, habbanyaSietch, false, false));
         }
 
         @Test
@@ -720,13 +722,13 @@ class GameTest extends DuneTest {
             atreides.bribe(game, guild, 10, "For test");
             assertEquals(0, atreides.getSpice());
             assertEquals(0, atreides.getSpiceForAlly());
-            assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(game, 11, habbanyaSietch, false, false));
+            assertThrows(InvalidGameStateException.class, () -> emperor.payForShipment(11, habbanyaSietch, false, false));
         }
 
         @Test
         void testKaramaPayment() throws InvalidGameStateException {
             assertEquals(" for 5 " + Emojis.SPICE,
-                    emperor.payForShipment(game, 5, habbanyaSietch, true, false));
+                    emperor.payForShipment(5, habbanyaSietch, true, false));
             assertEquals(5, emperor.getSpice());
             assertEquals(5, guild.getSpice());
         }
@@ -734,7 +736,7 @@ class GameTest extends DuneTest {
         @Test
         void testGuildPaysSpiceBank() throws InvalidGameStateException {
             assertEquals(" for 5 " + Emojis.SPICE,
-                    guild.payForShipment(game, 5, habbanyaSietch, false, false));
+                    guild.payForShipment(5, habbanyaSietch, false, false));
             assertEquals(0, guild.getSpice());
         }
     }

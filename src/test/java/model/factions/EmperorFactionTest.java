@@ -517,6 +517,39 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
     }
 
+    @Nested
+    @DisplayName("#payForShipment")
+    class PayForShipment extends FactionTestTemplate.PayForShipment {
+        BGFaction bg;
+
+        @BeforeEach
+        @Override
+        void setUp() throws IOException {
+            bg = new BGFaction("bg", "bg");
+            bg.setLedger(new TestTopic());
+            super.setUp();
+        }
+
+        @Test
+        void testFactionCanPayWithAllySupport() throws InvalidGameStateException {
+            game.addFaction(guild);
+            game.addFaction(bg);
+            faction.subtractSpice(spiceBeforeShipment - 1, "Test");
+            game.createAlliance(faction, bg);
+            bg.setSpiceForAlly(1);
+            assertEquals(" for 2 " + Emojis.SPICE + " (1 from " + Emojis.BG + ") paid to " + Emojis.GUILD, faction.payForShipment(2, habbanyaSietch, false, false));
+            assertEquals(0, faction.getSpice());
+            assertEquals(4, bg.getSpice());
+            assertEquals(7, guild.getSpice());
+        }
+
+        @Test
+        @Override
+        void testNormalPaymentWithGuildInGame() throws InvalidGameStateException {
+            assertEquals(" for 1 " + Emojis.SPICE, faction.payForShipment(1, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 1, faction.getSpice());
+        }
+    }
 
     @Nested
     @DisplayName("#withdrawForces")

@@ -173,4 +173,32 @@ class GuildFactionTest extends FactionTestTemplate {
         faction.setAllySpiceForShipping(true);
         assertEquals(" for bidding and shipping!", getFaction().getSpiceSupportPhasesString());
     }
+
+    @Nested
+    @DisplayName("#payForShipment")
+    class PayForShipment extends FactionTestTemplate.PayForShipment {
+        @Test
+        void testFactionCanPayWithAllySupport() throws InvalidGameStateException {
+            game.addFaction(guild);
+            game.addFaction(emperor);
+            faction.subtractSpice(spiceBeforeShipment - 1, "Test");
+            game.createAlliance(faction, emperor);
+            emperor.setSpiceForAlly(1);
+            assertEquals(" for 2 " + Emojis.SPICE + " (1 from " + Emojis.EMPEROR + ")", faction.payForShipment(2, habbanyaSietch, false, false));
+            assertEquals(0, faction.getSpice());
+            assertEquals(9, emperor.getSpice());
+        }
+
+        @Test
+        @Override
+        void testNormalPaymentWithGuildInGame() throws InvalidGameStateException {
+            assertEquals(" for 1 " + Emojis.SPICE, faction.payForShipment(1, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 1, faction.getSpice());
+        }
+
+        @Test
+        @Override
+        void testNormalPaymentWithGuildNotInGame() {
+        }
+    }
 }

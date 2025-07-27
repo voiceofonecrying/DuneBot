@@ -103,7 +103,7 @@ public class RicheseFaction extends Faction {
         territory.setRicheseNoField(noField);
         faction.noFieldMessage(noField, territoryName);
         int spice = game.shipmentCost(faction, 1, territory, karama, false);
-        turnSummaryMessage += faction.payForShipment(game, spice, territory, karama, true);
+        turnSummaryMessage += faction.payForShipment(spice, territory, karama, true);
         BGFaction bg = game.getBGFactionOrNull();
         if (bg != null && accompanyingForce == 0) {
             if (territory.hasActiveFaction(bg) && !(faction instanceof BGFaction))
