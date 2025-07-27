@@ -918,6 +918,42 @@ abstract class FactionTestTemplate {
         }
 
         @Test
+        void testKaramaShipmentDoesNotPayGuild() throws InvalidGameStateException {
+            game.addFaction(guild);
+            assertEquals(" for 1 " + Emojis.SPICE, faction.payForShipment(1, habbanyaSietch, true, false));
+            assertEquals(spiceBeforeShipment - 1, faction.getSpice());
+            assertEquals(5, guild.getSpice());
+        }
+
+        @Test
+        void testGuildAtLowThresdhold() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(guild);
+            guild.placeForces(habbanyaSietch, 15, 0, false, false, false, false, false);
+            assertFalse(guild.isHighThreshold());
+            faction.addSpice(1, "Test");
+            spiceBeforeShipment = faction.getSpice();
+            assertEquals(" for 3 " + Emojis.SPICE + ", 2 " + Emojis.SPICE + " paid to " + Emojis.GUILD, faction.payForShipment(3, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 3, faction.getSpice());
+            assertEquals(7, guild.getSpice());
+        }
+
+        @Test
+        void testGuildOccupied() throws InvalidGameStateException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            game.addFaction(guild);
+            guild.placeForces(habbanyaSietch, 15, 0, false, false, false, false, false);
+            assertFalse(guild.isHighThreshold());
+            faction.placeForces(guild.getHomeworldTerritory(), 1, 0, false, false, false, false, false);
+            assertTrue(guild.isHomeworldOccupied());
+            faction.addSpice(1, "Test");
+            spiceBeforeShipment = faction.getSpice();
+            assertEquals(" for 3 " + Emojis.SPICE + ", 2 " + Emojis.SPICE + " paid to " + Emojis.GUILD + ", 1 " + Emojis.SPICE + " paid to " + faction.getEmoji(), faction.payForShipment(3, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 3 + 1, faction.getSpice());
+            assertEquals(7, guild.getSpice());
+        }
+
+        @Test
         void testNormalPaymentWithGuildNotInGame() throws InvalidGameStateException {
             assertEquals(" for 1 " + Emojis.SPICE, faction.payForShipment(1, habbanyaSietch, false, false));
             assertEquals(spiceBeforeShipment - 1, faction.getSpice());
