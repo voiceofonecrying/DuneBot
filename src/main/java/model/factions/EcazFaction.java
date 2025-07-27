@@ -344,6 +344,14 @@ public class EcazFaction extends Faction {
         }
     }
 
+    public void returnAmbassadorToSuppy(Territory location, String ambassador) {
+        location.removeEcazAmbassador();
+        ambassadorSupply.add(ambassador);
+        game.getTurnSummary().publish(Emojis.ECAZ + " " + ambassador + " ambassador returned to supply.");
+        setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        setUpdated(UpdateType.MISC_FRONT_OF_SHIELD);
+    }
+
     public Leader getLoyalLeader() {
         return loyalLeader;
     }

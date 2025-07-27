@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
 import org.junit.jupiter.api.BeforeEach;
@@ -277,6 +278,46 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.checkForAmbassadorTrigger(carthag, bg);
             assertTrue(turnSummary.getMessages().isEmpty());
             assertTrue(chat.getMessages().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#returnAmbassadorToSupply")
+    class ReturnAmbassadorToSupply {
+        Territory carthag;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            turnSummary = new TestTopic();
+            game.setTurnSummary(turnSummary);
+            carthag = game.getTerritory("Carthag");
+            carthag.setEcazAmbassador("BG");
+            faction.returnAmbassadorToSuppy(carthag, "BG");
+        }
+
+        @Test
+        void testStrongholdNoLongerHasAmbassador() {
+            assertNull(carthag.getEcazAmbassador());
+        }
+
+        @Test
+        void testAmbassadorIsInSupply() {
+            assertTrue(faction.getAmbassadorSupply().contains("BG"));
+        }
+
+        @Test
+        void testMessageSentToTurnSummary() {
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ECAZ + " BG ambassador returned to supply.")));
+        }
+
+        @Test
+        void testBackOfShieldUpdated() {
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+        }
+
+        @Test
+        void testFrontOfShieldUpdated() {
+            assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_FRONT_OF_SHIELD));
         }
     }
 
