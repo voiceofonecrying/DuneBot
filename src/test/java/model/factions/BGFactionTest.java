@@ -459,6 +459,18 @@ class BGFactionTest extends FactionTestTemplate {
             assertEquals(Emojis.MORITANI + " has an opportunity to trigger their Terror Token in Carthag against " + Emojis.BG, turnSummary.getMessages().getLast());
         }
 
+        @Test
+        public void testAdvisorCannotBeSentToAftermathToken() throws IOException, InvalidGameStateException {
+            MoritaniFaction moritani = new MoritaniFaction("p", "u");
+            moritani.setChat(new TestTopic());
+            game.addFaction(moritani);
+            AtreidesFaction atreides = new AtreidesFaction("p", "u");
+            Territory carthag = game.getTerritory("Carthag");
+            carthag.addTerrorToken(game, "Atomics");
+            moritani.triggerTerrorToken(atreides, carthag, "Atomics");
+            assertThrows(InvalidGameStateException.class, () -> faction.advise(game, carthag, 1));
+        }
+
         @Nested
         @DisplayName("#allyCoexistence")
         class AllyCoexistence {
