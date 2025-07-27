@@ -5,6 +5,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TestTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -12,8 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 class GuildFactionTest extends FactionTestTemplate {
 
@@ -177,6 +177,16 @@ class GuildFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("#payForShipment")
     class PayForShipment extends FactionTestTemplate.PayForShipment {
+        HarkonnenFaction harkonnen;
+
+        @BeforeEach
+        @Override
+        void setUp() throws IOException {
+            harkonnen = new HarkonnenFaction("ha", "ha");
+            harkonnen.setLedger(new TestTopic());
+            super.setUp();
+        }
+
         @Test
         void testFactionCanPayWithAllySupport() throws InvalidGameStateException {
             game.addFaction(guild);
@@ -194,6 +204,33 @@ class GuildFactionTest extends FactionTestTemplate {
         void testNormalPaymentWithGuildInGame() throws InvalidGameStateException {
             assertEquals(" for 1 " + Emojis.SPICE, faction.payForShipment(1, habbanyaSietch, false, false));
             assertEquals(spiceBeforeShipment - 1, faction.getSpice());
+        }
+
+        @Test
+        @Override
+        void testKaramaShipmentDoesNotPayGuild() {
+        }
+
+        @Test
+        @Override
+        void testGuildAtLowThresdhold() {
+        }
+
+        @Test
+        @Override
+        void testGuildOccupied() throws InvalidGameStateException {
+            // Occupier does not get paid for Guild shipment. "The occupier collects the other half (rounded down) of shipping payments made by other players."
+            game.addFaction(harkonnen);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.placeForces(habbanyaSietch, 15, 0, false, false, false, false, false);
+            assertFalse(faction.isHighThreshold());
+            harkonnen.placeForces(faction.getHomeworldTerritory(), 1, 0, false, false, false, false, false);
+            assertTrue(faction.isHomeworldOccupied());
+            faction.addSpice(1, "Test");
+            spiceBeforeShipment = faction.getSpice();
+            assertEquals(" for 3 " + Emojis.SPICE, faction.payForShipment(3, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 3, faction.getSpice());
+            assertEquals(10, harkonnen.getSpice());
         }
 
         @Test
