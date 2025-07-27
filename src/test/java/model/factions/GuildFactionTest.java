@@ -219,18 +219,18 @@ class GuildFactionTest extends FactionTestTemplate {
         @Test
         @Override
         void testGuildOccupied() throws InvalidGameStateException {
-            // Uncomment this test when bot supports half of Guild shipment going to Junction occupier
-//            game.addFaction(harkonnen);
-//            game.addGameOption(GameOption.HOMEWORLDS);
-//            faction.placeForces(habbanyaSietch, 15, 0, false, false, false, false, false);
-//            assertFalse(faction.isHighThreshold());
-//            harkonnen.placeForces(faction.getHomeworldTerritory(), 1, 0, false, false, false, false, false);
-//            assertTrue(faction.isHomeworldOccupied());
-//            faction.addSpice(1, "Test");
-//            spiceBeforeShipment = faction.getSpice();
-//            assertEquals(" for 3 " + Emojis.SPICE + ", 1 " + Emojis.SPICE + " paid to " + Emojis.HARKONNEN, faction.payForShipment(3, habbanyaSietch, false, false));
-//            assertEquals(spiceBeforeShipment - 3, faction.getSpice());
-//            assertEquals(11, harkonnen.getSpice());
+            // Occupier does not get paid for Guild shipment. "The occupier collects the other half (rounded down) of shipping payments made by other players."
+            game.addFaction(harkonnen);
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.placeForces(habbanyaSietch, 15, 0, false, false, false, false, false);
+            assertFalse(faction.isHighThreshold());
+            harkonnen.placeForces(faction.getHomeworldTerritory(), 1, 0, false, false, false, false, false);
+            assertTrue(faction.isHomeworldOccupied());
+            faction.addSpice(1, "Test");
+            spiceBeforeShipment = faction.getSpice();
+            assertEquals(" for 3 " + Emojis.SPICE, faction.payForShipment(3, habbanyaSietch, false, false));
+            assertEquals(spiceBeforeShipment - 3, faction.getSpice());
+            assertEquals(10, harkonnen.getSpice());
         }
 
         @Test
