@@ -183,7 +183,7 @@ public class Bidding {
     public void presentRejectedCardLocationChoices(Game game, String cardName, int rejectionTurn) throws InvalidGameStateException {
         if (rejectionTurn != game.getTurn())
             throw new InvalidGameStateException("Button is from turn " + rejectionTurn);
-        else if (!game.getBidding().isIxRejectOutstanding())
+        else if (!ixRejectOutstanding)
             throw new InvalidGameStateException("You have already sent a card back.");
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("ix-reject-" + game.getTurn() + "-" + cardName + "-top", "Top"));
@@ -195,7 +195,7 @@ public class Bidding {
     public void presentRejectConfirmationChoices(Game game, String cardName, String location, int rejectionTurn) throws InvalidGameStateException {
         if (rejectionTurn != game.getTurn())
             throw new InvalidGameStateException("Button is from turn " + rejectionTurn);
-        else if (!game.getBidding().isIxRejectOutstanding())
+        else if (!ixRejectOutstanding)
             throw new InvalidGameStateException("You have already sent a card back.");
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("success", "ix-confirm-reject-" + cardName + "-" + location, "Confirm " + cardName + " to " + location));
@@ -206,7 +206,7 @@ public class Bidding {
     }
 
     public void sendCardBack(Game game, String cardName, String location, boolean requestTechnology) throws InvalidGameStateException {
-        if (!game.getBidding().isIxRejectOutstanding())
+        if (!ixRejectOutstanding)
             throw new InvalidGameStateException("You have already sent a card back.");
         putBackIxCard(game, cardName, location, requestTechnology);
     }
@@ -626,7 +626,7 @@ public class Bidding {
         );
         game.getTurnSummary().publish(MessageFormat.format(
                 "{0} used technology to swap a card from their hand for R{1}:C{2}.",
-                Emojis.IX, game.getTurn(), game.getBidding().getBidCardNumber() + 1
+                Emojis.IX, game.getTurn(), bidCardNumber + 1
         ));
         faction.getChat().publish("You took " + newCard.name() + " instead of " + cardName);
     }
@@ -827,7 +827,7 @@ public class Bidding {
         );
     }
 
-    public boolean isIxRejectOutstanding() {
+    protected boolean isIxRejectOutstanding() {
         return ixRejectOutstanding;
     }
 
@@ -1111,7 +1111,7 @@ public class Bidding {
         faction.setMaxBid(-1);
         game.getModLedger().publish(faction.getEmoji() + " passed their bid.");
         tryBid(game, faction);
-        if (faction.isAutoBid() && !game.getBidding().isSilentAuction())
+        if (faction.isAutoBid() && !silentAuction)
             return "You will auto-pass until the next card or until you set auto-pass to false.";
         return "You will pass one time.";
     }
@@ -1149,7 +1149,7 @@ public class Bidding {
         if (topBidderDeclared || allPlayersPassed)
             throw new InvalidGameStateException("Bidding has ended on the current card.\nset-auto-pass-entire-turn is the only valid bidding command until the next card is auctions.");
         String response = faction.bid(game, useExact, bidAmount, newOutbidAllySetting, enableAutoPass);
-        game.getBidding().tryBid(game, faction);
+        tryBid(game, faction);
         return response;
     }
 

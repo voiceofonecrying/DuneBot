@@ -125,6 +125,37 @@ class BiddingTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#pass")
+    class Pass {
+        @BeforeEach
+        public void setUp() throws IOException, InvalidGameStateException {
+            game.addFaction(atreides);
+            game.addFaction(bg);
+            game.addFaction(emperor);
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.addFaction(harkonnen);
+            game.createAlliance(atreides, emperor);
+            bidding = game.startBidding();
+            bidding.cardCountsInBiddingPhase(game);
+            bidding.auctionNextCard(game, false);
+            turnSummary.clear();
+        }
+
+        @Test
+        public void testSinglePass() throws InvalidGameStateException {
+            atreides.setAutoBid(false);
+            assertEquals("You will pass one time.", bidding.pass(game, atreides));
+        }
+
+        @Test
+        public void testPassWithAutoPassEnabled() throws InvalidGameStateException {
+            atreides.setAutoBid(true);
+            assertEquals("You will auto-pass until the next card or until you set auto-pass to false.", bidding.pass(game, atreides));
+        }
+    }
+
+    @Nested
     @DisplayName("#finishBiddingPhase")
     public class FinishBiddingPhase {
         @BeforeEach
@@ -1822,6 +1853,85 @@ class BiddingTest extends DuneTest {
                 bidding.putBackIxCard(game, card.name(), "top", false);
                 assertNull(bidding.getBidCard());
                 assertEquals("Would you like to use Technology on the first card? ix", ixChat.getMessages().getLast());
+            }
+        }
+
+        @Nested
+        @DisplayName("#presentRejectedCardLocationChoices")
+        class PresentRejectedCardLocationChoices {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setTurn(1);
+                bidding = game.startBidding();
+                bidding.populateMarket(game);
+                bidding.auctionNextCard(game, false);
+            }
+
+            @Test
+            void testNoLongerCurrentTurn() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.presentRejectedCardLocationChoices(game, "Karama", 2));
+            }
+
+            @Test
+            void testCurrentTurn() {
+                assertDoesNotThrow(() -> bidding.presentRejectedCardLocationChoices(game, "Karama", 1));
+            }
+
+            @Test
+            void testIxHasAlreadySentACardBack() throws InvalidGameStateException {
+                bidding.putBackIxCard(game, "Karama", "top", false);
+                assertThrows(InvalidGameStateException.class, () -> bidding.presentRejectedCardLocationChoices(game, "Karama", 1));
+            }
+        }
+
+        @Nested
+        @DisplayName("#presentRejectConfirmationChoices")
+        class PresentRejectConfirmationChoices {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setTurn(1);
+                bidding = game.startBidding();
+                bidding.populateMarket(game);
+                bidding.auctionNextCard(game, false);
+            }
+
+            @Test
+            void testNoLongerCurrentTurn() {
+                assertThrows(InvalidGameStateException.class, () -> bidding.presentRejectConfirmationChoices(game, "Karama", "top", 2));
+            }
+
+            @Test
+            void testCurrentTurn() {
+                assertDoesNotThrow(() -> bidding.presentRejectConfirmationChoices(game, "Karama", "top", 1));
+            }
+
+            @Test
+            void testIxHasAlreadySentACardBack() throws InvalidGameStateException {
+                bidding.sendCardBack(game, "Karama", "top", false);
+                assertThrows(InvalidGameStateException.class, () -> bidding.presentRejectConfirmationChoices(game, "Karama", "top", 1));
+            }
+        }
+
+        @Nested
+        @DisplayName("#sendCardBack")
+        class SendCardBack {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                game.setTurn(1);
+                bidding = game.startBidding();
+                bidding.populateMarket(game);
+                bidding.auctionNextCard(game, false);
+            }
+
+            @Test
+            void testCardNotSentBackYet() {
+                assertDoesNotThrow(() -> bidding.sendCardBack(game, "Karama", "top", false));
+            }
+
+            @Test
+            void testIxHasAlreadySentACardBack() throws InvalidGameStateException {
+                bidding.sendCardBack(game, "Karama", "top", false);
+                assertThrows(InvalidGameStateException.class, () -> bidding.sendCardBack(game, "Karama", "top", false));
             }
         }
     }
