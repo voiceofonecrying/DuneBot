@@ -137,6 +137,12 @@ public class MoritaniFaction extends Faction {
                     else
                         game.removeForcesAndReportToTurnSummary(location.getTerritoryName(), game.getFaction(force.getFactionName()), force.getStrength(), 0, true, false);
                 }
+                String ambassador = location.getEcazAmbassador();
+                if (ambassador != null) {
+                    game.getEcazFaction().getAmbassadorSupply().add(ambassador);
+                    location.removeEcazAmbassador();
+                    game.getTurnSummary().publish(Emojis.ECAZ + " " + ambassador + " ambassador returned to supply.");
+                }
                 reduceHandLimitDueToAtomics(this);
                 if (ally != null)
                     reduceHandLimitDueToAtomics(game.getFaction(ally));
