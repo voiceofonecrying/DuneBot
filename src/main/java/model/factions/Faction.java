@@ -424,7 +424,7 @@ public class Faction {
             getShipment().setShipped(true);
             int cost = game.shipmentCost(this, amountValue + starredAmountValue, targetTerritory, karama, crossShip);
             if (cost > 0)
-                costString = payForShipment(game, cost, targetTerritory, karama, false);
+                costString = payForShipment(cost, targetTerritory, karama, false);
         }
 
         BGFaction bg = game.getBGFactionOrNull();
@@ -815,7 +815,7 @@ public class Faction {
         game.getTurnSummary().publish(emoji + " wins " + currentCard + " for " + spentValue + " " + Emojis.SPICE + allyString);
     }
 
-    public String payForShipment(Game game, int spice, Territory territory, boolean karamaShipment, boolean noField) throws InvalidGameStateException {
+    public String payForShipment(int spice, Territory territory, boolean karamaShipment, boolean noField) throws InvalidGameStateException {
         String paymentMessage = " for " + spice + " " + Emojis.SPICE;
         int spiceFromAlly = 0;
         if (hasAlly())
