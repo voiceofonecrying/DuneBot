@@ -363,6 +363,8 @@ public class Battle {
     public String setBattlePlan(Game game, Faction faction, String leaderName, boolean kwisatzHaderach, String dial, int spice, String weaponName, String defenseName) throws InvalidGameStateException {
         if (!getAggressorName().equals(faction.getName()) && !getDefenderName().equals(faction.getName()))
             throw new InvalidGameStateException("You are not in the current battle.");
+        if (resolutionPublished)
+            throw new InvalidGameStateException("Battle results have already been pulbished.");
 
         removePreviouslySubmittedLeaderFromTerritory(faction);
         Leader leader = null;
@@ -419,6 +421,8 @@ public class Battle {
     }
 
     public BattlePlan setBattlePlan(Game game, Faction faction, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, int wholeNumberDial, boolean plusHalfDial, int spice, TreacheryCard weapon, TreacheryCard defense) throws InvalidGameStateException {
+        if (resolutionPublished)
+            throw new InvalidGameStateException("Battle results have already been pulbished.");
         int numFactionsExpected = hasEcazAndAlly() ? 3 : 2;
         if (factionNames.size() != numFactionsExpected)
             throw new InvalidGameStateException("Combatants not determined yet.");
