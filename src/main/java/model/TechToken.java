@@ -42,6 +42,10 @@ public class TechToken {
         }
     }
 
+    public int getSpice() {
+        return spice;
+    }
+
     public String getName() {
         return name;
     }

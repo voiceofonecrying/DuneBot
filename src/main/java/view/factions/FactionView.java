@@ -111,9 +111,13 @@ public class FactionView {
                     .toList();
 
             if (!techTokenEmojis.isEmpty()) {
+                String techTokenString = String.join("", techTokenEmojis);
+                int techSpice = faction.getTechTokens().stream().map(TechToken::getSpice).reduce(0, Math::max);
+                if (techSpice > 0)
+                    techTokenString += " + " + techSpice + " " + Emojis.SPICE;
                 embedBuilder.addField(
                         "Tech",
-                        discordGame.tagEmojis(String.join("", techTokenEmojis)),
+                        discordGame.tagEmojis(techTokenString),
                         true
                 );
             }
