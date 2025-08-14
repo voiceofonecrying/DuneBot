@@ -1083,17 +1083,18 @@ public class Battle {
             if (faction.hasAlly())
                 spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
 
+            int spiceFromArrakeenStrongholdCard = battlePlan.getWholeNumberDial() > 1 ? 2 : battlePlan.getWholeNumberDial();
+            boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+                    && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
+                    || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
+
             if (executeResolution) {
                 faction.subtractSpice(battlePlan.getSpice() - spiceFromAlly, "combat spice");
                 turnSummary.publish(faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice.");
             } else {
                 resolution += faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice\n";
-                int spiceFromArrakeenStrongholdCard = battlePlan.getWholeNumberDial() > 1 ? 2 : battlePlan.getWholeNumberDial();
-                boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                        && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                        || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
                 if (arrakeenStrongholdCard && spiceFromArrakeenStrongholdCard > 0)
-                    resolution += spiceFromArrakeenStrongholdCard + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card.\n";
+                    resolution += spiceFromArrakeenStrongholdCard + " " + Emojis.SPICE + " provided by Spice Bank for Arrakeen Stronghold Card.\n";
             }
 
             if (spiceFromAlly > 0) {
@@ -1110,6 +1111,8 @@ public class Battle {
                 int choamEligibleSpice = battlePlan.getSpice();
                 if (faction.getAlly().equals("CHOAM"))
                     choamEligibleSpice -= spiceFromAlly;
+                if (arrakeenStrongholdCard && spiceFromArrakeenStrongholdCard > 0)
+                    choamEligibleSpice += spiceFromArrakeenStrongholdCard;
                 if (choamEligibleSpice > 1) {
                     if (executeResolution) {
                         choam.addSpice(Math.floorDiv(choamEligibleSpice, 2), "combat spice");
