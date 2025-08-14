@@ -1483,16 +1483,20 @@ public class Battle {
         boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
                 && (wholeTerritoryName.equals("Arrakeen") && getAggressor(game).hasStrongholdCard("Arrakeen")
                 || wholeTerritoryName.equals("Hidden Mobile Stronghold") && getAggressor(game).hasHmsStrongholdProxy("Arrakeen"));
-        if (arrakeenStrongholdCard && aggressorBattlePlan.getWholeNumberDial() > 0)
-            resolution += aggressorBattlePlan.getWholeNumberDial() > 1 ? 2 : " + " + aggressorBattlePlan.getWholeNumberDial() + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card.\n";
+        if (arrakeenStrongholdCard && aggressorBattlePlan.getWholeNumberDial() > 0) {
+            int cardSpice = aggressorBattlePlan.getWholeNumberDial() > 1 ? 2 : 1;
+            resolution += "\n  +" + cardSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
+        }
         resolution += "\n\n";
         resolution += getDefenderEmojis(game) + "\n";
         resolution += defenderBattlePlan.getPlanMessage(true);
         arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
                 && (wholeTerritoryName.equals("Arrakeen") && getDefender(game).hasStrongholdCard("Arrakeen")
                 || wholeTerritoryName.equals("Hidden Mobile Stronghold") && getDefender(game).hasHmsStrongholdProxy("Arrakeen"));
-        if (arrakeenStrongholdCard && defenderBattlePlan.getWholeNumberDial() > 0)
-            resolution += defenderBattlePlan.getWholeNumberDial() > 1 ? 2 : " + " + defenderBattlePlan.getWholeNumberDial() + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card.\n";
+        if (arrakeenStrongholdCard && defenderBattlePlan.getWholeNumberDial() > 0) {
+            int cardSpice = defenderBattlePlan.getWholeNumberDial() > 1 ? 2 : 1;
+            resolution += "\n  +" + cardSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
+        }
         resolution += "\n\n";
         resolution += getWinnerString(game) + "\n";
 
