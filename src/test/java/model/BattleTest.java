@@ -5925,6 +5925,57 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#ResolutionWithArrakeenStrongholdCard")
+    class ResolutionWithArrakeenStrongholdCard {
+        Battle battle;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            game.addFaction(atreides);
+            game.addFaction(harkonnen);
+            game.addFaction(choam);
+            atreides.addStrongholdCard(new StrongholdCard("Arrakeen"));
+            arrakeen.addForces("Harkonnen", 1);
+            battle = new Battle(game, List.of(arrakeen), List.of(atreides, harkonnen));
+            battle.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+            battle.setBattlePlan(game, atreides, ladyJessica, null, false, 3, false, 1, null, null);
+            modInfo.clear();
+        }
+
+        @Test
+        void testReviewReportsCardSpiceAndCHOAMSpice() throws InvalidGameStateException {
+            battle.printBattleResolution(game, false, false);
+            assertTrue(modInfo.getMessages().getFirst().contains("\n  +2 " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card"));
+            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+            assertTrue(modInfo.getMessages().getFirst().contains("\n2 " + Emojis.SPICE + " provided by Spice Bank for Arrakeen Stronghold Card."));
+            assertTrue(modInfo.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+            assertEquals(10, atreides.getSpice());
+            assertEquals(2, choam.getSpice());
+        }
+
+        @Test
+        void testPublishReportsCardSpiceAndCHOAMSpice() throws InvalidGameStateException {
+            battle.printBattleResolution(game, true, false);
+            assertTrue(turnSummary.getMessages().getFirst().contains("\n  +2 " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card"));
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+            assertTrue(turnSummary.getMessages().getFirst().contains("\n2 " + Emojis.SPICE + " provided by Spice Bank for Arrakeen Stronghold Card."));
+            assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+            assertEquals(10, atreides.getSpice());
+            assertEquals(2, choam.getSpice());
+        }
+
+        @Test
+        void testResolveExecutesSpicePayments() throws InvalidGameStateException {
+            battle.printBattleResolution(game, false, true);
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice.")));
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice.")));
+            assertEquals(9, atreides.getSpice());
+            assertEquals(3, choam.getSpice());
+        }
+    }
+
+    @Nested
     @DisplayName("#harkonnenLeaderCapture")
     class HarkonnenLeaderCapture {
         Battle battle;
@@ -5942,14 +5993,14 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testHarkonnenCanCaptureLeader() throws InvalidGameStateException {
+        void testHarkonnenCanCaptureLeader() {
             battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, ladyJessica, false, true);
             assertEquals("Will you keep or kill Duncan Idaho? ha", harkonnenChat.getMessages().getLast());
             assertNotEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
         }
 
         @Test
-        void testHarkonnenCanCaptureLeaderUsedInSameTerritory() throws InvalidGameStateException {
+        void testHarkonnenCanCaptureLeaderUsedInSameTerritory() {
             battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, duncanIdaho, false, true);
             assertEquals("Will you keep or kill Duncan Idaho? ha", harkonnenChat.getMessages().getLast());
             assertNotEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
