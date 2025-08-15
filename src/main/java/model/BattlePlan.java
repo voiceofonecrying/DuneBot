@@ -35,6 +35,7 @@ public class BattlePlan {
     private final List<LeaderSkillCard> leaderSkillsInFront;
     private boolean carthagStrongholdCard;
     private final boolean arrakeenStrongholdCard;
+    private int arrakeenStrongholdSpice;
     private final int homeworldDialAdvantage;
     private final int numStrongholdsOccupied;
     private final int numForcesInReserve;
@@ -75,9 +76,9 @@ public class BattlePlan {
         this.hasEcazAndAlly = battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"));
         this.ecazTroopsForAlly = hasEcazAndAlly ? battle.getForces().stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0) : 0;
         this.dialFactionName = hasEcazAndAlly && faction instanceof EcazFaction ? faction.getAlly() : faction.getName();
-        this.arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
+        this.arrakeenStrongholdCard = battle.strongholdCardApplies(game, "Arrakeen", faction);
+        if (arrakeenStrongholdCard)
+            arrakeenStrongholdSpice = Math.min(2, wholeNumberDial);
         calculateForcesDialedAndSpiceUsed(game, battle, faction, wholeNumberDial, plusHalfDial, spice);
 
         this.leaderSkillsInFront = getLeaderSkillsInFront(faction);
@@ -441,6 +442,10 @@ public class BattlePlan {
         return spice;
     }
 
+    public int getArrakeenStrongholdCardSpice() {
+        return arrakeenStrongholdSpice;
+    }
+
     public boolean hasKwisatzHaderach() {
         return kwisatzHaderach;
     }
@@ -658,10 +663,6 @@ public class BattlePlan {
         }
     }
 
-    public boolean isArrakeenStrongholdCard() {
-        return arrakeenStrongholdCard;
-    }
-
     private boolean carthagStrongholdPoisonDefense() {
         TreacheryCard effectiveWeapon = weapon;
         if (weapon != null && weapon.name().equals("Mirror Weapon")) effectiveWeapon = opponentWeapon;
@@ -735,11 +736,8 @@ public class BattlePlan {
         String spiceString = "Spice: " + spice;
         if (spiceBankerSupport > 0)
             spiceString += " + " + spiceBankerSupport + " for Spice Banker";
-        if (arrakeenStrongholdCard) {
-            int arrakeenStrongholdSpice = Math.min(2, wholeNumberDial);
-            if (arrakeenStrongholdSpice > 0)
-                spiceString += "\n  +" + arrakeenStrongholdSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
-        }
+        if (arrakeenStrongholdSpice > 0)
+            spiceString += "\n  +" + arrakeenStrongholdSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
         return spiceString;
     }
 

@@ -1082,16 +1082,14 @@ public class Battle {
             int spiceFromAlly = 0;
             if (faction.hasAlly())
                 spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
-
-            int spiceFromArrakeenStrongholdCard = battlePlan.getWholeNumberDial() > 1 ? 2 : battlePlan.getWholeNumberDial();
-            boolean arrakeenStrongholdCard = battlePlan.isArrakeenStrongholdCard();
+            int spiceFromArrakeenStrongholdCard = battlePlan.getArrakeenStrongholdCardSpice();
 
             if (executeResolution) {
                 faction.subtractSpice(battlePlan.getSpice() - spiceFromAlly, "combat spice");
                 turnSummary.publish(faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice.");
             } else {
                 resolution += faction.getEmoji() + " loses " + (battlePlan.getSpice() - spiceFromAlly) + " " + Emojis.SPICE + " combat spice\n";
-                if (arrakeenStrongholdCard && spiceFromArrakeenStrongholdCard > 0)
+                if (spiceFromArrakeenStrongholdCard > 0)
                     resolution += spiceFromArrakeenStrongholdCard + " " + Emojis.SPICE + " provided by Spice Bank for Arrakeen Stronghold Card.\n";
             }
 
@@ -1109,7 +1107,7 @@ public class Battle {
                 int choamEligibleSpice = battlePlan.getSpice();
                 if (faction.getAlly().equals("CHOAM"))
                     choamEligibleSpice -= spiceFromAlly;
-                if (arrakeenStrongholdCard && spiceFromArrakeenStrongholdCard > 0)
+                if (spiceFromArrakeenStrongholdCard > 0)
                     choamEligibleSpice += spiceFromArrakeenStrongholdCard;
                 if (choamEligibleSpice > 1) {
                     if (executeResolution) {
@@ -1325,7 +1323,7 @@ public class Battle {
         return resolution;
     }
 
-    private boolean strongholdCardApplies(Game game, String stronghold, Faction faction) {
+    public boolean strongholdCardApplies(Game game, String stronghold, Faction faction) {
         return game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
                 && (getWholeTerritoryName().equals(stronghold) && faction.hasStrongholdCard(stronghold)
                 || getWholeTerritoryName().equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy(stronghold));
