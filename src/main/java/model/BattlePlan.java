@@ -35,6 +35,7 @@ public class BattlePlan {
     private final List<LeaderSkillCard> leaderSkillsInFront;
     private boolean carthagStrongholdCard;
     private final boolean arrakeenStrongholdCard;
+    private int arrakeenStrongholdSpice;
     private final int homeworldDialAdvantage;
     private final int numStrongholdsOccupied;
     private final int numForcesInReserve;
@@ -75,14 +76,14 @@ public class BattlePlan {
         this.hasEcazAndAlly = battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"));
         this.ecazTroopsForAlly = hasEcazAndAlly ? battle.getForces().stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0) : 0;
         this.dialFactionName = hasEcazAndAlly && faction instanceof EcazFaction ? faction.getAlly() : faction.getName();
+        this.arrakeenStrongholdCard = battle.strongholdCardApplies(game, "Arrakeen", faction);
+        if (arrakeenStrongholdCard)
+            arrakeenStrongholdSpice = Math.min(2, wholeNumberDial);
         calculateForcesDialedAndSpiceUsed(game, battle, faction, wholeNumberDial, plusHalfDial, spice);
 
         this.leaderSkillsInFront = getLeaderSkillsInFront(faction);
         // Handling of the hmsStrongholdProxy intentionally excluded here in case player initially selected Carthag but wants to change
         this.carthagStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && wholeTerritoryName.equals("Carthag") && faction.hasStrongholdCard("Carthag");
-        this.arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
         this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, battle.getTerritorySectors(game).getFirst());
         this.numStrongholdsOccupied = getNumStrongholdsOccupied(game, faction);
         this.spiceBankerSupport = 0;
@@ -202,9 +203,6 @@ public class BattlePlan {
     }
 
     private void calculateForcesDialedAndSpiceUsed(Game game, Battle battle, Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
-        boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
         String factionName = (hasEcazAndAlly && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         boolean isFremen = faction instanceof FremenFaction;
         if (faction instanceof EcazFaction && hasEcazAndAlly && faction.getAlly().equals("Fremen"))
@@ -442,6 +440,10 @@ public class BattlePlan {
 
     public int getSpice() {
         return spice;
+    }
+
+    public int getArrakeenStrongholdCardSpice() {
+        return arrakeenStrongholdSpice;
     }
 
     public boolean hasKwisatzHaderach() {
@@ -734,11 +736,8 @@ public class BattlePlan {
         String spiceString = "Spice: " + spice;
         if (spiceBankerSupport > 0)
             spiceString += " + " + spiceBankerSupport + " for Spice Banker";
-        if (arrakeenStrongholdCard) {
-            int arrakeenStrongholdSpice = Math.min(2, wholeNumberDial);
-            if (arrakeenStrongholdSpice > 0)
-                spiceString += "\n  +" + arrakeenStrongholdSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
-        }
+        if (arrakeenStrongholdSpice > 0)
+            spiceString += "\n  +" + arrakeenStrongholdSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
         return spiceString;
     }
 
