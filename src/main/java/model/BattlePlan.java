@@ -75,14 +75,14 @@ public class BattlePlan {
         this.hasEcazAndAlly = battle.hasEcazAndAlly() && (faction instanceof EcazFaction || faction.getAlly().equals("Ecaz"));
         this.ecazTroopsForAlly = hasEcazAndAlly ? battle.getForces().stream().filter(f -> f.getFactionName().equals("Ecaz")).map(Force::getStrength).findFirst().orElse(0) : 0;
         this.dialFactionName = hasEcazAndAlly && faction instanceof EcazFaction ? faction.getAlly() : faction.getName();
+        this.arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
+                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
         calculateForcesDialedAndSpiceUsed(game, battle, faction, wholeNumberDial, plusHalfDial, spice);
 
         this.leaderSkillsInFront = getLeaderSkillsInFront(faction);
         // Handling of the hmsStrongholdProxy intentionally excluded here in case player initially selected Carthag but wants to change
         this.carthagStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && wholeTerritoryName.equals("Carthag") && faction.hasStrongholdCard("Carthag");
-        this.arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
         this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, battle.getTerritorySectors(game).getFirst());
         this.numStrongholdsOccupied = getNumStrongholdsOccupied(game, faction);
         this.spiceBankerSupport = 0;
@@ -202,9 +202,6 @@ public class BattlePlan {
     }
 
     private void calculateForcesDialedAndSpiceUsed(Game game, Battle battle, Faction faction, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
-        boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
         String factionName = (hasEcazAndAlly && faction instanceof EcazFaction) ? faction.getAlly() : faction.getName();
         boolean isFremen = faction instanceof FremenFaction;
         if (faction instanceof EcazFaction && hasEcazAndAlly && faction.getAlly().equals("Fremen"))
