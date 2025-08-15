@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 public class BattlePlanTest extends DuneTest {
     Battle battle;
     Battle carthagBattle;
+    Battle arrakeenBattle;
     TreacheryCard artilleryStrike;
     TreacheryCard weirdingWay;
     TreacheryCard chemistry;
@@ -42,7 +43,8 @@ public class BattlePlanTest extends DuneTest {
         funeralPlain.addForces("Atreides", 11);
         battle = new Battle(game, List.of(funeralPlain), List.of(atreides, harkonnen));
         carthagBattle = new Battle(game, List.of(game.getTerritory("Carthag")), List.of(atreides, harkonnen));
-//        arrakeenBattle = new Battle(game, "Arrakeen", List.of(game.getTerritory("Arrakeen")), List.of(atreides, harkonnen), null);
+        arrakeen.addForces("Harkonnen", 1);
+        arrakeenBattle = new Battle(game, List.of(game.getTerritory("Arrakeen")), List.of(atreides, harkonnen));
         artilleryStrike = new TreacheryCard("Artillery Strike");
         weirdingWay = new TreacheryCard("Weirding Way");
         chemistry = new TreacheryCard("Chemistry");
@@ -1256,6 +1258,60 @@ public class BattlePlanTest extends DuneTest {
         duncanIdaho.setSkillCard(warmaster);
         BattlePlan battlePlan = new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 0, false, 0);
         assertEquals(4, battlePlan.getDoubleBattleStrength());
+    }
+
+    @Nested
+    @DisplayName("#getSpiceString")
+    class GetSpiceString {
+        BattlePlan battlePlan;
+        StrongholdCard arrakeenCard;
+
+        @BeforeEach
+        void setUp() {
+            arrakeenCard = new StrongholdCard("Arrakeen");
+        }
+
+        @Test
+        void testBasicSpiceString() throws InvalidGameStateException {
+            battlePlan = new BattlePlan(game, arrakeenBattle, atreides, true, duncanIdaho, null, false, null, null, 2, false, 2);
+            assertEquals("Spice: 2", battlePlan.getSpiceString());
+        }
+
+        @Test
+        void testSpiceStringWithSpiceBankerSupport() throws InvalidGameStateException {
+            battlePlan = new BattlePlan(game, arrakeenBattle, atreides, true, duncanIdaho, null, false, null, null, 2, false, 2);
+            battlePlan.setSpiceBankerSupport(1);
+            assertEquals("Spice: 2 + 1 for Spice Banker", battlePlan.getSpiceString());
+        }
+
+        @Test
+        void testSpiceStringWithSpiceBankerSupportOfZero() throws InvalidGameStateException {
+            battlePlan = new BattlePlan(game, arrakeenBattle, atreides, true, duncanIdaho, null, false, null, null, 2, false, 2);
+            battlePlan.setSpiceBankerSupport(0);
+            assertEquals("Spice: 2", battlePlan.getSpiceString());
+        }
+
+        @Test
+        void testSpiceStringWithArrakeenStrongholdCard() throws InvalidGameStateException {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            atreides.addStrongholdCard(arrakeenCard);
+            battlePlan = new BattlePlan(game, arrakeenBattle, atreides, true, duncanIdaho, null, false, null, null, 2, false, 0);
+            assertEquals("Spice: 0\n  +2 " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card", battlePlan.getSpiceString());
+        }
+
+        @Test
+        void testSpiceStringWithHMSStrongholdCardAsArrakeen() throws InvalidGameStateException {
+            game.addFaction(ix);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            hms.addForces("Atreides", 4);
+            Battle hmsBattle = new Battle(game, List.of(hms), List.of(atreides, ix));
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            atreides.addStrongholdCard(arrakeenCard);
+            atreides.addStrongholdCard(new StrongholdCard("Hidden Mobile Stronghold"));
+            atreides.setHmsStrongholdProxy(arrakeenCard);
+            battlePlan = new BattlePlan(game, hmsBattle, atreides, true, duncanIdaho, null, false, null, null, 2, false, 0);
+            assertEquals("Spice: 0\n  +2 " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card", battlePlan.getSpiceString());
+        }
     }
 
     @Nested

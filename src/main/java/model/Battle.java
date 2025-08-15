@@ -1482,25 +1482,9 @@ public class Battle {
         if (executeResolution)
             populateCardsForAudit(game);
         resolution += getAggressorEmojis(game) + "\n";
-        resolution += aggressorBattlePlan.getPlanMessage(true);
-        boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && (wholeTerritoryName.equals("Arrakeen") && getAggressor(game).hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && getAggressor(game).hasHmsStrongholdProxy("Arrakeen"));
-        if (arrakeenStrongholdCard && aggressorBattlePlan.getWholeNumberDial() > 0) {
-            int cardSpice = aggressorBattlePlan.getWholeNumberDial() > 1 ? 2 : 1;
-            resolution += "\n  +" + cardSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
-        }
-        resolution += "\n\n";
+        resolution += aggressorBattlePlan.getPlanMessage(true) + "\n\n";
         resolution += getDefenderEmojis(game) + "\n";
-        resolution += defenderBattlePlan.getPlanMessage(true);
-        arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                && (wholeTerritoryName.equals("Arrakeen") && getDefender(game).hasStrongholdCard("Arrakeen")
-                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && getDefender(game).hasHmsStrongholdProxy("Arrakeen"));
-        if (arrakeenStrongholdCard && defenderBattlePlan.getWholeNumberDial() > 0) {
-            int cardSpice = defenderBattlePlan.getWholeNumberDial() > 1 ? 2 : 1;
-            resolution += "\n  +" + cardSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
-        }
-        resolution += "\n\n";
+        resolution += defenderBattlePlan.getPlanMessage(true) + "\n\n";
         resolution += getWinnerString(game) + "\n";
 
         resolution += factionBattleResults(game, true, executeResolution);

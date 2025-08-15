@@ -34,6 +34,7 @@ public class BattlePlan {
     private final String dialFactionName;
     private final List<LeaderSkillCard> leaderSkillsInFront;
     private boolean carthagStrongholdCard;
+    private final boolean arrakeenStrongholdCard;
     private final int homeworldDialAdvantage;
     private final int numStrongholdsOccupied;
     private final int numForcesInReserve;
@@ -79,6 +80,9 @@ public class BattlePlan {
         this.leaderSkillsInFront = getLeaderSkillsInFront(faction);
         // Handling of the hmsStrongholdProxy intentionally excluded here in case player initially selected Carthag but wants to change
         this.carthagStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && wholeTerritoryName.equals("Carthag") && faction.hasStrongholdCard("Carthag");
+        this.arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
+                && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
+                || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
         this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, battle.getTerritorySectors(game).getFirst());
         this.numStrongholdsOccupied = getNumStrongholdsOccupied(game, faction);
         this.spiceBankerSupport = 0;
@@ -726,8 +730,16 @@ public class BattlePlan {
         return dialString;
     }
 
-    public String getSpiceString() {
-        return "Spice: " + spice + (spiceBankerSupport > 0 ? " + " + spiceBankerSupport + " for Spice Banker" : "");
+    protected String getSpiceString() {
+        String spiceString = "Spice: " + spice;
+        if (spiceBankerSupport > 0)
+            spiceString += " + " + spiceBankerSupport + " for Spice Banker";
+        if (arrakeenStrongholdCard) {
+            int arrakeenStrongholdSpice = Math.min(2, wholeNumberDial);
+            if (arrakeenStrongholdSpice > 0)
+                spiceString += "\n  +" + arrakeenStrongholdSpice + " " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card";
+        }
+        return spiceString;
     }
 
     public String getPlanMessage(boolean revealLeaderSkills) {
