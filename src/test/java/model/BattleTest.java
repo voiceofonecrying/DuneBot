@@ -5925,7 +5925,7 @@ class BattleTest extends DuneTest {
     }
 
     @Nested
-    @DisplayName("#ResolutionWithArrakeenStrongholdCard")
+    @DisplayName("#resolutionWithArrakeenStrongholdCard")
     class ResolutionWithArrakeenStrongholdCard {
         Battle battle;
 
@@ -6053,6 +6053,70 @@ class BattleTest extends DuneTest {
                 assertFalse(turnSummary.getMessages().stream().anyMatch(m -> m.contains(Emojis.CHOAM + " gains")));
                 assertEquals(10, atreides.getSpice());
                 assertEquals(2, choam.getSpice());
+            }
+        }
+    }
+
+    @Nested
+    @DisplayName("#resolutionWithHMSStrongholdCardAsArrakeen")
+    class ResolutionWithHMSStrongholdCardAsArrakeen {
+        Battle battle;
+        StrongholdCard arrakeenCard;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addGameOption(GameOption.STRONGHOLD_SKILLS);
+            game.addFaction(atreides);
+            game.addFaction(ix);
+            game.addFaction(choam);
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            hms.addForces("Atreides", 4);
+            arrakeenCard = new StrongholdCard("Arrakeen");
+            atreides.addStrongholdCard(arrakeenCard);
+            atreides.addStrongholdCard(new StrongholdCard("Hidden Mobile Stronghold"));
+            atreides.setHmsStrongholdProxy(arrakeenCard);
+            battle = new Battle(game, List.of(hms), List.of(atreides, ix));
+            battle.setBattlePlan(game, ix, cammarPilru, null, false, 0, false, 0, null, null);
+        }
+
+        @Nested
+        @DisplayName("#dialTwoOrMore")
+        class DialTwoOrMore {
+            @BeforeEach
+            void setUp() throws InvalidGameStateException {
+                battle.setBattlePlan(game, atreides, ladyJessica, null, false, 3, false, 1, null, null);
+                modInfo.clear();
+            }
+
+            @Test
+            void testReviewReportsCardSpiceAndCHOAMSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, false);
+                assertTrue(modInfo.getMessages().getFirst().contains("\n  +2 " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card"));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+                assertTrue(modInfo.getMessages().getFirst().contains("\n2 " + Emojis.SPICE + " provided by Spice Bank for Arrakeen Stronghold Card."));
+                assertTrue(modInfo.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+            }
+
+            @Test
+            void testPublishReportsCardSpiceAndCHOAMSpice() throws InvalidGameStateException {
+                battle.printBattleResolution(game, true, false);
+                assertTrue(turnSummary.getMessages().getFirst().contains("\n  +2 " + Emojis.SPICE + " from Spice Bank for Arrakeen Stronghold Card"));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice"));
+                assertTrue(turnSummary.getMessages().getFirst().contains("\n2 " + Emojis.SPICE + " provided by Spice Bank for Arrakeen Stronghold Card."));
+                assertTrue(turnSummary.getMessages().getFirst().contains(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice"));
+                assertEquals(10, atreides.getSpice());
+                assertEquals(2, choam.getSpice());
+            }
+
+            @Test
+            void testResolveExecutesSpicePayments() throws InvalidGameStateException {
+                battle.printBattleResolution(game, false, true);
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.ATREIDES + " loses 1 " + Emojis.SPICE + " combat spice.")));
+                assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals(Emojis.CHOAM + " gains 1 " + Emojis.SPICE + " combat spice.")));
+                assertEquals(9, atreides.getSpice());
+                assertEquals(3, choam.getSpice());
             }
         }
     }
