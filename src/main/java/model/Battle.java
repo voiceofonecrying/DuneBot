@@ -1084,9 +1084,7 @@ public class Battle {
                 spiceFromAlly = Math.min(game.getFaction(faction.getAlly()).getBattleSupport(), battlePlan.getSpice());
 
             int spiceFromArrakeenStrongholdCard = battlePlan.getWholeNumberDial() > 1 ? 2 : battlePlan.getWholeNumberDial();
-            boolean arrakeenStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS)
-                    && (wholeTerritoryName.equals("Arrakeen") && faction.hasStrongholdCard("Arrakeen")
-                    || wholeTerritoryName.equals("Hidden Mobile Stronghold") && faction.hasHmsStrongholdProxy("Arrakeen"));
+            boolean arrakeenStrongholdCard = battlePlan.isArrakeenStrongholdCard();
 
             if (executeResolution) {
                 faction.subtractSpice(battlePlan.getSpice() - spiceFromAlly, "combat spice");

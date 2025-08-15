@@ -658,6 +658,10 @@ public class BattlePlan {
         }
     }
 
+    public boolean isArrakeenStrongholdCard() {
+        return arrakeenStrongholdCard;
+    }
+
     private boolean carthagStrongholdPoisonDefense() {
         TreacheryCard effectiveWeapon = weapon;
         if (weapon != null && weapon.name().equals("Mirror Weapon")) effectiveWeapon = opponentWeapon;
