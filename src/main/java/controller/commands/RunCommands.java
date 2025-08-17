@@ -94,7 +94,7 @@ public class RunCommands {
         game.setIxHMSActionRequired(ixHMSActionRequired);
 
         if (phase == 1 && subPhase == 1) {
-            IxButtons.hmsSubPhase(discordGame, game);
+            IxButtons.hmsSubPhase(game);
             game.advanceSubPhase();
         } else if (phase == 1 && subPhase == 2) {
             if (game.isIxHMSActionRequired())

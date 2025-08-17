@@ -12,7 +12,7 @@ import java.util.*;
 
 public class IxFaction extends Faction {
     private int hmsMoves;
-    private Set<String> hmsTerritories;
+    protected Set<String> hmsTerritories;
 
     public IxFaction(String player, String userName) throws IOException {
         super("Ix", player, userName);
@@ -48,6 +48,7 @@ public class IxFaction extends Faction {
         hmsTerritories = new HashSet<>();
         Territory territoryWithHMS = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
         hmsTerritories.add(territoryWithHMS.getTerritoryName());
+        game.getTurnSummary().publish(Emojis.IX + " to decide if they want to move the HMS.");
     }
 
     public int getHMSMoves() {
@@ -59,6 +60,15 @@ public class IxFaction extends Faction {
             throw new InvalidGameStateException("The HMS has moved as far as it can.");
         hmsMoves--;
         hmsTerritories.add(territoryName);
+        for (Territory territory : game.getTerritories().values()) {
+            territory.getForces().removeIf(f -> f.getName().equals("Hidden Mobile Stronghold"));
+            game.removeTerritoryFromAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), territory);
+        }
+        Territory targetTerritory = game.getTerritory(territoryName);
+        targetTerritory.addForces("Hidden Mobile Stronghold", 1);
+        game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
+        game.getTurnSummary().publish(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
+        game.setUpdated(UpdateType.MAP);
     }
 
     public void endHMSMovement() {
