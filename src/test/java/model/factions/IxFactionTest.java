@@ -36,6 +36,109 @@ class IxFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#hmsMovement")
+    class HMSMovement {
+        Territory hms;
+
+        @BeforeEach
+        public void setUp() {
+            game.setStorm(10);
+            faction.placeHMS("Wind Pass North (North Sector)");
+            hms = game.getTerritory("Hidden Mobile Stronghold");
+            game.moveForces(faction, hms, game.getTerritory("Polar Sink"), 2, 2, false);
+            game.getTerritory("Wind Pass North (North Sector)").setSpice(6);
+            game.getTerritory("Cielago North (East Sector)").setSpice(8);
+            game.getTerritory("Habbanya Ridge Flat (East Sector)").setSpice(10);
+            faction.startHMSMovement();
+        }
+
+        @Test
+        public void testIxCollectsSpiceFromDepartedTerritory() throws InvalidGameStateException {
+            faction.moveHMSOneTerritory("Polar Sink");
+            turnSummary.clear();
+            faction.endHMSMovement();
+            assertEquals(14, faction.getSpice());
+            assertEquals(Emojis.IX + " collects 4 " + Emojis.SPICE + " from Wind Pass North (North Sector).", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        public void testIxCollectsOnlyAsMuchSpiceIsPresent() throws InvalidGameStateException {
+            game.moveForces(faction, game.getTerritory("Polar Sink"), hms, 2, 2, false);
+            faction.moveHMSOneTerritory("Polar Sink");
+            turnSummary.clear();
+            faction.endHMSMovement();
+            assertEquals(16, faction.getSpice());
+            assertEquals(Emojis.IX + " collects 6 " + Emojis.SPICE + " from Wind Pass North (North Sector).", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        public void testIxCollectsOnlyOncePerTerritory() throws InvalidGameStateException {
+            faction.moveHMSOneTerritory("Polar Sink");
+            faction.moveHMSOneTerritory("Wind Pass North (North Sector)");
+            turnSummary.clear();
+            faction.endHMSMovement();
+            assertEquals(14, faction.getSpice());
+            assertEquals(Emojis.IX + " collects 4 " + Emojis.SPICE + " from Wind Pass North (North Sector).", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        public void testIxDoesNotCollectsSpiceIfHMSDoesNotMove() {
+            faction.endHMSMovement();
+            assertEquals(10, faction.getSpice());
+        }
+
+        @Test
+        public void testIxCollectsSpiceFromDestinationTerritory() throws InvalidGameStateException {
+            game.getTerritory("Wind Pass North (North Sector)").setSpice(0);
+            faction.moveHMSOneTerritory("Cielago West (North Sector)");
+            faction.moveHMSOneTerritory("Habbanya Ridge Flat (East Sector)");
+            turnSummary.clear();
+            faction.endHMSMovement();
+            assertEquals(14, faction.getSpice());
+            assertEquals(Emojis.IX + " collects 4 " + Emojis.SPICE + " from Habbanya Ridge Flat (East Sector).", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        public void testIxCollectsSpiceMovingThroughATerritory() throws InvalidGameStateException {
+            game.getTerritory("Wind Pass North (North Sector)").setSpice(0);
+            faction.moveHMSOneTerritory("Cielago North (East Sector)");
+            faction.moveHMSOneTerritory("Polar Sink");
+            turnSummary.clear();
+            faction.endHMSMovement();
+            assertEquals(14, faction.getSpice());
+            assertEquals(Emojis.IX + " collects 4 " + Emojis.SPICE + " from Cielago North (East Sector).", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        public void testIxCollectsSpiceForEcazAllyInHMS() throws InvalidGameStateException, IOException {
+            EcazFaction ecaz = new EcazFaction("ec", "ec");
+            ecaz.setLedger(new TestTopic());
+            game.addFaction(ecaz);
+            game.createAlliance(faction, ecaz);
+            ecaz.placeForcesFromReserves(hms, 1, false);
+            faction.moveHMSOneTerritory("Polar Sink");
+            turnSummary.clear();
+            faction.endHMSMovement();
+            assertEquals(16, faction.getSpice());
+            assertEquals(Emojis.IX + " collects 6 " + Emojis.SPICE + " from Wind Pass North (North Sector).", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        public void testIxDoesNotCollectSpiceForAdvisorsInHMS() throws InvalidGameStateException, IOException {
+            BGFaction bg = new BGFaction("bg", "bg");
+            bg.setLedger(new TestTopic());
+            game.addFaction(bg);
+            bg.placeAdvisorsFromReserves(game, hms, 1);
+            faction.startHMSMovement();
+            faction.moveHMSOneTerritory("Polar Sink");
+            turnSummary.clear();
+            faction.endHMSMovement();
+            assertEquals(14, faction.getSpice());
+            assertEquals(Emojis.IX + " collects 4 " + Emojis.SPICE + " from Wind Pass North (North Sector).", turnSummary.getMessages().getFirst());
+        }
+    }
+
+    @Nested
     @DisplayName("#presentStartingCardsListAndChoices")
     class PresentStartingCardsListAndChoices {
         @BeforeEach

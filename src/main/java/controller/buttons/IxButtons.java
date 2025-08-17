@@ -7,7 +7,6 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import model.*;
-import model.factions.Faction;
 import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -47,12 +46,13 @@ public class IxButtons implements Pressable {
         IxFaction faction = game.getIxFaction();
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
+        faction.startHMSMovement();
         hmsQueueMovableTerritories(game, 0);
     }
 
     private static void hmsPassMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        discordGame.getTurnSummary().queueMessage(Emojis.IX + " does not move the HMS.");
-        discordGame.queueMessage("You are not moving the HMS.");
+        discordGame.queueMessage("HMS movement complete.");
+        game.getIxFaction().endHMSMovement();
         game.setIxHMSActionRequired(false);
         deleteAllButtonsInChannel(event.getMessageChannel());
         discordGame.pushGame();
@@ -83,7 +83,7 @@ public class IxButtons implements Pressable {
         Territory from = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
 
         faction.getMovement().setMovingFrom(from.getTerritoryName());
-        int spacesCanMove = 3;
+        int spacesCanMove = 1;
         Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game)
                 .stream().filter(t -> isNotStronghold(game, t)).collect(Collectors.toSet());
         TreeSet<DuneChoice> moveToChoices = new TreeSet<>(Comparator.comparing(DuneChoice::getLabel));
@@ -100,10 +100,10 @@ public class IxButtons implements Pressable {
             choices.addAll(moveToChoices.stream().toList().subList(startingIndex, moveToChoices.size()));
         }
         if (startingIndex == 0)
-            choices.add(new DuneChoice("danger", "ix-hms-pass-movement", "No move"));
+            choices.add(new DuneChoice("danger", "ix-hms-pass-movement", "End HMS movement"));
         else
             choices.add(new DuneChoice("secondary", "ix-hms-reset-movement", "Start over"));
-        faction.getChat().publish("Where will you move the HMS? " + game.getIxFaction().getPlayer(), choices);
+        faction.getChat().publish("You can move the HMS " + faction.getHMSMoves() + " territories. Choose the next territory. " + game.getIxFaction().getPlayer(), choices);
     }
 
 
@@ -115,10 +115,10 @@ public class IxButtons implements Pressable {
         hmsQueueMovableTerritories(game, startingIndex);
     }
 
-    private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
         String hmsMoveString = "ix-hms-move-";
         String territoryName = event.getComponentId().replace(hmsMoveString, "").replace("-", " ");
-        discordGame.queueMessage("You selected " + territoryName);
         IxFaction faction = game.getIxFaction();
         List<Territory> territory = game.getTerritories().values().stream()
                 .filter(t -> t.getSector() != game.getStorm())
@@ -129,7 +129,6 @@ public class IxButtons implements Pressable {
         if (territory.size() == 1) {
             faction.getMovement().setMovingTo(territory.getFirst().getTerritoryName());
             hmsExecuteFactionMovement(discordGame, game, faction);
-            discordGame.pushGame();
             return;
         }
 
@@ -145,16 +144,16 @@ public class IxButtons implements Pressable {
         String backButtonId = "ix-hms-reset-movement";
 
         discordGame.queueMessage(new MessageCreateBuilder()
-                .setContent("Which sector?")
+                .setContent("Which sector of " + territoryName + "?")
                 .addActionRow(buttons)
                 .addActionRow(Button.secondary(backButtonId, "Start Over"))
         );
     }
 
-    private static void hmsFilterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    private static void hmsFilterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
         String hmsMoveString = "ix-hms-move-";
         String sector = event.getComponentId().replace(hmsMoveString + "sector-", "").replace("-", " ");
-        discordGame.queueMessage("You selected sector " + sector);
         IxFaction faction = game.getIxFaction();
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().contains(
                 sector)
@@ -164,10 +163,9 @@ public class IxButtons implements Pressable {
 
 //        queueForcesButtons(event, game, discordGame, faction, isShipment);
         hmsExecuteFactionMovement(discordGame, game, faction);
-        discordGame.pushGame();
     }
 
-    public static void hmsExecuteFactionMovement(DiscordGame discordGame, Game game, Faction faction) throws ChannelNotFoundException {
+    public static void hmsExecuteFactionMovement(DiscordGame discordGame, Game game, IxFaction faction) throws ChannelNotFoundException, InvalidGameStateException {
         Movement movement = faction.getMovement();
         String movingTo = movement.getMovingTo();
         Territory targetTerritory = game.getTerritory(movingTo);
@@ -180,11 +178,17 @@ public class IxButtons implements Pressable {
         targetTerritory.addForces("Hidden Mobile Stronghold", 1);
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
         game.setIxHMSActionRequired(false);
+        faction.moveHMSOneTerritory(movingTo);
+        discordGame.queueMessage("Moving the HMS to " + movingTo);
         discordGame.getTurnSummary().queueMessage(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
         discordGame.pushGame();
         movement.clear();
 //        deleteAllButtonsInChannel(event.getMessageChannel());
         game.setUpdated(UpdateType.MAP);
+        if (faction.getHMSMoves() > 0)
+            hmsQueueMovableTerritories(game, 0);
+        else
+            faction.endHMSMovement();
     }
 
     private static void startingCardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {
