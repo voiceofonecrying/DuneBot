@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
@@ -33,6 +34,75 @@ class IxFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialSpice() {
         assertEquals(faction.getSpice(), 10);
+    }
+
+    @Nested
+    @DisplayName("#startHMSMovement")
+    class StartHMSMovement {
+        @BeforeEach
+        public void setUp() {
+            faction.placeHMS("Wind Pass North (North Sector)");
+            faction.startHMSMovement();
+        }
+
+        @Test
+        public void testIxHasThreeMovesLeft() {
+            assertEquals(3, faction.getHMSMoves());
+        }
+
+        @Test
+        public void testHMSTerritoriesIncludesCurrentTerritory() {
+            assertTrue(faction.hmsTerritories.contains("Wind Pass North (North Sector)"));
+        }
+
+        @Test
+        public void testMessagePublishedToTurnSummary() {
+            assertEquals(Emojis.IX + " to decide if they want to move the HMS.", turnSummary.getMessages().getLast());
+        }
+    }
+
+    @Nested
+    @DisplayName("#moveHMSOneTerritory")
+    class MoveHMSOneTerritory {
+        Territory hms;
+        Territory windPassNorth_NorthSector;
+        Territory polarSink;
+
+        @BeforeEach
+        public void setUp() throws InvalidGameStateException {
+            game.setStorm(10);
+            faction.placeHMS("Wind Pass North (North Sector)");
+            windPassNorth_NorthSector = game.getTerritory("Wind Pass North (North Sector)");
+            polarSink = game.getTerritory("Polar Sink");
+            hms = game.getTerritory("Hidden Mobile Stronghold");
+            faction.startHMSMovement();
+            game.getUpdateTypes().clear();
+            faction.moveHMSOneTerritory("Polar Sink");
+        }
+
+        @Test
+        public void testHMSMovedToNewTerritory() {
+            assertFalse(windPassNorth_NorthSector.hasForce("Hidden Mobile Stronghold"));
+            assertTrue(polarSink.hasForce("Hidden Mobile Stronghold"));
+        }
+
+        @Test
+        public void testAdjacencyListUpdated() {
+            assertFalse(game.getAdjacencyList().get("Wind Pass North").contains("Hidden Mobile Stronghold"));
+            assertFalse(game.getAdjacencyList().get("Hidden Mobile Stronghold").contains("Wind Pass North"));
+            assertTrue(game.getAdjacencyList().get("Polar Sink").contains("Hidden Mobile Stronghold"));
+            assertTrue(game.getAdjacencyList().get("Hidden Mobile Stronghold").contains("Polar Sink"));
+        }
+
+        @Test
+        public void testMovementReportedToTurnSummary() {
+            assertEquals(Emojis.IX + " moved the HMS to Polar Sink.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testMapWillBeUpdated() {
+            assertTrue(game.getUpdateTypes().contains(UpdateType.MAP));
+        }
     }
 
     @Nested
