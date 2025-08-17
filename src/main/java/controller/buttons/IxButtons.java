@@ -116,9 +116,9 @@ public class IxButtons implements Pressable {
     }
 
     private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
         String hmsMoveString = "ix-hms-move-";
         String territoryName = event.getComponentId().replace(hmsMoveString, "").replace("-", " ");
-        discordGame.queueMessage("Moving the HMS to " + territoryName);
         IxFaction faction = game.getIxFaction();
         List<Territory> territory = game.getTerritories().values().stream()
                 .filter(t -> t.getSector() != game.getStorm())
@@ -144,16 +144,16 @@ public class IxButtons implements Pressable {
         String backButtonId = "ix-hms-reset-movement";
 
         discordGame.queueMessage(new MessageCreateBuilder()
-                .setContent("Which sector?")
+                .setContent("Which sector of " + territoryName + "?")
                 .addActionRow(buttons)
                 .addActionRow(Button.secondary(backButtonId, "Start Over"))
         );
     }
 
     private static void hmsFilterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        discordGame.queueDeleteMessage();
         String hmsMoveString = "ix-hms-move-";
         String sector = event.getComponentId().replace(hmsMoveString + "sector-", "").replace("-", " ");
-        discordGame.queueMessage("Moving the HMS to sector " + sector);
         IxFaction faction = game.getIxFaction();
         Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().contains(
                 sector)
@@ -179,6 +179,7 @@ public class IxButtons implements Pressable {
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
         game.setIxHMSActionRequired(false);
         faction.moveHMSOneTerritory(movingTo);
+        discordGame.queueMessage("Moving the HMS to " + movingTo);
         discordGame.getTurnSummary().queueMessage(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
         discordGame.pushGame();
         movement.clear();

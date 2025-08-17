@@ -82,7 +82,7 @@ class IxFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testIxDoesNotCollectsSpiceIfHMSDoesNotMove() throws InvalidGameStateException {
+        public void testIxDoesNotCollectsSpiceIfHMSDoesNotMove() {
             faction.endHMSMovement();
             assertEquals(10, faction.getSpice());
         }
