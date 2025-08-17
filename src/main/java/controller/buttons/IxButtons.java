@@ -32,7 +32,6 @@ public class IxButtons implements Pressable {
         else if (event.getComponentId().startsWith("ix-confirm-reject-technology-")) sendCardBackAndRequestTechnology(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-confirm-reject-")) sendCardBack(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-request-technology-")) requestTechnology(event, discordGame, game);
-        else if (event.getComponentId().startsWith("ix-hms-move-more-choices-")) hmsMoreChoices(event, game, discordGame);
         else if (event.getComponentId().startsWith("ix-hms-move-sector-")) hmsFilterBySector(event, game, discordGame);
         else if (event.getComponentId().startsWith("ix-hms-move-")) queueSectorButtons(event, game, discordGame);
         switch (event.getComponentId()) {
@@ -47,7 +46,7 @@ public class IxButtons implements Pressable {
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
         faction.startHMSMovement();
-        hmsQueueMovableTerritories(game, 0);
+        hmsQueueMovableTerritories(game);
     }
 
     private static void hmsPassMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -63,7 +62,7 @@ public class IxButtons implements Pressable {
         IxFaction faction = game.getIxFaction();
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
-        hmsQueueMovableTerritories(game, 0);
+        hmsQueueMovableTerritories(game);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
@@ -78,41 +77,19 @@ public class IxButtons implements Pressable {
     }
 
     //    private static void hmsQueueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
-    public static void hmsQueueMovableTerritories(Game game, int startingIndex) {
+    public static void hmsQueueMovableTerritories(Game game) {
         IxFaction faction = game.getIxFaction();
         Territory from = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
 
         faction.getMovement().setMovingFrom(from.getTerritoryName());
-        int spacesCanMove = 1;
-        Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game)
+        Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), 1, game)
                 .stream().filter(t -> isNotStronghold(game, t)).collect(Collectors.toSet());
         TreeSet<DuneChoice> moveToChoices = new TreeSet<>(Comparator.comparing(DuneChoice::getLabel));
         moveableTerritories.stream().map(t -> new DuneChoice("ix-hms-move-" + t, t)).forEach(moveToChoices::add);
 
-        List<DuneChoice> choices = new ArrayList<>();
-        int maxButtons = 24;
-        if (moveToChoices.size() - startingIndex > maxButtons) {
-            int nextStartingIndex = startingIndex + maxButtons - 1; // Take one out for the "More choices" button
-            choices.addAll(moveToChoices.stream().toList().subList(startingIndex, nextStartingIndex));
-            String buttonId = "ix-hms-move-more-choices-" + nextStartingIndex;
-            choices.add(new DuneChoice("secondary", buttonId, "More choices"));
-        } else {
-            choices.addAll(moveToChoices.stream().toList().subList(startingIndex, moveToChoices.size()));
-        }
-        if (startingIndex == 0)
-            choices.add(new DuneChoice("danger", "ix-hms-pass-movement", "End HMS movement"));
-        else
-            choices.add(new DuneChoice("secondary", "ix-hms-reset-movement", "Start over"));
+        List<DuneChoice> choices = new ArrayList<>(moveToChoices.stream().toList());
+        choices.add(new DuneChoice("danger", "ix-hms-pass-movement", "End HMS movement"));
         faction.getChat().publish("You can move the HMS " + faction.getHMSMoves() + " territories. Choose the next territory. " + game.getIxFaction().getPlayer(), choices);
-    }
-
-
-    private static void hmsMoreChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        String moreChoices = "ix-hms-move-more-choices-";
-        int startingIndex = Integer.parseInt(event.getComponentId().replace(moreChoices, "").replace("-", " "));
-        discordGame.queueDeleteMessage();
-        discordGame.queueMessage("Getting more choices");
-        hmsQueueMovableTerritories(game, startingIndex);
     }
 
     private static void queueSectorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
@@ -186,7 +163,7 @@ public class IxButtons implements Pressable {
 //        deleteAllButtonsInChannel(event.getMessageChannel());
         game.setUpdated(UpdateType.MAP);
         if (faction.getHMSMoves() > 0)
-            hmsQueueMovableTerritories(game, 0);
+            hmsQueueMovableTerritories(game);
         else
             faction.endHMSMovement();
     }
