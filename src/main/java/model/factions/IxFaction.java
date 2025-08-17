@@ -82,6 +82,7 @@ public class IxFaction extends Faction {
         game.getTurnSummary().publish(Emojis.IX + " HMS movement complete.");
         hmsMoves = 0;
         hmsTerritories = null;
+        game.setIxHMSActionRequired(false);
     }
 
     public void presentHMSPlacementChoices() {

@@ -52,7 +52,6 @@ public class IxButtons implements Pressable {
     private static void hmsPassMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("HMS movement complete.");
         game.getIxFaction().endHMSMovement();
-        game.setIxHMSActionRequired(false);
         deleteAllButtonsInChannel(event.getMessageChannel());
         discordGame.pushGame();
     }
@@ -154,7 +153,6 @@ public class IxButtons implements Pressable {
 //            IxCommands.placeHMS();
         targetTerritory.addForces("Hidden Mobile Stronghold", 1);
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
-        game.setIxHMSActionRequired(false);
         faction.moveHMSOneTerritory(movingTo);
         discordGame.queueMessage("Moving the HMS to " + movingTo);
         discordGame.getTurnSummary().queueMessage(Emojis.IX + " moved the HMS to " + targetTerritory.getTerritoryName() + ".");
