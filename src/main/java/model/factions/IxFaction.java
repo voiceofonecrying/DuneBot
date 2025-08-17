@@ -8,12 +8,12 @@ import model.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 public class IxFaction extends Faction {
+    private int hmsMoves;
+    private Set<String> hmsTerritories;
+
     public IxFaction(String player, String userName) throws IOException {
         super("Ix", player, userName);
 
@@ -41,6 +41,47 @@ public class IxFaction extends Faction {
     @Override
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
         return numForces + " " + Emojis.getForceEmoji(name) + " " + numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
+    }
+
+    public void startHMSMovement() {
+        hmsMoves = 3;
+        hmsTerritories = new HashSet<>();
+        Territory territoryWithHMS = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
+        hmsTerritories.add(territoryWithHMS.getTerritoryName());
+    }
+
+    public int getHMSMoves() {
+        return hmsMoves;
+    }
+
+    public void moveHMSOneTerritory(String territoryName) throws InvalidGameStateException {
+        if (hmsMoves == 0)
+            throw new InvalidGameStateException("The HMS has moved as far as it can.");
+        hmsMoves--;
+        hmsTerritories.add(territoryName);
+    }
+
+    public void endHMSMovement() {
+        if (hmsMoves == 3)
+            hmsTerritories.clear();
+        for (String territoryName : hmsTerritories) {
+            Territory territory = game.getTerritory(territoryName);
+            int spiceInTerritory = territory.getSpice();
+            if (spiceInTerritory > 0) {
+                Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+                int numForcesInHMS = hms.getForces().stream()
+                        .filter(f -> !f.getName().equals("Advisor"))
+                        .map(Force::getStrength)
+                        .reduce(0, Integer::sum);
+                int spiceCollected = Math.min(spiceInTerritory, 2 * numForcesInHMS);
+                game.getTurnSummary().publish(Emojis.IX + " collects " + spiceCollected + " " + Emojis.SPICE + " from " + territoryName + ".");
+                territory.setSpice(spiceInTerritory - spiceCollected);
+                addSpice(spiceCollected, "HMS collection in " + territoryName);
+            }
+        }
+        game.getTurnSummary().publish(Emojis.IX + " HMS movement complete.");
+        hmsMoves = 0;
+        hmsTerritories = null;
     }
 
     public void presentHMSPlacementChoices() {
