@@ -57,30 +57,21 @@ public class IxButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    public static boolean isNotStronghold(Game game, String wholeTerritoryName){
-        try {
-            if (game.getTerritory(wholeTerritoryName).isStronghold()) return false;
-        } catch (IllegalArgumentException e) {
-            return true;
-        }
-        return true;
-    }
-
     //    private static void hmsQueueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
     public static void hmsQueueMovableTerritories(Game game) {
         IxFaction faction = game.getIxFaction();
         faction.getMovement().clear();
         faction.getMovement().setMoved(false);
-        Territory from = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
+        Territory from = faction.getTerritoryWithHMS();
 
         faction.getMovement().setMovingFrom(from.getTerritoryName());
         Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames(from.getTerritoryName().replaceAll("\\(.*\\)", "").strip(), 1, game)
-                .stream().filter(t -> isNotStronghold(game, t)).collect(Collectors.toSet());
+                .stream().filter(t -> game.getTerritories().isNotStronghold(t)).collect(Collectors.toSet());
         TreeSet<DuneChoice> moveToChoices = new TreeSet<>(Comparator.comparing(DuneChoice::getLabel));
         moveableTerritories.stream().map(t -> new DuneChoice("ix-hms-move-" + t, t)).forEach(moveToChoices::add);
 
         List<DuneChoice> choices = new ArrayList<>(moveToChoices.stream().toList());
-        choices.add(new DuneChoice("danger", "ix-hms-pass-movement", "End HMS movement"));
+        choices.add(new DuneChoice("secondary", "ix-hms-pass-movement", "End HMS movement"));
         faction.getChat().publish("You can move the HMS " + faction.getHMSMoves() + " territories. Choose the next territory. " + game.getIxFaction().getPlayer(), choices);
     }
 
