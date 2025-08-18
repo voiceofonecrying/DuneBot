@@ -130,4 +130,14 @@ public class Territories extends HashMap<String, Territory> {
     public void removeTerrorTokenFromMap(Game game, String terrorTokenName, boolean returnToMoritani) {
         getTerritoryWithTerrorToken(terrorTokenName).removeTerrorToken(game, terrorTokenName, returnToMoritani);
     }
+
+    public boolean isNotStronghold(String wholeTerritoryName){
+        try {
+            if (getTerritory(wholeTerritoryName).isStronghold())
+                return false;
+        } catch (IllegalArgumentException e) {
+            return true;
+        }
+        return true;
+    }
 }

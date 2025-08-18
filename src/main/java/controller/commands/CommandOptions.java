@@ -1,7 +1,6 @@
 package controller.commands;
 
 import controller.DiscordGame;
-import controller.buttons.IxButtons;
 import controller.buttons.ShipmentAndMovementButtons;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
@@ -23,19 +22,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CommandOptions {
-
-    public static final OptionData book = new OptionData(OptionType.STRING, "book", "Which book to quote.")
-            .addChoice("Dune", "Dune.txt")
-            .addChoice("Dune Messiah", "Messiah.txt")
-            .addChoice("Children of Dune", "Children.txt")
-            .addChoice("God Emperor of Dune", "GeoD.txt")
-            .addChoice("Heretics of Dune", "Heretics.txt")
-            .addChoice("Chapterhouse: Dune", "Chapterhouse.txt");
-
-    public static final OptionData lines = new OptionData(OptionType.INTEGER, "lines", "How many lines long the quotation will be.", true);
-    public static final OptionData startingLine = new OptionData(OptionType.INTEGER, "starting-line", "Where you want the quote to start (not random). The nth result if used with search.");
-    public static final OptionData search = new OptionData(OptionType.STRING, "search", "Will include the search term if it finds a match.");
-
     public static final OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
     public static final OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
     public static final OptionData modRole = new OptionData(OptionType.ROLE, "modrole", "The role you created for the mod(s) of this game", true);
@@ -386,7 +372,7 @@ public class CommandOptions {
                     .collect(Collectors.toList());
 
         Set<String> moveableTerritories = ShipmentAndMovementButtons.getAdjacentTerritoryNames("Hidden Mobile Stronghold", 3, game)
-                .stream().filter(t -> IxButtons.isNotStronghold(game, t)).collect(Collectors.toSet());
+                .stream().filter(t -> game.getTerritories().isNotStronghold(t)).collect(Collectors.toSet());
         List<Territory> territories = new ArrayList<>();
         for (String territoryName : moveableTerritories) {
             territories.addAll(game.getTerritories().values().stream()

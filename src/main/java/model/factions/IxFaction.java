@@ -43,11 +43,14 @@ public class IxFaction extends Faction {
         return numForces + " " + Emojis.getForceEmoji(name) + " " + numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
     }
 
+    public Territory getTerritoryWithHMS() {
+        return game.getTerritories().values().stream().filter(t -> t.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
+    }
+
     public void startHMSMovement() {
         hmsMoves = 3;
         hmsTerritories = new HashSet<>();
-        Territory territoryWithHMS = game.getTerritories().values().stream().filter(territory -> territory.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElseThrow();
-        hmsTerritories.add(territoryWithHMS.getTerritoryName());
+        hmsTerritories.add(getTerritoryWithHMS().getTerritoryName());
         game.getTurnSummary().publish(Emojis.IX + " to decide if they want to move the HMS.");
     }
 
@@ -119,10 +122,13 @@ public class IxFaction extends Faction {
 
     public void placeHMS(String territoryName) {
         Territories territories = game.getTerritories();
-        Territory territoryWithHMS = territories.values().stream().filter(t -> t.getForces().stream().anyMatch(force -> force.getName().equals("Hidden Mobile Stronghold"))).findFirst().orElse(null);
-        if (territoryWithHMS != null) {
+        Territory territoryWithHMS = null;
+        try {
+            territoryWithHMS = getTerritoryWithHMS();
             territoryWithHMS.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
             game.removeTerritoryFromAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), territoryWithHMS);
+        } catch (NoSuchElementException ignored) {
+            // This is the initial placement of the HMS
         }
         Territory targetTerritory = territories.get(territoryName);
         targetTerritory.addForces("Hidden Mobile Stronghold", 1);

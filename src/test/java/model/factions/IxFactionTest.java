@@ -37,6 +37,37 @@ class IxFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#placeHMS")
+    class PlaceHMS {
+    }
+
+    @Nested
+    @DisplayName("#getTerritoryWithHMS")
+    class GetTerritoryWithHMS {
+        Territory windPassNorth_NorthSector;
+        Territory polarSink;
+
+        @BeforeEach
+        public void setUp() {
+            faction.placeHMS("Wind Pass North (North Sector)");
+            windPassNorth_NorthSector = game.getTerritory("Wind Pass North (North Sector)");
+            polarSink = game.getTerritory("Polar Sink");
+        }
+
+        @Test
+        public void testGetTerritoryWithHMS() {
+            assertEquals(windPassNorth_NorthSector, faction.getTerritoryWithHMS());
+        }
+
+        @Test
+        public void testGetTerritoryWithHMSAfterMove() throws InvalidGameStateException {
+            faction.startHMSMovement();
+            faction.moveHMSOneTerritory("Polar Sink");
+            assertEquals(polarSink, faction.getTerritoryWithHMS());
+        }
+    }
+
+    @Nested
     @DisplayName("#startHMSMovement")
     class StartHMSMovement {
         @BeforeEach
