@@ -1022,7 +1022,7 @@ abstract class FactionTestTemplate {
             bg.setLedger(new TestTopic());
             game.addFaction(bg);
             bg.placeForcesFromReserves(funeralPlain, 1, false);
-            faction.executeMovement(game);
+            faction.executeMovement();
             assertEquals("Will you flip to " + Emojis.BG_ADVISOR + " in Funeral Plain? p", bgChat.getMessages().getFirst());
         }
 
@@ -1033,7 +1033,7 @@ abstract class FactionTestTemplate {
             ecaz.setChat(ecazChat);
             game.addFaction(ecaz);
             funeralPlain.setEcazAmbassador("Ecaz");
-            faction.executeMovement(game);
+            faction.executeMovement();
             assertEquals("Will you trigger your Ecaz Ambassador in Funeral Plain against " + faction.getEmoji() + "? ec", ecazChat.getMessages().getFirst());
         }
 
@@ -1044,7 +1044,7 @@ abstract class FactionTestTemplate {
             moritani.setChat(moritaniChat);
             game.addFaction(moritani);
             funeralPlain.addTerrorToken(game, "Robbery");
-            faction.executeMovement(game);
+            faction.executeMovement();
             assertEquals("Will you trigger your Robbery Terror Token in Funeral Plain against " + faction.getEmoji() + "? mo", moritaniChat.getMessages().getFirst());
         }
     }

@@ -1773,14 +1773,15 @@ public class Game {
         return turnOrder.isEmpty();
     }
 
-    public void moveForces(Faction faction, Territory from, Territory to, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean noFieldWasMoved) {
+    public void moveForces(Faction faction, String movingFrom, String movingTo, String secondMovingFrom, int force, int specialForce, int secondForce, int secondSpecialForce, boolean noFieldWasMoved) {
+        Territory toTerritory = getTerritory(movingTo);
         if (force != 0 || specialForce != 0)
-            moveForces(faction, from, to, force, specialForce, false);
+            moveForces(faction, getTerritory(movingFrom), toTerritory, force, specialForce, false);
         if (secondForce != 0 || secondSpecialForce != 0) {
             turnSummary.publish(faction.getEmoji() + " use Planetologist to move another group to " + movingTo);
-            moveForces(faction, getTerritory(secondMovingFrom), to, secondForce, secondSpecialForce, false);
+            moveForces(faction, getTerritory(secondMovingFrom), toTerritory, secondForce, secondSpecialForce, false);
         }
-        checkForTriggers(to, faction, force + specialForce + secondForce + secondSpecialForce + (noFieldWasMoved ? 1 : 0));
+        checkForTriggers(toTerritory, faction, force + specialForce + secondForce + secondSpecialForce + (noFieldWasMoved ? 1 : 0));
     }
 
     public void moveForces(Faction targetFaction, Territory from, Territory to, int amountValue, int starredAmountValue, boolean canTrigger) {

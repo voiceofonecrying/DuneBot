@@ -180,7 +180,7 @@ public class ShipmentAndMovementButtons implements Pressable {
     private static void hajr(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean hajr) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.discard(hajr ? "Hajr" : "Ornithopter", "to move again");
-        faction.executeMovement(game);
+        faction.executeMovement();
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         queueMovementButtons(game, faction, discordGame);
         faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
@@ -288,7 +288,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void executeMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.executeMovement(game);
+        faction.executeMovement();
         game.completeCurrentFactionMovement();
         discordGame.queueMessage("Shipment and movement complete.");
         if (game.allFactionsHaveMoved()) {
@@ -302,7 +302,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void executeFremenRide(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.executeMovement(game);
+        faction.executeMovement();
         if (faction instanceof EcazFaction) {
             discordGame.queueMessage("Movement with Fremen ambasssador complete.");
         } else if (faction instanceof FremenFaction fremen) {
@@ -315,7 +315,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void executeEnterDiscoveryToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.executeMovement(game);
+        faction.executeMovement();
         discordGame.queueMessage("Movement into Discovery Token complete.");
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         discordGame.pushGame();
