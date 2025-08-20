@@ -794,7 +794,7 @@ public class Battle {
                                 savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
                             }
                             turnSummary.publish(faction.getEmoji() + " leaves 1 " + savedForceEmoji + " in " + wholeTerritoryName + ", may return it to reserves.");
-                            faction.withdrawForces(game, savedRegularForces, savedSpecialForces, getTerritorySectors(game), "Suk Graduate");
+                            faction.withdrawForces(savedRegularForces, savedSpecialForces, getTerritorySectors(game), "Suk Graduate");
                         }
                     }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
@@ -812,7 +812,7 @@ public class Battle {
                         if (executeResolution) {
                             int savedRegular = savedForceIsStarred ? 0 : 1;
                             int savedStarred = savedForceIsStarred ? 1 : 0;
-                            faction.withdrawForces(game, savedRegular, savedStarred, getTerritorySectors(game), "Suk Graduate");
+                            faction.withdrawForces(savedRegular, savedStarred, getTerritorySectors(game), "Suk Graduate");
                         }
                     }
                 }
@@ -855,14 +855,14 @@ public class Battle {
                     resolution += " and may leave 1 in the territory with Suk Graduate\n";
                     if (executeResolution) {
                         turnSummary.publish(faction.getEmoji() + " leaves 1 " + Emojis.ECAZ_TROOP + " in " + wholeTerritoryName + ", may return it to reserves.");
-                        ecaz.withdrawForces(game, 2, 0, getTerritorySectors(game), "Suk Graduate");
+                        ecaz.withdrawForces(2, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
                     if (ecazForces > 0) {
                         ecazForces--;
                         resolution += Emojis.ECAZ + " returns 1 " + Emojis.ECAZ_TROOP + " to reserves with Suk Graduate\n";
                         if (executeResolution)
-                            ecaz.withdrawForces(game, 1, 0, getTerritorySectors(game), "Suk Graduate");
+                            ecaz.withdrawForces(1, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 }
                 resolution += killForces(game, ecaz, ecazForces, 0, 0, executeResolution);
@@ -905,8 +905,7 @@ public class Battle {
 
         Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
         Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
-        Leader loserLeader = isAggressorWin(game) ? getDefenderBattlePlan().getLeader() : getAggressorBattlePlan().getLeader();
-        resolution += handleHarkonnenLeaderCapture(game, winner, loser, loserLeader, isLoser, executeResolution);
+        resolution += handleHarkonnenLeaderCapture(game, winner, loser, isLoser, executeResolution);
         if (!isLoser && winner instanceof AtreidesFaction atreides) {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
@@ -966,7 +965,7 @@ public class Battle {
     private String harassAndWithdraw(Game game, Faction faction, int regularForcesNotDialed, int specialForcesNotDialed, boolean executeResolution) {
         String resolution = "";
         if (executeResolution)
-            faction.withdrawForces(game, regularForcesNotDialed, specialForcesNotDialed, getTerritorySectors(game), "Harass and Withdraw");
+            faction.withdrawForces(regularForcesNotDialed, specialForcesNotDialed, getTerritorySectors(game), "Harass and Withdraw");
         else
             resolution += faction.getEmoji() + " returns " + faction.forcesString(regularForcesNotDialed, specialForcesNotDialed) +  " to reserves with Harass and Withdraw\n";
         return resolution;
@@ -1299,7 +1298,7 @@ public class Battle {
         return resolution;
     }
 
-    protected String handleHarkonnenLeaderCapture(Game game, Faction winner, Faction loser, Leader loserLeader, boolean isLoser, boolean executeResolution) {
+    protected String handleHarkonnenLeaderCapture(Game game, Faction winner, Faction loser, boolean isLoser, boolean executeResolution) {
         String resolution = "";
         if (!isLoser && winner instanceof HarkonnenFaction harkonnen) {
             if (executeResolution) {
