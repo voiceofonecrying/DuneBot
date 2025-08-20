@@ -1510,7 +1510,7 @@ public class Faction {
         setUpdated(UpdateType.MAP);
     }
 
-    public void withdrawForces(Game game, int regularForces, int starredForces, List<Territory> sectorsToWithdrawFrom, String reason) {
+    public void withdrawForces(int regularForces, int starredForces, List<Territory> sectorsToWithdrawFrom, String reason) {
         int regularLeftToWithdraw = regularForces;
         int starredLeftToWithdraw = starredForces;
         for (Territory t : sectorsToWithdrawFrom) {

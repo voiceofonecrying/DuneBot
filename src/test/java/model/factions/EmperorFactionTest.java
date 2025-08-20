@@ -567,7 +567,7 @@ class EmperorFactionTest extends FactionTestTemplate {
             salusaSecundus = game.getTerritory(faction.getSecondHomeworld());
             secondHomeworldForcesBefore = salusaSecundus.getForceStrength("Emperor*");
 
-            faction.withdrawForces(game, 0, 1, List.of(falseWallEast_southSector, falseWallEast_middleSector), "Harass and Withdraw");
+            faction.withdrawForces(0, 1, List.of(falseWallEast_southSector, falseWallEast_middleSector), "Harass and Withdraw");
             super.setUp();
         }
 
