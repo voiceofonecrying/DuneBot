@@ -440,5 +440,17 @@ class RicheseFactionTest extends FactionTestTemplate {
             super.testMoritaniGetTerrorTokenMessage();
             assertEquals(1, moritaniChat.getMessages().size());
         }
+
+        @Test
+        void testMoveNoFieldAndForces() throws InvalidGameStateException {
+            game.getRicheseFaction().shipNoField(faction, theGreatFlat, 3, false, false, 0);
+            faction.getMovement().setMovingNoField(true);
+            turnSummary.clear();
+            faction.executeMovement();
+            assertEquals(3, funeralPlain.getRicheseNoField());
+            assertNull(theGreatFlat.getRicheseNoField());
+            assertEquals(Emojis.RICHESE + " move their " + Emojis.NO_FIELD + " to Funeral Plain.", turnSummary.getMessages().getFirst());
+            assertEquals(Emojis.RICHESE + ": 1 " + Emojis.RICHESE_TROOP + " moved from The Great Flat to Funeral Plain.", turnSummary.getMessages().getLast());
+        }
     }
 }

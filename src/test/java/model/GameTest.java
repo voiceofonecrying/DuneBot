@@ -808,13 +808,13 @@ class GameTest extends DuneTest {
 
         @Test
         void testPlanetologistIsSingleMoveForTerrorTokens() throws InvalidGameStateException {
-            ecaz.executeMovement(game);
+            ecaz.executeMovement();
             assertEquals("Will you trigger your Robbery Terror Token in Carthag against " + Emojis.ECAZ + "? mo", moritaniChat.getMessages().getFirst());
         }
 
         @Test
         void testPlanetologistWithNoFieldIsSingleMoveForTerrorTokens() throws InvalidGameStateException {
-            richese.executeMovement(game);
+            richese.executeMovement();
             assertEquals("Will you trigger your Robbery Terror Token in Carthag against " + Emojis.RICHESE + "? mo", moritaniChat.getMessages().getFirst());
         }
     }
