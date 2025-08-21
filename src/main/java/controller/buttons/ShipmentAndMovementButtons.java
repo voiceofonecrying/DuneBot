@@ -19,6 +19,7 @@ import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ShipmentAndMovementButtons implements Pressable {
 
@@ -440,6 +441,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                     discordGame.queueMessage("Starting over");
                     ((BTFaction) faction).presentHTChoices();
                 } else
+                    discordGame.queueMessage("Starting over");
                     queueShippingButtons(event, game, discordGame);
             }
         } else {
@@ -890,40 +892,18 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void queueOtherShippingButtons(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         String buttonSuffix = event.getComponentId().replace("other", "");
-        boolean wormPlacement = event.getComponentId().contains("-place-shai-hulud") || event.getComponentId().contains("-place-great-maker");
         boolean startingForces = event.getComponentId().contains("-starting-forces");
         boolean hmsPlacement = event.getComponentId().contains("-hms-placement");
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        Button passButton = Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId()));
-        if (wormPlacement)
-            passButton = Button.secondary("pass-shipment" + buttonSuffix, "Keep it in " + faction.getMovement().getMovingFrom());
         boolean initialPlacement = startingForces || hmsPlacement;
-        MessageCreateBuilder message = new MessageCreateBuilder()
-                .setContent("Which territory?")
-                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "Polar Sink", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago Depression", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Meridian", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago East", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Harg Pass", initialPlacement))
-                .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Gara Kulon", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Hole In The Rock", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Basin", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Imperial Basin", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Arsunt", initialPlacement))
-                .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Tsimpo", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Bight Of The Cliff", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Wind Pass", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "The Greater Flat", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago West", initialPlacement));
-        if (initialPlacement)
-            message = message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
-        else
-            message = message.addActionRow(
-                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                    passButton);
-        discordGame.queueMessage(message);
+        List<String> otherTerritories = List.of(
+                "Polar Sink", "Cielago Depression", "Meridian", "Cielago East", "Harg Pass",
+                "Gara Kulon", "Hole In The Rock", "Basin", "Imperial Basin", "Arsunt",
+                "Tsimpo", "Bight Of The Cliff", "Wind Pass", "The Greater Flat", "Cielago West"
+        );
+        List<DuneChoice> choices = otherTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        faction.getChat().reply("Which Territory would you like to ship to?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -933,115 +913,51 @@ public class ShipmentAndMovementButtons implements Pressable {
         boolean hmsPlacement = event.getComponentId().contains("-hms-placement");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         boolean initialPlacement = startingForces || hmsPlacement;
-        MessageCreateBuilder message = new MessageCreateBuilder()
-                .setContent("Which rock territory?")
-                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "False Wall South", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Pasty Mesa", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "False Wall East", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Shield Wall", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Rim Wall West", initialPlacement));
-        if (initialPlacement)
-            message = message.addActionRow(
-                    shipToTerritoryButton(game, faction, buttonSuffix, "Plastic Basin", true),
-                    shipToTerritoryButton(game, faction, buttonSuffix, "False Wall West", true),
-                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
-        else
-            message = message.addActionRow(
-                    shipToTerritoryButton(game, faction, buttonSuffix, "Plastic Basin", false),
-                    shipToTerritoryButton(game, faction, buttonSuffix, "False Wall West", false),
-                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                    Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId())));
-
-        discordGame.queueMessage(message);
+        List<String> rockTerritories = List.of("False Wall South", "Pasty Mesa", "False Wall East", "Shield Wall", "Rim Wall West", "Plastic Basin", "False Wall West");
+        List<DuneChoice> choices = rockTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        faction.getChat().reply("Which Rock Territory would you like to ship to?", choices);
         discordGame.queueDeleteMessage();
     }
 
     private static void queueSpiceBlowShippingButtons(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         String buttonSuffix = event.getComponentId().replace("spice-blow", "");
-        boolean wormPlacement = event.getComponentId().contains("-place-shai-hulud") || event.getComponentId().contains("-place-great-maker");
         boolean startingForces = event.getComponentId().contains("-starting-forces");
         boolean hmsPlacement = event.getComponentId().contains("-hms-placement");
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        Button passButton = Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId()));
-        if (wormPlacement)
-            passButton = Button.secondary("pass-shipment" + buttonSuffix, "Keep it in " + faction.getMovement().getMovingFrom());
         boolean initialPlacement = startingForces || hmsPlacement;
-        MessageCreateBuilder message = new MessageCreateBuilder()
-                .setContent("Which spice blow territory?")
-                .addActionRow(shipToTerritoryButton(game, faction, buttonSuffix, "Habbanya Ridge Flat", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago South", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Broken Land", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "South Mesa", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Sihaya Ridge", initialPlacement))
-                .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Hagga Basin", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Red Chasm", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "The Minor Erg", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Cielago North", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Funeral Plain", initialPlacement))
-                .addActionRow(
-                        shipToTerritoryButton(game, faction, buttonSuffix, "The Great Flat", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Habbanya Erg", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Old Gap", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Rock Outcroppings", initialPlacement),
-                        shipToTerritoryButton(game, faction, buttonSuffix, "Wind Pass North", initialPlacement));
-        if (initialPlacement)
-            message = message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
-        else
-            message = message.addActionRow(
-                    Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                    passButton);
-
-        discordGame.queueMessage(message);
+        List<String> spiceBlowTerritories = List.of(
+                "Habbanya Ridge Flat", "Cielago South", "Broken Land", "South Mesa", "Sihaya Ridge",
+                "Hagga Basin", "Red Chasm", "The Minor Erg", "Cielago North", "Funeral Plain",
+                "The Great Flat", "Habbanya Erg", "Old Gap", "Rock Outcroppings", "Wind Pass North"
+        );
+        List<DuneChoice> choices = spiceBlowTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        faction.getChat().reply("Which Spice Blow Territory would you like to ship to?", choices);
         discordGame.queueDeleteMessage();
     }
 
     private static void queueHomeworldShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         String buttonSuffix = event.getComponentId().replace("homeworlds", "");
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        List<Button> buttons = new LinkedList<>();
-
-        for (Faction f : game.getFactions()) {
-            if (faction.getName().equals(f.getName())) continue;
-            buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, f.getHomeworld(), false));
+        List<DuneChoice> choices = new ArrayList<>();
+        game.getFactions().stream().filter(f -> !faction.getName().equals(f.getName())).forEach(f -> {
+            choices.add(shipToTerritoryChoice(game, faction, buttonSuffix, f.getHomeworld(), false));
             if (f instanceof EmperorFaction emperorFaction)
-                buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, emperorFaction.getSecondHomeworld(), false));
-        }
-        buttons.add(Button.secondary("reset-shipment", "Start over"));
-
-        MessageCreateBuilder message = new MessageCreateBuilder()
-                .setContent("Which Homeworld?");
-        if (buttons.size() > 5) {
-            message.addActionRow(buttons.subList(0, 5));
-            message.addActionRow(buttons.subList(5, buttons.size()));
-        } else {
-            message.addActionRow(buttons);
-        }
-        discordGame.queueMessage(message);
+                choices.add(shipToTerritoryChoice(game, faction, buttonSuffix, emperorFaction.getSecondHomeworld(), false));
+        });
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        faction.getChat().reply("Which Homeworld would you like to ship to?", choices);
         discordGame.queueDeleteMessage();
     }
 
     private static void queueDiscoveryShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         String buttonSuffix = event.getComponentId().replace("discovery-tokens", "");
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        List<Button> buttons = new ArrayList<>();
-        for (Territory territory : game.getTerritories().values()) {
-            if (territory.isDiscovered()) {
-                buttons.add(shipToTerritoryButton(game, faction, buttonSuffix, territory.getDiscoveryToken(), false));
-            }
-        }
-        buttons.add(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
-        buttons.add(Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId())));
-
-        MessageCreateBuilder message = new MessageCreateBuilder()
-                .setContent("Which Discovery Token?");
-        if (buttons.size() > 5) {
-            message.addActionRow(buttons.subList(0, 5));
-            message.addActionRow(buttons.subList(5, buttons.size()));
-        } else {
-            message.addActionRow(buttons);
-        }
-        discordGame.queueMessage(message);
+        List<DuneChoice> choices = game.getTerritories().values().stream().filter(Territory::isDiscovered)
+                .map(territory -> shipToTerritoryChoice(game, faction, buttonSuffix, territory.getDiscoveryToken(), false)).collect(Collectors.toList());
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        faction.getChat().reply("Which Discovery Token would you like to ship to?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -1051,48 +967,20 @@ public class ShipmentAndMovementButtons implements Pressable {
         boolean fremenRide = event.getComponentId().contains("-fremen-ride");
         boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
         boolean startingForces = event.getComponentId().contains("-starting-forces");
-        MessageCreateBuilder message = new MessageCreateBuilder().setContent("Which stronghold?");
-        List<Button> strongholds = new ArrayList<>();
-        for (Territory t : game.getTerritories().values()) {
-            if (t.isValidStrongholdForShipmentFremenRideAndBTHT(faction, fremenRide || btHTPlacement)) {
-                Button button = shipToTerritoryButton(game, faction, buttonSuffix, t.getTerritoryName(), startingForces);
-                strongholds.add(button);
-            }
-        }
-        strongholds.sort(Comparator.comparing(Button::getLabel));
-        if (strongholds.size() > 5) {
-            message.addActionRow(strongholds.subList(0, 5));
-            message.addActionRow(strongholds.subList(5, strongholds.size()));
-        } else {
-            message.addActionRow(strongholds);
-        }
-
-        if (startingForces)
-            message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"));
-        else
-            message.addActionRow(Button.secondary("reset-shipment" + buttonSuffix, "Start over"),
-                    Button.danger("pass-shipment" + buttonSuffix, passButtonLabel(event.getComponentId())));
-
-        discordGame.queueMessage(message);
+        List<DuneChoice> choices = game.getTerritories().values().stream()
+                .filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(faction, fremenRide || btHTPlacement))
+                .map(t -> shipToTerritoryChoice(game, faction, buttonSuffix, t.getTerritoryName(), startingForces)).sorted(Comparator.comparing(DuneChoice::getLabel)).collect(Collectors.toList());
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        faction.getChat().reply("Which stronghold would you like to ship to?", choices);
         discordGame.queueDeleteMessage();
     }
 
-    private static Button shipToTerritoryButton(Game game, Faction faction, String buttonSuffix, String territoryName, boolean isInitialPlacement) {
-        String labelSuffix = "-" + territoryName;
-        Button button = Button.primary("ship" + buttonSuffix + labelSuffix, territoryName);
-        List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(territoryName)).toList();
-        return button.withDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !buttonSuffix.contains("fremen-ride"), isInitialPlacement)));
-    }
-
-    private static String passButtonLabel(String componentId) {
-        boolean fremenRide = componentId.contains("-fremen-ride");
-        boolean btHTPlacement = componentId.contains("-bt-ht");
-        String passLabel = "Pass Shipment";
-        if (fremenRide)
-            passLabel = "No ride";
-        else if (btHTPlacement)
-            passLabel = "Leave them on Tleilaxu";
-        return passLabel;
+    private static DuneChoice shipToTerritoryChoice(Game game, Faction faction, String buttonSuffix, String wholeTerritoryName, boolean isInitialPlacement) {
+        String labelSuffix = "-" + wholeTerritoryName;
+        DuneChoice choice = new DuneChoice("ship" + buttonSuffix + labelSuffix, wholeTerritoryName);
+        List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
+        choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !buttonSuffix.contains("fremen-ride"), isInitialPlacement)));
+        return choice;
     }
 
     private static void passShipment(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
