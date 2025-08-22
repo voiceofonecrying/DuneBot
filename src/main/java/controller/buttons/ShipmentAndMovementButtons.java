@@ -71,8 +71,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             richeseNoFieldShip(event, game, discordGame, false);
         else if (event.getComponentId().startsWith("richese-ally-no-field-ship-"))
             richeseNoFieldShip(event, game, discordGame, true);
-        else if (event.getComponentId().startsWith("support-")) refreshInfo(event, game, discordGame);
-        else if (event.getComponentId().startsWith("bid-support-")) refreshInfo(event, game, discordGame);
         else if (event.getComponentId().startsWith("guild-defer-to-")) guildDeferTo(event, game, discordGame);
         switch (event.getComponentId()) {
             case "shipment" -> queueShippingButtons(event, game, discordGame);
@@ -90,12 +88,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             case "hajr" -> hajr(event, game, discordGame, true);
             case "Ornithopter" -> hajr(event, game, discordGame, false);
         }
-    }
-
-    public static void refreshInfo(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-        discordGame.pushGame();
     }
 
     public static void deleteShipMoveButtonsInChannel(MessageChannel channel) {
@@ -903,7 +895,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         );
         List<DuneChoice> choices = otherTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
-        faction.getChat().reply("Which Territory would you like to ship to?", choices);
+        faction.getChat().reply("Which Territory?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -916,7 +908,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<String> rockTerritories = List.of("False Wall South", "Pasty Mesa", "False Wall East", "Shield Wall", "Rim Wall West", "Plastic Basin", "False Wall West");
         List<DuneChoice> choices = rockTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
-        faction.getChat().reply("Which Rock Territory would you like to ship to?", choices);
+        faction.getChat().reply("Which Rock Territory?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -933,7 +925,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         );
         List<DuneChoice> choices = spiceBlowTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
-        faction.getChat().reply("Which Spice Blow Territory would you like to ship to?", choices);
+        faction.getChat().reply("Which Spice Blow Territory?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -947,7 +939,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 choices.add(shipToTerritoryChoice(game, faction, buttonSuffix, emperorFaction.getSecondHomeworld(), false));
         });
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
-        faction.getChat().reply("Which Homeworld would you like to ship to?", choices);
+        faction.getChat().reply("Which Homeworld?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -957,7 +949,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(Territory::isDiscovered)
                 .map(territory -> shipToTerritoryChoice(game, faction, buttonSuffix, territory.getDiscoveryToken(), false)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
-        faction.getChat().reply("Which Discovery Token would you like to ship to?", choices);
+        faction.getChat().reply("Which Discovery Token?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -971,7 +963,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 .filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(faction, fremenRide || btHTPlacement))
                 .map(t -> shipToTerritoryChoice(game, faction, buttonSuffix, t.getTerritoryName(), startingForces)).sorted(Comparator.comparing(DuneChoice::getLabel)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
-        faction.getChat().reply("Which stronghold would you like to ship to?", choices);
+        faction.getChat().reply("Which Stronghold?", choices);
         discordGame.queueDeleteMessage();
     }
 
