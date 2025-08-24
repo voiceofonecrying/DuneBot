@@ -117,8 +117,10 @@ public class EcazFaction extends Faction {
                 .count();
         nonEcazAmbassadorsCount += ambassadorSupply.stream().filter(a -> !a.equals("Ecaz")).count();
 
-        if (nonEcazAmbassadorsCount == 0) drawNewSupply();
-        chat.reply("You have triggered your " + ambassador + " Ambassador!");
+        if (nonEcazAmbassadorsCount == 0)
+            drawNewSupply();
+        if (!ambassador.equals("Guild"))
+            chat.reply("You have triggered your " + ambassador + " Ambassador!");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }
@@ -172,19 +174,19 @@ public class EcazFaction extends Faction {
 
     public void presentGuildAmbassadorDestinationChoices() {
         if (getReservesStrength() == 0)
-            chat.publish("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
+            chat.reply("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
         else {
             String buttonSuffix = "-guild-ambassador";
             List<DuneChoice> choices = new LinkedList<>();
-            choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
-            choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
-            choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+            choices.add(new DuneChoice("ambassador-guild-stronghold", "Stronghold"));
+            choices.add(new DuneChoice("ambassador-guild-spice-blow", "Spice Blow Territories"));
+            choices.add(new DuneChoice("ambassador-guild-rock", "Rock Territories"));
             boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
             if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-                choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
-            choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
-            choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "Pass shipment"));
-            chat.publish("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", choices);
+                choices.add(new DuneChoice("ambassador-guild-discovery-tokens", "Discovery Tokens"));
+            choices.add(new DuneChoice("ambassador-guild-other", "Somewhere else"));
+            choices.add(new DuneChoice("danger", "ambassador-guild-pass-shipment", "Pass shipment"));
+            chat.reply("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", choices);
         }
     }
 
