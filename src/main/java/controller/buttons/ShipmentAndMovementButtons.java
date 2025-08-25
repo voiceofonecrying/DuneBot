@@ -997,10 +997,12 @@ public class ShipmentAndMovementButtons implements Pressable {
             isShipment = false;
         String shipOrMove = isShipment ? "shipment-" : "movement-";
         for (int i = 0; i < buttonLimitForces; i++) {
-            forcesButtons.add(Button.primary(choicePrefix + "add-force-" + shipOrMove + (i + 1), "Add " + (i + 1) + " troop"));
+            forcesButtons.add(Button.primary(choicePrefix + "add-force-" + shipOrMove + (i + 1), "Add " + (i + 1) + " troop")
+                    .withDisabled(guildAmbassador && i + 1 + faction.getShipment().getForce() > 4));
         }
         for (int i = 0; i < buttonLimitSpecialForces; i++) {
-            forcesButtons.add(Button.primary(choicePrefix + "add-special-force-" + shipOrMove + (i + 1), "Add " + (i + 1) + " * troop"));
+            forcesButtons.add(Button.primary(choicePrefix + "add-special-force-" + shipOrMove + (i + 1), "Add " + (i + 1) + " * troop")
+                    .withDisabled(guildAmbassador && i + 1 + faction.getShipment().getSpecialForce() > 4));
         }
 
         if (isShipment) {

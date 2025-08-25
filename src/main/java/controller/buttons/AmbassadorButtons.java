@@ -49,7 +49,7 @@ public class AmbassadorButtons {
         faction.getShipment().setShipped(false);
         ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-guild-");
-        discordGame.queueDeleteMessage();
+//        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 
