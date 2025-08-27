@@ -391,7 +391,7 @@ public class ShowCommands {
                     Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
             ));
             for (CSVRecord csvRecord : CSVParser.parse(bufferedReader, CSVFormat.EXCEL)) {
-                if (csvRecord.get(0).equals(faction.getName()) && faction.getLeader(csvRecord.get(1)).isEmpty()) {
+                if (csvRecord.get(0).equals(faction.getName()) && game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals(csvRecord.get(1)))) {
                     playCardMenu.addOption("Play Tleilaxu Ghola to revive " + csvRecord.get(1) + " for free", "Tleilaxu Ghola-leader-" + csvRecord.get(1));
                 }
             }
