@@ -397,9 +397,9 @@ public class ShowCommands {
             }
         }
 
-        if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Amal"))) {
-            playCardMenu.addOption("Play Amal to halve all players' spice totals", "Amal");
-        }
+//        if (faction.getTreacheryHand().stream().anyMatch(treacheryCard -> treacheryCard.name().equals("Amal"))) {
+//            playCardMenu.addOption("Play Amal to halve all players' spice totals", "Amal");
+//        }
 
         sendAllySpiceSupportButtons(discordGame, game, faction, false);
         sendAllianceActions(discordGame, game, faction, false);
