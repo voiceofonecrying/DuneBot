@@ -16,7 +16,7 @@ public class AmbassadorButtons {
         // Buttons handled by this class must begin with "ambassador"
         // And any button that begins with "ambassador" must be handled by this class
         if (event.getComponentId().startsWith("ambassador-guild-")) handleGuildAmbassadorButtons(event, game, discordGame);
-//        else if (event.getComponentId().startsWith("ambassador-fremen-")) handleFremenAmbassadorButtons(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ambassador-fremen-")) handleFremenAmbassadorButtons(event, game, discordGame);
     }
 
     private static void handleGuildAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
@@ -53,8 +53,39 @@ public class AmbassadorButtons {
         discordGame.pushGame();
     }
 
-//    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-//        Faction faction = ButtonManager.getButtonPresser(event, game);
-//        String action = event.getComponentId().replace("ambassador-fremen-", "");
-//    }
+    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        String action = event.getComponentId().replace("ambassador-fremen-", "");
+        if (action.equals("pass-shipment")) passFremenAmbassador(event, game, discordGame);
+        else if (action.equals("reset-shipment")) resetFremenAmbassador(event, game, discordGame);
+        else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame, "ambassador-fremen-");
+        else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game, "ambassador-fremen-");
+        else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game, "ambassador-fremen-");
+        else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame, "ambassador-fremen-");
+        else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game, "ambassador-fremen-");
+        else if (action.startsWith("ship-sector-")) ShipmentAndMovementButtons.filterBySectorWithPrefix(event, game, discordGame, true);
+        else if (action.startsWith("ship-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true, "ambassador-fremen-");
+        else if (action.startsWith("add-force-movement-")) ShipmentAndMovementButtons.presentAddForcesChoices(event, game, discordGame, false);
+        else if (action.equals("reset-moving-forces")) ShipmentAndMovementButtons.resetForcesWithPrefix(event, game, discordGame, true);
+        else if (action.equals("execute-movement")) ShipmentAndMovementButtons.executeFremenAmbassador(event, game, discordGame);
+    }
+
+    private static void passFremenAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
+        faction.getMovement().clear();
+//        ((FremenFaction) faction).setWormRideActive(false);
+        discordGame.queueMessage("You will not ride the worm.");
+        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-fremen-");
+        discordGame.pushGame();
+    }
+
+    private static void resetFremenAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.getMovement().clear();
+        faction.getMovement().setMoved(false);
+        ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
+        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-fremen-");
+//        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
+    }
 }

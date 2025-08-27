@@ -119,7 +119,7 @@ public class EcazFaction extends Faction {
 
         if (nonEcazAmbassadorsCount == 0)
             drawNewSupply();
-        if (!ambassador.equals("Guild"))
+        if (!ambassador.equals("Guild") && !ambassador.equals("Fremen"))
             chat.reply("You have triggered your " + ambassador + " Ambassador!");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
@@ -168,15 +168,14 @@ public class EcazFaction extends Faction {
 
     public void presentFremenAmbassadorRideFromChoices() {
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
-        choices.add(new DuneChoice("danger", "pass-shipment-fremen-ride", "No move"));
-        chat.publish("Where would you like to ride from with your Fremen Ambassador?", choices);
+        choices.add(new DuneChoice("danger", "ambassador-fremen-pass-shipment", "Decline ride"));
+        chat.reply("You have triggered your Fremen Ambassador!\nWhere would you like to ride from with your Fremen Ambassador?", choices);
     }
 
     public void presentGuildAmbassadorDestinationChoices() {
         if (getReservesStrength() == 0)
             chat.reply("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
         else {
-            String buttonSuffix = "-guild-ambassador";
             List<DuneChoice> choices = new LinkedList<>();
             choices.add(new DuneChoice("ambassador-guild-stronghold", "Stronghold"));
             choices.add(new DuneChoice("ambassador-guild-spice-blow", "Spice Blow Territories"));
