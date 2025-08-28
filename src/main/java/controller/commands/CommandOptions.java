@@ -101,7 +101,7 @@ public class CommandOptions {
     public static final OptionData killedInBattle = new OptionData(OptionType.BOOLEAN, "killed-in-battle", "For Atreides KH counter", true);
     public static final OptionData leader = new OptionData(OptionType.STRING, "leadertokill", "The leader.", true).setAutoComplete(true);
     public static final OptionData faceDown = new OptionData(OptionType.BOOLEAN, "face-down", "Put leader face down in the tanks", false);
-    public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leadertorevive", "The leader.", true).setAutoComplete(true);
+    public static final OptionData reviveLeader = new OptionData(OptionType.STRING, "leader-to-revive", "The leader.", true).setAutoComplete(true);
     public static final OptionData revivalCost = new OptionData(OptionType.INTEGER, "revival-cost", "How much spent to revive if different than leader value", false);
     public static final OptionData combatLeader = new OptionData(OptionType.STRING, "combat-leader", "The leader or None.", true).setAutoComplete(true);
     public static final OptionData removeLeader = new OptionData(OptionType.STRING, "leader-to-remove", "The leader incorrectly in a territory.", true).setAutoComplete(true);
@@ -287,7 +287,7 @@ public class CommandOptions {
             case "bgterritories" -> choices = bgTerritories(game, searchValue);
             case "factionleader" -> choices = leaders(event, game, searchValue);
             case "leadertokill" -> choices = leadersToKillOrFlip(event, game, searchValue);
-            case "leadertorevive" -> choices = reviveLeaders(game, searchValue);
+            case "leader-to-revive" -> choices = reviveLeaders(event, game, searchValue);
             case "combat-leader" -> choices = combatLeaders(event, discordGame, game, searchValue);
             case "leader-to-remove" -> choices = removeLeaders(event, game, searchValue);
             case "weapon" -> choices = weapon(event, discordGame, searchValue);
@@ -513,11 +513,20 @@ public class CommandOptions {
                 .collect(Collectors.toList());
     }
 
-    private static List<Command.Choice> reviveLeaders(Game game, String searchValue) {
-        return game.getLeaderTanks().stream()
-                .filter(l -> l.getName().matches(searchRegex(searchValue)))
-                .map(l -> new Command.Choice(l.getNameAndValueString(), l.getName()))
-                .collect(Collectors.toList());
+    private static List<Command.Choice> reviveLeaders(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
+        Faction faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
+        if (faction instanceof BTFaction)
+            return game.getLeaderTanks().stream()
+                    .filter(l -> l.getName().matches(searchRegex(searchValue)))
+                    .filter(l -> !(l.getName().equals("Kwisatz Haderach") || l.getName().equals("Auditor")))
+                    .map(l -> new Command.Choice(l.getNameAndValueString(), l.getName()))
+                    .collect(Collectors.toList());
+        else
+            return game.getLeaderTanks().stream()
+                    .filter(l -> l.getName().matches(searchRegex(searchValue)))
+                    .filter(l -> l.getOriginalFactionName().equals(faction.getName()))
+                    .map(l -> new Command.Choice(l.getNameAndValueString(), l.getName()))
+                    .collect(Collectors.toList());
     }
 
     private static List<Command.Choice> combatLeaders(CommandAutoCompleteInteractionEvent event, DiscordGame discordGame, Game game, String searchValue) throws ChannelNotFoundException {
