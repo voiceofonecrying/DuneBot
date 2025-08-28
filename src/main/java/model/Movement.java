@@ -1,6 +1,9 @@
 package model;
 
+import enums.MoveType;
+
 public class Movement {
+    private MoveType moveType;
     private String movingFrom;
     private String secondMovingFrom;
     private String movingTo;
@@ -17,6 +20,7 @@ public class Movement {
     }
 
     public void clear() {
+        this.moveType = MoveType.TBD;
         this.movingFrom = "";
         this.movingTo = "";
         this.mustMoveOutOf = null;
@@ -27,6 +31,22 @@ public class Movement {
         this.secondMovingFrom = "";
         this.hasMoved = true;
         this.movingNoField = false;
+    }
+
+    public MoveType getMoveType() {
+        return moveType;
+    }
+
+    public void setMoveType(MoveType moveType) {
+        this.moveType = moveType;
+    }
+
+    public String getChoicePrefix() {
+        if (moveType == MoveType.GUILD_AMBASSADOR)
+            return "ambassador-guild-";
+        else if (moveType == MoveType.FREMEN_AMBASSADOR)
+            return "ambassador-fremen-";
+        return "";
     }
 
     public String getMovingFrom() {

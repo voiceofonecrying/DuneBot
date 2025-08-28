@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -170,6 +171,7 @@ public class EcazFaction extends Faction {
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
         choices.add(new DuneChoice("danger", "ambassador-fremen-pass-shipment", "Decline ride"));
         chat.reply("You have triggered your Fremen Ambassador!\nWhere would you like to ride from with your Fremen Ambassador?", choices);
+        movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
     }
 
     public void presentGuildAmbassadorDestinationChoices() {
@@ -186,6 +188,7 @@ public class EcazFaction extends Faction {
             choices.add(new DuneChoice("ambassador-guild-other", "Somewhere else"));
             choices.add(new DuneChoice("danger", "ambassador-guild-pass-shipment", "Pass shipment"));
             chat.reply("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", choices);
+            movement.setMoveType(MoveType.GUILD_AMBASSADOR);
         }
     }
 

@@ -98,7 +98,7 @@ public class EcazButtons implements Pressable {
         String territoryName = event.getComponentId().split("-")[4];
         discordGame.queueDeleteMessage();
         game.getEcazFaction().getMovement().setMovingFrom(territoryName);
-        ShipmentAndMovementButtons.presentShippingChoices(event, game, discordGame, false, true);
+        ShipmentAndMovementButtons.presentShippingChoices(event, game, discordGame, false);
         discordGame.pushGame();
     }
 

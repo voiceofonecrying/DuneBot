@@ -65,7 +65,7 @@ public class Faction {
     private boolean specialKaramaPowerUsed;
     private NexusCard nexusCard;
     protected Shipment shipment;
-    private Movement movement;
+    protected Movement movement;
     private int spiceForAlly;
     private boolean allySpiceFinishedForTurn;
     protected boolean isHighThreshold;

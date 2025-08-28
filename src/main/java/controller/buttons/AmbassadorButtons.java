@@ -2,6 +2,7 @@ package controller.buttons;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import enums.MoveType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
@@ -23,13 +24,13 @@ public class AmbassadorButtons {
         String action = event.getComponentId().replace("ambassador-guild-", "");
         if (action.equals("pass-shipment")) passGuildAmbassador(event, game, discordGame);
         else if (action.equals("reset-shipment")) resetGuildAmbassador(event, game, discordGame);
-        else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame, "ambassador-guild-");
-        else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game, "ambassador-guild-");
-        else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game, "ambassador-guild-");
-        else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame, "ambassador-guild-");
-        else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game, "ambassador-guild-");
+        else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame);
+        else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game);
+        else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game);
+        else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame);
+        else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game);
         else if (action.startsWith("ship-sector-")) ShipmentAndMovementButtons.filterBySectorWithPrefix(event, game, discordGame, true);
-        else if (action.startsWith("ship-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true, "ambassador-guild-");
+        else if (action.startsWith("ship-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true);
         else if (action.startsWith("add-force-shipment-")) ShipmentAndMovementButtons.presentAddForcesChoices(event, game, discordGame, true);
         else if (action.equals("reset-shipping-forces")) ShipmentAndMovementButtons.resetForcesWithPrefix(event, game, discordGame, true);
         else if (action.equals("execute-shipment")) ShipmentAndMovementButtons.executeShipmentWithPrefixes(event, game, discordGame, true);
@@ -40,6 +41,7 @@ public class AmbassadorButtons {
         faction.getChat().reply("You will not ship with your Guild ambassador.");
         game.getTurnSummary().publish(Emojis.ECAZ + " does not ship with their Guild ambassador.");
         faction.getShipment().clear();
+        faction.getMovement().setMoveType(MoveType.TBD);
         discordGame.pushGame();
     }
 
@@ -53,17 +55,17 @@ public class AmbassadorButtons {
         discordGame.pushGame();
     }
 
-    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("ambassador-fremen-", "");
         if (action.equals("pass-shipment")) passFremenAmbassador(event, game, discordGame);
         else if (action.equals("reset-shipment")) resetFremenAmbassador(event, game, discordGame);
-        else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame, "ambassador-fremen-");
-        else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game, "ambassador-fremen-");
-        else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game, "ambassador-fremen-");
-        else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame, "ambassador-fremen-");
-        else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game, "ambassador-fremen-");
+        else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame);
+        else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game);
+        else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game);
+        else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame);
+        else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game);
         else if (action.startsWith("ship-sector-")) ShipmentAndMovementButtons.filterBySectorWithPrefix(event, game, discordGame, true);
-        else if (action.startsWith("ship-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true, "ambassador-fremen-");
+        else if (action.startsWith("ship-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true);
         else if (action.startsWith("add-force-movement-")) ShipmentAndMovementButtons.presentAddForcesChoices(event, game, discordGame, false);
         else if (action.equals("reset-moving-forces")) ShipmentAndMovementButtons.resetForcesWithPrefix(event, game, discordGame, true);
         else if (action.equals("execute-movement")) ShipmentAndMovementButtons.executeFremenAmbassador(event, game, discordGame);
@@ -73,6 +75,7 @@ public class AmbassadorButtons {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
         faction.getMovement().clear();
+        faction.getMovement().setMoveType(MoveType.TBD);
 //        ((FremenFaction) faction).setWormRideActive(false);
         discordGame.queueMessage("You will not ride the worm.");
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-fremen-");
