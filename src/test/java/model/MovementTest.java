@@ -1,0 +1,309 @@
+package model;
+
+import enums.MoveType;
+import exceptions.InvalidGameStateException;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+public class MovementTest extends DuneTest {
+    @BeforeEach
+    void setUp() throws InvalidGameStateException, IOException {
+        super.setUp();
+    }
+
+    @Nested
+    @DisplayName("#presentStrongholdChoices")
+    class PresentStrongholdChoices {
+        List<String> strongholds;
+        List<String> strongholdsWithHMS;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            ecaz.setChat(ecazChat);
+            ix.setChat(ixChat);
+            strongholds = List.of("Arrakeen", "Carthag", "Sietch Tabr", "Habbanya Sietch", "Tuek's Sietch");
+            strongholdsWithHMS = new ArrayList<>(strongholds);
+            strongholdsWithHMS.add("Hidden Mobile Stronghold");
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            ecaz.getMovement().presentStrongholdChoices(game, ecaz);
+            assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
+            assertEquals(7, ecazChat.getChoices().getLast().size());
+            assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
+            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 6)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(strongholdsWithHMS.contains(c.getLabel()));
+            }
+            for (String s : strongholdsWithHMS)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            ecaz.getMovement().presentStrongholdChoices(game, ecaz);
+            assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
+            assertEquals(6, ecazChat.getChoices().getLast().size());
+            assertFalse(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
+            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 5)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(strongholds.contains(c.getLabel()));
+            }
+            for (String s : strongholds)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+
+        @Test
+        void testGuildAmbassadorByIxAlly() {
+            game.createAlliance(ecaz, ix);
+            ix.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            ix.getMovement().presentStrongholdChoices(game, ix);
+            assertEquals("Which Stronghold?", ixChat.getMessages().getLast());
+            assertEquals(7, ixChat.getChoices().getLast().size());
+            assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
+            assertEquals("ambassador-guild-reset-shipment", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 6)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(strongholdsWithHMS.contains(c.getLabel()));
+            }
+            for (String s : strongholdsWithHMS)
+                assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentSpiceBlowChoices")
+    class PresentSpiceBlowChoices {
+        List<String> spiceBlowTerritories;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            ecaz.setChat(ecazChat);
+            ix.setChat(ixChat);
+            spiceBlowTerritories = game.getTerritories().getSpiceBlowTerritoryNames();
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            ecaz.getMovement().presentSpiceBlowChoices(game, ecaz);
+            assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            ecaz.getMovement().presentSpiceBlowChoices(game, ecaz);
+            assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentRockChoices")
+    class PresentRockChoices {
+        List<String> rockTerritories;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            ecaz.setChat(ecazChat);
+            ix.setChat(ixChat);
+            rockTerritories = game.getTerritories().getRockTerritoryNames();
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            ecaz.getMovement().presentRockChoices(game, ecaz);
+            assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
+            assertEquals(8, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(rockTerritories.contains(c.getLabel()));
+            }
+            for (String s : rockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            ecaz.getMovement().presentRockChoices(game, ecaz);
+            assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
+            assertEquals(8, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(rockTerritories.contains(c.getLabel()));
+            }
+            for (String s : rockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentDiscoveryTokenChoices")
+    class PresentDiscoveryTokenChoices {
+        List<String> discoveryTokenTerritories;
+        Territory meridianWestSector;
+        Territory pastyMesaNorthSector;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            ecaz.setChat(ecazChat);
+            ix.setChat(ixChat);
+            meridianWestSector = game.getTerritory("Meridian (West Sector)");
+            meridianWestSector.setDiscoveryToken("Ecological Testing Station");
+            meridianWestSector.setDiscovered(true);
+            pastyMesaNorthSector = game.getTerritory("Pasty Mesa (North Sector)");
+            pastyMesaNorthSector.setDiscoveryToken("Orgiz Processing Station");
+            pastyMesaNorthSector.setDiscovered(true);
+            discoveryTokenTerritories = List.of("Ecological Testing Station", "Orgiz Processing Station");
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            ecaz.getMovement().presentDiscoveryTokenChoices(game, ecaz);
+            assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
+            }
+            for (String s : discoveryTokenTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            ecaz.getMovement().presentDiscoveryTokenChoices(game, ecaz);
+            assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
+            }
+            for (String s : discoveryTokenTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentNonSpiceNonRockChoices")
+    class PresentNonSpiceNonRockChoices {
+        List<String> nonSpiceNonRockTerritories;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            ecaz.setChat(ecazChat);
+            ix.setChat(ixChat);
+            nonSpiceNonRockTerritories = game.getTerritories().getNonSpiceNonRockTerritoryNames();
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            ecaz.getMovement().presentNonSpiceNonRockChoices(game, ecaz);
+            assertEquals("Which Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            ecaz.getMovement().presentNonSpiceNonRockChoices(game, ecaz);
+            assertEquals("Which Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("ship-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+    }
+}

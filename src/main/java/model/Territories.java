@@ -140,4 +140,24 @@ public class Territories extends HashMap<String, Territory> {
         }
         return true;
     }
+
+    public List<String> getSpiceBlowTerritoryNames() {
+        return List.of(
+                "Habbanya Ridge Flat", "Cielago South", "Broken Land", "South Mesa", "Sihaya Ridge",
+                "Hagga Basin", "Red Chasm", "The Minor Erg", "Cielago North", "Funeral Plain",
+                "The Great Flat", "Habbanya Erg", "Old Gap", "Rock Outcroppings", "Wind Pass North"
+        );
+    }
+
+    public List<String> getRockTerritoryNames() {
+        return List.of("False Wall South", "Pasty Mesa", "False Wall East", "Shield Wall", "Rim Wall West", "Plastic Basin", "False Wall West");
+    }
+
+    public List<String> getNonSpiceNonRockTerritoryNames() {
+        return List.of(
+                "Polar Sink", "Cielago Depression", "Meridian", "Cielago East", "Harg Pass",
+                "Gara Kulon", "Hole In The Rock", "Basin", "Imperial Basin", "Arsunt",
+                "Tsimpo", "Bight Of The Cliff", "Wind Pass", "The Greater Flat", "Cielago West"
+        );
+    }
 }

@@ -1327,17 +1327,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     protected static void presentOtherShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        boolean startingForces = faction.getMovement().getMoveType() == MoveType.STARTING_FORCES;
-        boolean hmsPlacement = faction.getMovement().getMoveType() == MoveType.HMS_PLACEMENT;
-        boolean initialPlacement = startingForces || hmsPlacement;
-        List<String> otherTerritories = List.of(
-                "Polar Sink", "Cielago Depression", "Meridian", "Cielago East", "Harg Pass",
-                "Gara Kulon", "Hole In The Rock", "Basin", "Imperial Basin", "Arsunt",
-                "Tsimpo", "Bight Of The Cliff", "Wind Pass", "The Greater Flat", "Cielago West"
-        );
-        List<DuneChoice> choices = otherTerritories.stream().map(s -> shipToTerritoryChoiceWithPrefix(game, faction, s, initialPlacement)).collect(Collectors.toList());
-        choices.add(new DuneChoice("secondary", faction.getMovement().getChoicePrefix() + "reset-shipment", "Start over"));
-        faction.getChat().reply("Which Territory?", choices);
+        faction.getMovement().presentNonSpiceNonRockChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 
@@ -1356,13 +1346,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     protected static void presentRockShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        boolean startingForces = faction.getMovement().getMoveType() == MoveType.STARTING_FORCES;
-        boolean hmsPlacement = faction.getMovement().getMoveType() == MoveType.HMS_PLACEMENT;
-        boolean initialPlacement = startingForces || hmsPlacement;
-        List<String> rockTerritories = List.of("False Wall South", "Pasty Mesa", "False Wall East", "Shield Wall", "Rim Wall West", "Plastic Basin", "False Wall West");
-        List<DuneChoice> choices = rockTerritories.stream().map(s -> shipToTerritoryChoiceWithPrefix(game, faction, s, initialPlacement)).collect(Collectors.toList());
-        choices.add(new DuneChoice("secondary", faction.getMovement().getChoicePrefix() + "reset-shipment", "Start over"));
-        faction.getChat().reply("Which Rock Territory?", choices);
+        faction.getMovement().presentRockChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 
@@ -1385,17 +1369,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     protected static void presentSpiceBlowShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        boolean startingForces = faction.getMovement().getMoveType() == MoveType.STARTING_FORCES;
-        boolean hmsPlacement = faction.getMovement().getMoveType() == MoveType.HMS_PLACEMENT;
-        boolean initialPlacement = startingForces || hmsPlacement;
-        List<String> spiceBlowTerritories = List.of(
-                "Habbanya Ridge Flat", "Cielago South", "Broken Land", "South Mesa", "Sihaya Ridge",
-                "Hagga Basin", "Red Chasm", "The Minor Erg", "Cielago North", "Funeral Plain",
-                "The Great Flat", "Habbanya Erg", "Old Gap", "Rock Outcroppings", "Wind Pass North"
-        );
-        List<DuneChoice> choices = spiceBlowTerritories.stream().map(s -> shipToTerritoryChoiceWithPrefix(game, faction, s, initialPlacement)).collect(Collectors.toList());
-        choices.add(new DuneChoice("secondary", faction.getMovement().getChoicePrefix() + "reset-shipment", "Start over"));
-        faction.getChat().reply("Which Spice Blow Territory?", choices);
+        faction.getMovement().presentSpiceBlowChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 
@@ -1425,10 +1399,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     protected static void presentDiscoveryShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        List<DuneChoice> choices = game.getTerritories().values().stream().filter(Territory::isDiscovered)
-                .map(territory -> shipToTerritoryChoiceWithPrefix(game, faction, territory.getDiscoveryToken(), false)).collect(Collectors.toList());
-        choices.add(new DuneChoice("secondary", faction.getMovement().getChoicePrefix() + "reset-shipment", "Start over"));
-        faction.getChat().reply("Which Discovery Token?", choices);
+        faction.getMovement().presentDiscoveryTokenChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 
@@ -1448,15 +1419,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     protected static void presentStrongholdShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        boolean fremenAmbassador = faction.getMovement().getMoveType() == MoveType.FREMEN_AMBASSADOR;
-        boolean fremenRide = faction.getMovement().getMoveType() == MoveType.FREMEN_RIDE;
-        boolean btHTPlacement = faction.getMovement().getMoveType() == MoveType.BT_HT;
-        boolean startingForces = faction.getMovement().getMoveType() == MoveType.STARTING_FORCES;
-        List<DuneChoice> choices = game.getTerritories().values().stream()
-                .filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(faction, fremenAmbassador || fremenRide || btHTPlacement))
-                .map(t -> shipToTerritoryChoiceWithPrefix(game, faction, t.getTerritoryName(), startingForces)).sorted(Comparator.comparing(DuneChoice::getLabel)).collect(Collectors.toList());
-        choices.add(new DuneChoice("secondary", faction.getMovement().getChoicePrefix() + "reset-shipment", "Start over"));
-        faction.getChat().reply("Which Stronghold?", choices);
+        faction.getMovement().presentStrongholdChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 
@@ -1465,15 +1428,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         DuneChoice choice = new DuneChoice("ship" + buttonSuffix + labelSuffix, wholeTerritoryName);
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !buttonSuffix.contains("fremen-ride"), isInitialPlacement)));
-        return choice;
-    }
-
-    protected static DuneChoice shipToTerritoryChoiceWithPrefix(Game game, Faction faction, String wholeTerritoryName, boolean isInitialPlacement) {
-        DuneChoice choice = new DuneChoice(faction.getMovement().getChoicePrefix() + "ship-" + wholeTerritoryName, wholeTerritoryName);
-        MoveType moveType = faction.getMovement().getMoveType();
-        boolean wormRide = moveType == MoveType.FREMEN_RIDE || moveType == MoveType.FREMEN_AMBASSADOR;
-        List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
-        choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !wormRide, isInitialPlacement)));
         return choice;
     }
 
