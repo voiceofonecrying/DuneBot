@@ -6169,7 +6169,23 @@ class BattleTest extends DuneTest {
             assertTrue(atreides.isHasKH());
             game.killLeader(atreides, "Duncan Idaho");
             battle.handleHarkonnenLeaderCapture(game, harkonnen, atreides, false, true);
+            assertTrue(harkonnenChat.getMessages().isEmpty());
             assertEquals(Emojis.ATREIDES + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testHarkonnenCannotCaptureAuditor() {
+            game.addFaction(choam);
+            carthag.addForces("CHOAM", 1);
+            game.killLeader(choam, "Frankos Aru");
+            game.killLeader(choam, "Lady Jalma");
+            game.killLeader(choam, "Duke Verdun");
+            game.killLeader(choam, "Rajiv Londine");
+            game.killLeader(choam, "Viscount Tull");
+            battle = new Battle(game, List.of(carthag), List.of(choam, harkonnen));
+            battle.handleHarkonnenLeaderCapture(game, harkonnen, choam, false, true);
+            assertTrue(harkonnenChat.getMessages().isEmpty());
+            assertEquals(Emojis.CHOAM + " has no eligible leaders to capture.", turnSummary.getMessages().getLast());
         }
     }
 }
