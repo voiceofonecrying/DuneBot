@@ -1302,7 +1302,7 @@ public class Battle {
         String resolution = "";
         if (!isLoser && winner instanceof HarkonnenFaction harkonnen) {
             if (executeResolution) {
-                List<Leader> eligibleLeaders = new ArrayList<>(loser.getLeaders().stream().filter(l -> l.getBattleTerritoryName() == null || sectorNames.contains(l.getBattleTerritoryName())).filter(l -> !l.getName().equals("Kwisatz Haderach")).toList());
+                List<Leader> eligibleLeaders = new ArrayList<>(loser.getLeaders().stream().filter(l -> l.getBattleTerritoryName() == null || sectorNames.contains(l.getBattleTerritoryName())).filter(l -> !(l.getName().equals("Kwisatz Haderach") || l.getName().equals("Auditor"))).toList());
                 if (eligibleLeaders.isEmpty()) {
                     game.getTurnSummary().publish(loser.getEmoji() + " has no eligible leaders to capture.");
                 } else {
