@@ -196,13 +196,13 @@ public class Movement {
             faction.getChat().publish("Movement with Fremen ambasssador complete.");
         } else if (moveType == MoveType.GUILD_AMBASSADOR)
             executeGuildAmbassador(game, faction);
+        clear();
     }
 
     public void executeGuildAmbassador(Game game, Faction faction) throws InvalidGameStateException {
         Territory territory = game.getTerritory(movingTo);
         if (force > 0 || specialForce > 0)
             faction.placeForces(territory, force, specialForce, false, true, true, false, false);
-        clear();
         faction.getChat().reply("Shipment with Guild Ambassador complete.");
     }
 
@@ -213,6 +213,5 @@ public class Movement {
         } else {
             game.moveForces(faction, movingFrom, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
         }
-        clear();
     }
 }

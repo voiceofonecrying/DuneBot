@@ -1,11 +1,9 @@
 package model;
 
+import constants.Emojis;
 import enums.MoveType;
 import exceptions.InvalidGameStateException;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -48,7 +46,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 6)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(strongholdsWithHMS.contains(c.getLabel()));
             }
             for (String s : strongholdsWithHMS)
@@ -67,7 +65,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 5)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
                 String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(strongholds.contains(c.getLabel()));
             }
             for (String s : strongholds)
@@ -87,7 +85,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 6)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
                 String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(strongholdsWithHMS.contains(c.getLabel()));
             }
             for (String s : strongholdsWithHMS)
@@ -120,7 +118,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(spiceBlowTerritories.contains(c.getLabel()));
             }
             for (String s : spiceBlowTerritories)
@@ -138,7 +136,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
                 String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(spiceBlowTerritories.contains(c.getLabel()));
             }
             for (String s : spiceBlowTerritories)
@@ -171,7 +169,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(rockTerritories.contains(c.getLabel()));
             }
             for (String s : rockTerritories)
@@ -189,7 +187,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
                 String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(rockTerritories.contains(c.getLabel()));
             }
             for (String s : rockTerritories)
@@ -230,7 +228,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
             }
             for (String s : discoveryTokenTerritories)
@@ -248,7 +246,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
                 String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
             }
             for (String s : discoveryTokenTerritories)
@@ -281,7 +279,7 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
             }
             for (String s : nonSpiceNonRockTerritories)
@@ -299,11 +297,64 @@ public class MovementTest extends DuneTest {
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
                 String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
-                assertEquals("ship-", action);
+                assertEquals("territory-", action);
                 assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
             }
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+        }
+    }
+
+    @Nested
+    @DisplayName("#execute")
+    class Execute {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            emperor.setChat(ixChat);
+            game.createAlliance(ecaz, ix);
+            movement = ix.getMovement();
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.setSpecialForce(2);
+        }
+
+        @AfterEach
+        void tearDown() {
+            assertEquals("", movement.getMovingTo());
+            assertEquals("", movement.getMovingFrom());
+            assertEquals(0, movement.getForce());
+            assertEquals(0, movement.getSpecialForce());
+        }
+
+        @Test
+        void testFremenAmbassador() throws InvalidGameStateException {
+            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+            movement.setMovingFrom("Hidden Mobile Stronghold");
+            movement.execute(game, ix);
+            assertEquals(1, carthag.getForceStrength("Ix"));
+            assertEquals(2, carthag.getForceStrength("Ix*"));
+            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
+            assertEquals(2, hms.getForceStrength("Ix"));
+            assertEquals(1, hms.getForceStrength("Ix*"));
+            assertEquals(Emojis.IX + ": 1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " moved from Hidden Mobile Stronghold to Carthag.", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testGuildAmbassador() throws InvalidGameStateException {
+            movement.setMoveType(MoveType.GUILD_AMBASSADOR);
+            movement.execute(game, ix);
+            assertEquals(1, carthag.getForceStrength("Ix"));
+            assertEquals(2, carthag.getForceStrength("Ix*"));
+            Territory ixHomeworld = game.getTerritory("Ix");
+            assertEquals(9, ixHomeworld.getForceStrength("Ix"));
+            assertEquals(2, ixHomeworld.getForceStrength("Ix*"));
+            assertEquals(Emojis.IX + ": 1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " placed on Carthag", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
     }
 }
