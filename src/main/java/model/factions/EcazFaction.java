@@ -169,7 +169,7 @@ public class EcazFaction extends Faction {
 
     public void presentFremenAmbassadorRideFromChoices() {
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
-        choices.add(new DuneChoice("danger", "ambassador-fremen-pass-shipment", "Decline ride"));
+        choices.add(new DuneChoice("danger", "ambassador-fremen-pass", "Decline ride"));
         chat.reply("You have triggered your Fremen Ambassador!\nWhere would you like to ride from with your Fremen Ambassador?", choices);
         movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
     }
@@ -186,7 +186,7 @@ public class EcazFaction extends Faction {
             if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
                 choices.add(new DuneChoice("ambassador-guild-discovery-tokens", "Discovery Tokens"));
             choices.add(new DuneChoice("ambassador-guild-other", "Somewhere else"));
-            choices.add(new DuneChoice("danger", "ambassador-guild-pass-shipment", "Pass shipment"));
+            choices.add(new DuneChoice("danger", "ambassador-guild-pass", "Pass shipment"));
             chat.reply("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", choices);
             movement.setMoveType(MoveType.GUILD_AMBASSADOR);
         }
