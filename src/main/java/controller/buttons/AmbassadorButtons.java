@@ -24,16 +24,18 @@ public class AmbassadorButtons {
         String action = event.getComponentId().replace("ambassador-guild-", "");
         if (action.equals("pass-shipment")) passGuildAmbassador(event, game, discordGame);
         else if (action.equals("reset-shipment")) resetGuildAmbassador(event, game, discordGame);
+        else if (action.equals("reset-movement")) resetGuildAmbassador(event, game, discordGame);
         else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame);
         else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game);
         else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game);
         else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame);
         else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game);
-        else if (action.startsWith("ship-sector-")) ShipmentAndMovementButtons.filterBySectorWithPrefix(event, game, discordGame, true);
-        else if (action.startsWith("ship-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true);
-        else if (action.startsWith("add-force-shipment-")) ShipmentAndMovementButtons.presentAddForcesChoices(event, game, discordGame, true);
-        else if (action.equals("reset-shipping-forces")) ShipmentAndMovementButtons.resetForcesWithPrefix(event, game, discordGame, true);
-        else if (action.equals("execute-shipment")) ShipmentAndMovementButtons.executeShipmentWithPrefixes(event, game, discordGame, true);
+        else if (action.startsWith("territory-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true);
+        else if (action.startsWith("sector-")) ShipmentAndMovementButtons.filterBySectorWithPrefix(event, game, discordGame, true);
+        else if (action.startsWith("add-force-")) ShipmentAndMovementButtons.addForcesWithPrefix(event, game, discordGame, false);
+        else if (action.equals("reset-shipping-forces")) ShipmentAndMovementButtons.resetForcesWithPrefix(event, game, discordGame, false);
+        else if (action.equals("reset-moving-forces")) ShipmentAndMovementButtons.resetForcesWithPrefix(event, game, discordGame, false);
+        else if (action.equals("execute-movement")) ShipmentAndMovementButtons.executeShipmentWithPrefixes(event, game, discordGame, false);
     }
 
     private static void passGuildAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -47,15 +49,14 @@ public class AmbassadorButtons {
 
     private static void resetGuildAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getShipment().clear();
-        faction.getShipment().setShipped(false);
+        faction.getMovement().clear();
         ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-guild-");
 //        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 
-    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("ambassador-fremen-", "");
         if (action.equals("pass-shipment")) passFremenAmbassador(event, game, discordGame);
         else if (action.equals("reset-shipment")) resetFremenAmbassador(event, game, discordGame);
@@ -64,11 +65,11 @@ public class AmbassadorButtons {
         else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game);
         else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame);
         else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game);
-        else if (action.startsWith("ship-sector-")) ShipmentAndMovementButtons.filterBySectorWithPrefix(event, game, discordGame, true);
-        else if (action.startsWith("ship-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true);
-        else if (action.startsWith("add-force-movement-")) ShipmentAndMovementButtons.presentAddForcesChoices(event, game, discordGame, false);
+        else if (action.startsWith("territory-")) ShipmentAndMovementButtons.presentSectorChoices(event, game, discordGame, true);
+        else if (action.startsWith("sector-")) ShipmentAndMovementButtons.filterBySectorWithPrefix(event, game, discordGame, true);
+        else if (action.startsWith("add-force-")) ShipmentAndMovementButtons.addForcesWithPrefix(event, game, discordGame, false);
         else if (action.equals("reset-moving-forces")) ShipmentAndMovementButtons.resetForcesWithPrefix(event, game, discordGame, true);
-        else if (action.equals("execute-movement")) ShipmentAndMovementButtons.executeFremenAmbassador(event, game, discordGame);
+        else if (action.equals("execute-movement")) ShipmentAndMovementButtons.executeShipmentWithPrefixes(event, game, discordGame, false);
     }
 
     private static void passFremenAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {

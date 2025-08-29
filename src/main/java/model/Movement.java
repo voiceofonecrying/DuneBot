@@ -1,6 +1,7 @@
 package model;
 
 import enums.MoveType;
+import exceptions.InvalidGameStateException;
 import model.factions.Faction;
 
 import java.util.Comparator;
@@ -24,7 +25,6 @@ public class Movement {
     }
 
     public void clear() {
-        this.moveType = MoveType.TBD;
         this.movingFrom = "";
         this.movingTo = "";
         this.mustMoveOutOf = null;
@@ -183,10 +183,36 @@ public class Movement {
     }
 
     public DuneChoice shipToTerritoryChoiceWithPrefix(Game game, Faction faction, String wholeTerritoryName, boolean isInitialPlacement) {
-        DuneChoice choice = new DuneChoice(getChoicePrefix() + "ship-" + wholeTerritoryName, wholeTerritoryName);
+        DuneChoice choice = new DuneChoice(getChoicePrefix() + "territory-" + wholeTerritoryName, wholeTerritoryName);
         boolean wormRide = moveType == MoveType.FREMEN_RIDE || moveType == MoveType.FREMEN_AMBASSADOR;
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !wormRide, isInitialPlacement)));
         return choice;
+    }
+
+    public void execute(Game game, Faction faction) throws InvalidGameStateException {
+        if (moveType == MoveType.FREMEN_AMBASSADOR) {
+            executeMovement(game, faction);
+            faction.getChat().publish("Movement with Fremen ambasssador complete.");
+        } else if (moveType == MoveType.GUILD_AMBASSADOR)
+            executeGuildAmbassador(game, faction);
+    }
+
+    public void executeGuildAmbassador(Game game, Faction faction) throws InvalidGameStateException {
+        Territory territory = game.getTerritory(movingTo);
+        if (force > 0 || specialForce > 0)
+            faction.placeForces(territory, force, specialForce, false, true, true, false, false);
+        clear();
+        faction.getChat().reply("Shipment with Guild Ambassador complete.");
+    }
+
+    public void executeMovement(Game game, Faction faction) throws InvalidGameStateException {
+        if (movingNoField) {
+            game.getRicheseFaction().moveNoField(movingTo, false);
+            game.moveForces(faction, movingFrom, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
+        } else {
+            game.moveForces(faction, movingFrom, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
+        }
+        clear();
     }
 }
