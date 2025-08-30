@@ -18,6 +18,21 @@ import java.util.List;
 import java.util.TreeSet;
 
 public class MovementButtonActions {
+    protected static void handleMovementAction(ButtonInteractionEvent event, DiscordGame discordGame, Game game, String action) throws ChannelNotFoundException, InvalidGameStateException {
+        if (action.equals("pass")) pass(event, game, discordGame);
+        else if (action.equals("start-over")) startOver(event, game, discordGame);
+        else if (action.equals("stronghold")) presentStrongholdShippingChoices(event, game, discordGame);
+        else if (action.equals("spice-blow")) presentSpiceBlowShippingChoices(event, discordGame, game);
+        else if (action.equals("rock")) presentRockShippingChoices(event, discordGame, game);
+        else if (action.equals("discovery-tokens")) presentDiscoveryShippingChoices(event, game, discordGame);
+        else if (action.equals("other")) presentOtherShippingChoices(event, discordGame, game);
+        else if (action.startsWith("territory-")) presentSectorChoices(event, game, discordGame);
+        else if (action.startsWith("sector-")) filterBySector(event, game, discordGame);
+        else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
+        else if (action.equals("reset-forces")) resetForces(event, game, discordGame);
+        else if (action.equals("execute")) execute(event, game, discordGame);
+    }
+
     protected static void pass(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
