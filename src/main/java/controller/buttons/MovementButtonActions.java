@@ -4,12 +4,17 @@ import controller.DiscordGame;
 import enums.MoveType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import model.DuneChoice;
 import model.Game;
 import model.Movement;
+import model.Territory;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 import java.util.TreeSet;
 
 public class MovementButtonActions {
@@ -58,19 +63,66 @@ public class MovementButtonActions {
         discordGame.queueDeleteMessage();
     }
 
+    protected static void presentSectorChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String choicePrefix = faction.getMovement().getChoicePrefix();
+        String aggregateTerritoryName = event.getComponentId().replace("territory-", "")
+                .replace(choicePrefix, "");
+        List<Territory> territory = new ArrayList<>(game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "").equalsIgnoreCase(aggregateTerritoryName)).toList());
+        territory.sort(Comparator.comparingInt(Territory::getSector));
+        if (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression") || aggregateTerritoryName.equals("Meridian")) {
+            territory.addFirst(territory.removeLast());
+        }
+
+        if (territory.size() == 1) {
+            faction.getMovement().setMovingTo(territory.getFirst().getTerritoryName());
+            presentForcesChoices(event, game, discordGame, faction);
+            ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
+            discordGame.pushGame();
+            return;
+        }
+
+        List<DuneChoice> choices = new ArrayList<>();
+        for (Territory sector : territory) {
+            int sectorNameStart = sector.getTerritoryName().indexOf("(");
+            String sectorName = sector.getTerritoryName().substring(sectorNameStart + 1, sector.getTerritoryName().length() - 1);
+            String spiceString = "";
+            if (sector.getSpice() > 0)
+                spiceString = " (" + sector.getSpice() + " spice)";
+            choices.add(new DuneChoice(choicePrefix + "sector-" + sector.getTerritoryName(), sector.getSector() + " - " + sectorName + spiceString));
+        }
+        choices.add(new DuneChoice("secondary", choicePrefix + "start-over", "Start over"));
+        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
+        faction.getChat().reply("Which sector of " + aggregateTerritoryName + "?", choices);
+    }
+
+    protected static void filterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String choicePrefix = faction.getMovement().getChoicePrefix();
+        Territory territory = game.getTerritories().values().stream().filter(t -> t.getTerritoryName().contains(
+                        event.getComponentId().replace("sector-", "")
+                                .replace(choicePrefix, "")
+                                .replace("-", " ")
+                )
+        ).findFirst().orElseThrow();
+        faction.getMovement().setMovingTo(territory.getTerritoryName());
+        presentForcesChoices(event, game, discordGame, faction);
+        discordGame.pushGame();
+    }
+
     protected static void addRegularForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String choicePrefix = faction.getMovement().getChoicePrefix();
         int addedForces = Integer.parseInt(event.getComponentId().replace("add-force-", "").replace(choicePrefix, ""));
         faction.getMovement().addRegularForces(addedForces);
-        MovementButtonActions.presentForcesChoices(event, game, discordGame, faction);
+        presentForcesChoices(event, game, discordGame, faction);
         discordGame.pushGame();
     }
 
     protected static void resetForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.getMovement().resetForces();
-        MovementButtonActions.presentForcesChoices(event, game, discordGame, faction);
+        presentForcesChoices(event, game, discordGame, faction);
         discordGame.pushGame();
     }
 
