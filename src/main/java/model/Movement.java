@@ -5,6 +5,7 @@ import exceptions.InvalidGameStateException;
 import model.factions.EcazFaction;
 import model.factions.Faction;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -212,6 +213,20 @@ public class Movement {
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !wormRide, isInitialPlacement)));
         return choice;
+    }
+
+    public void presentSectorChoices(Faction faction, String aggregateTerritoryName, List<Territory> territorySectors) {
+        List<DuneChoice> choices = new ArrayList<>();
+        for (Territory sector : territorySectors) {
+            int sectorNameStart = sector.getTerritoryName().indexOf("(");
+            String sectorName = sector.getTerritoryName().substring(sectorNameStart + 1, sector.getTerritoryName().length() - 1);
+            String spiceString = "";
+            if (sector.getSpice() > 0)
+                spiceString = " (" + sector.getSpice() + " spice)";
+            choices.add(new DuneChoice(getChoicePrefix() + "sector-" + sector.getTerritoryName(), sector.getSector() + " - " + sectorName + spiceString));
+        }
+        choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
+        faction.getChat().reply("Which sector of " + aggregateTerritoryName + "?", choices);
     }
 
     public void addRegularForces(int numForces) {

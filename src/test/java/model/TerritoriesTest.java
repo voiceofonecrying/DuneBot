@@ -114,14 +114,14 @@ public class TerritoriesTest extends DuneTest {
     }
 
     @Test
-    void getTerritorySectors() {
-        List<Territory> territorySectorsList = territories.getTerritorySectors("Cielago North");
+    void getTerritorySectorsInStormOrder() {
+        List<Territory> territorySectorsList = territories.getTerritorySectorsInStormOrder("Cielago North");
         assertEquals(3, territorySectorsList.size());
     }
 
     @Test
-    void getTerritorySectorsWindPass() {
-        List<Territory> territorySectorsList = territories.getTerritorySectors("Wind Pass");
+    void getTerritorySectorsInStormOrderWindPass() {
+        List<Territory> territorySectorsList = territories.getTerritorySectorsInStormOrder("Wind Pass");
         assertEquals(4, territorySectorsList.size());
     }
 
