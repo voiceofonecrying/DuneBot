@@ -4,7 +4,6 @@ import controller.DiscordGame;
 import enums.MoveType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
-import model.DuneChoice;
 import model.Game;
 import model.Movement;
 import model.Territory;
@@ -12,7 +11,6 @@ import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 

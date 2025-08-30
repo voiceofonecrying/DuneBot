@@ -419,6 +419,55 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#presentSectorChoices")
+    class PresentSectorChoices {
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            emperor.setChat(ixChat);
+            game.createAlliance(ecaz, ix);
+        }
+
+        @Test
+        void testCielagoNorthWithFremenAmbassador() {
+            ix.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            game.getTerritory("Cielago North (East Sector)").setSpice(6);
+            List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Cielago North");
+            ix.getMovement().presentSectorChoices(ix, "Cielago North", sectors);
+            assertEquals("Which sector of Cielago North?", ixChat.getMessages().getLast());
+            assertEquals(4, ixChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-sector-Cielago North (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("18 - West Sector", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-fremen-sector-Cielago North (Center Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("1 - Center Sector", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-fremen-sector-Cielago North (East Sector)", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("2 - East Sector (6 spice)", ixChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+        }
+
+        @Test
+        void testWindPassWithGuildAmbassador() {
+            ix.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Wind Pass");
+            ix.getMovement().presentSectorChoices(ix, "Wind Pass", sectors);
+            assertEquals("Which sector of Wind Pass?", ixChat.getMessages().getLast());
+            assertEquals(5, ixChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-sector-Wind Pass (Far North Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("13 - Far North Sector", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-guild-sector-Wind Pass (North Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("14 - North Sector", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-guild-sector-Wind Pass (South Sector)", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("15 - South Sector", ixChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-guild-sector-Wind Pass (Far South Sector)", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("16 - Far South Sector", ixChat.getChoices().getLast().get(3).getLabel());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+        }
+    }
+
+    @Nested
     @DisplayName("#addRegularForces")
     class AddRegularForces {
         Movement movement;
