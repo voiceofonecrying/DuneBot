@@ -36,6 +36,14 @@ public class MovementTest extends DuneTest {
             movement.setMovingFrom("Hidden Mobile Stronghold");
         }
 
+        @AfterEach
+        void tearDown() {
+            assertEquals("", movement.getMovingTo());
+            assertEquals("", movement.getMovingFrom());
+            assertEquals(0, movement.getForce());
+            assertEquals(0, movement.getSpecialForce());
+        }
+
         @Test
         void testFremenAmbassador() {
             ix.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
@@ -52,6 +60,56 @@ public class MovementTest extends DuneTest {
             assertEquals("You will not ship with the Guild Ambassador.", ixChat.getMessages().getLast());
             assertEquals(Emojis.IX + " does not ship with the Guild Ambassador.", turnSummary.getMessages().getLast());
             assertEquals(MoveType.TBD, movement.getMoveType());
+        }
+    }
+
+    @Nested
+    @DisplayName("#startOver")
+    class StartOver {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            ecaz.setChat(ecazChat);
+            ix.setChat(ixChat);
+            game.createAlliance(ecaz, ix);
+            // TODO: Change to Ix when ally use of ambassadors is supported
+            movement = ecaz.getMovement();
+            movement.setForce(1);
+            movement.setSpecialForce(2);
+            movement.setMovingTo("Carthag");
+            movement.setMovingFrom("Hidden Mobile Stronghold");
+            turnSummary.clear();
+        }
+
+        @AfterEach
+        void tearDown() {
+            assertEquals("", movement.getMovingTo());
+            assertEquals("", movement.getMovingFrom());
+            assertEquals(0, movement.getForce());
+            assertEquals(0, movement.getSpecialForce());
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            // TODO: Change to Ix when ally use of ambassadors is supported
+            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            movement.startOver(game, ecaz);
+            assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", ecazChat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            // TODO: Change to Ix when ally use of ambassadors is supported
+            ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            movement.startOver(game, ecaz);
+            assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", ecazChat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
     }
 

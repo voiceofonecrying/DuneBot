@@ -2,6 +2,7 @@ package model;
 
 import enums.MoveType;
 import exceptions.InvalidGameStateException;
+import model.factions.EcazFaction;
 import model.factions.Faction;
 
 import java.util.Comparator;
@@ -144,6 +145,16 @@ public class Movement {
         }
         clear();
         moveType = MoveType.TBD;
+    }
+
+    public void startOver(Game game, Faction faction) {
+        if (moveType == MoveType.FREMEN_AMBASSADOR) {
+            clear();
+            ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
+        } else if (moveType == MoveType.GUILD_AMBASSADOR) {
+            clear();
+            ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
+        }
     }
 
     public void presentStrongholdChoices(Game game, Faction faction) {

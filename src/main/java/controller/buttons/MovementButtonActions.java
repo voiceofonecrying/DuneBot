@@ -14,6 +14,14 @@ public class MovementButtonActions {
         discordGame.pushGame();
     }
 
+    protected static void startOver(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        faction.getMovement().startOver(game, faction);
+        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
+//        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
+    }
+
     protected static void presentStrongholdShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.getMovement().presentStrongholdChoices(game, faction);

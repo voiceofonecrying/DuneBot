@@ -8,7 +8,6 @@ import model.DuneChoice;
 import model.Game;
 import model.Movement;
 import model.Territory;
-import model.factions.EcazFaction;
 import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
@@ -30,7 +29,7 @@ public class AmbassadorButtons {
     private static void handleGuildAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("ambassador-guild-", "");
         if (action.equals("pass")) MovementButtonActions.pass(event, game, discordGame);
-        else if (action.equals("start-over")) resetGuildAmbassador(event, game, discordGame);
+        else if (action.equals("start-over")) MovementButtonActions.startOver(event, game, discordGame);
         else if (action.equals("stronghold")) MovementButtonActions.presentStrongholdShippingChoices(event, game, discordGame);
         else if (action.equals("spice-blow")) MovementButtonActions.presentSpiceBlowShippingChoices(event, discordGame, game);
         else if (action.equals("rock")) MovementButtonActions.presentRockShippingChoices(event, discordGame, game);
@@ -41,21 +40,12 @@ public class AmbassadorButtons {
         else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
         else if (action.equals("reset-forces")) resetForces(event, game, discordGame);
         else if (action.equals("execute")) execute(event, game, discordGame);
-    }
-
-    private static void resetGuildAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().clear();
-        ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-guild-");
-//        discordGame.queueDeleteMessage();
-        discordGame.pushGame();
     }
 
     private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("ambassador-fremen-", "");
         if (action.equals("pass")) MovementButtonActions.pass(event, game, discordGame);
-        else if (action.equals("start-over")) resetFremenAmbassador(event, game, discordGame);
+        else if (action.equals("start-over")) MovementButtonActions.startOver(event, game, discordGame);
         else if (action.equals("stronghold")) MovementButtonActions.presentStrongholdShippingChoices(event, game, discordGame);
         else if (action.equals("spice-blow")) MovementButtonActions.presentSpiceBlowShippingChoices(event, discordGame, game);
         else if (action.equals("rock")) MovementButtonActions.presentRockShippingChoices(event, discordGame, game);
@@ -66,16 +56,6 @@ public class AmbassadorButtons {
         else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
         else if (action.equals("reset-forces")) resetForces(event, game, discordGame);
         else if (action.equals("execute")) execute(event, game, discordGame);
-    }
-
-    private static void resetFremenAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().clear();
-        faction.getMovement().setMoved(false);
-        ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-fremen-");
-//        discordGame.queueDeleteMessage();
-        discordGame.pushGame();
     }
 
     protected static void presentSectorChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -176,7 +156,7 @@ public class AmbassadorButtons {
             forcesButtons.add(Button.success(choicePrefix + "execute", executeLabel));
             forcesButtons.add(Button.danger(choicePrefix + "reset-forces", "Reset forces"));
         }
-        forcesButtons.add(Button.danger(choicePrefix + "start-over", "Start over"));
+        forcesButtons.add(Button.secondary(choicePrefix + "start-over", "Start over"));
         ShipmentAndMovementButtons.arrangeButtonsAndSend(message, forcesButtons, discordGame);
     }
 

@@ -170,7 +170,7 @@ public class EcazFaction extends Faction {
     public void presentFremenAmbassadorRideFromChoices() {
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
         choices.add(new DuneChoice("danger", "ambassador-fremen-pass", "Decline ride"));
-        chat.reply("You have triggered your Fremen Ambassador!\nWhere would you like to ride from with your Fremen Ambassador?", choices);
+        chat.reply("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", choices);
         movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
     }
 
