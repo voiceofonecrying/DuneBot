@@ -190,9 +190,8 @@ public class AmbassadorButtons {
 
     private static void execute(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
+        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
         faction.getMovement().execute(game, faction);
         discordGame.pushGame();
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
-        faction.getMovement().setMoveType(MoveType.TBD);
     }
 }

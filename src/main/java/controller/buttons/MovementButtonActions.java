@@ -1,7 +1,6 @@
 package controller.buttons;
 
 import controller.DiscordGame;
-import enums.MoveType;
 import exceptions.ChannelNotFoundException;
 import model.Game;
 import model.factions.Faction;
@@ -10,9 +9,8 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 public class MovementButtonActions {
     protected static void pass(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
+        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
         faction.getMovement().pass(game, faction);
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-fremen-");
-        faction.getMovement().setMoveType(MoveType.TBD);
         discordGame.pushGame();
     }
 

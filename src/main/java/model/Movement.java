@@ -142,7 +142,8 @@ public class Movement {
             faction.getChat().reply("You will not ship with the Guild Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ship with the Guild Ambassador.");
         }
-        faction.getMovement().clear();
+        clear();
+        moveType = MoveType.TBD;
     }
 
     public void presentStrongholdChoices(Game game, Faction faction) {
@@ -209,6 +210,7 @@ public class Movement {
         } else if (moveType == MoveType.GUILD_AMBASSADOR)
             executeGuildAmbassador(game, faction);
         clear();
+        moveType = MoveType.TBD;
     }
 
     public void executeGuildAmbassador(Game game, Faction faction) throws InvalidGameStateException {

@@ -42,7 +42,7 @@ public class MovementTest extends DuneTest {
             movement.pass(game, ix);
             assertEquals("You will not ride the worm with the Fremen Ambassador.", ixChat.getMessages().getLast());
             assertEquals(Emojis.IX + " does not ride the worm with the Fremen Ambassador.", turnSummary.getMessages().getLast());
-            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+            assertEquals(MoveType.TBD, movement.getMoveType());
         }
 
         @Test
@@ -51,7 +51,7 @@ public class MovementTest extends DuneTest {
             movement.pass(game, ix);
             assertEquals("You will not ship with the Guild Ambassador.", ixChat.getMessages().getLast());
             assertEquals(Emojis.IX + " does not ship with the Guild Ambassador.", turnSummary.getMessages().getLast());
-            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+            assertEquals(MoveType.TBD, movement.getMoveType());
         }
     }
 
@@ -89,6 +89,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : strongholdsWithHMS)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
 
         @Test
@@ -108,6 +109,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : strongholds)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
 
         @Test
@@ -128,6 +130,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : strongholdsWithHMS)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, ix.getMovement().getMoveType());
         }
     }
 
@@ -161,6 +164,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : spiceBlowTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
 
         @Test
@@ -179,6 +183,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : spiceBlowTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -212,6 +217,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : rockTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
 
         @Test
@@ -230,6 +236,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : rockTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -271,6 +278,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : discoveryTokenTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
 
         @Test
@@ -289,6 +297,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : discoveryTokenTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -322,6 +331,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
 
         @Test
@@ -340,6 +350,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -379,7 +390,7 @@ public class MovementTest extends DuneTest {
             assertEquals(2, hms.getForceStrength("Ix"));
             assertEquals(1, hms.getForceStrength("Ix*"));
             assertEquals(Emojis.IX + ": 1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " moved from Hidden Mobile Stronghold to Carthag.", turnSummary.getMessages().getLast());
-            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+            assertEquals(MoveType.TBD, movement.getMoveType());
         }
 
         @Test
@@ -392,7 +403,7 @@ public class MovementTest extends DuneTest {
             assertEquals(9, ixHomeworld.getForceStrength("Ix"));
             assertEquals(2, ixHomeworld.getForceStrength("Ix*"));
             assertEquals(Emojis.IX + ": 1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " placed on Carthag", turnSummary.getMessages().getLast());
-            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+            assertEquals(MoveType.TBD, movement.getMoveType());
         }
     }
 }
