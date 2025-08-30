@@ -147,7 +147,7 @@ public class Movement {
         moveType = MoveType.TBD;
     }
 
-    public void startOver(Game game, Faction faction) {
+    public void startOver(Faction faction) {
         if (moveType == MoveType.FREMEN_AMBASSADOR) {
             clear();
             ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
@@ -212,6 +212,13 @@ public class Movement {
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !wormRide, isInitialPlacement)));
         return choice;
+    }
+
+    public void resetForces() {
+        force = 0;
+        specialForce = 0;
+        secondForce = 0;
+        secondSpecialForce = 0;
     }
 
     public void execute(Game game, Faction faction) throws InvalidGameStateException {

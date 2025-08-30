@@ -42,6 +42,9 @@ public class MovementTest extends DuneTest {
             assertEquals("", movement.getMovingFrom());
             assertEquals(0, movement.getForce());
             assertEquals(0, movement.getSpecialForce());
+            assertEquals(0, movement.getSecondForce());
+            assertEquals(0, movement.getSecondSpecialForce());
+            assertEquals("", movement.getSecondMovingFrom());
         }
 
         @Test
@@ -90,13 +93,16 @@ public class MovementTest extends DuneTest {
             assertEquals("", movement.getMovingFrom());
             assertEquals(0, movement.getForce());
             assertEquals(0, movement.getSpecialForce());
+            assertEquals(0, movement.getSecondForce());
+            assertEquals(0, movement.getSecondSpecialForce());
+            assertEquals("", movement.getSecondMovingFrom());
         }
 
         @Test
         void testFremenAmbassador() {
             // TODO: Change to Ix when ally use of ambassadors is supported
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.startOver(game, ecaz);
+            movement.startOver(ecaz);
             assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", ecazChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
@@ -106,7 +112,7 @@ public class MovementTest extends DuneTest {
         void testGuildAmbassador() {
             // TODO: Change to Ix when ally use of ambassadors is supported
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            movement.startOver(game, ecaz);
+            movement.startOver(ecaz);
             assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", ecazChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
@@ -413,6 +419,50 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#resetForces")
+    class ResetForces {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            emperor.setChat(ixChat);
+            game.createAlliance(ecaz, ix);
+            movement = ix.getMovement();
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.setSpecialForce(2);
+        }
+
+        @AfterEach
+        void tearDown() {
+            assertEquals(0, movement.getForce());
+            assertEquals(0, movement.getSpecialForce());
+            assertEquals(0, movement.getSecondForce());
+            assertEquals(0, movement.getSecondSpecialForce());
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+            movement.setMovingFrom("Hidden Mobile Stronghold");
+            movement.resetForces();
+            assertEquals("Hidden Mobile Stronghold", movement.getMovingFrom());
+            assertEquals("Carthag", movement.getMovingTo());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            movement.setMoveType(MoveType.GUILD_AMBASSADOR);
+            movement.resetForces();
+            assertEquals("Carthag", movement.getMovingTo());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+    }
+
+    @Nested
     @DisplayName("#execute")
     class Execute {
         Movement movement;
@@ -435,6 +485,9 @@ public class MovementTest extends DuneTest {
             assertEquals("", movement.getMovingFrom());
             assertEquals(0, movement.getForce());
             assertEquals(0, movement.getSpecialForce());
+            assertEquals(0, movement.getSecondForce());
+            assertEquals(0, movement.getSecondSpecialForce());
+            assertEquals("", movement.getSecondMovingFrom());
         }
 
         @Test
