@@ -920,12 +920,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    protected static void presentOtherShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentNonSpiceNonRockChoices(game, faction);
-        discordGame.queueDeleteMessage();
-    }
-
     private static void queueRockShippingButtons(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
         String buttonSuffix = event.getComponentId().replace("rock", "");
         boolean startingForces = event.getComponentId().contains("-starting-forces");
@@ -936,12 +930,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<DuneChoice> choices = rockTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
         faction.getChat().reply("Which Rock Territory?", choices);
-        discordGame.queueDeleteMessage();
-    }
-
-    protected static void presentRockShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentRockChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 
@@ -959,12 +947,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<DuneChoice> choices = spiceBlowTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
         faction.getChat().reply("Which Spice Blow Territory?", choices);
-        discordGame.queueDeleteMessage();
-    }
-
-    protected static void presentSpiceBlowShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentSpiceBlowChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 
@@ -992,12 +974,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    protected static void presentDiscoveryShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentDiscoveryTokenChoices(game, faction);
-        discordGame.queueDeleteMessage();
-    }
-
     private static void queueStrongholdShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String buttonSuffix = event.getComponentId().replace("stronghold", "");
@@ -1009,12 +985,6 @@ public class ShipmentAndMovementButtons implements Pressable {
                 .map(t -> shipToTerritoryChoice(game, faction, buttonSuffix, t.getTerritoryName(), startingForces)).sorted(Comparator.comparing(DuneChoice::getLabel)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
         faction.getChat().reply("Which Stronghold?", choices);
-        discordGame.queueDeleteMessage();
-    }
-
-    protected static void presentStrongholdShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentStrongholdChoices(game, faction);
         discordGame.queueDeleteMessage();
     }
 

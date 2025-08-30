@@ -1,6 +1,5 @@
 package controller.buttons;
 
-import constants.Emojis;
 import controller.DiscordGame;
 import enums.MoveType;
 import exceptions.ChannelNotFoundException;
@@ -30,27 +29,18 @@ public class AmbassadorButtons {
 
     private static void handleGuildAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("ambassador-guild-", "");
-        if (action.equals("pass")) passGuildAmbassador(event, game, discordGame);
+        if (action.equals("pass")) MovementButtonActions.pass(event, game, discordGame);
         else if (action.equals("start-over")) resetGuildAmbassador(event, game, discordGame);
-        else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame);
-        else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game);
-        else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game);
-        else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame);
-        else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game);
+        else if (action.equals("stronghold")) MovementButtonActions.presentStrongholdShippingChoices(event, game, discordGame);
+        else if (action.equals("spice-blow")) MovementButtonActions.presentSpiceBlowShippingChoices(event, discordGame, game);
+        else if (action.equals("rock")) MovementButtonActions.presentRockShippingChoices(event, discordGame, game);
+        else if (action.equals("discovery-tokens")) MovementButtonActions.presentDiscoveryShippingChoices(event, game, discordGame);
+        else if (action.equals("other")) MovementButtonActions.presentOtherShippingChoices(event, discordGame, game);
         else if (action.startsWith("territory-")) presentSectorChoices(event, game, discordGame);
         else if (action.startsWith("sector-")) filterBySector(event, game, discordGame);
         else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
         else if (action.equals("reset-forces")) resetForces(event, game, discordGame);
         else if (action.equals("execute")) execute(event, game, discordGame);
-    }
-
-    private static void passGuildAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getChat().reply("You will not ship with your Guild ambassador.");
-        game.getTurnSummary().publish(Emojis.ECAZ + " does not ship with their Guild ambassador.");
-        faction.getShipment().clear();
-        faction.getMovement().setMoveType(MoveType.TBD);
-        discordGame.pushGame();
     }
 
     private static void resetGuildAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -64,28 +54,18 @@ public class AmbassadorButtons {
 
     private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("ambassador-fremen-", "");
-        if (action.equals("pass")) passFremenAmbassador(event, game, discordGame);
+        if (action.equals("pass")) MovementButtonActions.pass(event, game, discordGame);
         else if (action.equals("start-over")) resetFremenAmbassador(event, game, discordGame);
-        else if (action.equals("stronghold")) ShipmentAndMovementButtons.presentStrongholdShippingChoices(event, game, discordGame);
-        else if (action.equals("spice-blow")) ShipmentAndMovementButtons.presentSpiceBlowShippingChoices(event, discordGame, game);
-        else if (action.equals("rock")) ShipmentAndMovementButtons.presentRockShippingChoices(event, discordGame, game);
-        else if (action.equals("discovery-tokens")) ShipmentAndMovementButtons.presentDiscoveryShippingChoices(event, game, discordGame);
-        else if (action.equals("other")) ShipmentAndMovementButtons.presentOtherShippingChoices(event, discordGame, game);
+        else if (action.equals("stronghold")) MovementButtonActions.presentStrongholdShippingChoices(event, game, discordGame);
+        else if (action.equals("spice-blow")) MovementButtonActions.presentSpiceBlowShippingChoices(event, discordGame, game);
+        else if (action.equals("rock")) MovementButtonActions.presentRockShippingChoices(event, discordGame, game);
+        else if (action.equals("discovery-tokens")) MovementButtonActions.presentDiscoveryShippingChoices(event, game, discordGame);
+        else if (action.equals("other")) MovementButtonActions.presentOtherShippingChoices(event, discordGame, game);
         else if (action.startsWith("territory-")) presentSectorChoices(event, game, discordGame);
         else if (action.startsWith("sector-")) filterBySector(event, game, discordGame);
         else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
         else if (action.equals("reset-forces")) resetForces(event, game, discordGame);
         else if (action.equals("execute")) execute(event, game, discordGame);
-    }
-
-    private static void passFremenAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
-        faction.getMovement().clear();
-        faction.getMovement().setMoveType(MoveType.TBD);
-        discordGame.queueMessage("You will not ride the worm.");
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), "ambassador-fremen-");
-        discordGame.pushGame();
     }
 
     private static void resetFremenAmbassador(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {

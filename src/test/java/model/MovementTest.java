@@ -18,6 +18,44 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#pass")
+    class Pass {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            ecaz.setChat(ecazChat);
+            ix.setChat(ixChat);
+            game.createAlliance(ecaz, ix);
+            movement = ix.getMovement();
+            movement.setForce(1);
+            movement.setSpecialForce(2);
+            movement.setMovingTo("Carthag");
+            movement.setMovingFrom("Hidden Mobile Stronghold");
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            ix.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
+            movement.pass(game, ix);
+            assertEquals("You will not ride the worm with the Fremen Ambassador.", ixChat.getMessages().getLast());
+            assertEquals(Emojis.IX + " does not ride the worm with the Fremen Ambassador.", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            ix.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            movement.pass(game, ix);
+            assertEquals("You will not ship with the Guild Ambassador.", ixChat.getMessages().getLast());
+            assertEquals(Emojis.IX + " does not ship with the Guild Ambassador.", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+    }
+
+    @Nested
     @DisplayName("#presentStrongholdChoices")
     class PresentStrongholdChoices {
         List<String> strongholds;
@@ -41,7 +79,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
             assertEquals(7, ecazChat.getChoices().getLast().size());
             assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
-            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 6)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
@@ -60,7 +98,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
             assertEquals(6, ecazChat.getChoices().getLast().size());
             assertFalse(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
-            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 5)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
@@ -80,7 +118,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Which Stronghold?", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
             assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
-            assertEquals("ambassador-guild-reset-shipment", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 6)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
@@ -113,7 +151,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentSpiceBlowChoices(game, ecaz);
             assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
@@ -131,7 +169,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentSpiceBlowChoices(game, ecaz);
             assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
@@ -164,7 +202,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentRockChoices(game, ecaz);
             assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
             assertEquals(8, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
@@ -182,7 +220,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentRockChoices(game, ecaz);
             assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
             assertEquals(8, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
@@ -223,7 +261,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentDiscoveryTokenChoices(game, ecaz);
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
             assertEquals(3, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
@@ -241,7 +279,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentDiscoveryTokenChoices(game, ecaz);
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
             assertEquals(3, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
@@ -274,7 +312,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentNonSpiceNonRockChoices(game, ecaz);
             assertEquals("Which Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
@@ -292,7 +330,7 @@ public class MovementTest extends DuneTest {
             ecaz.getMovement().presentNonSpiceNonRockChoices(game, ecaz);
             assertEquals("Which Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-reset-shipment", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
