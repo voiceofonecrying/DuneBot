@@ -33,7 +33,7 @@ public class AmbassadorButtons {
         else if (action.equals("other")) MovementButtonActions.presentOtherShippingChoices(event, discordGame, game);
         else if (action.startsWith("territory-")) presentSectorChoices(event, game, discordGame);
         else if (action.startsWith("sector-")) filterBySector(event, game, discordGame);
-        else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
+        else if (action.startsWith("add-force-")) MovementButtonActions.addRegularForces(event, game, discordGame);
         else if (action.equals("reset-forces")) MovementButtonActions.resetForces(event, game, discordGame);
         else if (action.equals("execute")) MovementButtonActions.execute(event, game, discordGame);
     }
@@ -49,7 +49,7 @@ public class AmbassadorButtons {
         else if (action.equals("other")) MovementButtonActions.presentOtherShippingChoices(event, discordGame, game);
         else if (action.startsWith("territory-")) presentSectorChoices(event, game, discordGame);
         else if (action.startsWith("sector-")) filterBySector(event, game, discordGame);
-        else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
+        else if (action.startsWith("add-force-")) MovementButtonActions.addRegularForces(event, game, discordGame);
         else if (action.equals("reset-forces")) MovementButtonActions.resetForces(event, game, discordGame);
         else if (action.equals("execute")) MovementButtonActions.execute(event, game, discordGame);
     }
@@ -97,16 +97,6 @@ public class AmbassadorButtons {
                 )
         ).findFirst().orElseThrow();
         faction.getMovement().setMovingTo(territory.getTerritoryName());
-        MovementButtonActions.presentForcesChoices(event, game, discordGame, faction);
-        discordGame.pushGame();
-    }
-
-    private static void addRegularForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        String choicePrefix = faction.getMovement().getChoicePrefix();
-        int currentForces = faction.getMovement().getForce();
-        int addedForces = Integer.parseInt(event.getComponentId().replace("add-force-", "").replace(choicePrefix, ""));
-        faction.getMovement().setForce(currentForces + addedForces);
         MovementButtonActions.presentForcesChoices(event, game, discordGame, faction);
         discordGame.pushGame();
     }

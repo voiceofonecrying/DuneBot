@@ -419,6 +419,41 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#addRegularForces")
+    class AddRegularForces {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            emperor.setChat(ixChat);
+            game.createAlliance(ecaz, ix);
+            movement = ix.getMovement();
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.setSpecialForce(2);
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+            movement.setMovingFrom("Hidden Mobile Stronghold");
+            movement.addRegularForces(1);
+            assertEquals(2, movement.getForce());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            movement.setMoveType(MoveType.GUILD_AMBASSADOR);
+            movement.addRegularForces(1);
+            assertEquals(2, movement.getForce());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+    }
+
+    @Nested
     @DisplayName("#resetForces")
     class ResetForces {
         Movement movement;

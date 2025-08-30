@@ -214,6 +214,10 @@ public class Movement {
         return choice;
     }
 
+    public void addRegularForces(int numForces) {
+        force += numForces;
+    }
+
     public void resetForces() {
         force = 0;
         specialForce = 0;

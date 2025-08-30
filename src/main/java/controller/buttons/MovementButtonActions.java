@@ -58,6 +58,15 @@ public class MovementButtonActions {
         discordGame.queueDeleteMessage();
     }
 
+    protected static void addRegularForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String choicePrefix = faction.getMovement().getChoicePrefix();
+        int addedForces = Integer.parseInt(event.getComponentId().replace("add-force-", "").replace(choicePrefix, ""));
+        faction.getMovement().addRegularForces(addedForces);
+        MovementButtonActions.presentForcesChoices(event, game, discordGame, faction);
+        discordGame.pushGame();
+    }
+
     protected static void resetForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         faction.getMovement().resetForces();
