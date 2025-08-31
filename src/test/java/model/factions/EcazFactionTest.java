@@ -380,20 +380,20 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         public void testTriggerFremenPresentsTerritoriesToMoveFrom() {
             faction.triggerAmbassador(harkonnen, "Fremen");
-            assertEquals("Where would you like to ride from with your Fremen Ambassador?", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
             assertEquals("Imperial Basin (Center Sector)", chat.getChoices().getFirst().getFirst().getLabel());
-            assertEquals("No move", chat.getChoices().getFirst().getLast().getLabel());
+            assertEquals("Decline ride", chat.getChoices().getFirst().getLast().getLabel());
         }
 
         @Test
         public void testTriggerGuildPresentsDestinationChoices() {
             faction.triggerAmbassador(harkonnen, "Guild");
             assertTrue(modInfo.getMessages().isEmpty());
-            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", chat.getMessages().getFirst());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Stronghold", chat.getChoices().getFirst().getFirst().getLabel());
-            assertEquals("stronghold-guild-ambassador", chat.getChoices().getFirst().getFirst().getId());
+            assertEquals("ambassador-guild-stronghold", chat.getChoices().getFirst().getFirst().getId());
             assertEquals("Pass shipment", chat.getChoices().getFirst().getLast().getLabel());
         }
 

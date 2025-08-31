@@ -3,10 +3,7 @@ package model;
 import constants.Emojis;
 import model.factions.BGFaction;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public class Territories extends HashMap<String, Territory> {
@@ -58,13 +55,16 @@ public class Territories extends HashMap<String, Territory> {
         return values().stream().map(Territory::getAggregateTerritoryName).collect(Collectors.toSet());
     }
 
-    public List<Territory> getTerritorySectors(String aggregateTerritoryName){
-        if (aggregateTerritoryName.equals("Wind Pass")) return values().stream().filter(t -> t.getTerritoryName().indexOf("Wind Pass (") == 0).toList();
-        else return values().stream().filter(t -> t.getTerritoryName().indexOf(aggregateTerritoryName) == 0).toList();
+    public List<Territory> getTerritorySectorsInStormOrder(String aggregateTerritoryName) {
+        List<Territory> territorySectors = new ArrayList<>(this.values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "").equalsIgnoreCase(aggregateTerritoryName)).toList());
+        territorySectors.sort(Comparator.comparingInt(Territory::getSector));
+        if (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression") || aggregateTerritoryName.equals("Meridian"))
+            territorySectors.addFirst(territorySectors.removeLast());
+        return territorySectors;
     }
 
     public List<List<Territory>> getAggregateTerritoryList(String aggregateTerritoryName, int storm, boolean includeSectorsUnderStorm) {
-        List<Territory> territorySectors = getTerritorySectors(aggregateTerritoryName);
+        List<Territory> territorySectors = getTerritorySectorsInStormOrder(aggregateTerritoryName);
         List<Territory> sectorsBeforeStorm;
         List<Territory> sectorsAfterStorm;
         List<Territory> sectorsUnderStorm = new ArrayList<>();
@@ -139,5 +139,25 @@ public class Territories extends HashMap<String, Territory> {
             return true;
         }
         return true;
+    }
+
+    public List<String> getSpiceBlowTerritoryNames() {
+        return List.of(
+                "Habbanya Ridge Flat", "Cielago South", "Broken Land", "South Mesa", "Sihaya Ridge",
+                "Hagga Basin", "Red Chasm", "The Minor Erg", "Cielago North", "Funeral Plain",
+                "The Great Flat", "Habbanya Erg", "Old Gap", "Rock Outcroppings", "Wind Pass North"
+        );
+    }
+
+    public List<String> getRockTerritoryNames() {
+        return List.of("False Wall South", "Pasty Mesa", "False Wall East", "Shield Wall", "Rim Wall West", "Plastic Basin", "False Wall West");
+    }
+
+    public List<String> getNonSpiceNonRockTerritoryNames() {
+        return List.of(
+                "Polar Sink", "Cielago Depression", "Meridian", "Cielago East", "Harg Pass",
+                "Gara Kulon", "Hole In The Rock", "Basin", "Imperial Basin", "Arsunt",
+                "Tsimpo", "Bight Of The Cliff", "Wind Pass", "The Greater Flat", "Cielago West"
+        );
     }
 }

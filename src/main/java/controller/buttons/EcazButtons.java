@@ -96,10 +96,8 @@ public class EcazButtons implements Pressable {
 
     private static void fremenMoveFrom(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         String territoryName = event.getComponentId().split("-")[4];
-        discordGame.queueDeleteMessage();
-        discordGame.queueMessage("You will move from " + territoryName + ".");
         game.getEcazFaction().getMovement().setMovingFrom(territoryName);
-        ShipmentAndMovementButtons.queueShippingButtons(event, game, discordGame, true);
+        ShipmentAndMovementButtons.presentShippingChoices(event, game, discordGame, false);
         discordGame.pushGame();
     }
 

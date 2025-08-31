@@ -1545,7 +1545,6 @@ public class Game {
             faction.getShipment().clear();
             faction.getMovement().clear();
             faction.getShipment().setShipped(false);
-            faction.getMovement().setMoved(false);
         }
         turnOrder.clear();
         turnOrder.addAll(getFactionsInStormOrder().stream().map(Faction::getName).toList());

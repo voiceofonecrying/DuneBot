@@ -5,6 +5,7 @@ import controller.channels.TurnSummary;
 import controller.commands.RunCommands;
 import controller.commands.SetupCommands;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -406,7 +407,6 @@ public class ShipmentAndMovementButtons implements Pressable {
                 discordGame.queueMessage("Starting over");
                 String fromTerritory = faction.getMovement().getMovingFrom();
                 faction.getMovement().clear();
-                faction.getMovement().setMoved(false);
                 if (faction instanceof FremenFaction fremen)
                     fremen.presentWormRideChoices(fromTerritory);
                 else if (faction instanceof EcazFaction ecaz)
@@ -415,7 +415,6 @@ public class ShipmentAndMovementButtons implements Pressable {
                 discordGame.queueMessage("Starting over");
                 String fromTerritory = faction.getMovement().getMovingFrom();
                 faction.getMovement().clear();
-                faction.getMovement().setMoved(false);
                 ((FremenFaction) faction).presentWormPlacementChoices(fromTerritory, shaiHuludPlacement ? "Shai-Hulud" : "Great Maker");
             } else if (startingForces) {
                 faction.getShipment().clear();
@@ -438,7 +437,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             }
         } else {
             faction.getMovement().clear();
-            faction.getMovement().setMoved(false);
             queueMovementButtons(game, faction, discordGame);
         }
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
@@ -967,7 +965,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    private static DuneChoice shipToTerritoryChoice(Game game, Faction faction, String buttonSuffix, String wholeTerritoryName, boolean isInitialPlacement) {
+    protected static DuneChoice shipToTerritoryChoice(Game game, Faction faction, String buttonSuffix, String wholeTerritoryName, boolean isInitialPlacement) {
         String labelSuffix = "-" + wholeTerritoryName;
         DuneChoice choice = new DuneChoice("ship" + buttonSuffix + labelSuffix, wholeTerritoryName);
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
@@ -1031,6 +1029,37 @@ public class ShipmentAndMovementButtons implements Pressable {
         choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
         choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, fremenRide ? "No ride" : "I don't want to ship."));
         faction.getChat().reply(fremenRide ? "Where would you like to ride to?" : "Where would you like to ship to?", choices);
+
+        choices = new ArrayList<>();
+        if (faction instanceof GuildFaction && faction.getShipment().getCrossShipFrom().isEmpty()) {
+            choices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
+            choices.add(new DuneChoice("guild-ship-to-reserves", "Ship to reserves"));
+            faction.getChat().publish("Special options for " + Emojis.GUILD + ":", choices);
+        } else if (faction.getAlly().equals("Guild") && faction.getShipment().getCrossShipFrom().isEmpty()) {
+            choices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
+            faction.getChat().publish("Special option for " + Emojis.GUILD + " ally :", choices);
+        }
+
+        discordGame.queueDeleteMessage();
+    }
+
+    public static void presentShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean fremenRide) {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        boolean fremenAmbassador = faction.getMovement().getMoveType() == MoveType.FREMEN_AMBASSADOR;
+        String choicePrefix = faction.getMovement().getChoicePrefix();
+        boolean wormRide = fremenRide || fremenAmbassador;
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice(choicePrefix + "stronghold", "Stronghold"));
+        choices.add(new DuneChoice(choicePrefix + "spice-blow", "Spice Blow Territories"));
+        choices.add(new DuneChoice(choicePrefix + "rock", "Rock Territories"));
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && !wormRide)
+            choices.add(new DuneChoice("homeworlds", "Homeworlds"));
+        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
+            choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
+        choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
+        choices.add(new DuneChoice("danger", choicePrefix + "pass", wormRide ? "No ride" : "I don't want to ship."));
+        faction.getChat().reply(wormRide ? "Where would you like to ride to from " + faction.getMovement().getMovingFrom() + "?" : "Where would you like to ship to?", choices);
 
         choices = new ArrayList<>();
         if (faction instanceof GuildFaction && faction.getShipment().getCrossShipFrom().isEmpty()) {

@@ -61,7 +61,6 @@ public class IxButtons implements Pressable {
     public static void hmsQueueMovableTerritories(Game game) {
         IxFaction faction = game.getIxFaction();
         faction.getMovement().clear();
-        faction.getMovement().setMoved(false);
         Territory from = faction.getTerritoryWithHMS();
 
         faction.getMovement().setMovingFrom(from.getTerritoryName());
