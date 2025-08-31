@@ -229,6 +229,48 @@ public class Movement {
         faction.getChat().reply("Which sector of " + aggregateTerritoryName + "?", choices);
     }
 
+    public void presentForcesChoices(Game game, Faction faction) {
+        boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
+        boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
+        boolean wormRide = fremenRide || fremenAmbassador;
+        boolean guildAmbassador = moveType == MoveType.GUILD_AMBASSADOR;
+        List<DuneChoice> choices = new ArrayList<>();
+        int buttonLimitForces = guildAmbassador ? faction.getReservesStrength() - force :
+                game.getTerritory(movingFrom).getForceStrength(faction.getName()) - force;
+        int buttonLimitSpecialForces = guildAmbassador ? faction.getSpecialReservesStrength() - specialForce :
+                game.getTerritory(movingFrom).getForceStrength(faction.getName() + "*") - specialForce;
+        if (guildAmbassador) {
+            int forcesAllocated = force + specialForce;
+            buttonLimitForces = Math.min(4 - forcesAllocated, buttonLimitForces);
+            buttonLimitSpecialForces = Math.min(4 - forcesAllocated, buttonLimitSpecialForces);
+        }
+
+        for (int i = 0; i < Math.max(buttonLimitForces, buttonLimitSpecialForces); i++) {
+            if (i < buttonLimitForces)
+                choices.add(new DuneChoice(getChoicePrefix() + "add-force-" + (i + 1), "Add " + (i + 1) + " troop"));
+            if (i < buttonLimitSpecialForces)
+                choices.add(new DuneChoice(getChoicePrefix() + "add-special-force-" + (i + 1), "Add " + (i + 1) + " * troop"));
+        }
+
+        String message = "Use buttons below to add forces to your ";
+        if (wormRide)
+            message += "ride. Currently moving:";
+        else if (guildAmbassador)
+            message += "shipment. Currently shipping:";
+        else
+            message += "movement. Currently moving:";
+        message += "\n**" + faction.forcesStringWithZeroes(force, specialForce) + "** to " + movingTo;
+        if (force != 0 || specialForce != 0) {
+            String executeLabel = "Confirm Movement";
+            if (guildAmbassador)
+                executeLabel = "Confirm Shipment";
+            choices.add(new DuneChoice("success", getChoicePrefix() + "execute", executeLabel));
+            choices.add(new DuneChoice("secondary", getChoicePrefix() + "reset-forces", "Reset forces"));
+        }
+        choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
+        faction.getChat().reply(message, choices);
+    }
+
     public void addRegularForces(int numForces) {
         force += numForces;
     }

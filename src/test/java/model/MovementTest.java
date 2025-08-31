@@ -468,6 +468,60 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#presentForcesChoices")
+    class PresentForcesChoices {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(ecaz);
+            game.addFaction(ix);
+            emperor.setChat(ixChat);
+            game.createAlliance(ecaz, ix);
+            movement = ix.getMovement();
+            movement.setMovingTo("Carthag");
+            movement.setForce(0);
+            movement.setSpecialForce(1);
+        }
+
+        @Test
+        void testFremenAmbassador() {
+            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+            movement.setMovingFrom("Hidden Mobile Stronghold");
+            movement.presentForcesChoices(game, ix);
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 1 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
+            assertEquals(8, ixChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Add 1 troop", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-fremen-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("Add 1 * troop", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-fremen-add-force-2", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("Add 2 troop", ixChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-fremen-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("Add 2 * troop", ixChat.getChoices().getLast().get(3).getLabel());
+            assertEquals("ambassador-fremen-add-force-3", ixChat.getChoices().getLast().get(4).getId());
+            assertEquals("Add 3 troop", ixChat.getChoices().getLast().get(4).getLabel());
+            assertEquals("ambassador-fremen-execute", ixChat.getChoices().getLast().get(5).getId());
+            assertEquals("Confirm Movement", ixChat.getChoices().getLast().get(5).getLabel());
+            assertEquals("ambassador-fremen-reset-forces", ixChat.getChoices().getLast().get(6).getId());
+            assertEquals("Reset forces", ixChat.getChoices().getLast().get(6).getLabel());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testGuildAmbassador() {
+            movement.setMoveType(MoveType.GUILD_AMBASSADOR);
+            movement.presentForcesChoices(game, ix);
+            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 1 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
+            assertEquals(9, ixChat.getChoices().getLast().size());
+//            assertEquals(2, movement.getForce());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+    }
+
+    @Nested
     @DisplayName("#addRegularForces")
     class AddRegularForces {
         Movement movement;
