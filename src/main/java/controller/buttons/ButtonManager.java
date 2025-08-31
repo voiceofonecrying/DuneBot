@@ -92,7 +92,7 @@ public class ButtonManager extends ListenerAdapter {
             Game game = discordGame.getGame();
             System.out.println(event.getComponentId());
             if (event.getComponentId().startsWith("ambassador"))
-                AmbassadorButtons.press(event, game, discordGame);
+                AmbassadorButtons.press(event, discordGame);
             else if (event.getComponentId().startsWith("atreides"))
                 AtreidesButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("bg"))

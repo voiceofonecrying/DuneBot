@@ -427,7 +427,6 @@ public class ShipmentAndMovementButtons implements Pressable {
                 discordGame.queueMessage("Starting over");
                 String fromTerritory = faction.getMovement().getMovingFrom();
                 faction.getMovement().clear();
-                faction.getMovement().setMoved(false);
                 if (faction instanceof FremenFaction fremen)
                     fremen.presentWormRideChoices(fromTerritory);
                 else if (faction instanceof EcazFaction ecaz)
@@ -436,7 +435,6 @@ public class ShipmentAndMovementButtons implements Pressable {
                 discordGame.queueMessage("Starting over");
                 String fromTerritory = faction.getMovement().getMovingFrom();
                 faction.getMovement().clear();
-                faction.getMovement().setMoved(false);
                 ((FremenFaction) faction).presentWormPlacementChoices(fromTerritory, shaiHuludPlacement ? "Shai-Hulud" : "Great Maker");
             } else if (startingForces) {
                 faction.getShipment().clear();
@@ -459,7 +457,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             }
         } else {
             faction.getMovement().clear();
-            faction.getMovement().setMoved(false);
             queueMovementButtons(game, faction, discordGame);
         }
         deleteShipMoveButtonsInChannel(event.getMessageChannel());

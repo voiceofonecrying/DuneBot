@@ -21,7 +21,6 @@ public class Movement {
     private int secondForce;
     private int specialForce;
     private int secondSpecialForce;
-    private boolean hasMoved;
     private boolean movingNoField;
     @Exclude
     private Faction faction;
@@ -40,7 +39,6 @@ public class Movement {
         this.secondForce = 0;
         this.secondSpecialForce = 0;
         this.secondMovingFrom = "";
-        this.hasMoved = true;
         this.movingNoField = false;
     }
 
@@ -98,14 +96,6 @@ public class Movement {
 
     public void setSpecialForce(int specialForce) {
         this.specialForce = specialForce;
-    }
-
-    public boolean hasMoved() {
-        return hasMoved;
-    }
-
-    public void setMoved(boolean hasMoved) {
-        this.hasMoved = hasMoved;
     }
 
     public boolean isMovingNoField() {
