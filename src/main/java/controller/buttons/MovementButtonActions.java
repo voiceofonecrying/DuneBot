@@ -11,67 +11,68 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import java.util.List;
 
 public class MovementButtonActions {
-    protected static void handleMovementAction(ButtonInteractionEvent event, DiscordGame discordGame, Game game, String action) throws ChannelNotFoundException, InvalidGameStateException {
-        if (action.equals("pass")) pass(event, game, discordGame);
-        else if (action.equals("start-over")) startOver(event, game, discordGame);
-        else if (action.equals("stronghold")) presentStrongholdShippingChoices(event, game, discordGame);
-        else if (action.equals("spice-blow")) presentSpiceBlowShippingChoices(event, discordGame, game);
-        else if (action.equals("rock")) presentRockShippingChoices(event, discordGame, game);
-        else if (action.equals("discovery-tokens")) presentDiscoveryShippingChoices(event, game, discordGame);
-        else if (action.equals("other")) presentOtherShippingChoices(event, discordGame, game);
-        else if (action.startsWith("territory-")) presentSectorChoices(event, game, discordGame);
-        else if (action.startsWith("sector-")) filterBySector(event, game, discordGame);
-        else if (action.startsWith("add-force-")) addRegularForces(event, game, discordGame);
-        else if (action.equals("reset-forces")) resetForces(event, game, discordGame);
-        else if (action.equals("execute")) execute(event, game, discordGame);
+    protected static void handleMovementAction(ButtonInteractionEvent event, DiscordGame discordGame, String action) throws ChannelNotFoundException, InvalidGameStateException {
+        if (action.equals("pass")) pass(event, discordGame);
+        else if (action.equals("start-over")) startOver(event, discordGame);
+        else if (action.equals("stronghold")) presentStrongholdShippingChoices(event, discordGame);
+        else if (action.equals("spice-blow")) presentSpiceBlowShippingChoices(event, discordGame);
+        else if (action.equals("rock")) presentRockShippingChoices(event, discordGame);
+        else if (action.equals("discovery-tokens")) presentDiscoveryShippingChoices(event, discordGame);
+        else if (action.equals("other")) presentOtherShippingChoices(event, discordGame);
+        else if (action.startsWith("territory-")) presentSectorChoices(event, discordGame);
+        else if (action.startsWith("sector-")) filterBySector(event, discordGame);
+        else if (action.startsWith("add-force-")) addRegularForces(event, discordGame);
+        else if (action.equals("reset-forces")) resetForces(event, discordGame);
+        else if (action.equals("execute")) execute(event, discordGame);
     }
 
-    protected static void pass(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
+    protected static void pass(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
-        faction.getMovement().pass(game, faction);
+        faction.getMovement().pass(faction);
         discordGame.pushGame();
     }
 
-    protected static void startOver(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
+    protected static void startOver(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         faction.getMovement().startOver(faction);
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
 //        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
 
-    protected static void presentStrongholdShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentStrongholdChoices(game, faction);
+    protected static void presentStrongholdShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
+        faction.getMovement().presentStrongholdChoices(faction);
         discordGame.queueDeleteMessage();
     }
 
-    protected static void presentSpiceBlowShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentSpiceBlowChoices(game, faction);
+    protected static void presentSpiceBlowShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
+        faction.getMovement().presentSpiceBlowChoices(faction);
         discordGame.queueDeleteMessage();
     }
 
-    protected static void presentRockShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentRockChoices(game, faction);
+    protected static void presentRockShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
+        faction.getMovement().presentRockChoices(faction);
         discordGame.queueDeleteMessage();
     }
 
-    protected static void presentDiscoveryShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentDiscoveryTokenChoices(game, faction);
+    protected static void presentDiscoveryShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
+        faction.getMovement().presentDiscoveryTokenChoices(faction);
         discordGame.queueDeleteMessage();
     }
 
-    protected static void presentOtherShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
-        faction.getMovement().presentNonSpiceNonRockChoices(game, faction);
+    protected static void presentOtherShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
+        faction.getMovement().presentNonSpiceNonRockChoices(faction);
         discordGame.queueDeleteMessage();
     }
 
-    protected static void presentSectorChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+    protected static void presentSectorChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String choicePrefix = faction.getMovement().getChoicePrefix();
         String aggregateTerritoryName = event.getComponentId().replace("territory-", "").replace(choicePrefix, "");
@@ -79,7 +80,7 @@ public class MovementButtonActions {
 
         if (territorySectors.size() == 1) {
             faction.getMovement().setMovingTo(territorySectors.getFirst().getTerritoryName());
-            presentForcesChoices(event, game, faction);
+            presentForcesChoices(event, faction);
             discordGame.pushGame();
         } else {
             faction.getMovement().presentSectorChoices(faction, aggregateTerritoryName, territorySectors);
@@ -87,41 +88,41 @@ public class MovementButtonActions {
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
     }
 
-    protected static void filterBySector(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
+    protected static void filterBySector(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         String choicePrefix = faction.getMovement().getChoicePrefix();
         String territoryName = event.getComponentId().replace("sector-", "").replace(choicePrefix, "");
         faction.getMovement().setMovingTo(territoryName);
-        presentForcesChoices(event, game, faction);
+        presentForcesChoices(event, faction);
         discordGame.pushGame();
     }
 
-    protected static void addRegularForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
+    protected static void addRegularForces(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         String choicePrefix = faction.getMovement().getChoicePrefix();
         int addedForces = Integer.parseInt(event.getComponentId().replace("add-force-", "").replace(choicePrefix, ""));
         faction.getMovement().addRegularForces(addedForces);
-        presentForcesChoices(event, game, faction);
+        presentForcesChoices(event, faction);
         discordGame.pushGame();
     }
 
-    protected static void resetForces(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
+    protected static void resetForces(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         faction.getMovement().resetForces();
-        presentForcesChoices(event, game, faction);
+        presentForcesChoices(event, faction);
         discordGame.pushGame();
     }
 
-    protected static void presentForcesChoices(ButtonInteractionEvent event, Game game, Faction faction) {
+    protected static void presentForcesChoices(ButtonInteractionEvent event, Faction faction) {
         String choicePrefix = faction.getMovement().getChoicePrefix();
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
-        faction.getMovement().presentForcesChoices(game, faction);
+        faction.getMovement().presentForcesChoices(faction);
     }
 
-    protected static void execute(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
-        Faction faction = ButtonManager.getButtonPresser(event, game);
+    protected static void execute(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
-        faction.getMovement().execute(game, faction);
+        faction.getMovement().execute(faction);
         discordGame.pushGame();
     }
 }

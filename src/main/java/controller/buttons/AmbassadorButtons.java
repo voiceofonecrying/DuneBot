@@ -18,11 +18,11 @@ public class AmbassadorButtons {
 
     private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("ambassador-fremen-", "");
-        MovementButtonActions.handleMovementAction(event, discordGame, game, action);
+        MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 
     private static void handleGuildAmbassadorButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("ambassador-guild-", "");
-        MovementButtonActions.handleMovementAction(event, discordGame, game, action);
+        MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 }

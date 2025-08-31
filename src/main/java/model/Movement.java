@@ -136,7 +136,8 @@ public class Movement {
         this.secondSpecialForce = secondSpecialForce;
     }
 
-    public void pass(Game game, Faction faction) {
+    public void pass(Faction faction) {
+        Game game = faction.getGame();
         if (moveType == MoveType.FREMEN_AMBASSADOR) {
             faction.getChat().reply("You will not ride the worm with the Fremen Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm with the Fremen Ambassador.");
@@ -158,56 +159,62 @@ public class Movement {
         }
     }
 
-    public void presentStrongholdChoices(Game game, Faction faction) {
+    public void presentStrongholdChoices(Faction faction) {
+        Game game = faction.getGame();
         boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
         boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
         boolean btHTPlacement = moveType == MoveType.BT_HT;
         boolean startingForces = moveType == MoveType.STARTING_FORCES;
         List<DuneChoice> choices = game.getTerritories().values().stream()
                 .filter(t -> t.isValidStrongholdForShipmentFremenRideAndBTHT(faction, fremenAmbassador || fremenRide || btHTPlacement))
-                .map(t -> faction.getMovement().shipToTerritoryChoice(game, faction, t.getTerritoryName(), startingForces)).sorted(Comparator.comparing(DuneChoice::getLabel)).collect(Collectors.toList());
+                .map(t -> faction.getMovement().shipToTerritoryChoice(faction, t.getTerritoryName(), startingForces)).sorted(Comparator.comparing(DuneChoice::getLabel)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
         faction.getChat().reply("Which Stronghold?", choices);
     }
 
-    public void presentSpiceBlowChoices(Game game, Faction faction) {
+    public void presentSpiceBlowChoices(Faction faction) {
+        Game game = faction.getGame();
         boolean startingForces = moveType == MoveType.STARTING_FORCES;
         boolean hmsPlacement = moveType == MoveType.HMS_PLACEMENT;
         boolean initialPlacement = startingForces || hmsPlacement;
         List<String> spiceBlowTerritories = game.getTerritories().getSpiceBlowTerritoryNames();
-        List<DuneChoice> choices = spiceBlowTerritories.stream().map(s -> faction.getMovement().shipToTerritoryChoice(game, faction, s, initialPlacement)).collect(Collectors.toList());
+        List<DuneChoice> choices = spiceBlowTerritories.stream().map(s -> faction.getMovement().shipToTerritoryChoice(faction, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
         faction.getChat().reply("Which Spice Blow Territory?", choices);
     }
 
-    public void presentRockChoices(Game game, Faction faction) {
+    public void presentRockChoices(Faction faction) {
+        Game game = faction.getGame();
         boolean startingForces = moveType == MoveType.STARTING_FORCES;
         boolean hmsPlacement = moveType == MoveType.HMS_PLACEMENT;
         boolean initialPlacement = startingForces || hmsPlacement;
         List<String> rockTerritories = game.getTerritories().getRockTerritoryNames();
-        List<DuneChoice> choices = rockTerritories.stream().map(s -> faction.getMovement().shipToTerritoryChoice(game, faction, s, initialPlacement)).collect(Collectors.toList());
+        List<DuneChoice> choices = rockTerritories.stream().map(s -> faction.getMovement().shipToTerritoryChoice(faction, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
         faction.getChat().reply("Which Rock Territory?", choices);
     }
 
-    public void presentDiscoveryTokenChoices(Game game, Faction faction) {
+    public void presentDiscoveryTokenChoices(Faction faction) {
+        Game game = faction.getGame();
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(Territory::isDiscovered)
-                .map(territory -> faction.getMovement().shipToTerritoryChoice(game, faction, territory.getDiscoveryToken(), false)).collect(Collectors.toList());
+                .map(territory -> faction.getMovement().shipToTerritoryChoice(faction, territory.getDiscoveryToken(), false)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
         faction.getChat().reply("Which Discovery Token?", choices);
     }
 
-    public void presentNonSpiceNonRockChoices(Game game, Faction faction) {
+    public void presentNonSpiceNonRockChoices(Faction faction) {
+        Game game = faction.getGame();
         boolean startingForces = moveType == MoveType.STARTING_FORCES;
         boolean hmsPlacement = moveType == MoveType.HMS_PLACEMENT;
         boolean initialPlacement = startingForces || hmsPlacement;
         List<String> nonSpiceNonRockTerritories = game.getTerritories().getNonSpiceNonRockTerritoryNames();
-        List<DuneChoice> choices = nonSpiceNonRockTerritories.stream().map(s -> faction.getMovement().shipToTerritoryChoice(game, faction, s, initialPlacement)).collect(Collectors.toList());
+        List<DuneChoice> choices = nonSpiceNonRockTerritories.stream().map(s -> faction.getMovement().shipToTerritoryChoice(faction, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
         faction.getChat().reply("Which Territory?", choices);
     }
 
-    public DuneChoice shipToTerritoryChoice(Game game, Faction faction, String wholeTerritoryName, boolean isInitialPlacement) {
+    public DuneChoice shipToTerritoryChoice(Faction faction, String wholeTerritoryName, boolean isInitialPlacement) {
+        Game game = faction.getGame();
         DuneChoice choice = new DuneChoice(getChoicePrefix() + "territory-" + wholeTerritoryName, wholeTerritoryName);
         boolean wormRide = moveType == MoveType.FREMEN_RIDE || moveType == MoveType.FREMEN_AMBASSADOR;
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
@@ -229,7 +236,8 @@ public class Movement {
         faction.getChat().reply("Which sector of " + aggregateTerritoryName + "?", choices);
     }
 
-    public void presentForcesChoices(Game game, Faction faction) {
+    public void presentForcesChoices(Faction faction) {
+        Game game = faction.getGame();
         boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
         boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
         boolean wormRide = fremenRide || fremenAmbassador;
@@ -282,24 +290,25 @@ public class Movement {
         secondSpecialForce = 0;
     }
 
-    public void execute(Game game, Faction faction) throws InvalidGameStateException {
+    public void execute(Faction faction) throws InvalidGameStateException {
         if (moveType == MoveType.FREMEN_AMBASSADOR) {
-            executeMovement(game, faction);
+            executeMovement(faction);
             faction.getChat().reply("Movement with Fremen ambasssador complete.");
         } else if (moveType == MoveType.GUILD_AMBASSADOR)
-            executeGuildAmbassador(game, faction);
+            executeGuildAmbassador(faction);
         clear();
         moveType = MoveType.TBD;
     }
 
-    public void executeGuildAmbassador(Game game, Faction faction) throws InvalidGameStateException {
-        Territory territory = game.getTerritory(movingTo);
+    public void executeGuildAmbassador(Faction faction) throws InvalidGameStateException {
+        Territory territory = faction.getGame().getTerritory(movingTo);
         if (force > 0 || specialForce > 0)
             faction.placeForces(territory, force, specialForce, false, true, true, false, false);
         faction.getChat().reply("Shipment with Guild Ambassador complete.");
     }
 
-    public void executeMovement(Game game, Faction faction) throws InvalidGameStateException {
+    public void executeMovement(Faction faction) throws InvalidGameStateException {
+        Game game = faction.getGame();
         if (movingNoField) {
             game.getRicheseFaction().moveNoField(movingTo, false);
             game.moveForces(faction, movingFrom, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, true);
