@@ -91,26 +91,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         }
     }
 
-    public static void deleteButtonsInChannelWithPrefix(MessageChannel channel, String choicePrefix) {
-        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
-        List<Message> messagesToDelete = new ArrayList<>();
-        for (Message message : messages) {
-            List<Button> buttons = message.getButtons();
-            for (Button button : buttons) {
-                String id = button.getId();
-                if (id != null && (id.startsWith(choicePrefix))) {
-                    messagesToDelete.add(message);
-                    break;
-                }
-            }
-        }
-        for (Message message : messagesToDelete) {
-            try {
-                message.delete().complete();
-            } catch (Exception ignore) {}
-        }
-    }
-
     public static void deleteShipMoveButtonsInChannel(MessageChannel channel) {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
         List<Message> messagesToDelete = new ArrayList<>();

@@ -6,8 +6,12 @@ import exceptions.InvalidGameStateException;
 import model.Game;
 import model.Territory;
 import model.factions.Faction;
+import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
+import net.dv8tion.jda.api.interactions.components.buttons.Button;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MovementButtonActions {
@@ -28,7 +32,7 @@ public class MovementButtonActions {
 
     protected static void pass(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
         faction.getMovement().pass();
         discordGame.pushGame();
     }
@@ -36,7 +40,7 @@ public class MovementButtonActions {
     protected static void startOver(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         faction.getMovement().startOver();
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
 //        discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }
@@ -85,7 +89,7 @@ public class MovementButtonActions {
         } else {
             faction.getMovement().presentSectorChoices(aggregateTerritoryName, territorySectors);
         }
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
     }
 
     protected static void filterBySector(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -115,14 +119,34 @@ public class MovementButtonActions {
 
     protected static void presentForcesChoices(ButtonInteractionEvent event, Faction faction) {
         String choicePrefix = faction.getMovement().getChoicePrefix();
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
         faction.getMovement().presentForcesChoices();
     }
 
     protected static void execute(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
         faction.getMovement().execute();
         discordGame.pushGame();
+    }
+
+    public static void deleteButtonsInChannelWithPrefix(MessageChannel channel, String choicePrefix) {
+        List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
+        List<Message> messagesToDelete = new ArrayList<>();
+        for (Message message : messages) {
+            List<Button> buttons = message.getButtons();
+            for (Button button : buttons) {
+                String id = button.getId();
+                if (id != null && (id.startsWith(choicePrefix))) {
+                    messagesToDelete.add(message);
+                    break;
+                }
+            }
+        }
+        for (Message message : messagesToDelete) {
+            try {
+                message.delete().complete();
+            } catch (Exception ignore) {}
+        }
     }
 }
