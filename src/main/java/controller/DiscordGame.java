@@ -129,6 +129,9 @@ public class DiscordGame {
     public static void addGameReferenceToFactions(Game game) {
         for (Faction faction : game.getFactions()) {
             faction.setGame(game);
+            // Temporary migration. Future games will set the faction on creating the Movement object.
+            if (faction.getMovement() != null)
+                faction.getMovement().setFaction(faction);
         }
     }
 

@@ -29,13 +29,13 @@ public class MovementButtonActions {
     protected static void pass(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
-        faction.getMovement().pass(faction);
+        faction.getMovement().pass();
         discordGame.pushGame();
     }
 
     protected static void startOver(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        faction.getMovement().startOver(faction);
+        faction.getMovement().startOver();
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
 //        discordGame.queueDeleteMessage();
         discordGame.pushGame();
@@ -43,31 +43,31 @@ public class MovementButtonActions {
 
     protected static void presentStrongholdShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        faction.getMovement().presentStrongholdChoices(faction);
+        faction.getMovement().presentStrongholdChoices();
         discordGame.queueDeleteMessage();
     }
 
     protected static void presentSpiceBlowShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        faction.getMovement().presentSpiceBlowChoices(faction);
+        faction.getMovement().presentSpiceBlowChoices();
         discordGame.queueDeleteMessage();
     }
 
     protected static void presentRockShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        faction.getMovement().presentRockChoices(faction);
+        faction.getMovement().presentRockChoices();
         discordGame.queueDeleteMessage();
     }
 
     protected static void presentDiscoveryShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        faction.getMovement().presentDiscoveryTokenChoices(faction);
+        faction.getMovement().presentDiscoveryTokenChoices();
         discordGame.queueDeleteMessage();
     }
 
     protected static void presentOtherShippingChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        faction.getMovement().presentNonSpiceNonRockChoices(faction);
+        faction.getMovement().presentNonSpiceNonRockChoices();
         discordGame.queueDeleteMessage();
     }
 
@@ -83,7 +83,7 @@ public class MovementButtonActions {
             presentForcesChoices(event, faction);
             discordGame.pushGame();
         } else {
-            faction.getMovement().presentSectorChoices(faction, aggregateTerritoryName, territorySectors);
+            faction.getMovement().presentSectorChoices(aggregateTerritoryName, territorySectors);
         }
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
     }
@@ -116,13 +116,13 @@ public class MovementButtonActions {
     protected static void presentForcesChoices(ButtonInteractionEvent event, Faction faction) {
         String choicePrefix = faction.getMovement().getChoicePrefix();
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
-        faction.getMovement().presentForcesChoices(faction);
+        faction.getMovement().presentForcesChoices();
     }
 
     protected static void execute(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         ShipmentAndMovementButtons.deleteButtonsInChannelWithPrefix(event.getMessageChannel(), faction.getMovement().getChoicePrefix());
-        faction.getMovement().execute(faction);
+        faction.getMovement().execute();
         discordGame.pushGame();
     }
 }

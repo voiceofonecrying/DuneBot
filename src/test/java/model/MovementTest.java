@@ -50,7 +50,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testFremenAmbassador() {
             ix.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.pass(ix);
+            movement.pass();
             assertEquals("You will not ride the worm with the Fremen Ambassador.", ixChat.getMessages().getLast());
             assertEquals(Emojis.IX + " does not ride the worm with the Fremen Ambassador.", turnSummary.getMessages().getLast());
             assertEquals(MoveType.TBD, movement.getMoveType());
@@ -59,7 +59,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() {
             ix.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            movement.pass(ix);
+            movement.pass();
             assertEquals("You will not ship with the Guild Ambassador.", ixChat.getMessages().getLast());
             assertEquals(Emojis.IX + " does not ship with the Guild Ambassador.", turnSummary.getMessages().getLast());
             assertEquals(MoveType.TBD, movement.getMoveType());
@@ -102,7 +102,7 @@ public class MovementTest extends DuneTest {
         void testFremenAmbassador() {
             // TODO: Change to Ix when ally use of ambassadors is supported
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.startOver(ecaz);
+            movement.startOver();
             assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", ecazChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
@@ -112,7 +112,7 @@ public class MovementTest extends DuneTest {
         void testGuildAmbassador() {
             // TODO: Change to Ix when ally use of ambassadors is supported
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            movement.startOver(ecaz);
+            movement.startOver();
             assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", ecazChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
@@ -139,7 +139,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testFremenAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentStrongholdChoices(ecaz);
+            ecaz.getMovement().presentStrongholdChoices();
             assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
             assertEquals(7, ecazChat.getChoices().getLast().size());
             assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
@@ -159,7 +159,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            ecaz.getMovement().presentStrongholdChoices(ecaz);
+            ecaz.getMovement().presentStrongholdChoices();
             assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
             assertEquals(6, ecazChat.getChoices().getLast().size());
             assertFalse(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
@@ -180,7 +180,7 @@ public class MovementTest extends DuneTest {
         void testGuildAmbassadorByIxAlly() {
             game.createAlliance(ecaz, ix);
             ix.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            ix.getMovement().presentStrongholdChoices(ix);
+            ix.getMovement().presentStrongholdChoices();
             assertEquals("Which Stronghold?", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
             assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
@@ -215,7 +215,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testFremenAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentSpiceBlowChoices(ecaz);
+            ecaz.getMovement().presentSpiceBlowChoices();
             assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -234,7 +234,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            ecaz.getMovement().presentSpiceBlowChoices(ecaz);
+            ecaz.getMovement().presentSpiceBlowChoices();
             assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -268,7 +268,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testFremenAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentRockChoices(ecaz);
+            ecaz.getMovement().presentRockChoices();
             assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
             assertEquals(8, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -287,7 +287,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            ecaz.getMovement().presentRockChoices(ecaz);
+            ecaz.getMovement().presentRockChoices();
             assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
             assertEquals(8, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -329,7 +329,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testFremenAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentDiscoveryTokenChoices(ecaz);
+            ecaz.getMovement().presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
             assertEquals(3, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -348,7 +348,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            ecaz.getMovement().presentDiscoveryTokenChoices(ecaz);
+            ecaz.getMovement().presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
             assertEquals(3, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -382,7 +382,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testFremenAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentNonSpiceNonRockChoices(ecaz);
+            ecaz.getMovement().presentNonSpiceNonRockChoices();
             assertEquals("Which Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -401,7 +401,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() {
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            ecaz.getMovement().presentNonSpiceNonRockChoices(ecaz);
+            ecaz.getMovement().presentNonSpiceNonRockChoices();
             assertEquals("Which Territory?", ecazChat.getMessages().getLast());
             assertEquals(16, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
@@ -434,7 +434,7 @@ public class MovementTest extends DuneTest {
             ix.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
             game.getTerritory("Cielago North (East Sector)").setSpice(6);
             List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Cielago North");
-            ix.getMovement().presentSectorChoices(ix, "Cielago North", sectors);
+            ix.getMovement().presentSectorChoices("Cielago North", sectors);
             assertEquals("Which sector of Cielago North?", ixChat.getMessages().getLast());
             assertEquals(4, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-sector-Cielago North (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
@@ -451,7 +451,7 @@ public class MovementTest extends DuneTest {
         void testWindPassWithGuildAmbassador() {
             ix.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
             List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Wind Pass");
-            ix.getMovement().presentSectorChoices(ix, "Wind Pass", sectors);
+            ix.getMovement().presentSectorChoices("Wind Pass", sectors);
             assertEquals("Which sector of Wind Pass?", ixChat.getMessages().getLast());
             assertEquals(5, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-sector-Wind Pass (Far North Sector)", ixChat.getChoices().getLast().getFirst().getId());
@@ -488,7 +488,7 @@ public class MovementTest extends DuneTest {
         void testFremenAmbassador() {
             movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
             movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.presentForcesChoices(ix);
+            movement.presentForcesChoices();
             assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 1 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
             assertEquals(8, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
@@ -513,7 +513,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() {
             movement.setMoveType(MoveType.GUILD_AMBASSADOR);
-            movement.presentForcesChoices(ix);
+            movement.presentForcesChoices();
             assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 1 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
             assertEquals(9, ixChat.getChoices().getLast().size());
 //            assertEquals(2, movement.getForce());
@@ -632,7 +632,7 @@ public class MovementTest extends DuneTest {
         void testFremenAmbassador() throws InvalidGameStateException {
             movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
             movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.execute(ix);
+            movement.execute();
             assertEquals(1, carthag.getForceStrength("Ix"));
             assertEquals(2, carthag.getForceStrength("Ix*"));
             Territory hms = game.getTerritory("Hidden Mobile Stronghold");
@@ -645,7 +645,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testGuildAmbassador() throws InvalidGameStateException {
             movement.setMoveType(MoveType.GUILD_AMBASSADOR);
-            movement.execute(ix);
+            movement.execute();
             assertEquals(1, carthag.getForceStrength("Ix"));
             assertEquals(2, carthag.getForceStrength("Ix*"));
             Territory ixHomeworld = game.getTerritory("Ix");

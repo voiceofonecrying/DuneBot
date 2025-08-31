@@ -110,7 +110,7 @@ public class Faction {
         this.outbidAlly = false;
         this.specialKaramaPowerUsed = false;
         this.shipment = new Shipment();
-        this.movement = new Movement();
+        this.movement = new Movement(this);
         this.spiceForAlly = 0;
         this.allySpiceFinishedForTurn = false;
         this.nexusCard = null;
@@ -963,7 +963,8 @@ public class Faction {
     }
 
     public Movement getMovement() {
-        if (movement == null) this.movement = new Movement();
+        if (movement == null)
+            this.movement = new Movement(this);
         return movement;
     }
 
