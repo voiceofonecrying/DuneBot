@@ -14,6 +14,7 @@ import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
+import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.interactions.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
@@ -634,10 +635,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             buttonSuffix = "-starting-forces";
         shipOrMove += buttonSuffix + "-";
         for (int i = 0; i < buttonLimitForces; i++) {
-            forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "Add " + (i + 1) + " troop"));
+            forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "+" + (i + 1)).withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.getForceEmoji(faction.getName())))));
         }
         for (int i = 0; i < buttonLimitSpecialForces; i++) {
-            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + (i + 1), "Add " + (i + 1) + " * troop"));
+            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + (i + 1), "+" + (i + 1) + " *").withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.getForceEmoji(faction.getName() + "*")))));
         }
 
         if (isShipment) {
