@@ -1355,7 +1355,7 @@ public class Game {
         stormMovement = stormDeck == null ? new Random().nextInt(6) + 1 : stormDeck.get(new Random().nextInt(stormDeck.size()));
         FremenFaction fremen = getFremenFactionOrNull();
         if (fremen != null)
-            fremen.getChat().publish("The storm will move " + stormMovement + " sectors next turn.");
+            fremen.getChat().publish("The storm will move " + stormMovement + " sectors on turn " + (turn + 1) + ".");
     }
 
     public SpiceBlowAndNexus startSpiceBlowPhase() throws InvalidGameStateException, IOException {

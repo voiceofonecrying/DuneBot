@@ -1461,9 +1461,10 @@ class GameTest extends DuneTest {
 
         @Test
         void testFremenGetsNextStormMovement() throws IOException {
+            game.setTurn(2);
             game.addFaction(fremen);
             game.endStormPhase();
-            assertEquals("The storm will move " + game.getStormMovement() + " sectors next turn.", fremenChat.getMessages().getLast());
+            assertEquals("The storm will move " + game.getStormMovement() + " sectors on turn 3.", fremenChat.getMessages().getLast());
         }
 
         @Test
