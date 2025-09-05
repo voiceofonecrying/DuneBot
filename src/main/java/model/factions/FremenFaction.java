@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.Game;
@@ -124,18 +125,18 @@ public class FremenFaction extends Faction {
             return;
         }
         game.getTurnSummary().publish(fremenForces + "may ride " + wormName + " from " + territoryName + "!");
-        getMovement().setMovingFrom(territoryName);
-        String buttonSuffix = "-fremen-ride";
+        movement.setMovingFrom(territoryName);
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
-        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
-        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+        choices.add(new DuneChoice("fremen-ride-stronghold", "Stronghold"));
+        choices.add(new DuneChoice("fremen-ride-spice-blow", "Spice Blow Territories"));
+        choices.add(new DuneChoice("fremen-ride-rock", "Rock Territories"));
         boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
         if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-            choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
-        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
-        choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "No ride"));
-        chat.publish("Where would you like to ride to from " + territoryName + "? " + player, choices);
+            choices.add(new DuneChoice("fremen-ride-discovery-tokens", "Discovery Tokens"));
+        choices.add(new DuneChoice("fremen-ride-other", "Somewhere else"));
+        choices.add(new DuneChoice("danger", "fremen-ride-pass", "No ride"));
+        chat.reply("Where would you like to ride to from " + territoryName + "? " + player, choices);
+        movement.setMoveType(MoveType.FREMEN_RIDE);
         wormRideActive = true;
     }
 
@@ -149,7 +150,7 @@ public class FremenFaction extends Faction {
 
     public void presentWormPlacementChoices(String territoryName, String wormName) {
         boolean greatMaker = wormName.equals("Great Maker");
-        getMovement().setMovingFrom(territoryName);
+        movement.setMovingFrom(territoryName);
         String buttonSuffix = greatMaker ? "-place-great-maker" : "-place-shai-hulud";
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));

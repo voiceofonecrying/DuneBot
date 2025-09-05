@@ -12,8 +12,8 @@ public class FremenButtons implements Pressable {
         // Buttons handled by this class must begin with "fremen"
         // And any button that begins with "fremen" must be handled by this class
         if (event.getComponentId().startsWith("fremen-ht-")) triggerHT(event, game, discordGame);
-        if (event.getComponentId().equals("fremen-cancel")) cancelHT(discordGame);
-
+        else if (event.getComponentId().equals("fremen-cancel")) cancelHT(discordGame);
+        else if (event.getComponentId().startsWith("fremen-ride-")) handleFremenRideButtons(event, discordGame);
     }
 
     private static void cancelHT(DiscordGame discordGame) {
@@ -25,5 +25,10 @@ public class FremenButtons implements Pressable {
         String territoryName = event.getComponentId().split("-")[2];
         game.getFremenFaction().placeFreeRevivalWithHighThreshold(territoryName);
         discordGame.pushGame();
+    }
+
+    private static void handleFremenRideButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        String action = event.getComponentId().replace("fremen-ride-", "");
+        MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 }

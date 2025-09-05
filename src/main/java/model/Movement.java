@@ -6,6 +6,7 @@ import exceptions.InvalidGameStateException;
 import helpers.Exclude;
 import model.factions.EcazFaction;
 import model.factions.Faction;
+import model.factions.FremenFaction;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -52,7 +53,9 @@ public class Movement {
     }
 
     public String getChoicePrefix() {
-        if (moveType == MoveType.GUILD_AMBASSADOR)
+        if (moveType == MoveType.FREMEN_RIDE)
+            return "fremen-ride-";
+        else if (moveType == MoveType.GUILD_AMBASSADOR)
             return "ambassador-guild-";
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
             return "ambassador-fremen-";
@@ -141,7 +144,11 @@ public class Movement {
 
     public void pass() {
         Game game = faction.getGame();
-        if (moveType == MoveType.FREMEN_AMBASSADOR) {
+        if (moveType == MoveType.FREMEN_RIDE) {
+            faction.getChat().reply("You will not ride the worm.");
+            game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
+            ((FremenFaction) faction).setWormRideActive(false);
+        } else if (moveType == MoveType.FREMEN_AMBASSADOR) {
             faction.getChat().reply("You will not ride the worm with the Fremen Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm with the Fremen Ambassador.");
         } else if (moveType == MoveType.GUILD_AMBASSADOR) {
@@ -153,13 +160,14 @@ public class Movement {
     }
 
     public void startOver() {
-        if (moveType == MoveType.FREMEN_AMBASSADOR) {
-            clear();
+        String saveMovingFrom = movingFrom;
+        clear();
+        if (moveType == MoveType.FREMEN_RIDE)
+            ((FremenFaction) faction).presentWormRideChoices(saveMovingFrom);
+        else if (moveType == MoveType.FREMEN_AMBASSADOR)
             ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
-        } else if (moveType == MoveType.GUILD_AMBASSADOR) {
-            clear();
+        else if (moveType == MoveType.GUILD_AMBASSADOR)
             ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
-        }
     }
 
     public void presentStrongholdChoices() {
@@ -286,6 +294,10 @@ public class Movement {
         force += numForces;
     }
 
+    public void addSpecialForces(int numForces) {
+        specialForce += numForces;
+    }
+
     public void resetForces() {
         force = 0;
         specialForce = 0;
@@ -294,9 +306,13 @@ public class Movement {
     }
 
     public void execute() throws InvalidGameStateException {
-        if (moveType == MoveType.FREMEN_AMBASSADOR) {
+        if (moveType == MoveType.FREMEN_RIDE) {
             executeMovement();
-            faction.getChat().reply("Movement with Fremen ambasssador complete.");
+            ((FremenFaction) faction).setWormRideActive(false);
+            faction.getChat().reply("Worm ride complete.");
+        } else if (moveType == MoveType.FREMEN_AMBASSADOR) {
+            executeMovement();
+            faction.getChat().reply("Ride with Fremen Ambassador complete.");
         } else if (moveType == MoveType.GUILD_AMBASSADOR)
             executeGuildAmbassador();
         clear();
