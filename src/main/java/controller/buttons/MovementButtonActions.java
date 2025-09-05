@@ -26,6 +26,7 @@ public class MovementButtonActions {
         else if (action.startsWith("territory-")) presentSectorChoices(event, discordGame);
         else if (action.startsWith("sector-")) filterBySector(event, discordGame);
         else if (action.startsWith("add-force-")) addRegularForces(event, discordGame);
+        else if (action.startsWith("add-special-force-")) addSpecialForces(event, discordGame);
         else if (action.equals("reset-forces")) resetForces(event, discordGame);
         else if (action.equals("execute")) execute(event, discordGame);
     }
@@ -106,6 +107,15 @@ public class MovementButtonActions {
         String choicePrefix = faction.getMovement().getChoicePrefix();
         int addedForces = Integer.parseInt(event.getComponentId().replace("add-force-", "").replace(choicePrefix, ""));
         faction.getMovement().addRegularForces(addedForces);
+        presentForcesChoices(event, faction);
+        discordGame.pushGame();
+    }
+
+    protected static void addSpecialForces(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
+        String choicePrefix = faction.getMovement().getChoicePrefix();
+        int addedForces = Integer.parseInt(event.getComponentId().replace("add-special-force-", "").replace(choicePrefix, ""));
+        faction.getMovement().addSpecialForces(addedForces);
         presentForcesChoices(event, faction);
         discordGame.pushGame();
     }
