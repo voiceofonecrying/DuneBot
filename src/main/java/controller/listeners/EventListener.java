@@ -63,7 +63,6 @@ public class EventListener extends ListenerAdapter {
                 case "nexus" -> CardImages.getNexusImage(guild, cardName).ifPresent(fileUploads::add);
             }
         }
-
         if (!fileUploads.isEmpty()) {
             event.getChannel().sendFiles(fileUploads).queue();
         }
@@ -113,6 +112,17 @@ public class EventListener extends ListenerAdapter {
             }
         }
 
+        int planetEmojiIndex = message.indexOf("\uD83E\uDE90");
+        if (planetEmojiIndex != -1) {
+            String homeworldMessage = message.substring(planetEmojiIndex + 2);
+            planetEmojiIndex = homeworldMessage.indexOf("\uD83E\uDE90");
+            String cardName = homeworldMessage.substring(0, planetEmojiIndex).replace("\uD83E\uDE90", "").trim();
+            fileUploads.addAll(getHomeworldCardImages(guild, cardName));
+        }
+        if (!fileUploads.isEmpty()) {
+            event.getChannel().sendFiles(fileUploads).queue();
+        }
+
         if (!mentionedPlayers.isEmpty())
             event.getChannel().sendMessage(StringUtils.join(mentionedPlayers, " ")).queue();
 
@@ -134,6 +144,15 @@ public class EventListener extends ListenerAdapter {
                         event.getChannel().sendMessage(response.build()).queue();
                     });
         }
+    }
+
+    List<FileUpload> getHomeworldCardImages(Guild guild, String cardName) {
+        cardName = cardName.trim();
+        System.out.println(cardName);
+        List<FileUpload> list = new ArrayList<>();
+        CardImages.getHomeworldImage(guild, cardName + " High").ifPresent(list::add);
+        CardImages.getHomeworldImage(guild, cardName + " Low").ifPresent(list::add);
+        return list;
     }
 
     /**
