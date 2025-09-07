@@ -82,6 +82,18 @@ public class ShowCommands {
         else writeFactionInfo(discordGame, factionName);
     }
 
+    private static BufferedImage getSigilImage(Faction faction) throws IOException {
+        if (faction instanceof HomebrewFaction hbFaction)
+            return getResourceImage(hbFaction.getFactionProxy() + " Sigil");
+        return getResourceImage(faction.getName() + " Sigil");
+    }
+
+    private static BufferedImage getHomeworldImage(Faction faction) throws IOException {
+        if (faction instanceof HomebrewFaction hbFaction)
+            return getResourceImage(hbFaction.getHomeworldProxy());
+        return getResourceImage(faction.getHomeworld());
+    }
+
     private static BufferedImage getResourceImage(String name) throws IOException {
         URL file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".png");
         if (file == null) file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".jpg");
@@ -111,7 +123,7 @@ public class ShowCommands {
 
         messages.forEach(discordGame::queueDeleteMessage);
 
-        BufferedImage table = getResourceImage(faction.getHomeworld());
+        BufferedImage table = getHomeworldImage(faction);
         if (faction instanceof EmperorFaction emperorFaction) {
             table = getResourceImage(emperorFaction.getSecondHomeworld());
         }
@@ -122,12 +134,12 @@ public class ShowCommands {
         int specialReserves = faction.getSpecialReservesStrength();
 
         if (reserves > 0) {
-            BufferedImage reservesImage = buildForceImage(faction.getName(), reserves);
+            BufferedImage reservesImage = buildForceImage(game, new Force(faction.getName(), reserves));
             reservesImage = resize(reservesImage, 353, 218);
             table = overlay(table, reservesImage, new Point(300, 200), 1);
         }
         if (specialReserves > 0) {
-            BufferedImage specialReservesImage = buildForceImage(faction.getName() + "*", specialReserves);
+            BufferedImage specialReservesImage = buildForceImage(game, new Force(faction.getName() + "*", specialReserves));
             specialReservesImage = resize(specialReservesImage, 353, 218);
             table = overlay(table, specialReservesImage, new Point(300, 375), 1);
         }
@@ -177,6 +189,8 @@ public class ShowCommands {
         int numLeaders = faction.getLeaders().size();
         offset = (numLeaders - 1) * 450;
         for (Leader leader : faction.getLeaders()) {
+            if (faction instanceof HomebrewFaction)
+                break;
             BufferedImage leaderImage = getResourceImage(leader.getName());
             if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
             else leaderImage = resize(leaderImage, 500, 301);
@@ -212,6 +226,8 @@ public class ShowCommands {
 
         //Place Traitor Cards
         for (TraitorCard traitorCard : faction.getTraitorHand()) {
+            if (!traitorCard.getName().equals("Cheap Hero") && game.getFaction(traitorCard.getFactionName()) instanceof HomebrewFaction)
+                traitorCard = new TraitorCard("Cheap Hero",  "Any", 0);
             Optional<FileUpload> image = CardImages.getTraitorImage(discordGame.getEvent().getGuild(), traitorCard.getName());
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
@@ -269,7 +285,8 @@ public class ShowCommands {
         //Place Homeworld Card
         if (game.hasGameOption(GameOption.HOMEWORLDS)) {
             String lowHigh = faction.isHighThreshold() ? "High" : "Low";
-            Optional<FileUpload> image = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh);
+            String homeworldName = faction.getHomeworld();
+            Optional<FileUpload> image = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), homeworldName + " " + lowHigh);
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);
@@ -289,6 +306,7 @@ public class ShowCommands {
             }
         }
 
+        String nexusCard = "";
         //Place nexus card if any
         if (faction.getNexusCard() != null) {
             Optional<FileUpload> image = CardImages.getNexusImage(discordGame.getEvent().getGuild(), faction.getNexusCard().name());
@@ -297,7 +315,8 @@ public class ShowCommands {
                 cardImage = resize(cardImage, 988, 1376);
                 Point cardPoint = new Point(750 + offset, 3500);
                 table = overlay(table, cardImage, cardPoint, 1);
-            }
+            } else
+                nexusCard = Emojis.NEXUS + " " + faction.getNexusCard().name();
         }
 
         //BG Prediction
@@ -348,6 +367,16 @@ public class ShowCommands {
 
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         discordGame.queueMessage(infoChannelName, "Faction Info", boardFileUpload);
+        if (!nexusCard.isEmpty())
+            discordGame.queueMessage(infoChannelName, "__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name());
+        if (faction instanceof HomebrewFaction)
+            discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", faction.getLeaders().stream().map(Leader::getEmoiNameAndValueString).toList()));
+        List<String> homebrewTraitors = new ArrayList<>();
+        for (TraitorCard traitorCard : faction.getTraitorHand())
+            if (!traitorCard.getName().equals("Cheap Hero") && game.getFaction(traitorCard.getFactionName()) instanceof HomebrewFaction)
+                homebrewTraitors.add("Cheap Hero (0) Traitor above is really " + traitorCard.getEmojiNameAndStrengthString());
+        if (!homebrewTraitors.isEmpty())
+            discordGame.queueMessage(infoChannelName, "__Traitors:__\n" + String.join("\n", homebrewTraitors));
         if (!leadersInTerritories.isEmpty())
             discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
         if (faction instanceof MoritaniFaction moritani)
@@ -621,17 +650,6 @@ public class ShowCommands {
     }
 
     public static FileUpload drawGameBoard(Game game) throws IOException {
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
-                Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
-        ));
-        CSVParser csvParser = CSVParser.parse(bufferedReader, CSVFormat.EXCEL);
-
-        HashMap<String, String> leaderToFaction = new HashMap<>();
-
-        for (CSVRecord csvRecord : csvParser) {
-            leaderToFaction.put(csvRecord.get(1), csvRecord.get(0));
-        }
-
         BufferedImage board = getResourceImage("Board");
 
         //If Homeworlds are in play, concatenate homeworlds under the board.
@@ -639,15 +657,15 @@ public class ShowCommands {
             BufferedImage homeworlds = new BufferedImage(1, 1024, BufferedImage.TYPE_INT_ARGB);
             int sigilWidth = game.hasEmperorFaction() ? 350 : 300;
             for (Faction faction : game.getFactions()) {
-                BufferedImage homeworld = getResourceImage(faction.getHomeworld());
+                BufferedImage homeworld = getHomeworldImage(faction);
                 int offset = 0;
-                BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
+                BufferedImage sigil = getSigilImage(faction);
                 sigil = resize(sigil, sigilWidth, 250);
                 Point sigilPlacement = new Point(500, 850);
                 Point kaitainSigilPlacement = new Point(920, 950);
                 homeworld = overlay(homeworld, sigil, faction instanceof EmperorFaction ? kaitainSigilPlacement : sigilPlacement, 1);
                 for (Force force : game.getTerritory(faction.getHomeworld()).getForces()) {
-                    BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                    BufferedImage forceImage = buildForceImage(game, force);
                     forceImage = resize(forceImage, 376, 232);
                     Point forcePlacement = new Point(500, 175 + offset);
                     if (faction instanceof EmperorFaction)
@@ -661,7 +679,7 @@ public class ShowCommands {
                     BufferedImage salusa = getResourceImage("Salusa Secundus");
                     salusa = overlay(salusa, sigil, sigilPlacement, 1);
                     for (Force force : game.getTerritory(emperorFaction.getSecondHomeworld()).getForces()) {
-                        BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                        BufferedImage forceImage = buildForceImage(game, force);
                         forceImage = resize(forceImage, 376, 232);
                         Point forcePlacement = new Point(500, 175 + offset);
                         salusa = overlay(salusa, forceImage, forcePlacement, 1);
@@ -809,7 +827,7 @@ public class ShowCommands {
                     }
 
                     for (Force force : game.getTerritory(territory.getDiscoveryToken()).getForces()) {
-                        BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                        BufferedImage forceImage = buildForceImage(game, force);
                         forceImage = resize(forceImage, 376, 232);
                         Point forcePlacement = new Point(250, 150);
                         Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
@@ -842,7 +860,7 @@ public class ShowCommands {
                     List<Force> hmsForces = game.getTerritories().get("Hidden Mobile Stronghold").getForces();
                     int forceOffset = 0;
                     for (Force f : hmsForces) {
-                        BufferedImage forceImage = buildForceImage(f.getName(), f.getStrength());
+                        BufferedImage forceImage = buildForceImage(game, f);
                         hms = overlay(hms, forceImage, new Point(40, 20 + forceOffset), 1);
                         forceOffset += 30;
                     }
@@ -863,7 +881,7 @@ public class ShowCommands {
                     board = overlay(board, hms, forcePlacementOffset, 1);
                     continue;
                 }
-                BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+                BufferedImage forceImage = buildForceImage(game, force);
                 Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
                 Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
                 board = overlay(board, forceImage, forcePlacementOffset, 1);
@@ -893,15 +911,15 @@ public class ShowCommands {
             //Place sigils
             for (int k = 1; k <= game.getFactions().size(); k++) {
                 Faction faction = game.getFactions().get(k - 1);
-                BufferedImage sigil = getResourceImage(faction.getName() + " Sigil");
+                BufferedImage sigil;
+                sigil = getSigilImage(faction);
                 coordinates = Initializers.getDrawCoordinates("sigil " + k);
                 sigil = resize(sigil, 50, 50);
                 board = overlay(board, sigil, coordinates, 1);
 
                 // Check for alliances
                 if (faction.hasAlly()) {
-                    BufferedImage allySigil =
-                            getResourceImage(faction.getAlly() + " Sigil");
+                    BufferedImage allySigil = getSigilImage(game.getFaction(faction.getAlly()));
                     coordinates = Initializers.getDrawCoordinates("ally " + k);
                     allySigil = resize(allySigil, 40, 40);
                     board = overlay(board, allySigil, coordinates, 1);
@@ -914,7 +932,7 @@ public class ShowCommands {
         int offset = 0;
         for (Force force : game.getTleilaxuTanks().getForces()) {
             if (force.getStrength() == 0) continue;
-            BufferedImage forceImage = buildForceImage(force.getName(), force.getStrength());
+            BufferedImage forceImage = buildForceImage(game, force);
 
             Point tanksCoordinates = Initializers.getPoints("Forces Tanks").get(i);
             Point tanksOffset = new Point(tanksCoordinates.x, tanksCoordinates.y - offset);
@@ -931,9 +949,10 @@ public class ShowCommands {
         i = 0;
         offset = 0;
         for (Leader leader : game.getLeaderTanks()) {
+            Faction leaderFaction = game.getFaction(leader.getOriginalFactionName());
             BufferedImage leaderImage;
-            if (leader.isFaceDown()) {
-                leaderImage = getResourceImage(leaderToFaction.get(leader.getName()) + " Sigil");
+            if (leader.isFaceDown() || leaderFaction instanceof HomebrewFaction) {
+                leaderImage = getSigilImage(leaderFaction);
             } else {
                 leaderImage = getResourceImage(leader.getName());
             }
@@ -981,10 +1000,15 @@ public class ShowCommands {
         return FileUpload.fromData(boardOutputStream.toByteArray(), "board.png");
     }
 
-    private static BufferedImage buildForceImage(String force, int strength) throws IOException {
-        BufferedImage forceImage = !force.equals("Advisor") ? getResourceImage(force.replace("*", "") + " Troop") : getResourceImage("BG Advisor");
+    private static BufferedImage buildForceImage(Game game, Force force) throws IOException {
+        String forceName = force.getName();
+        int strength = force.getStrength();
+        Faction faction = game.getFaction(force.getFactionName());
+        if (faction instanceof HomebrewFaction hbFaction)
+            forceName = hbFaction.getFactionProxy();
+        BufferedImage forceImage = !forceName.equals("Advisor") ? getResourceImage(forceName.replace("*", "") + " Troop") : getResourceImage("BG Advisor");
         forceImage = resize(forceImage, 47, 29);
-        if (force.contains("*")) {
+        if (forceName.contains("*")) {
             BufferedImage star = getResourceImage("star");
             star = resize(star, 8, 8);
             forceImage = overlay(forceImage, star, new Point(20, 7), 1);
@@ -1149,11 +1173,14 @@ public class ShowCommands {
                         traitorString);
         StringBuilder leadersInTerritories = new StringBuilder();
         for (Leader leader : faction.getLeaders()) {
-            builder = builder.addFiles(getResourceFile(leader.getName()));
+            if (!(faction instanceof HomebrewFaction))
+                builder = builder.addFiles(getResourceFile(leader.getName()));
             if (leader.getBattleTerritoryName() != null)
                 leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
         }
         discordGame.queueMessage(infoChannelName, builder.build());
+        if (faction instanceof HomebrewFaction && !faction.getLeaders().isEmpty())
+            discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", faction.getLeaders().stream().map(Leader::getEmoiNameAndValueString).toList()));
 
         if (!leadersInTerritories.isEmpty())
             discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
@@ -1161,7 +1188,8 @@ public class ShowCommands {
         if (faction.getGame().hasGameOption(GameOption.HOMEWORLDS)) {
             MessageCreateBuilder homeworldMessageBuilder = new MessageCreateBuilder();
             String lowHigh = faction.isHighThreshold() ? "High" : "Low";
-            Optional<FileUpload> cardImage = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), faction.getHomeworld() + " " + lowHigh);
+            String homeworldName = faction.getHomeworld();
+            Optional<FileUpload> cardImage = CardImages.getHomeworldImage(discordGame.getEvent().getGuild(), homeworldName + " " + lowHigh);
             if (cardImage.isPresent()) homeworldMessageBuilder.addContent(faction.getHomeworld()).addFiles(cardImage.get());
             else homeworldMessageBuilder.addContent(faction.getHomeworld() + " " + lowHigh);
             if (faction instanceof EmperorFaction emperorFaction) {

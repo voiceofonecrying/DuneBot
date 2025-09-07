@@ -87,7 +87,7 @@ public final class Emojis {
                 return MORITANI;
             }
         }
-        return "faction";
+        return ":black_joker:";
     }
 
     public static String getForceEmoji(String forceName) {
@@ -144,7 +144,7 @@ public final class Emojis {
                 return MORITANI_TROOP;
             }
         }
-        return "force";
+        return ":ninja:";
     }
 
     public static String getTechTokenEmoji(String techToken) {

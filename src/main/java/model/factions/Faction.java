@@ -163,7 +163,7 @@ public class Faction {
      * @return the information channel prefix, or the name in lowercase if the prefix is not set
      */
     public String getInfoChannelPrefix() {
-        if (this.infoChannelPrefix == null) return this.getName().toLowerCase();
+        if (this.infoChannelPrefix == null) return this.getName().toLowerCase().replace(" ", "-");
         return infoChannelPrefix;
     }
 
