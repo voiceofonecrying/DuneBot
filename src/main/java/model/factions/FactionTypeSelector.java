@@ -26,6 +26,7 @@ public class FactionTypeSelector implements TypeSelector<Faction> {
             case "RICHESE" -> factionClass = RicheseFaction.class;
             case "ECAZ" -> factionClass = EcazFaction.class;
             case "MORITANI" -> factionClass = MoritaniFaction.class;
+            default -> factionClass = HomebrewFaction.class;
         }
 
         return factionClass;

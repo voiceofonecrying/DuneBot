@@ -14,6 +14,7 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
+import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -43,6 +44,10 @@ public class SetupCommands {
                         new SubcommandData("remove-mod", "Remove a user from the mod role").addOptions(user),
                         new SubcommandData("faction", "Register a user to a faction in a game")
                                 .addOptions(allFactions, user),
+                        new SubcommandData("homebrew-faction", "Register a user to a homebrew faction in a game")
+                                .addOptions(gameName, allFactions, user, reason),
+                        new SubcommandData("homebrew-leader", "Add a leader to a homebrew faction")
+                                .addOptions(faction, gameName, amount),
                         new SubcommandData("show-game-options", "Show the selected game options"),
                         new SubcommandData("add-game-option", "Add a game option")
                                 .addOptions(CommandOptions.addGameOption),
@@ -75,6 +80,8 @@ public class SetupCommands {
             case "add-mod" -> addUserToModRole(event, discordGame, game);
             case "remove-mod" -> removeUserFromModRole(event, discordGame, game);
             case "faction" -> addFaction(event, discordGame, game);
+            case "homebrew-faction" -> addHomebrewFaction(event, discordGame, game);
+            case "homebrew-leader" -> addHomebrewLeader(discordGame, game);
             case "show-game-options" -> showGameOptions(game);
             case "add-game-option" -> addGameOption(discordGame, game);
             case "remove-game-option" -> removeGameOption(discordGame, game);
@@ -153,6 +160,13 @@ public class SetupCommands {
                     SetupStep.STORM_SELECTION,
                     SetupStep.START_GAME
             ));
+        }
+
+        if (game.getFactions().stream().anyMatch(f -> f instanceof HomebrewFaction)) {
+            setupSteps.add(
+                    setupSteps.indexOf(SetupStep.CREATE_DECKS),
+                    SetupStep.HOMEBREW_LEADERS
+            );
         }
 
         if (game.hasMoritaniFaction()) {
@@ -239,6 +253,7 @@ public class SetupCommands {
         StepStatus stepStatus = StepStatus.STOP;
 
         switch (setupStep) {
+            case HOMEBREW_LEADERS -> stepStatus = homebrewLeaders(game);
             case CREATE_DECKS -> stepStatus = createDecks(game);
             case FACTION_POSITIONS -> stepStatus = factionPositions(discordGame, game);
             case BG_PREDICTION -> stepStatus = bgPredictionStep(game);
@@ -406,6 +421,63 @@ public class SetupCommands {
         removePlayerFromWaitingList(event, discordGame, playerName);
     }
 
+    public static void addHomebrewFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+        String factionName = discordGame.required(gameName).getAsString();
+        String factionProxy = discordGame.required(allFactions).getAsString();
+        String playerName = discordGame.required(user).getAsUser().getAsMention();
+        Member player = discordGame.required(user).getAsMember();
+        OptionMapping om = discordGame.optional(reason);
+        String homeworldName = om == null ? factionName : om.getAsString();
+
+        if (player == null) throw new IllegalArgumentException("Not a valid user");
+
+        if (game.getTurn() != 0) {
+            discordGame.getModInfo().queueMessage("The game has already started, you can't add more factions!");
+            return;
+        }
+        if (game.getFactions().size() >= 6) {
+            discordGame.getModInfo().queueMessage("This game is already full!");
+            return;
+        }
+        if (game.hasFaction(factionName)) {
+            discordGame.getModInfo().queueMessage("This faction has already been taken!");
+            return;
+        }
+        Faction faction;
+
+        String userName = player.getEffectiveName();
+        faction = new HomebrewFaction(factionName, factionProxy, homeworldName, playerName, userName);
+        game.addFaction(faction);
+
+        Category gameCategory = discordGame.getGameCategory();
+        game.getNexusDeck().add(new NexusCard(factionName));
+        discordGame.pushGame();
+
+        TextChannel channel = gameCategory.createTextChannel(factionName.toLowerCase() + "-info")
+                .addPermissionOverride(
+                        player,
+                        ChannelPermissions.readWriteAllow,
+                        ChannelPermissions.readWriteDeny
+                )
+                .complete();
+        discordGame.createPrivateThread(channel, "notes", List.of(playerName));
+        discordGame.createPrivateThread(channel, "chat", List.of(playerName, game.getModOrRoleMention()));
+        discordGame.createPrivateThread(channel, "ledger", List.of(playerName));
+        discordGame.getTurnSummary().addUser(game.getModRoleMention());
+        discordGame.getTurnSummary().addUser(playerName);
+        removePlayerFromWaitingList(event, discordGame, playerName);
+    }
+
+    public static void addHomebrewLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String factionName = discordGame.required(faction).getAsString();
+        String leaderName = discordGame.required(gameName).getAsString();
+        int leaderValue = discordGame.required(amount).getAsInt();
+        HomebrewFaction faction = (HomebrewFaction) game.getFaction(factionName);
+        faction.addLeader(new Leader(leaderName, leaderValue, factionName, faction.getFactionProxy(),  null, false));
+        game.getTraitorDeck().add(new TraitorCard(leaderName, factionName, faction.getFactionProxy(), leaderValue));
+        discordGame.pushGame();
+    }
+
     public static void showGameOptions(Game game) {
         String options = "The following options are selected:\n" +
                 game.getGameOptions().stream().map(GameOption::name)
@@ -444,6 +516,12 @@ public class SetupCommands {
         faction.setChat(discordGame.getFactionChat(faction));
         faction.selectTraitor(traitorName);
         discordGame.pushGame();
+    }
+
+    public static StepStatus homebrewLeaders(Game game) {
+        String homebrewFactions = String.join(", ", game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).map(Faction::getName).toList());
+        game.getModInfo().publish("Set up leaders for the homebrew factions: " + homebrewFactions);
+        return StepStatus.STOP;
     }
 
     public static StepStatus createDecks(Game game) throws IOException {

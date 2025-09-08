@@ -8,7 +8,8 @@ import model.factions.Faction;
 public class Leader {
     private final String name;
     private final int value;
-    private String originalFactionName;
+    private final String originalFactionName;
+    private String emojiFaction;
     private LeaderSkillCard skillCard;
     private boolean faceDown;
     private String battleTerritoryName;
@@ -18,6 +19,17 @@ public class Leader {
         this.name = name;
         this.value = value;
         this.originalFactionName = originalFactionName;
+        this.skillCard = skillCard;
+        this.faceDown = faceDown;
+        this.battleTerritoryName = null;
+        this.pulledBehindShield = false;
+    }
+
+    public Leader(String name, int value, String originalFactionName, String emojiFaction, LeaderSkillCard skillCard, boolean faceDown) {
+        this.name = name;
+        this.value = value;
+        this.originalFactionName = originalFactionName;
+        this.emojiFaction = emojiFaction;
         this.skillCard = skillCard;
         this.faceDown = faceDown;
         this.battleTerritoryName = null;
@@ -36,10 +48,6 @@ public class Leader {
         return originalFactionName;
     }
 
-    public void setOriginalFactionName(String originalFactionName) {
-        this.originalFactionName = originalFactionName;
-    }
-
     public String getNameAndValueString() {
         String valueString = String.valueOf(value);
         if (name.equals("Zoal"))
@@ -48,7 +56,10 @@ public class Leader {
     }
 
     public String getEmoiNameAndValueString() {
-        return Emojis.getFactionEmoji(originalFactionName) + " " + getNameAndValueString();
+        String emoji = originalFactionName;
+        if (emojiFaction != null)
+            emoji = emojiFaction;
+        return Emojis.getFactionEmoji(emoji) + " " + getNameAndValueString();
     }
 
     public int getAssassinationValue() {

@@ -141,8 +141,11 @@ public class FactionView {
     }
 
     protected List<MessageEmbed> getHomeworldEmbeds() {
+        String homeworldName = faction.getHomeworld();
+        if (faction instanceof HomebrewFaction hbFaction)
+            homeworldName = hbFaction.getHomeworldProxy();
         return Collections.singletonList(
-                getHomeworldEmbed(faction.getHomeworld(), faction.isHighThreshold())
+                getHomeworldEmbed(homeworldName, faction.isHighThreshold())
         );
     }
 
