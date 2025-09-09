@@ -54,6 +54,7 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData whisperFaction = new OptionData(OptionType.STRING, "whisper-recipient", "The faction you want to whisper to. Omit in -whisper threads to reply.", false)
             .setAutoComplete(true);
+    public static final OptionData homebrewFactionName = new OptionData(OptionType.STRING, "name", "The name of the homebrew faction", true);
     public static final OptionData dotPosition = new OptionData(OptionType.INTEGER, "dot-position", "1 = dot in sector 1, then the others in storm order", true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData guildSpecialWin = new OptionData(OptionType.BOOLEAN, "guild-special", "Was this a Guild special victory condition?", false);
