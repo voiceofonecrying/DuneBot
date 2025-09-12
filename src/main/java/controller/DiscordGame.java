@@ -129,7 +129,6 @@ public class DiscordGame {
     public static void addGameReferenceToFactions(Game game) {
         for (Faction faction : game.getFactions()) {
             faction.setGame(game);
-            // Temporary migration. Future games will set the faction on creating the Movement object.
             if (faction.getMovement() != null)
                 faction.getMovement().setFaction(faction);
         }
@@ -359,6 +358,24 @@ public class DiscordGame {
         Game game = gson.fromJson(gameJson, Game.class);
         addGameReferenceToFactions(game);
 
+        List<String> territoriesInFremenRange = List.of(
+                "Bight Of The Cliff (North Sector)", "Bight Of The Cliff (South Sector)",
+                "Broken Land (East Sector)", "Broken Land (West Sector)",
+                "Cielago West (North Sector)", "Cielago West (South Sector)",
+                "False Wall West (Middle Sector)", "False Wall West (North Sector)", "False Wall West (South Sector)",
+                "Funeral Plain",
+                "Habbanya Erg (East Sector)", "Habbanya Erg (West Sector)",
+                "Hagga Basin (East Sector)", "Hagga Basin (West Sector)",
+                "Plastic Basin (Middle Sector)", "Plastic Basin (North Sector)", "Plastic Basin (South Sector)",
+                "Polar Sink",
+                "Rock Outcroppings (North Sector)", "Rock Outcroppings (South Sector)",
+                "Sietch Tabr",
+                "The Great Flat",
+                "The Greater Flat",
+                "Tsimpo (East Sector)", "Tsimpo (Middle Sector)", "Tsimpo (West Sector)",
+                "Wind Pass (Far North Sector)", "Wind Pass (Far South Sector)",
+                "Wind Pass (North Sector)", "Wind Pass (South Sector)", "Wind Pass North (North Sector)", "Wind Pass North (South Sector)"
+        );
         for (Territory territory : game.getTerritories().values()) {
             if (territory.hasForce("Hidden Mobile Stronghold")) {
                 Territory hms = game.getTerritory("Hidden Mobile Stronghold");
@@ -368,6 +385,9 @@ public class DiscordGame {
                 Territory revealedTerritory = game.getTerritory(territory.getDiscoveryToken());
                 game.putTerritoryInAnotherTerritory(revealedTerritory, territory);
             }
+            // Temporary migration until all game have refreshed their JSON
+            if (territoriesInFremenRange.contains(territory.getTerritoryName()))
+                territory.setInFremenRange(true);
         }
 
         for (Faction f : game.getFactions()) {

@@ -653,7 +653,9 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (game.getTerritory(faction.getShipment().getTerritoryName()).costToShipInto() == 2 && !faction.getShipment().isToReserves())
                 spice *= 2;
 
-            if (faction instanceof FremenFaction || guildAmbassador)
+            if (faction instanceof FremenFaction && game.getTerritory(faction.getShipment().getTerritoryName()).isInFremenRange())
+                spice = 0;
+            if (guildAmbassador)
                 spice = 0;
             if (faction instanceof GuildFaction || (faction.hasAlly() && faction.getAlly().equals("Guild")))
                 spice = Math.ceilDiv(spice, 2);

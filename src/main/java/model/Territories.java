@@ -14,7 +14,7 @@ public class Territories extends HashMap<String, Territory> {
     }
 
     public Territory addDiscoveryToken(String name, boolean isStronghold) {
-        Territory discoveryToken = new Territory(name, -1, false, isStronghold, true, false);
+        Territory discoveryToken = new Territory(name, -1, false, isStronghold, true, false, false);
         discoveryToken.setJustDiscovered(true);
         put(name, discoveryToken);
         return discoveryToken;
@@ -22,7 +22,7 @@ public class Territories extends HashMap<String, Territory> {
 
     public void addHMS() {
         String name = "Hidden Mobile Stronghold";
-        Territory hms = new Territory(name, -1, false, true, false, false);
+        Territory hms = new Territory(name, -1, false, true, false, false, false);
         put(name, hms);
     }
 

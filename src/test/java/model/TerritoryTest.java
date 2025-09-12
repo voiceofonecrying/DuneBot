@@ -360,31 +360,31 @@ public class TerritoryTest extends DuneTest {
 
         @Test
         void testCistern() {
-            Territory cistern = new Territory("Cistern", 1, true, false, true, false);
+            Territory cistern = new Territory("Cistern", 1, true, false, true, false, false);
             assertEquals(1, cistern.costToShipInto());
         }
 
         @Test
         void testEcologicalTestingStation() {
-            Territory ecologicalTestingStation = new Territory("Ecological Testing Station", 1, true, false, true, false);
+            Territory ecologicalTestingStation = new Territory("Ecological Testing Station", 1, true, false, true, false, false);
             assertEquals(1, ecologicalTestingStation.costToShipInto());
         }
 
         @Test
         void testJacurutuSietch() {
-            Territory jacurutuSietch = new Territory("Jacurutu Sietch", 1, true, true, true, false);
+            Territory jacurutuSietch = new Territory("Jacurutu Sietch", 1, true, true, true, false, false);
             assertEquals(1, jacurutuSietch.costToShipInto());
         }
 
         @Test
         void testOrgizProcessingStation() {
-            Territory orgizProcessingStation = new Territory("Orgiz Processing Station", 1, true, false, true, false);
+            Territory orgizProcessingStation = new Territory("Orgiz Processing Station", 1, true, false, true, false, false);
             assertEquals(1, orgizProcessingStation.costToShipInto());
         }
 
         @Test
         void testShrine() {
-            Territory shrine = new Territory("Shrine", 1, true, false, true, false);
+            Territory shrine = new Territory("Shrine", 1, true, false, true, false, false);
             assertEquals(1, shrine.costToShipInto());
         }
     }
@@ -397,14 +397,31 @@ public class TerritoryTest extends DuneTest {
         @BeforeEach
         void setUp() {
             game.addFaction(atreides);
-            game.addFaction(harkonnen);
             game.addFaction(bg);
-            game.addFaction(ix);
-            hms = game.getTerritory("Hidden Mobile Stronghold");
+//            game.addFaction(ix);
+//            hms = game.getTerritory("Hidden Mobile Stronghold");
             game.addFaction(ecaz);
             game.addFaction(richese);
 
             game.createAlliance(bg, ecaz);
+        }
+
+        @Test
+        void testFremenMayShipWithinTheirRange() {
+            assertFalse(sietchTabr.factionMayNotEnter(game, fremen, true, false));
+        }
+
+        @Test
+        void testFremenMayNotShipOutsideTheirRange() {
+            assertTrue(habbanyaSietch.factionMayNotEnter(game, fremen, true, false));
+        }
+
+        @Test
+        void testFremenAlliedWithGuildMayShipOutsideTheirRange() {
+            game.addFaction(fremen);
+            game.addFaction(guild);
+            game.createAlliance(fremen, guild);
+            assertFalse(habbanyaSietch.factionMayNotEnter(game, fremen, true, false));
         }
 
         @Test
@@ -487,16 +504,22 @@ public class TerritoryTest extends DuneTest {
 
         @Test
         void testIxMayShipIntoHMS() {
+            game.addFaction(ix);
+            hms = game.getTerritory("Hidden Mobile Stronghold");
             assertFalse(hms.factionMayNotEnter(game, ix, true, false));
         }
 
         @Test
         void testNonIxMayNotShipIntoHMS() {
+            game.addFaction(ix);
+            hms = game.getTerritory("Hidden Mobile Stronghold");
             assertTrue(hms.factionMayNotEnter(game, atreides, true, false));
         }
 
         @Test
         void testNonIxMayMoveIntoHMS() {
+            game.addFaction(ix);
+            hms = game.getTerritory("Hidden Mobile Stronghold");
             assertFalse(hms.factionMayNotEnter(game, atreides, false, false));
         }
 
