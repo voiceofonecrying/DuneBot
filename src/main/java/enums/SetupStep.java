@@ -1,7 +1,6 @@
 package enums;
 
 public enum SetupStep {
-    HOMEBREW_LEADERS,
     CREATE_DECKS,
     FACTION_POSITIONS,
     BG_PREDICTION,

@@ -1,5 +1,6 @@
 package controller.commands;
 
+import com.google.gson.Gson;
 import constants.Emojis;
 import controller.DiscordGame;
 import controller.channels.TurnSummary;
@@ -14,7 +15,6 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
-import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
@@ -26,8 +26,12 @@ import templates.ChannelPermissions;
 import utils.CardImages;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -45,9 +49,7 @@ public class SetupCommands {
                         new SubcommandData("faction", "Register a user to a faction in a game")
                                 .addOptions(allFactions, user),
                         new SubcommandData("homebrew-faction", "Register a user to a homebrew faction in a game")
-                                .addOptions(gameName, allFactions, user, reason),
-                        new SubcommandData("homebrew-leader", "Add a leader to a homebrew faction")
-                                .addOptions(faction, gameName, amount),
+                                .addOptions(homebrewFactionName, user),
                         new SubcommandData("show-game-options", "Show the selected game options"),
                         new SubcommandData("add-game-option", "Add a game option")
                                 .addOptions(CommandOptions.addGameOption),
@@ -81,7 +83,6 @@ public class SetupCommands {
             case "remove-mod" -> removeUserFromModRole(event, discordGame, game);
             case "faction" -> addFaction(event, discordGame, game);
             case "homebrew-faction" -> addHomebrewFaction(event, discordGame, game);
-            case "homebrew-leader" -> addHomebrewLeader(discordGame, game);
             case "show-game-options" -> showGameOptions(game);
             case "add-game-option" -> addGameOption(discordGame, game);
             case "remove-game-option" -> removeGameOption(discordGame, game);
@@ -160,13 +161,6 @@ public class SetupCommands {
                     SetupStep.STORM_SELECTION,
                     SetupStep.START_GAME
             ));
-        }
-
-        if (game.getFactions().stream().anyMatch(f -> f instanceof HomebrewFaction)) {
-            setupSteps.add(
-                    setupSteps.indexOf(SetupStep.CREATE_DECKS),
-                    SetupStep.HOMEBREW_LEADERS
-            );
         }
 
         if (game.hasMoritaniFaction()) {
@@ -253,7 +247,6 @@ public class SetupCommands {
         StepStatus stepStatus = StepStatus.STOP;
 
         switch (setupStep) {
-            case HOMEBREW_LEADERS -> stepStatus = homebrewLeaders(game);
             case CREATE_DECKS -> stepStatus = createDecks(game);
             case FACTION_POSITIONS -> stepStatus = factionPositions(discordGame, game);
             case BG_PREDICTION -> stepStatus = bgPredictionStep(game);
@@ -421,13 +414,10 @@ public class SetupCommands {
         removePlayerFromWaitingList(event, discordGame, playerName);
     }
 
-    public static void addHomebrewFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
+    public static void addHomebrewFaction(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         String factionName = discordGame.required(gameName).getAsString();
-        String factionProxy = discordGame.required(allFactions).getAsString();
         String playerName = discordGame.required(user).getAsUser().getAsMention();
         Member player = discordGame.required(user).getAsMember();
-        OptionMapping om = discordGame.optional(reason);
-        String homeworldName = om == null ? factionName : om.getAsString();
 
         if (player == null) throw new IllegalArgumentException("Not a valid user");
 
@@ -443,11 +433,15 @@ public class SetupCommands {
             discordGame.getModInfo().queueMessage("This faction has already been taken!");
             return;
         }
-        Faction faction;
-
+        HomebrewFaction faction;
         String userName = player.getEffectiveName();
-        faction = new HomebrewFaction(factionName, factionProxy, homeworldName, playerName, userName);
+        faction = new HomebrewFaction(factionName, playerName, userName);
         game.addFaction(faction);
+        String jsonResults = loadJsonString(discordGame.getGameCategory(), factionName);
+        Gson gson = DiscordGame.createGsonDeserializer();
+        HomebrewFaction.FactionSpecs specs;
+        specs = gson.fromJson(jsonResults, HomebrewFaction.FactionSpecs.class);
+        faction.initalizeFromSpecs(specs);
 
         Category gameCategory = discordGame.getGameCategory();
         game.getNexusDeck().add(new NexusCard(factionName));
@@ -468,14 +462,28 @@ public class SetupCommands {
         removePlayerFromWaitingList(event, discordGame, playerName);
     }
 
-    public static void addHomebrewLeader(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String factionName = discordGame.required(faction).getAsString();
-        String leaderName = discordGame.required(gameName).getAsString();
-        int leaderValue = discordGame.required(amount).getAsInt();
-        HomebrewFaction faction = (HomebrewFaction) game.getFaction(factionName);
-        faction.addLeader(new Leader(leaderName, leaderValue, factionName, faction.getFactionProxy(),  null, false));
-        game.getTraitorDeck().add(new TraitorCard(leaderName, factionName, faction.getFactionProxy(), leaderValue));
-        discordGame.pushGame();
+    public static String loadJsonString(Category category, String factionName) throws InvalidGameStateException {
+        TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("mod-info")).findFirst().orElseThrow(() -> new IllegalStateException("The mod-info channel was not found."));
+        MessageHistory h = playerStatsChannel.getHistory();
+        h.retrievePast(100).complete();
+        List<Message> ml = h.getRetrievedHistory();
+        for (Message m : ml) {
+            List<Message.Attachment> messageList =  m.getAttachments();
+            if (!messageList.isEmpty()) {
+                Message.Attachment encoded = m.getAttachments().getFirst();
+                if (encoded.getFileName().equals(factionName + ".json")) {
+                    CompletableFuture<InputStream> future = encoded.getProxy().download();
+                    try {
+                        String jsonResults = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
+                        future.get().close();
+                        return jsonResults;
+                    } catch (IOException | InterruptedException | ExecutionException e) {
+                        // Could not load from json file. Complete new set will be generated from game-results
+                    }
+                }
+            }
+        }
+        throw new InvalidGameStateException(factionName + ".json not found in mod-info.");
     }
 
     public static void showGameOptions(Game game) {
@@ -516,12 +524,6 @@ public class SetupCommands {
         faction.setChat(discordGame.getFactionChat(faction));
         faction.selectTraitor(traitorName);
         discordGame.pushGame();
-    }
-
-    public static StepStatus homebrewLeaders(Game game) {
-        String homebrewFactions = String.join(", ", game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).map(Faction::getName).toList());
-        game.getModInfo().publish("Set up leaders for the homebrew factions: " + homebrewFactions);
-        return StepStatus.STOP;
     }
 
     public static StepStatus createDecks(Game game) throws IOException {
