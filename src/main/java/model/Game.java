@@ -2106,21 +2106,20 @@ public class Game {
 
             for (Faction faction : territory.getActiveFactions(this)) {
                 int spice = faction.getSpiceCollectedFromTerritory(territory);
-                if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
-                    faction.getOccupier().addSpice(Math.floorDiv(spice, 2),
-                            "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).");
-                    turnSummary.publish(faction.getEmoji() +
-                            " collects " + Math.floorDiv(spice, 2) + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection at " + territory.getTerritoryName());
-                    spice = Math.ceilDiv(spice, 2);
-                }
                 faction.addSpice(spice, "for Spice Blow");
                 territory.setSpice(territory.getSpice() - spice);
+                turnSummary.publish(faction.getEmoji() +
+                        " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
+                if (faction instanceof FremenFaction && faction.isHomeworldOccupied()) {
+                    int stolenSpice = Math.floorDiv(spice, 2);
+                    faction.getOccupier().addSpice(stolenSpice, "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).");
+                    faction.subtractSpice(stolenSpice, faction.getOccupier().getEmoji() + " occupies Southern Hemisphere.");
+                    turnSummary.publish(faction.getOccupier().getEmoji() + " takes " + stolenSpice + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection as Southern Hemisphere Occupier.");
+                }
 
                 if (hasGameOption(GameOption.TECH_TOKENS) && hasGameOption(GameOption.ALTERNATE_SPICE_PRODUCTION)
                         && (!(faction instanceof FremenFaction) || hasGameOption(GameOption.FREMEN_TRIGGER_ALTERNATE_SPICE_PRODUCTION)))
                     altSpiceProductionTriggered = true;
-                turnSummary.publish(faction.getEmoji() +
-                        " collects " + spice + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
                 if (hasGameOption(GameOption.HOMEWORLDS) && faction instanceof HarkonnenFaction && faction.isHighThreshold())
                     harkonnenCollectsForHighThreshold = true;
             }
