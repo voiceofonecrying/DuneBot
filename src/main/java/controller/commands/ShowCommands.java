@@ -858,11 +858,27 @@ public class ShowCommands {
                     BufferedImage hms = getResourceImage("Hidden Mobile Stronghold");
                     hms = resize(hms, 150, 100);
                     List<Force> hmsForces = game.getTerritories().get("Hidden Mobile Stronghold").getForces();
-                    int forceOffset = 0;
-                    for (Force f : hmsForces) {
-                        BufferedImage forceImage = buildForceImage(game, f);
-                        hms = overlay(hms, forceImage, new Point(40, 20 + forceOffset), 1);
-                        forceOffset += 30;
+                    if (hmsForces.size() <= 3) {
+                        int forceOffset = 0;
+                        for (Force f : hmsForces) {
+                            BufferedImage forceImage = buildForceImage(game, f);
+                            hms = overlay(hms, forceImage, new Point(40, 20 + forceOffset), 1);
+                            forceOffset += 30;
+                        }
+                    } else {
+                        int forceXOffset = 40;
+                        int forceYOffset = hmsForces.size() <= 4 ? 15 : 0;
+                        boolean offsetY = false;
+                        for (Force f : hmsForces) {
+                            BufferedImage forceImage = buildForceImage(game, f);
+                            hms = overlay(hms, forceImage, new Point(30 + forceXOffset, 20 + forceYOffset), 1);
+                            if (offsetY) {
+                                forceYOffset += 30;
+                                forceXOffset = 40;
+                            } else
+                                forceXOffset = 0;
+                            offsetY = !offsetY;
+                        }
                     }
                     Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
                     int hmsRotation = game.getHmsRotation();
