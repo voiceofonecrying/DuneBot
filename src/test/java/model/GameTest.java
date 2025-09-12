@@ -613,13 +613,19 @@ class GameTest extends DuneTest {
         @Test
         void testFremenAlliedWithGuildShipFree() {
             game.createAlliance(guild, fremen);
-            assertEquals(0, game.shipmentCost(fremen, 2, habbanyaSietch, false, false));
+            assertEquals(0, game.shipmentCost(fremen, 2, sietchTabr, false, false));
         }
 
         @Test
-        void testFremenAlliedWithGuildPayForCrossShipOrShipToReserves() {
+        void testFremenAlliedWithGuildPayForCrossShip() {
             game.createAlliance(guild, fremen);
-            assertEquals(1, game.shipmentCost(fremen, 2, habbanyaSietch, false, true));
+            assertEquals(1, game.shipmentCost(fremen, 2, sietchTabr, false, true));
+        }
+
+        @Test
+        void testFremenAlliedWithGuildToEastSideOfArrakis() {
+            game.createAlliance(guild, fremen);
+            assertEquals(1, game.shipmentCost(fremen, 2, tueksSietch, false, false));
         }
 
         @Test
@@ -2589,7 +2595,7 @@ class GameTest extends DuneTest {
         @Test
         void testFactionInCisternDoesNotHaveMiningEquipment() throws InvalidGameStateException {
             game.addGameOption(GameOption.DISCOVERY_TOKENS);
-            Territory cistern = new Territory("Cistern", 1, true, false, true, false);
+            Territory cistern = new Territory("Cistern", 1, true, false, true, false, false);
             sihayaRidge.setDiscoveryToken("Cistern");
             game.putTerritoryInAnotherTerritory(cistern, sihayaRidge);
             bg.placeForcesFromReserves(cistern, 1, false);

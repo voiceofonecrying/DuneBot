@@ -844,7 +844,6 @@ class BattleTest extends DuneTest {
 
         @Test
         void testEcazAloneTroopStrength() throws InvalidGameStateException {
-            Territory tueksSietch = new Territory("Habbanya Sietch", 16, false, true, false);
             TreacheryCard hunterSeeker = new TreacheryCard("Hunter Seeker");
             TreacheryCard weirdingWay = new TreacheryCard("Weirding Way");
             tueksSietch.addForces("Harkonnen", 11);
@@ -1001,7 +1000,7 @@ class BattleTest extends DuneTest {
 
         @Test
         void testSalusaSecundusHighSpiceNotNeededForSardaukar() {
-            Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
+            HomeworldTerritory wallachIX = new HomeworldTerritory(game, "Wallach IX", "BG");
             wallachIX.addForces("Emperor", 9);
             wallachIX.addForces("Emperor*", 3);
             wallachIX.addForces("BG", 15);
@@ -1013,7 +1012,7 @@ class BattleTest extends DuneTest {
 
         @Test
         void testSalusaSecundusLowSpiceNeededForSardaukar() {
-            Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
+            HomeworldTerritory wallachIX = new HomeworldTerritory(game, "Wallach IX", "BG");
             wallachIX.addForces("Emperor", 9);
             wallachIX.addForces("Emperor*", 1);
             wallachIX.addForces("BG", 15);
@@ -1026,7 +1025,7 @@ class BattleTest extends DuneTest {
 
         @Test
         void testSalusaSecundusOccupiedNegatesSardaukar() {
-            Territory wallachIX = new Territory("Wallach IX", -1, false, false, false);
+            HomeworldTerritory wallachIX = new HomeworldTerritory(game, "Wallach IX", "BG");
             wallachIX.addForces("Emperor*", 1);
             wallachIX.addForces("BG", 15);
             game.addGameOption(GameOption.HOMEWORLDS);

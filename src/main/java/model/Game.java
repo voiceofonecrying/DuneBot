@@ -115,7 +115,7 @@ public class Game {
         territories = new Territories();
         CSVParser csvParser = getCSVFile("Territories.csv");
         for (CSVRecord csvRecord : csvParser) {
-            territories.put(csvRecord.get(0), new Territory(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Boolean.parseBoolean(csvRecord.get(2)), Boolean.parseBoolean(csvRecord.get(3)), Boolean.parseBoolean(csvRecord.get(4))));
+            territories.put(csvRecord.get(0), new Territory(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Boolean.parseBoolean(csvRecord.get(2)), Boolean.parseBoolean(csvRecord.get(3)), false, Boolean.parseBoolean(csvRecord.get(4)), Boolean.parseBoolean(csvRecord.get(5))));
         }
 
         this.gameOptions = new HashSet<>();
@@ -1951,7 +1951,7 @@ public class Game {
 
     public int shipmentCost(Faction targetFaction, int amountToShip, Territory targetTerritory, boolean karama, boolean crossShip) {
         int baseCost = amountToShip * targetTerritory.costToShipInto();
-        if (targetFaction instanceof FremenFaction && !crossShip && !(targetTerritory instanceof HomeworldTerritory))
+        if (targetFaction instanceof FremenFaction && targetTerritory.isInFremenRange() && !crossShip)
             return 0;
         else if (targetFaction instanceof GuildFaction || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama)
             return Math.ceilDiv(baseCost, 2);

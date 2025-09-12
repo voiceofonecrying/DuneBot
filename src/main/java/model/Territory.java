@@ -14,6 +14,7 @@ public class Territory {
     protected final String territoryName;
     private final int sector;
     private boolean isStronghold;
+    private boolean inFremenRange;
     private final boolean isDiscoveryToken;
     private boolean justDiscovered;
     private final boolean isNearShieldWall;
@@ -27,7 +28,7 @@ public class Territory {
     private String discoveryToken;
     private boolean discovered;
 
-    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isDiscoveryToken, boolean isNearShieldWall) {
+    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isDiscoveryToken, boolean isNearShieldWall, boolean inFremenRange) {
         this.territoryName = territoryName;
         this.sector = sector;
         this.isRock = isRock;
@@ -35,16 +36,13 @@ public class Territory {
         this.isDiscoveryToken = isDiscoveryToken;
         this.justDiscovered = false;
         this.isNearShieldWall = isNearShieldWall;
+        this.inFremenRange = inFremenRange;
         this.spice = 0;
         this.forces = new ArrayList<>();
         this.richeseNoField = null;
         this.ecazAmbassador = null;
         this.aftermathToken = false;
         this.terrorTokens = new LinkedList<>();
-    }
-
-    public Territory(String territoryName, int sector, boolean isRock, boolean isStronghold, boolean isNearShieldWall) {
-        this(territoryName, sector, isRock, isStronghold, false, isNearShieldWall);
     }
 
     public String getTerritoryName() {
@@ -69,6 +67,14 @@ public class Territory {
 
     public void setStronghold(boolean isStronghold) {
         this.isStronghold = isStronghold;
+    }
+
+    public boolean isInFremenRange() {
+        return inFremenRange;
+    }
+
+    public void setInFremenRange(boolean inFremenRange) {
+        this.inFremenRange = inFremenRange;
     }
 
     public boolean isDiscoveryToken() {
@@ -460,6 +466,8 @@ public class Territory {
             if (territoryName.equals("Hidden Mobile Stronghold") && !(faction instanceof IxFaction))
                 return true;
             if (aftermathToken)
+                return true;
+            if (faction instanceof FremenFaction && !inFremenRange && !faction.getAlly().equals("Guild"))
                 return true;
             if (onlyEcazAndAllyPresent(game))
                 return false;

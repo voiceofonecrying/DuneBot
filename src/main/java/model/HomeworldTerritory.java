@@ -15,7 +15,7 @@ public class HomeworldTerritory extends Territory {
     private Game game;
 
     public HomeworldTerritory(Game game, String homeworldName, String nativeName) {
-        super(homeworldName, -1, false, false, false, false);
+        super(homeworldName, -1, false, false, false, false, false);
         this.game = game;
         this.nativeName = nativeName;
         this.occupierName = null;
