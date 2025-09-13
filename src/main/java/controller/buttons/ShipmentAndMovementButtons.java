@@ -972,7 +972,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         String labelSuffix = "-" + wholeTerritoryName;
         DuneChoice choice = new DuneChoice("ship" + buttonSuffix + labelSuffix, wholeTerritoryName);
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
-        choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !buttonSuffix.contains("fremen-ride"), isInitialPlacement)));
+        if (!buttonSuffix.equals("-place-shai-hulud") && !buttonSuffix.equals("-place-great-maker"))
+            choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !buttonSuffix.contains("fremen-ride"), isInitialPlacement)));
         return choice;
     }
 
