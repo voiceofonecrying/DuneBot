@@ -5,6 +5,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
+import model.TestTopic;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -254,5 +255,29 @@ class FremenFactionTest extends FactionTestTemplate {
     @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
+    }
+
+    @Nested
+    @DisplayName("#colectSpiceFromTerritory")
+    class CollectSpiceFromTerritory extends FactionTestTemplate.CollectSpiceFromTerritory {
+        @Test
+        void testHomeworldOccupied() throws IOException {
+            game.addGameOption(GameOption.HOMEWORLDS);
+            faction.placeForcesFromReserves(game.getTerritory("Sietch Tabr"), 17, false);
+            faction.placeForcesFromReserves(game.getTerritory("Sietch Tabr"), 3, true);
+            HarkonnenFaction harkonnen = new HarkonnenFaction("ha", "ha");
+            harkonnen.setLedger(new TestTopic());
+            game.addFaction(harkonnen);
+            harkonnen.placeForcesFromReserves(game.getTerritory("Southern Hemisphere"), 1, false);
+            assertTrue(faction.isHomeworldOccupied());
+            faction.setHasMiningEquipment(true);
+            turnSummary.clear();
+            faction.collectSpiceFromTerritory(cielagoSouth_WestSector);
+            assertEquals(spiceBefore + 2, faction.getSpice());
+            assertEquals(9, cielagoSouth_WestSector.getSpice());
+            assertEquals(faction.getEmoji() + " collects 3 " + Emojis.SPICE + " from Cielago South (West Sector)", turnSummary.getMessages().getFirst());
+            assertEquals(11, harkonnen.getSpice());
+            assertEquals(harkonnen.getEmoji() + " takes 1 " + Emojis.SPICE + " from " + faction.getEmoji() + " collection as Southern Hemisphere Occupier.", turnSummary.getMessages().getLast());
+        }
     }
 }

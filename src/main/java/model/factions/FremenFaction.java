@@ -205,4 +205,16 @@ public class FremenFaction extends Faction {
         game.getTurnSummary().publish(Emojis.FREMEN + " place their revived " + Emojis.FREMEN_FEDAYKIN + " with their forces in " + territory.getTerritoryName() + ".");
         chat.reply("Your " + Emojis.FREMEN_FEDAYKIN + " has left for the northern hemisphere.");
     }
+
+    @Override
+    public void collectSpiceFromTerritory(Territory territory) {
+        int spiceCollected = getSpiceCollectedFromTerritory(territory);
+        super.collectSpiceFromTerritory(territory);
+        if (isHomeworldOccupied()) {
+            int stolenSpice = Math.floorDiv(spiceCollected, 2);
+            getOccupier().addSpice(stolenSpice, "From " + Emojis.FREMEN + " " + Emojis.SPICE + " collection (occupied advantage).");
+            subtractSpice(stolenSpice, getOccupier().getEmoji() + " occupies Southern Hemisphere.");
+            game.getTurnSummary().publish(getOccupier().getEmoji() + " takes " + stolenSpice + " " + Emojis.SPICE + " from " + Emojis.FREMEN + " collection as Southern Hemisphere Occupier.");
+        }
+    }
 }

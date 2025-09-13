@@ -941,6 +941,18 @@ public class Faction {
     }
 
     /**
+     * Collect the spice from the territory.
+     *
+     * @param territory The territory to calculate the spice from
+     */
+    public void collectSpiceFromTerritory(Territory territory) {
+        int spiceCollected = getSpiceCollectedFromTerritory(territory);
+        addSpice(spiceCollected, "for Spice Blow");
+        territory.setSpice(territory.getSpice() - spiceCollected);
+        game.getTurnSummary().publish(emoji + " collects " + spiceCollected + " " + Emojis.SPICE + " from " + territory.getTerritoryName());
+    }
+
+    /**
      * Get the total spice that would be collected from a territory.  This function does not actually add or subtract
      * spice.  It only calculates the total
      *
