@@ -1195,6 +1195,39 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#collectSpiceFromTerritory")
+    class CollectSpiceFromTerritory {
+        Territory cielagoSouth_WestSector;
+        int spiceBefore;
+
+        @BeforeEach
+        void setUp() {
+            cielagoSouth_WestSector = game.getTerritory("Cielago South (West Sector)");
+            cielagoSouth_WestSector.setSpice(12);
+            cielagoSouth_WestSector.addForces(faction.getName(), 1);
+            spiceBefore = faction.getSpice();
+        }
+
+        @Test
+        void testNoMiningEquipment() {
+            faction.setHasMiningEquipment(false);
+            faction.collectSpiceFromTerritory(cielagoSouth_WestSector);
+            assertEquals(spiceBefore + 2, faction.getSpice());
+            assertEquals(10, cielagoSouth_WestSector.getSpice());
+            assertEquals(faction.getEmoji() + " collects 2 " + Emojis.SPICE + " from Cielago South (West Sector)", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testHasMiningEquipment() {
+            faction.setHasMiningEquipment(true);
+            faction.collectSpiceFromTerritory(cielagoSouth_WestSector);
+            assertEquals(spiceBefore + 3, faction.getSpice());
+            assertEquals(9, cielagoSouth_WestSector.getSpice());
+            assertEquals(faction.getEmoji() + " collects 3 " + Emojis.SPICE + " from Cielago South (West Sector)", turnSummary.getMessages().getLast());
+        }
+    }
+
+    @Nested
     @DisplayName("#hasTreacheryCard")
     class HasTreacheryCard {
         Faction faction;
