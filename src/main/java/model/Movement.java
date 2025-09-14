@@ -55,6 +55,10 @@ public class Movement {
     public String getChoicePrefix() {
         if (moveType == MoveType.FREMEN_RIDE)
             return "fremen-ride-";
+        else if (moveType == MoveType.SHAI_HULUD_PLACEMENT)
+            return "fremen-place-shai-hulud-";
+        else if (moveType == MoveType.GREAT_MAKER_PLACEMENT)
+            return "fremen-place-great-maker-";
         else if (moveType == MoveType.GUILD_AMBASSADOR)
             return "ambassador-guild-";
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
@@ -148,6 +152,10 @@ public class Movement {
             faction.getChat().reply("You will not ride the worm.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
             ((FremenFaction) faction).setWormRideActive(false);
+        } else if (moveType == MoveType.SHAI_HULUD_PLACEMENT) {
+            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()), true);
+        } else if (moveType == MoveType.GREAT_MAKER_PLACEMENT) {
+            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()), true);
         } else if (moveType == MoveType.FREMEN_AMBASSADOR) {
             faction.getChat().reply("You will not ride the worm with the Fremen Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm with the Fremen Ambassador.");
@@ -164,6 +172,10 @@ public class Movement {
         clear();
         if (moveType == MoveType.FREMEN_RIDE)
             ((FremenFaction) faction).presentWormRideChoices(saveMovingFrom);
+        else if (moveType == MoveType.SHAI_HULUD_PLACEMENT)
+            ((FremenFaction) faction).presentWormPlacementChoices(saveMovingFrom, "Shai-Hulud");
+        else if (moveType == MoveType.GREAT_MAKER_PLACEMENT)
+            ((FremenFaction) faction).presentWormPlacementChoices(saveMovingFrom, "Great Maker");
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
             ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
         else if (moveType == MoveType.GUILD_AMBASSADOR)
@@ -227,9 +239,9 @@ public class Movement {
     public DuneChoice shipToTerritoryChoice(String wholeTerritoryName, boolean isInitialPlacement) {
         Game game = faction.getGame();
         DuneChoice choice = new DuneChoice(getChoicePrefix() + "territory-" + wholeTerritoryName, wholeTerritoryName);
-        boolean wormRide = moveType == MoveType.FREMEN_RIDE || moveType == MoveType.FREMEN_AMBASSADOR;
+        boolean shipment = !List.of(MoveType.FREMEN_RIDE, MoveType.FREMEN_AMBASSADOR, MoveType.SHAI_HULUD_PLACEMENT, MoveType.GREAT_MAKER_PLACEMENT).contains(moveType);
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
-        choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, !wormRide, isInitialPlacement)));
+        choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, shipment, isInitialPlacement)));
         return choice;
     }
 

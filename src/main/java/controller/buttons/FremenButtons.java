@@ -14,6 +14,8 @@ public class FremenButtons implements Pressable {
         if (event.getComponentId().startsWith("fremen-ht-")) triggerHT(event, game, discordGame);
         else if (event.getComponentId().equals("fremen-cancel")) cancelHT(discordGame);
         else if (event.getComponentId().startsWith("fremen-ride-")) handleFremenRideButtons(event, discordGame);
+        else if (event.getComponentId().startsWith("fremen-place-shai-hulud-")) handlePlaceShaiHuludButtons(event, discordGame);
+        else if (event.getComponentId().startsWith("fremen-place-great-maker-")) handlePlaceGreatMakerButtons(event, discordGame);
     }
 
     private static void cancelHT(DiscordGame discordGame) {
@@ -29,6 +31,16 @@ public class FremenButtons implements Pressable {
 
     private static void handleFremenRideButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         String action = event.getComponentId().replace("fremen-ride-", "");
+        MovementButtonActions.handleMovementAction(event, discordGame, action);
+    }
+
+    private static void handlePlaceShaiHuludButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        String action = event.getComponentId().replace("fremen-place-shai-hulud-", "");
+        MovementButtonActions.handleMovementAction(event, discordGame, action);
+    }
+
+    private static void handlePlaceGreatMakerButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        String action = event.getComponentId().replace("fremen-place-great-maker-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 }

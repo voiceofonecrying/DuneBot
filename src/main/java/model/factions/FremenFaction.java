@@ -149,14 +149,20 @@ public class FremenFaction extends Faction {
     }
 
     public void presentWormPlacementChoices(String territoryName, String wormName) {
-        boolean greatMaker = wormName.equals("Great Maker");
+        if (wormName.equals("Great Maker"))
+            movement.setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
+        else
+            movement.setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
         movement.setMovingFrom(territoryName);
-        String buttonSuffix = greatMaker ? "-place-great-maker" : "-place-shai-hulud";
+        String buttonPrefix = movement.getChoicePrefix();
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
-        choices.add(new DuneChoice("other" + buttonSuffix, "Other Sand Territories"));
-        choices.add(new DuneChoice("secondary", "pass-shipment" + buttonSuffix, "Keep it in " + territoryName));
-        chat.publish("Where would you like to place " + wormName + "? " + player, choices);
+        choices.add(new DuneChoice(buttonPrefix + "spice-blow", "Spice Blow Territories"));
+        choices.add(new DuneChoice(buttonPrefix + "other", "Other Sand Territories"));
+        choices.add(new DuneChoice("secondary", buttonPrefix + "pass", "Keep it in " + territoryName));
+        chat.reply("Where would you like to place " + wormName + "? " + player, choices);
+    }
+
+    public void addWormToPlace() {
         wormsToPlace++;
     }
 
@@ -164,11 +170,11 @@ public class FremenFaction extends Faction {
         return wormsToPlace;
     }
 
-    public void placeWorm(boolean greatMaker, Territory territory, boolean leftWhereItAppeared) {
-        String wormName = greatMaker ? "Great Maker" : "Shai-Hulud";
+    public void placeWorm(Territory territory, boolean leftWhereItAppeared) {
+        String wormName = movement.getMoveType() == MoveType.GREAT_MAKER_PLACEMENT ? "Great Maker" : "Shai-Hulud";
         String action = leftWhereItAppeared ? "left " : "placed ";
         String territoryName = territory.getTerritoryName();
-        game.placeShaiHulud(territoryName, wormName, false);
+        game.placeShaiHulud(territoryName, wormName, false, leftWhereItAppeared);
         wormsToPlace--;
         chat.reply("You " + action + wormName + " in " + territoryName + ".");
     }

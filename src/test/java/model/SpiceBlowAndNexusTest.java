@@ -441,7 +441,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         void testFremenPlacesSecondShaiHuludInFuneralPlainAndDontGetNewRideButtonsYet() {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
-            game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false);
+            game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false,false);
             assertEquals(0, fremenChat.getMessages().size());
         }
 
@@ -449,7 +449,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         void testFremenPlacesSecondShaiHuludInFuneralPlainAndThirdNextStepGetsNewRideButtons() throws IOException {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
-            game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false);
+            game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false, false);
             spiceBlowAndNexus.nextStep(game);
             assertTrue(turnSummary.getMessages().get(2).contains("5 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!"));
             assertEquals("Where would you like to ride to from Funeral Plain? fr", fremenChat.getMessages().getFirst());
@@ -461,7 +461,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
             fremenChat = new TestTopic();
             fremen.setChat(fremenChat);
             spiceBlowAndNexus.nextStep(game);
-            game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false);
+            game.placeShaiHulud("Funeral Plain", "Shai-Hulud", false, false);
             spiceBlowAndNexus.nextStep(game);
             spiceBlowAndNexus.nextStep(game);
             assertTrue(spiceBlowAndNexus.isPhaseComplete());
