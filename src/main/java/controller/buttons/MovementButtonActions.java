@@ -1,6 +1,7 @@
 package controller.buttons;
 
 import controller.DiscordGame;
+import enums.MoveType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
@@ -84,8 +85,14 @@ public class MovementButtonActions {
         List<Territory> territorySectors = game.getTerritories().getTerritorySectorsInStormOrder(aggregateTerritoryName);
 
         if (territorySectors.size() == 1) {
-            faction.getMovement().setMovingTo(territorySectors.getFirst().getTerritoryName());
-            presentForcesChoices(event, faction);
+            Territory territory = territorySectors.getFirst();
+            MoveType moveType = faction.getMovement().getMoveType();
+            if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
+                game.getFremenFaction().placeWorm(territory, false);
+            } else {
+                faction.getMovement().setMovingTo(territory.getTerritoryName());
+                presentForcesChoices(event, faction);
+            }
             discordGame.pushGame();
         } else {
             faction.getMovement().presentSectorChoices(aggregateTerritoryName, territorySectors);
@@ -94,11 +101,17 @@ public class MovementButtonActions {
     }
 
     protected static void filterBySector(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         String choicePrefix = faction.getMovement().getChoicePrefix();
         String territoryName = event.getComponentId().replace("sector-", "").replace(choicePrefix, "");
-        faction.getMovement().setMovingTo(territoryName);
-        presentForcesChoices(event, faction);
+        MoveType moveType = faction.getMovement().getMoveType();
+        if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
+            game.getFremenFaction().placeWorm(game.getTerritory(territoryName), false);
+        } else {
+            faction.getMovement().setMovingTo(territoryName);
+            presentForcesChoices(event, faction);
+        }
         discordGame.pushGame();
     }
 

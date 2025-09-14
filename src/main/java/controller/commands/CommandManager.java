@@ -663,7 +663,7 @@ public class CommandManager extends ListenerAdapter {
         boolean finalDestination = true;
         if (discordGame.optional(firstWorm) != null)
             finalDestination = discordGame.required(firstWorm).getAsBoolean();
-        game.placeShaiHulud(territoryName, "Shai-Hulud", finalDestination);
+        game.placeShaiHulud(territoryName, "Shai-Hulud", finalDestination, false);
         discordGame.pushGame();
     }
 

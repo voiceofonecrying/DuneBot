@@ -58,6 +58,36 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
+        void testShaiHuludPlacement() {
+            fremen.addWormToPlace();
+            assertEquals(1, fremen.getWormsToPlace());
+            movement = fremen.getMovement();
+            movement.setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
+            movement.setMovingTo("Sihaya Ridge");
+            movement.setMovingFrom("Funeral Plain");
+            movement.pass();
+            assertEquals("You left Shai-Hulud in Funeral Plain.", fremenChat.getMessages().getLast());
+            assertEquals("Shai-Hulud remains in Funeral Plain.\n", turnSummary.getMessages().getLast());
+            assertEquals(0, fremen.getWormsToPlace());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+        }
+
+        @Test
+        void testGreatMakerPlacement() {
+            fremen.addWormToPlace();
+            assertEquals(1, fremen.getWormsToPlace());
+            movement = fremen.getMovement();
+            movement.setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
+            movement.setMovingTo("Sihaya Ridge");
+            movement.setMovingFrom("Funeral Plain");
+            movement.pass();
+            assertEquals("You left Great Maker in Funeral Plain.", fremenChat.getMessages().getLast());
+            assertEquals("Great Maker remains in Funeral Plain.\nAfter the Nexus, 17 " + Emojis.FREMEN_TROOP + " 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n", turnSummary.getMessages().getLast());
+            assertEquals(0, fremen.getWormsToPlace());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+        }
+
+        @Test
         void testFremenAmbassador() {
             movement = ix.getMovement();
             movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
@@ -135,6 +165,40 @@ public class MovementTest extends DuneTest {
             assertEquals("1 " + Emojis.FREMEN_TROOP + " 2 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!", turnSummary.getMessages().getLast());
 //            assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
+        }
+
+        @Test
+        void testShaiHuludPlacement() {
+            fremen.addWormToPlace();
+            assertEquals(1, fremen.getWormsToPlace());
+            movement = fremen.getMovement();
+            movement.setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
+            movement.setMovingTo("Sihaya Ridge");
+            movement.setMovingFrom("Funeral Plain");
+            saveMovingFrom = movement.getMovingFrom();
+            turnSummary.clear();
+            movement.startOver();
+            assertEquals(1, fremen.getWormsToPlace());
+            assertEquals("Where would you like to place Shai-Hulud? fr", fremenChat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(MoveType.SHAI_HULUD_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testGreatMakerPlacement() {
+            fremen.addWormToPlace();
+            assertEquals(1, fremen.getWormsToPlace());
+            movement = fremen.getMovement();
+            movement.setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
+            movement.setMovingTo("Sihaya Ridge");
+            movement.setMovingFrom("Funeral Plain");
+            saveMovingFrom = movement.getMovingFrom();
+            turnSummary.clear();
+            movement.startOver();
+            assertEquals(1, fremen.getWormsToPlace());
+            assertEquals("Where would you like to place Great Maker? fr", fremenChat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(MoveType.GREAT_MAKER_PLACEMENT, movement.getMoveType());
         }
 
         @Test
@@ -293,6 +357,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("fremen-ride-"));
+                assertFalse(c.isDisabled());
                 String action = c.getId().replace("fremen-ride-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(spiceBlowTerritories.contains(c.getLabel()));
@@ -300,6 +365,46 @@ public class MovementTest extends DuneTest {
             for (String s : spiceBlowTerritories)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
+        }
+
+        @Test
+        void testShaiHuludPlacement() {
+            fremen.getMovement().setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
+            fremen.getMovement().presentSpiceBlowChoices();
+            assertEquals("Which Spice Blow Territory?", fremenChat.getMessages().getLast());
+            assertEquals(16, fremenChat.getChoices().getLast().size());
+            assertEquals("fremen-place-shai-hulud-start-over", fremenChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("fremen-place-shai-hulud-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("fremen-place-shai-hulud-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.SHAI_HULUD_PLACEMENT, fremen.getMovement().getMoveType());
+        }
+
+        @Test
+        void testGreatMakerPlacement() {
+            fremen.getMovement().setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
+            fremen.getMovement().presentSpiceBlowChoices();
+            assertEquals("Which Spice Blow Territory?", fremenChat.getMessages().getLast());
+            assertEquals(16, fremenChat.getChoices().getLast().size());
+            assertEquals("fremen-place-great-maker-start-over", fremenChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("fremen-place-great-maker-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("fremen-place-great-maker-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GREAT_MAKER_PLACEMENT, fremen.getMovement().getMoveType());
         }
 
         @Test
@@ -501,6 +606,7 @@ public class MovementTest extends DuneTest {
 
         @BeforeEach
         void setUp() {
+            game.addFaction(fremen);
             game.addFaction(ecaz);
             game.addFaction(ix);
             ecaz.setChat(ecazChat);
@@ -510,21 +616,62 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() {
-            ecaz.getMovement().setMoveType(MoveType.FREMEN_RIDE);
-            ecaz.getMovement().presentNonSpiceNonRockChoices();
-            assertEquals("Which Territory?", ecazChat.getMessages().getLast());
-            assertEquals(16, ecazChat.getChoices().getLast().size());
-            assertEquals("fremen-ride-start-over", ecazChat.getChoices().getLast().getLast().getId());
-            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+            fremen.getMovement().setMoveType(MoveType.FREMEN_RIDE);
+            fremen.getMovement().presentNonSpiceNonRockChoices();
+            assertEquals("Which Territory?", fremenChat.getMessages().getLast());
+            assertEquals(16, fremenChat.getChoices().getLast().size());
+            assertEquals("fremen-ride-start-over", fremenChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("fremen-ride-"));
+                assertFalse(c.isDisabled());
                 String action = c.getId().replace("fremen-ride-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
             }
             for (String s : nonSpiceNonRockTerritories)
-                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_RIDE, ecaz.getMovement().getMoveType());
+                assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
+        }
+
+        @Test
+        void testShaiHuludPlacement() {
+            fremen.getMovement().setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
+            fremen.getMovement().presentNonSpiceNonRockChoices();
+            assertEquals("Which Territory?", fremenChat.getMessages().getLast());
+            assertEquals(16, fremenChat.getChoices().getLast().size());
+            assertEquals("fremen-place-shai-hulud-start-over", fremenChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("fremen-place-shai-hulud-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("fremen-place-shai-hulud-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.SHAI_HULUD_PLACEMENT, fremen.getMovement().getMoveType());
+        }
+
+        @Test
+        void testGreatMakerPlacement() {
+            fremen.getMovement().setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
+            fremen.getMovement().presentNonSpiceNonRockChoices();
+            assertEquals("Which Territory?", fremenChat.getMessages().getLast());
+            assertEquals(16, fremenChat.getChoices().getLast().size());
+            assertEquals("fremen-place-great-maker-start-over", fremenChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("fremen-place-great-maker-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("fremen-place-great-maker-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GREAT_MAKER_PLACEMENT, fremen.getMovement().getMoveType());
         }
 
         @Test

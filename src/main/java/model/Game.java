@@ -1466,6 +1466,7 @@ public class Game {
                     if (fremen != null) {
                         message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
                         fremen.presentWormPlacementChoices(Objects.requireNonNull(lastCard).name(), drawn.name());
+                        fremen.addWormToPlace();
                     }
                     message.append("\n");
                 }
@@ -1530,8 +1531,10 @@ public class Game {
         return ImmutablePair.of(drawn, spiceMultiplier);
     }
 
-    public void placeShaiHulud(String territoryName, String wormName, boolean firstWorm) {
-        String message = wormName + " has been placed in " + territoryName + "\n";
+    public void placeShaiHulud(String territoryName, String wormName, boolean firstWorm, boolean leftWhereItAppeared) {
+        String message = wormName;
+        message += leftWhereItAppeared ? " remains in " : " has been placed in ";
+        message += territoryName + ".\n";
         message += getTerritory(territoryName).shaiHuludAppears(this, wormName, firstWorm);
         turnSummary.publish(message);
     }
