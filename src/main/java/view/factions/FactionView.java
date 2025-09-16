@@ -152,8 +152,31 @@ public class FactionView {
     protected MessageEmbed getHomeworldEmbed(String homeworldName, boolean isHighThreshold) {
         HomeworldCard homeworldCard = new HomeworldCard(homeworldName);
 
+        int highLowerThreshold = homeworldCard.highLowerThreshold();
+        int highUpperThreshold = homeworldCard.highUpperThreshold();
+        String highDescription = homeworldCard.highDescription();
+        int highBattleExplosion = homeworldCard.highBattleExplosion();
+        int lowLowerThreshold = homeworldCard.lowLowerThreshold();
+        int lowUpperThreshold = homeworldCard.lowUpperThreshold();
+        String lowDescription = homeworldCard.lowDescription();
+        int lowRevivalCharity = homeworldCard.lowRevivalCharity();
+        int lowBattleExplosion = homeworldCard.lowBattleExplosion();
+        String occupiedDescription = homeworldCard.occupiedDescription();
+        int occupiedSpice = homeworldCard.occupiedSpice();
+        if (faction instanceof HomebrewFaction hbf) {
+            homeworldName = hbf.getHomeworld();
+            highLowerThreshold = hbf.getHighThreshold();
+            highDescription = hbf.getHighDescription();
+            highBattleExplosion = hbf.getHighBattleExplosion();
+            lowUpperThreshold = hbf.getLowThreshold();
+            lowDescription = hbf.getLowDescription();
+            lowRevivalCharity = hbf.getLowRevivalCharity();
+            lowBattleExplosion = hbf.getLowBattleExplosion();
+            occupiedDescription = hbf.getOccupiedDescription();
+            occupiedSpice = hbf.getOccupiedIncome();
+        }
         EmbedBuilder homeworldBuilder = new EmbedBuilder()
-                .setTitle(homeworldCard.name() + " Homeworld")
+                .setTitle(homeworldName + " Homeworld")
                 .setColor(faction.getColor())
                 .setThumbnail(CardImages.getHomeworldImageLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
                 .setUrl(CardImages.getHomeworldCardLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
@@ -165,31 +188,31 @@ public class FactionView {
         if (isHighThreshold) {
             homeworldBuilder.addField(
                     "High Threshold",
-                    homeworldCard.highLowerThreshold() + " to " + homeworldCard.highUpperThreshold() + reservesModifier + " Reserves",
+                    highLowerThreshold + " to " + highUpperThreshold + reservesModifier + " Reserves",
                     false
             );
-            homeworldBuilder.addField("", homeworldCard.highDescription(), false);
+            homeworldBuilder.addField("", highDescription, false);
             homeworldBuilder.addField("",
                     discordGame.tagEmojis(
                             MessageFormat.format(
                                     "{0} add {1} to dial in battle here.\n{0} only lose {1} to Lasgun/Shield explosion on {2}.",
-                                    faction.getName(), homeworldCard.highBattleExplosion(), homeworldCard.name()
+                                    faction.getName(), highBattleExplosion, homeworldName
                             )),
                     false);
         } else {
             homeworldBuilder.addField(
                     "Low Threshold",
-                    homeworldCard.lowLowerThreshold() + " to " + homeworldCard.lowUpperThreshold() + reservesModifier + " Reserves",
+                    lowLowerThreshold + " to " + lowUpperThreshold + reservesModifier + " Reserves",
                     false
             );
-            homeworldBuilder.addField("", homeworldCard.lowDescription(), false);
+            homeworldBuilder.addField("", lowDescription, false);
 
-            if (homeworldCard.lowRevivalCharity() > 0) {
+            if (lowRevivalCharity > 0) {
                 homeworldBuilder.addField("",
                         discordGame.tagEmojis(
                                 MessageFormat.format(
                                         "+{0} free revival",
-                                        homeworldCard.lowRevivalCharity()
+                                        lowRevivalCharity
                                 )),
                         false);
 
@@ -197,7 +220,7 @@ public class FactionView {
                         discordGame.tagEmojis(
                                 MessageFormat.format(
                                         "+{0} CHOAM Charity (from Spice Bank)",
-                                        homeworldCard.lowRevivalCharity()
+                                        lowRevivalCharity
                                 )),
                         false);
 
@@ -205,16 +228,16 @@ public class FactionView {
                         discordGame.tagEmojis(
                                 MessageFormat.format(
                                         "{0} add {1} to dial in battle here.\n{0} only lose {1} to Lasgun/Shield explosion on {2}.",
-                                        faction.getName(), homeworldCard.lowBattleExplosion(), homeworldCard.name()
+                                        faction.getName(), lowBattleExplosion, homeworldName
                                 )),
                         false);
 
                 homeworldBuilder.addField("When Occupied",
-                        homeworldCard.occupiedDescription(),
+                        occupiedDescription,
                         false);
 
                 homeworldBuilder.addField("Occupied Spice",
-                        discordGame.tagEmojis(homeworldCard.occupiedSpice() + " " + Emojis.SPICE),
+                        discordGame.tagEmojis(occupiedSpice + " " + Emojis.SPICE),
                         false);
             }
         }
