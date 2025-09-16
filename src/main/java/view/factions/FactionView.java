@@ -256,15 +256,14 @@ public class FactionView {
     private MessageEmbed getLeaderSkillEmbed(Leader leader) {
         LeaderSkillCard leaderSkillCard = leader.getSkillCard();
 
-        return new EmbedBuilder()
+        EmbedBuilder eb = new EmbedBuilder()
                 .setTitle(
                         discordGame.tagEmojis(
                                 MessageFormat.format(
                                         "{0} {1} is a {2} {0}",
-                                        Emojis.LEADER, leader.getName(), leaderSkillCard.name()
+                                        Emojis.LEADER, (faction instanceof HomebrewFaction) ? leader.getNameAndValueString() : leader.getName(), leaderSkillCard.name()
                                 )))
                 .setColor(faction.getColor())
-                .setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.getName()))
                 .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
                 .addField(
                         "When Leader is in Front of Shield",
@@ -275,8 +274,10 @@ public class FactionView {
                         "When Leader is in Battle",
                         leaderSkillCard.inBattleDescription(),
                         false
-                )
-                .build();
+                );
+        if (!(faction instanceof HomebrewFaction))
+            eb = eb.setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.getName()));
+        return eb.build();
     }
 
     private List<MessageEmbed> getStrongholdCardEmbeds() {
