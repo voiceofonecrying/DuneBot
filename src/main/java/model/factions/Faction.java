@@ -1085,6 +1085,14 @@ public class Faction {
         return paidRevivalTBD;
     }
 
+    public int getHighThreshold() {
+        return highThreshold;
+    }
+
+    public int getLowThreshold() {
+        return lowThreshold;
+    }
+
     public int getOccupiedIncome() {
         return occupiedIncome;
     }

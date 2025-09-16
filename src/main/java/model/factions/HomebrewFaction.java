@@ -11,6 +11,12 @@ import java.util.List;
 public class HomebrewFaction extends Faction{
     String factionProxy;
     String homeworldProxy;
+    String highDescription;
+    String lowDescription;
+    String occupiedDescription;
+    int highBattleExplosion;
+    int lowBattleExplosion;
+    int lowRevivalCharity;
 
     public HomebrewFaction(String name, String player, String userName) throws IOException {
         super(name, player, userName);
@@ -23,33 +29,45 @@ public class HomebrewFaction extends Faction{
         }
 
         String factionProxy;
-        String homeworld;
-        String homeworldProxy;
         int spice;
         int handLimit = 4;
         int freeRevival = 1;
         int maxRevival = 3;
         List<LeaderSpecs> leaders;
+        String homeworld;
+        String homeworldProxy;
         int highThreshold = 12;
+        String highDescription;
         int lowThreshold = 11;
+        String lowDescription;
+        String occupiedDescription;
         int occupiedIncome = 2;
+        int highBattleExplosion;
+        int lowBattleExplosion;
+        int lowRevivalCharity;
     }
 
     public void initalizeFromSpecs(FactionSpecs specs) {
         factionProxy = specs.factionProxy;
-        homeworld = specs.homeworld;
-        homeworldProxy = specs.homeworldProxy;
         spice = specs.spice;
         handLimit = specs.handLimit;
         freeRevival = specs.freeRevival;
         maxRevival = specs.maxRevival;
-        highThreshold = specs.highThreshold;
-        lowThreshold = specs.lowThreshold;
-        occupiedIncome = specs.occupiedIncome;
         for (FactionSpecs.LeaderSpecs ls : specs.leaders) {
             leaders.add(new Leader(ls.name, ls.value, name, factionProxy,  null, false));
             game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
         }
+        homeworld = specs.homeworld;
+        homeworldProxy = specs.homeworldProxy;
+        highThreshold = specs.highThreshold;
+        highDescription = specs.highDescription;
+        lowThreshold = specs.lowThreshold;
+        lowDescription = specs.lowDescription;
+        occupiedDescription = specs.occupiedDescription;
+        occupiedIncome = specs.occupiedIncome;
+        highBattleExplosion = specs.highBattleExplosion;
+        lowBattleExplosion = specs.lowBattleExplosion;
+        lowRevivalCharity = specs.lowRevivalCharity;
 
         emoji = Emojis.getFactionEmoji(factionProxy);
         Territory hwTerritory = game.getTerritories().addHomeworld(game, homeworld, name);
@@ -63,6 +81,30 @@ public class HomebrewFaction extends Faction{
 
     public String getHomeworldProxy() {
         return homeworldProxy;
+    }
+
+    public String getHighDescription() {
+        return highDescription;
+    }
+
+    public String getLowDescription() {
+        return lowDescription;
+    }
+
+    public String getOccupiedDescription() {
+        return occupiedDescription;
+    }
+
+    public int getHighBattleExplosion() {
+        return highBattleExplosion;
+    }
+
+    public int getLowBattleExplosion() {
+        return lowBattleExplosion;
+    }
+
+    public int getLowRevivalCharity() {
+        return lowRevivalCharity;
     }
 
     @Override
