@@ -11,6 +11,7 @@ import java.util.List;
 public class HomebrewFaction extends Faction{
     String factionProxy;
     String homeworldProxy;
+    String homeworldImageMessage;
     String highDescription;
     String lowDescription;
     String occupiedDescription;
@@ -36,6 +37,7 @@ public class HomebrewFaction extends Faction{
         List<LeaderSpecs> leaders;
         String homeworld;
         String homeworldProxy;
+        String homeworldImageMessage;
         int highThreshold = 12;
         String highDescription;
         int lowThreshold = 11;
@@ -59,6 +61,7 @@ public class HomebrewFaction extends Faction{
         }
         homeworld = specs.homeworld;
         homeworldProxy = specs.homeworldProxy;
+        homeworldImageMessage = specs.homeworldImageMessage;
         highThreshold = specs.highThreshold;
         highDescription = specs.highDescription;
         lowThreshold = specs.lowThreshold;
@@ -81,6 +84,10 @@ public class HomebrewFaction extends Faction{
 
     public String getHomeworldProxy() {
         return homeworldProxy;
+    }
+
+    public String getHomeworldImageMessage() {
+        return homeworldImageMessage;
     }
 
     public String getHighDescription() {

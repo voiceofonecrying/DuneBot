@@ -11,6 +11,7 @@ import model.factions.*;
 import net.dv8tion.jda.api.EmbedBuilder;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
@@ -33,6 +34,8 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -69,7 +72,7 @@ public class ShowCommands {
 
     public static void showBoard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException {
         if (game.getMute()) return;
-        discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
+        discordGame.getTurnSummary().queueMessage(drawGameBoard(discordGame, game));
         game.setUpdated(UpdateType.MAP);
     }
     public static void showFactionInfoHandler(DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
@@ -88,9 +91,20 @@ public class ShowCommands {
         return getResourceImage(faction.getName() + " Sigil");
     }
 
-    private static BufferedImage getHomeworldImage(Faction faction) throws IOException {
-        if (faction instanceof HomebrewFaction hbFaction)
+    private static BufferedImage getHomeworldImage(DiscordGame discordGame, Faction faction) throws IOException {
+        if (faction instanceof HomebrewFaction hbFaction) {
+            String message = hbFaction.getHomeworldImageMessage();
+            if (message != null) {
+                try {
+                    String imageUrl = getHomeworldFactionImageUrl(discordGame, message);
+                    InputStream is = new URI(imageUrl).toURL().openStream();
+                    BufferedImage bi = ImageIO.read(is);
+                    bi = resize(bi, 1024, 1024);
+                    return bi;
+                } catch (URISyntaxException ignored) {}
+            }
             return getResourceImage(hbFaction.getHomeworldProxy());
+        }
         return getResourceImage(faction.getHomeworld());
     }
 
@@ -111,6 +125,19 @@ public class ShowCommands {
         return FileUpload.fromData(inputStream, name + ".png");
     }
 
+    public static String getHomeworldFactionImageUrl(DiscordGame discordGame, String imageMessageLink) {
+        String serverId = imageMessageLink.replace("https://discord.com/channels/", "");
+        int channelIdStart = serverId.indexOf("/") + 1;
+        int channelIdEnd = serverId.indexOf("/", channelIdStart);
+        String channelId = serverId.substring(channelIdStart, channelIdEnd);
+        int messageIdStart = channelIdEnd + 1;
+        String messageId = serverId.substring(messageIdStart);
+        Category category = discordGame.getGameCategory();
+        TextChannel channel = category.getTextChannels().stream().filter(c -> c.getId().equals(channelId)).findFirst().orElseThrow();
+        Message msg = channel.retrieveMessageById(messageId).complete();
+        return msg.getAttachments().getFirst().getUrl();
+    }
+
     public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException, InvalidGameStateException {
         if (game.getMute()) return;
 
@@ -123,7 +150,7 @@ public class ShowCommands {
 
         messages.forEach(discordGame::queueDeleteMessage);
 
-        BufferedImage table = getHomeworldImage(faction);
+        BufferedImage table = getHomeworldImage(discordGame, faction);
         if (faction instanceof EmperorFaction emperorFaction) {
             table = getResourceImage(emperorFaction.getSecondHomeworld());
         }
@@ -649,7 +676,7 @@ public class ShowCommands {
         }
     }
 
-    public static FileUpload drawGameBoard(Game game) throws IOException {
+    public static FileUpload drawGameBoard(DiscordGame discordGame, Game game) throws IOException {
         BufferedImage board = getResourceImage("Board");
 
         //If Homeworlds are in play, concatenate homeworlds under the board.
@@ -657,7 +684,7 @@ public class ShowCommands {
             BufferedImage homeworlds = new BufferedImage(1, 1024, BufferedImage.TYPE_INT_ARGB);
             int sigilWidth = game.hasEmperorFaction() ? 350 : 300;
             for (Faction faction : game.getFactions()) {
-                BufferedImage homeworld = getHomeworldImage(faction);
+                BufferedImage homeworld = getHomeworldImage(discordGame, faction);
                 int offset = 0;
                 BufferedImage sigil = getSigilImage(faction);
                 sigil = resize(sigil, sigilWidth, 250);
@@ -1286,7 +1313,7 @@ public class ShowCommands {
 
         messages.forEach(discordGame::queueDeleteMessage);
 
-        FileUpload newMap = drawGameBoard(game).setName("game-map.png");
+        FileUpload newMap = drawGameBoard(discordGame, game).setName("game-map.png");
         MessageCreateBuilder builder = new MessageCreateBuilder();
         builder.addFiles(newMap);
 
@@ -1358,7 +1385,7 @@ public class ShowCommands {
 
         if (game.getUpdateTypes().contains(UpdateType.MAP_ALSO_IN_TURN_SUMMARY)) {
             frontOfShieldModified = true;
-            discordGame.getTurnSummary().queueMessage(drawGameBoard(game));
+            discordGame.getTurnSummary().queueMessage(drawGameBoard(discordGame, game));
         }
 
         if (frontOfShieldModified) {

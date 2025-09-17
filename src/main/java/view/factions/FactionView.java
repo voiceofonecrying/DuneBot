@@ -2,6 +2,7 @@ package view.factions;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import controller.commands.ShowCommands;
 import enums.GameOption;
 import exceptions.ChannelNotFoundException;
 import model.*;
@@ -175,10 +176,16 @@ public class FactionView {
             occupiedDescription = hbf.getOccupiedDescription();
             occupiedSpice = hbf.getOccupiedIncome();
         }
+        String thumbnail = CardImages.getHomeworldImageLink(discordGame.getEvent().getGuild(), homeworldCard.name());
+        if (faction instanceof HomebrewFaction hbFaction) {
+            String message = hbFaction.getHomeworldImageMessage();
+            if (message != null)
+                thumbnail = ShowCommands.getHomeworldFactionImageUrl(discordGame, message);
+        }
         EmbedBuilder homeworldBuilder = new EmbedBuilder()
                 .setTitle(homeworldName + " Homeworld")
                 .setColor(faction.getColor())
-                .setThumbnail(CardImages.getHomeworldImageLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
+                .setThumbnail(thumbnail)
                 .setUrl(CardImages.getHomeworldCardLink(discordGame.getEvent().getGuild(), homeworldCard.name()))
                 ;
 
