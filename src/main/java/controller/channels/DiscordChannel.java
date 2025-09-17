@@ -57,7 +57,7 @@ public class DiscordChannel implements DuneTopic {
     }
 
     public void showMap(Game game) throws IOException {
-        queueMessage(ShowCommands.drawGameBoard(game));
+        queueMessage(ShowCommands.drawGameBoard(discordGame, game));
         game.setUpdated(UpdateType.MAP);
     }
 
