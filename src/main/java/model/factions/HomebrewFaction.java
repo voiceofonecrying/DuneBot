@@ -91,6 +91,10 @@ public class HomebrewFaction extends Faction{
         return homeworldImageLinkTest;
     }
 
+    public void setHomeworldImageLinkTest(String homeworldImageLinkTest) {
+        this.homeworldImageLinkTest = homeworldImageLinkTest;
+    }
+
     public String getHomeworldImageMessage() {
         return homeworldImageMessage;
     }
