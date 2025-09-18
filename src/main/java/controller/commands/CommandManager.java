@@ -300,8 +300,9 @@ public class CommandManager extends ListenerAdapter {
                 case "moritani-assassinate-traitor" -> assassinateTraitor(discordGame, game);
                 case "game-result" -> ReportsCommands.gameResult(event, discordGame, game);
                 case "save-game-bot-data" -> ReportsCommands.saveGameBotData(event, discordGame, game);
-                case "set-homebrew-image-test" -> setHomebrewImageTest(event, discordGame, game);
-                case "homebrew-image-test" -> homebrewImageTest(event, discordGame, game);
+                case "set-homebrew-homeworld-image" -> setHomebrewHomeworldImage(discordGame, game);
+                case "set-homebrew-image-test" -> setHomebrewImageTest(discordGame, game);
+                case "homebrew-image-test" -> homebrewImageTest(discordGame, game);
             }
 
             if (!(name.equals("setup") && Objects.requireNonNull(event.getSubcommandName()).equals("faction")))
@@ -318,7 +319,19 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    public void setHomebrewImageTest(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public void setHomebrewHomeworldImage(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String messageLink = discordGame.required(message).getAsString();
+        Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
+        if (faction == null) {
+            game.getModInfo().publish("No homebrew factions in the game.");
+            return;
+        }
+        HomebrewFaction homebrewFaction = (HomebrewFaction) faction;
+        homebrewFaction.setHomeworldImageMessage(messageLink);
+        discordGame.pushGame();
+    }
+
+    public void setHomebrewImageTest(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         String messageLink = discordGame.required(message).getAsString();
         Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
         if (faction == null) {
@@ -330,7 +343,7 @@ public class CommandManager extends ListenerAdapter {
         discordGame.pushGame();
     }
 
-    public void homebrewImageTest(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+    public void homebrewImageTest(DiscordGame discordGame, Game game) {
         Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
         if (faction == null) {
             game.getModInfo().publish("No homebrew factions in the game.");
@@ -442,7 +455,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
         commandData.add(Commands.slash("players-fastest-speed", "Show each player's days per turn in their fastest game.").addOptions(numFastGamesForAverageDuration, minTurnsForAverageDuration));
-        commandData.add(Commands.slash("set-homebrew-image-test", "Write diagnostics to mod-info").addOptions(message));
+        commandData.add(Commands.slash("set-homebrew-homeworld-image", "Set the message link for homebrew homeworld image").addOptions(message));
+        commandData.add(Commands.slash("set-homebrew-image-test", "Set the message link for homebrew image test").addOptions(message));
         commandData.add(Commands.slash("homebrew-image-test", "Write diagnostics to mod-info"));
 
         commandData.addAll(GameStateCommands.getCommands());

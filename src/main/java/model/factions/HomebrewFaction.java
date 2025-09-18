@@ -99,6 +99,10 @@ public class HomebrewFaction extends Faction{
         return homeworldImageMessage;
     }
 
+    public void setHomeworldImageMessage(String homeworldImageMessage) {
+        this.homeworldImageMessage = homeworldImageMessage;
+    }
+
     public String getHighDescription() {
         return highDescription;
     }
