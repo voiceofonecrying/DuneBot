@@ -331,7 +331,8 @@ public class CommandManager extends ListenerAdapter {
         try {
             game.getModInfo().publish(ShowCommands.getHomeworldFactionImageUrl(discordGame, homebrewImageLinkTest));
         } catch (Exception e) {
-            game.getModInfo().publish(e.toString());
+            game.getModInfo().publish(e.getCause().toString());
+            game.getModInfo().publish(Arrays.toString(e.getStackTrace()));
         }
     }
 
