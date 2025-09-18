@@ -6,6 +6,7 @@ import controller.CommandCompletionGuard;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
 import model.Game;
+import model.factions.HomebrewFaction;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -108,6 +109,11 @@ public class EventListener extends ListenerAdapter {
             } else {
                 game.getFactions().stream()
                         .filter(faction -> emojiName.equals(Emojis.getFactionEmoji(faction.getName())))
+                        .forEach(faction -> mentionedPlayers.add(faction.getPlayer()));
+                String strippedEmoji = emojiName.replace(":", "");
+                game.getFactions().stream()
+                        .filter(faction -> faction instanceof HomebrewFaction)
+                        .filter(faction -> strippedEmoji.equals(faction.getName().toLowerCase()) || strippedEmoji.equals(((HomebrewFaction) faction).getFactionProxy().toLowerCase()))
                         .forEach(faction -> mentionedPlayers.add(faction.getPlayer()));
             }
         }
