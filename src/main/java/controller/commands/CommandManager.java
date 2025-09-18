@@ -299,6 +299,7 @@ public class CommandManager extends ListenerAdapter {
                 case "moritani-assassinate-traitor" -> assassinateTraitor(discordGame, game);
                 case "game-result" -> ReportsCommands.gameResult(event, discordGame, game);
                 case "save-game-bot-data" -> ReportsCommands.saveGameBotData(event, discordGame, game);
+                case "homebrew-image-test" -> homebrewImageTest(event, discordGame, game);
             }
 
             if (!(name.equals("setup") && Objects.requireNonNull(event.getSubcommandName()).equals("faction")))
@@ -312,6 +313,25 @@ public class CommandManager extends ListenerAdapter {
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
+        }
+    }
+
+    public void homebrewImageTest(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
+        Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
+        if (faction == null) {
+            game.getModInfo().publish("No homebrew factions in the game.");
+            return;
+        }
+        HomebrewFaction homebrewFaction = (HomebrewFaction) faction;
+        String homebrewImageLinkTest = homebrewFaction.getHomeworldImageLinkTest();
+        if (homebrewImageLinkTest == null) {
+            game.getModInfo().publish("No homebrew image link test value.");
+            return;
+        }
+        try {
+            game.getModInfo().publish(ShowCommands.getHomeworldFactionImageUrl(discordGame, homebrewImageLinkTest));
+        } catch (Exception e) {
+            game.getModInfo().publish(e.toString());
         }
     }
 
@@ -394,6 +414,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
         commandData.add(Commands.slash("players-fastest-speed", "Show each player's days per turn in their fastest game.").addOptions(numFastGamesForAverageDuration, minTurnsForAverageDuration));
+        commandData.add(Commands.slash("homebrew-image-test", "Write diagnostics to mod-info"));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
