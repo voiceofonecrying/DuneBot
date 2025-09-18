@@ -35,7 +35,6 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -96,12 +95,12 @@ public class ShowCommands {
             String message = hbFaction.getHomeworldImageMessage();
             if (message != null) {
                 try {
-                    String imageUrl = getHomeworldFactionImageUrl(discordGame, message);
+                    String imageUrl = getHomebrewFactionImageUrl(discordGame, message);
                     InputStream is = new URI(imageUrl).toURL().openStream();
                     BufferedImage bi = ImageIO.read(is);
                     bi = resize(bi, 1024, 1024);
                     return bi;
-                } catch (URISyntaxException ignored) {}
+                } catch (Exception ignored) {}
             }
             return getResourceImage(hbFaction.getHomeworldProxy());
         }
@@ -125,7 +124,7 @@ public class ShowCommands {
         return FileUpload.fromData(inputStream, name + ".png");
     }
 
-    public static String getHomeworldFactionImageUrl(DiscordGame discordGame, String imageMessageLink) {
+    public static String getHomebrewFactionImageUrl(DiscordGame discordGame, String imageMessageLink) {
         String serverId = imageMessageLink.replace("https://discord.com/channels/", "");
         int channelIdStart = serverId.indexOf("/") + 1;
         int channelIdEnd = serverId.indexOf("/", channelIdStart);

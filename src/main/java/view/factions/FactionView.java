@@ -180,7 +180,9 @@ public class FactionView {
         if (faction instanceof HomebrewFaction hbFaction) {
             String message = hbFaction.getHomeworldImageMessage();
             if (message != null)
-                thumbnail = ShowCommands.getHomeworldFactionImageUrl(discordGame, message);
+                try {
+                    thumbnail = ShowCommands.getHomebrewFactionImageUrl(discordGame, message);
+                } catch (Exception ignored) {}
         }
         EmbedBuilder homeworldBuilder = new EmbedBuilder()
                 .setTitle(homeworldName + " Homeworld")
