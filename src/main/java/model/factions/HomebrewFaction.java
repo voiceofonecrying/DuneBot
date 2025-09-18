@@ -11,6 +11,7 @@ import java.util.List;
 public class HomebrewFaction extends Faction{
     String factionProxy;
     String homeworldProxy;
+    String homeworldImageLinkTest;
     String homeworldImageMessage;
     String highDescription;
     String lowDescription;
@@ -84,6 +85,10 @@ public class HomebrewFaction extends Faction{
 
     public String getHomeworldProxy() {
         return homeworldProxy;
+    }
+
+    public String getHomeworldImageLinkTest() {
+        return homeworldImageLinkTest;
     }
 
     public String getHomeworldImageMessage() {
