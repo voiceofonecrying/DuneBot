@@ -144,7 +144,7 @@ public final class Emojis {
                 return MORITANI_TROOP;
             }
         }
-        return ":ninja:";
+        return MORITANI_TROOP;
     }
 
     public static String getTechTokenEmoji(String techToken) {
