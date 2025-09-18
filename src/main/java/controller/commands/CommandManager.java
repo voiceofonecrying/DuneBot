@@ -258,6 +258,7 @@ public class CommandManager extends ListenerAdapter {
                 case "moritani" -> MoritaniCommands.runCommand(event, discordGame, game);
                 case "bg" -> BGCommands.runCommand(event, discordGame, game);
                 case "atreides" -> AtreidesCommands.runCommand(event, discordGame, game);
+                case "homebrew" -> HomebrewCommands.runCommand(event, discordGame, game);
                 case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                 case "draw-treachery-card" -> drawTreacheryCard(discordGame, game);
                 case "draw-traitor-card" -> drawTraitorCard(discordGame, game);
@@ -455,9 +456,6 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("list-members", "Show members loaded by loadMembers in ephemeral response."));
         commandData.add(Commands.slash("average-days-per-turn", "Very rough estimate of a player's speed."));
         commandData.add(Commands.slash("players-fastest-speed", "Show each player's days per turn in their fastest game.").addOptions(numFastGamesForAverageDuration, minTurnsForAverageDuration));
-        commandData.add(Commands.slash("set-homebrew-homeworld-image", "Set the message link for homebrew homeworld image").addOptions(message));
-        commandData.add(Commands.slash("set-homebrew-image-test", "Set the message link for homebrew image test").addOptions(message));
-        commandData.add(Commands.slash("homebrew-image-test", "Write diagnostics to mod-info"));
 
         commandData.addAll(GameStateCommands.getCommands());
         commandData.addAll(ShowCommands.getCommands());
@@ -474,6 +472,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(AtreidesCommands.getCommands());
         commandData.addAll(EcazCommands.getCommands());
         commandData.addAll(MoritaniCommands.getCommands());
+        commandData.addAll(HomebrewCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
                 .map(command -> command.setDefaultPermissions(

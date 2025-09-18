@@ -6,6 +6,7 @@ import model.*;
 
 import java.awt.*;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 
 public class HomebrewFaction extends Faction{
@@ -51,6 +52,19 @@ public class HomebrewFaction extends Faction{
     }
 
     public void initalizeFromSpecs(FactionSpecs specs) {
+        HashMap<String, String> homeworldName = new HashMap<>();
+        homeworldName.put("Atreides", "Caladan");
+        homeworldName.put("BG", "Wallach IX");
+        homeworldName.put("BT", "Tleilax");
+        homeworldName.put("CHOAM", "Tupile");
+        homeworldName.put("Ecaz", "Ecaz");
+        homeworldName.put("Emperor", "Salusa Secundus");
+        homeworldName.put("Fremen", "Southern Hemisphere");
+        homeworldName.put("Guild", "Junction");
+        homeworldName.put("Harkonnen", "Giedi Prime");
+        homeworldName.put("Ix", "Ix");
+        homeworldName.put("Moritani", "Grumman");
+        homeworldName.put("Richese", "Richese");
         factionProxy = specs.factionProxy;
         spice = specs.spice;
         handLimit = specs.handLimit;
@@ -61,7 +75,10 @@ public class HomebrewFaction extends Faction{
             game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
         }
         homeworld = specs.homeworld;
-        homeworldProxy = specs.homeworldProxy;
+        if (specs.homeworldProxy == null)
+            homeworldProxy = homeworldName.get(factionProxy);
+        else
+            homeworldProxy = specs.homeworldProxy;
         homeworldImageMessage = specs.homeworldImageMessage;
         highThreshold = specs.highThreshold;
         highDescription = specs.highDescription;
