@@ -15,6 +15,7 @@ import model.factions.*;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
@@ -329,7 +330,21 @@ public class CommandManager extends ListenerAdapter {
             return;
         }
         try {
-            game.getModInfo().publish(ShowCommands.getHomeworldFactionImageUrl(discordGame, homebrewImageLinkTest));
+//            game.getModInfo().publish(ShowCommands.getHomeworldFactionImageUrl(discordGame, homebrewImageLinkTest));
+            String serverId = homebrewImageLinkTest.replace("https://discord.com/channels/", "");
+            int channelIdStart = serverId.indexOf("/") + 1;
+            int channelIdEnd = serverId.indexOf("/", channelIdStart);
+            String channelId = serverId.substring(channelIdStart, channelIdEnd);
+            int messageIdStart = channelIdEnd + 1;
+            String messageId = serverId.substring(messageIdStart);
+            Category category = discordGame.getGameCategory();
+            TextChannel channel = category.getTextChannels().stream().filter(c -> c.getId().equals(channelId)).findFirst().orElseThrow();
+            Message msg = channel.retrieveMessageById(messageId).complete();
+            game.getModInfo().publish("Message link: " + homebrewImageLinkTest
+                    + "\nChannel ID: " + channelId
+                    + "\nMessage ID: " + messageId
+                    + "\nNum attachments: " + msg.getAttachments().size()
+            );
         } catch (Exception e) {
             game.getModInfo().publish(Arrays.toString(e.getStackTrace()));
         }
