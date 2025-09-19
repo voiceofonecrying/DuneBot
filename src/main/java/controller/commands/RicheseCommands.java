@@ -27,7 +27,7 @@ public class RicheseCommands {
                                 "Place a No-Fields token on the map."
                         ).addOptions(richeseNoFields, CommandOptions.territory),
                         new SubcommandData("move-no-field", "Move the No Field to a different territory").addOptions(territory),
-                        new SubcommandData("reveal-no-field", "Replace the No Field with Richese forces and move it to front of shield").addOptions(ecazAllyNoField),
+                        new SubcommandData("reveal-no-field", "Replace the No Field with Richese forces and move it to front of shield").addOptions(richeseAllyNoField),
                         new SubcommandData("card-bid", "Start bidding on a Richese card")
                                 .addOptions(richeseCard, richeseBidType),
                         new SubcommandData("black-market-bid", "Start bidding on a black market card")
@@ -130,7 +130,7 @@ public class RicheseCommands {
     public static void revealNoField(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
         RicheseFaction richese = game.getRicheseFaction();
         Faction factionToReveal = richese;
-        if (discordGame.optional(ecazAllyNoField) != null && discordGame.required(ecazAllyNoField).getAsBoolean())
+        if (discordGame.optional(richeseAllyNoField) != null && discordGame.required(richeseAllyNoField).getAsBoolean())
             factionToReveal = game.getFaction(richese.getAlly());
         richese.revealNoField(game, factionToReveal);
         discordGame.pushGame();
