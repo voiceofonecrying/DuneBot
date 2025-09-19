@@ -35,6 +35,7 @@ import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.List;
 import java.util.*;
@@ -215,9 +216,20 @@ public class ShowCommands {
         int numLeaders = faction.getLeaders().size();
         offset = (numLeaders - 1) * 450;
         for (Leader leader : faction.getLeaders()) {
-            if (faction instanceof HomebrewFaction)
-                break;
-            BufferedImage leaderImage = getResourceImage(leader.getName());
+            BufferedImage leaderImage;
+            if (faction instanceof HomebrewFaction) {
+                if (leader.getHomebrewImageMessage() != null) {
+                    try {
+                        String imageUrl = getHomebrewFactionImageUrl(discordGame, leader.getHomebrewImageMessage());
+                        InputStream is = new URI(imageUrl).toURL().openStream();
+                        leaderImage = ImageIO.read(is);
+                    } catch (URISyntaxException e) {
+                        continue;
+                    }
+                } else
+                    continue;
+            } else
+                leaderImage = getResourceImage(leader.getName());
             if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
             else leaderImage = resize(leaderImage, 500, 301);
             Point leaderPoint = new Point(300, 750 + offset);
