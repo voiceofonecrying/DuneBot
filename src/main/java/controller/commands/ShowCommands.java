@@ -993,7 +993,22 @@ public class ShowCommands {
         for (Leader leader : game.getLeaderTanks()) {
             Faction leaderFaction = game.getFaction(leader.getOriginalFactionName());
             BufferedImage leaderImage;
-            if (leader.isFaceDown() || leaderFaction instanceof HomebrewFaction) {
+            if (leaderFaction instanceof HomebrewFaction) {
+                String message = leader.getHomebrewImageMessage();
+                if (message == null)
+                    leaderImage = getSigilImage(leaderFaction);
+                else {
+                    try {
+                        String imageUrl = getHomebrewFactionImageUrl(discordGame, message);
+                        InputStream is = new URI(imageUrl).toURL().openStream();
+                        BufferedImage bi = ImageIO.read(is);
+                        bi = resize(bi, 1024, 1024);
+                        leaderImage = bi;
+                    } catch (Exception e) {
+                        leaderImage = getSigilImage(leaderFaction);
+                    }
+                }
+            } else if (leader.isFaceDown()) {
                 leaderImage = getSigilImage(leaderFaction);
             } else {
                 leaderImage = getResourceImage(leader.getName());

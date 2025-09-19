@@ -3,6 +3,7 @@ package controller.commands;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import model.Game;
+import model.Leader;
 import model.factions.Faction;
 import model.factions.HomebrewFaction;
 import net.dv8tion.jda.api.entities.Message;
@@ -17,13 +18,14 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import static controller.commands.CommandOptions.message;
+import static controller.commands.CommandOptions.*;
 
 public class HomebrewCommands {
     public static List<CommandData> getCommands() {
         List<CommandData> commandData = new ArrayList<>();
         commandData.add(Commands.slash("homebrew", "Commands related to Homebrew Factions.").addSubcommands(
                 new SubcommandData("set-homeworld-image", "Set the message link for homebrew homeworld image").addOptions(message),
+                new SubcommandData("set-leader-disc-image", "Set the message link for a homebrew leader disc").addOptions(homebrewLeader, message),
                 new SubcommandData("set-image-test", "Set the message link for homebrew image test").addOptions(message),
                 new SubcommandData("image-test", "Write image diagnostics to mod-info")
         ));
@@ -36,6 +38,7 @@ public class HomebrewCommands {
 
         switch (name) {
             case "set-homeworld-image" -> setHomeworldImage(discordGame, game);
+            case "set-leader-disc-image" -> setLeaderDiscImage(discordGame, game);
             case "set-image-test" -> setImageTest(discordGame, game);
             case "image-test" -> imageTest(discordGame, game);
         }
@@ -50,6 +53,23 @@ public class HomebrewCommands {
         }
         HomebrewFaction homebrewFaction = (HomebrewFaction) faction;
         homebrewFaction.setHomeworldImageMessage(messageLink);
+        discordGame.pushGame();
+    }
+
+    public static void setLeaderDiscImage(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String leaderName = discordGame.required(homebrewLeader).getAsString();
+        String messageLink = discordGame.required(message).getAsString();
+        Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
+        if (faction == null) {
+            game.getModInfo().publish("No homebrew factions in the game.");
+            return;
+        }
+        Leader leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElse(null);
+        if (leader == null) {
+            game.getModInfo().publish("No homebrew leader named " + leaderName + ".'");
+            return;
+        }
+        leader.setHomebrewImageMessage(messageLink);
         discordGame.pushGame();
     }
 

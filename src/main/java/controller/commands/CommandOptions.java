@@ -55,6 +55,7 @@ public class CommandOptions {
     public static final OptionData whisperFaction = new OptionData(OptionType.STRING, "whisper-recipient", "The faction you want to whisper to. Omit in -whisper threads to reply.", false)
             .setAutoComplete(true);
     public static final OptionData homebrewFactionName = new OptionData(OptionType.STRING, "name", "The name of the homebrew faction", true);
+    public static final OptionData homebrewLeader = new OptionData(OptionType.STRING, "homebrew-leader", "The leader.", true).setAutoComplete(true);
     public static final OptionData dotPosition = new OptionData(OptionType.INTEGER, "dot-position", "1 = dot in sector 1, then the others in storm order", true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData guildSpecialWin = new OptionData(OptionType.BOOLEAN, "guild-special", "Was this a Guild special victory condition?", false);
@@ -288,6 +289,7 @@ public class CommandOptions {
             case "bgterritories" -> choices = bgTerritories(game, searchValue);
             case "factionleader" -> choices = leaders(event, game, searchValue);
             case "leadertokill" -> choices = leadersToKillOrFlip(event, game, searchValue);
+            case "homebrew-leader" -> choices = homebrewLeader(game, searchValue);
             case "leader-to-revive" -> choices = reviveLeaders(event, game, searchValue);
             case "combat-leader" -> choices = combatLeaders(event, discordGame, game, searchValue);
             case "leader-to-remove" -> choices = removeLeaders(event, game, searchValue);
@@ -489,6 +491,16 @@ public class CommandOptions {
                     .map(leader -> new Command.Choice(leader, leader))
                     .collect(Collectors.toList());
         }
+    }
+
+    private static List<Command.Choice> homebrewLeader(Game game, String searchValue) {
+        Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
+        if (faction == null)
+            return new ArrayList<>();
+        return faction.getLeaders().stream().map(Leader::getName)
+                .filter(leader -> leader.matches(searchRegex(searchValue)))
+                .map(leader -> new Command.Choice(leader, leader))
+                .collect(Collectors.toList());
     }
 
     private static List<Command.Choice> factionLeaderSkill(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
