@@ -14,6 +14,7 @@ public class Leader {
     private boolean faceDown;
     private String battleTerritoryName;
     private boolean pulledBehindShield;
+    private String homebrewImageMessage;
 
     public Leader(String name, int value, String originalFactionName, LeaderSkillCard skillCard, boolean faceDown) {
         this.name = name;
@@ -111,5 +112,13 @@ public class Leader {
 
     public void setPulledBehindShield(boolean pulledBehindShield) {
         this.pulledBehindShield = pulledBehindShield;
+    }
+
+    public String getHomebrewImageMessage() {
+        return homebrewImageMessage;
+    }
+
+    public void setHomebrewImageMessage(String homebrewImageMessage) {
+        this.homebrewImageMessage = homebrewImageMessage;
     }
 }

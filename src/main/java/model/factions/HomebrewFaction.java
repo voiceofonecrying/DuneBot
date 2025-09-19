@@ -29,6 +29,7 @@ public class HomebrewFaction extends Faction{
         public static class LeaderSpecs {
             String name;
             int value;
+            String discImageMessage;
         }
 
         String factionProxy;
@@ -71,7 +72,9 @@ public class HomebrewFaction extends Faction{
         freeRevival = specs.freeRevival;
         maxRevival = specs.maxRevival;
         for (FactionSpecs.LeaderSpecs ls : specs.leaders) {
-            leaders.add(new Leader(ls.name, ls.value, name, factionProxy,  null, false));
+            Leader leader = new Leader(ls.name, ls.value, name, factionProxy,  null, false);
+            leader.setHomebrewImageMessage(ls.discImageMessage);
+            leaders.add(leader);
             game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
         }
         homeworld = specs.homeworld;
