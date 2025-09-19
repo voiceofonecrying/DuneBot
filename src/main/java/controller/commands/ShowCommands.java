@@ -215,6 +215,7 @@ public class ShowCommands {
         StringBuilder leadersInTerritories = new StringBuilder();
         int numLeaders = faction.getLeaders().size();
         offset = (numLeaders - 1) * 450;
+        List<Leader> unplacedLeaders = new ArrayList<>();
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage;
             if (faction instanceof HomebrewFaction) {
@@ -224,10 +225,13 @@ public class ShowCommands {
                         InputStream is = new URI(imageUrl).toURL().openStream();
                         leaderImage = ImageIO.read(is);
                     } catch (URISyntaxException e) {
+                        unplacedLeaders.add(leader);
                         continue;
                     }
-                } else
+                } else {
+                    unplacedLeaders.add(leader);
                     continue;
+                }
             } else
                 leaderImage = getResourceImage(leader.getName());
             if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
@@ -407,8 +411,11 @@ public class ShowCommands {
         discordGame.queueMessage(infoChannelName, "Faction Info", boardFileUpload);
         if (!nexusCard.isEmpty())
             discordGame.queueMessage(infoChannelName, "__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name());
-        if (faction instanceof HomebrewFaction)
-            discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", faction.getLeaders().stream().map(Leader::getEmoiNameAndValueString).toList()));
+        if (faction instanceof HomebrewFaction) {
+            List<Leader> leadersToWriteAsText = faction.getLeaders().stream().filter(unplacedLeaders::contains).toList();
+            if (!leadersToWriteAsText.isEmpty())
+                discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", leadersToWriteAsText.stream().map(Leader::getEmoiNameAndValueString).toList()));
+        }
         List<String> homebrewTraitors = new ArrayList<>();
         for (TraitorCard traitorCard : faction.getTraitorHand())
             if (!traitorCard.getName().equals("Cheap Hero") && game.getFaction(traitorCard.getFactionName()) instanceof HomebrewFaction)
