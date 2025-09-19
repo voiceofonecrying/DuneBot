@@ -175,7 +175,7 @@ public class Battle {
         }
         List<DuneChoice> choices = List.of(
                 new DuneChoice("primary", "battle-choose-combatant-Ecaz", ecazLabel, Emojis.ECAZ, false),
-                new DuneChoice("primary", "battle-choose-combatant-" + ecaz.getAlly(), allyLabel, Emojis.getFactionEmoji(ecaz.getAlly()), false)
+                new DuneChoice("primary", "battle-choose-combatant-" + ecaz.getAlly(), allyLabel, game.getFaction(ecaz.getAlly()).getEmoji(), false)
         );
         chooser.getChat().publish(chatMessage, choices);
         game.getTurnSummary().publish(tsMessage);
