@@ -87,7 +87,7 @@ public class EventListener extends ListenerAdapter {
         game.getFactions().stream()
                 .filter(faction -> faction.getPlayer().equals(event.getMember().getUser().getAsMention()))
                 .forEach(faction -> event.getMessage()
-                        .addReaction(discordGame.getEmoji(Emojis.getFactionEmoji(faction.getName())))
+                        .addReaction(discordGame.getEmoji(faction.getEmoji()))
                         .queue());
 
         if (event.getMember().getRoles().stream().anyMatch(role -> role.getName().equals(game.getModRole()))) {
@@ -108,7 +108,7 @@ public class EventListener extends ListenerAdapter {
                 mentionedPlayers.add(game.getModOrRoleMention());
             } else {
                 game.getFactions().stream()
-                        .filter(faction -> emojiName.equals(Emojis.getFactionEmoji(faction.getName())))
+                        .filter(faction -> emojiName.equals(faction.getEmoji()))
                         .forEach(faction -> mentionedPlayers.add(faction.getPlayer()));
                 String strippedEmoji = emojiName.replace(":", "");
                 game.getFactions().stream()
