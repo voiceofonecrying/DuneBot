@@ -2117,7 +2117,7 @@ public class Game {
             }
             if (territory.getActiveFactions(this).size() == 2) {
                 EcazFaction ecaz = getEcazFaction();
-                turnSummary.publish(ecaz.getEmoji() + " " + Emojis.getFactionEmoji(ecaz.getAlly()) + " may divide the " + territory.getTerritoryName() + " " + Emojis.SPICE + " Blow as they wish.");
+                turnSummary.publish(ecaz.getEmoji() + " " + getFaction(ecaz.getAlly()).getEmoji() + " may divide the " + territory.getTerritoryName() + " " + Emojis.SPICE + " Blow as they wish.");
             }
         }
         if (harkonnenCollectsForHighThreshold) {
