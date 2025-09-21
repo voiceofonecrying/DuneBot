@@ -10,6 +10,8 @@ import model.factions.HomebrewFaction;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
+import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
@@ -20,6 +22,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import utils.CardImages;
 
+import java.io.InputStream;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.regex.Matcher;
@@ -156,9 +160,51 @@ public class EventListener extends ListenerAdapter {
         cardName = cardName.trim();
         System.out.println(cardName);
         List<FileUpload> list = new ArrayList<>();
-        CardImages.getHomeworldImage(guild, cardName + " High").ifPresent(list::add);
-        CardImages.getHomeworldImage(guild, cardName + " Low").ifPresent(list::add);
+        Optional<FileUpload> ofu = CardImages.getHomeworldImage(guild, cardName + " High");
+        if (ofu.isPresent())
+            list.add(ofu.get());
+        else {
+            FileUpload u = getHomebrewHomeworldCardImage(guild, cardName + " High");
+            if (u != null)
+                list.add(u);
+        }
+        ofu = CardImages.getHomeworldImage(guild, cardName + " Low");
+        if (ofu.isPresent())
+            list.add(ofu.get());
+        else {
+            FileUpload u = getHomebrewHomeworldCardImage(guild, cardName + " Low");
+            if (u != null)
+                list.add(u);
+        }
         return list;
+    }
+
+    FileUpload getHomebrewHomeworldCardImage(Guild guild, String cardName) {
+        List<Category> categoryList = guild.getCategoriesByName("Homebrew Resources", false);
+        if (!categoryList.isEmpty()) {
+            Category gameResources = categoryList.getFirst();
+            List<TextChannel> channels = gameResources.getTextChannels().stream().toList();
+            for (TextChannel c : channels) {
+                List<ThreadChannel> threadChannels = c.getThreadChannels().stream().filter(t -> t.getName().equals("homeworld-cards")).toList();
+                if (!threadChannels.isEmpty()) {
+                    Optional<Message> optMsg = threadChannels.getFirst().getIterableHistory().stream().filter(m -> m.getContentRaw().equals(cardName)).findFirst();
+                    if (optMsg.isPresent()) {
+                        List<Message.Attachment> atts = optMsg.get().getAttachments();
+                        if (!atts.isEmpty()) {
+                            Message.Attachment att = atts.getFirst();
+                            String imageUrl = att.getUrl();
+                            if (!imageUrl.isEmpty()) {
+                                try {
+                                    InputStream is = new URI(imageUrl).toURL().openStream();
+                                    return FileUpload.fromData(is, att.getFileName());
+                                } catch (Exception ignored) {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     /**
