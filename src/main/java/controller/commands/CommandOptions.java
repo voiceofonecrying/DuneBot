@@ -42,6 +42,10 @@ public class CommandOptions {
             .addChoice("Moritani", "Moritani");
     public static final OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
             .setAutoComplete(true);
+    public static final OptionData homebrewFaction = new OptionData(OptionType.STRING, "homebrew-faction-name", "The Homebrew Faction", true)
+            .setAutoComplete(true);
+    public static final OptionData proxyFaction = new OptionData(OptionType.STRING, "proxy-faction-name", "The proxy for the Homebrew Faction", true)
+            .setAutoComplete(true);
     public static final OptionData factionOrTanks = new OptionData(OptionType.STRING, "faction-or-tanks", "Holder of the leader to kill or flip face down", true)
             .setAutoComplete(true);
     public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)
@@ -55,7 +59,6 @@ public class CommandOptions {
     public static final OptionData whisperFaction = new OptionData(OptionType.STRING, "whisper-recipient", "The faction you want to whisper to. Omit in -whisper threads to reply.", false)
             .setAutoComplete(true);
     public static final OptionData homebrewFactionName = new OptionData(OptionType.STRING, "name", "The name of the homebrew faction", true);
-    public static final OptionData homebrewLeader = new OptionData(OptionType.STRING, "homebrew-leader", "The leader.", true).setAutoComplete(true);
     public static final OptionData dotPosition = new OptionData(OptionType.INTEGER, "dot-position", "1 = dot in sector 1, then the others in storm order", true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData guildSpecialWin = new OptionData(OptionType.BOOLEAN, "guild-special", "Was this a Guild special victory condition?", false);
@@ -273,6 +276,8 @@ public class CommandOptions {
         switch (optionName) {
             case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction", "other-winner", "whisper-recipient" ->
                     choices = factions(game, searchValue);
+            case "homebrew-faction-name" -> choices = homebrewFactions(game, searchValue);
+            case "proxy-faction-name" -> choices = proxyFactions(game, searchValue);
             case "faction-or-tanks" -> choices = factionsOrTanks(game, searchValue);
             case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
             case "territory", "to" -> choices = territories(game, searchValue);
@@ -318,6 +323,26 @@ public class CommandOptions {
         return game.getFactions().stream()
                 .map(Faction::getName)
                 .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(factionName -> new Command.Choice(factionName, factionName))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> homebrewFactions(@NotNull Game game, String searchValue) {
+        return game.getFactions().stream()
+                .filter(f -> f instanceof HomebrewFaction)
+                .map(Faction::getName)
+                .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(factionName -> new Command.Choice(factionName, factionName))
+                .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> proxyFactions(@NotNull Game game, String searchValue) {
+        List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
+                "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+        allFactionNames = allFactionNames.stream().filter(f -> !game.hasFaction(f)).toList();
+        allFactionNames = allFactionNames.stream().filter(f -> !(game.hasFaction(f) && game.getFaction(f) instanceof HomebrewFaction hbf && hbf.getFactionProxy().equals(f))).toList();
+        return allFactionNames.stream()
+                .filter(factionName -> factionName.matches(searchRegex(searchValue.toLowerCase())))
                 .map(factionName -> new Command.Choice(factionName, factionName))
                 .collect(Collectors.toList());
     }

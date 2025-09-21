@@ -39,6 +39,10 @@ public final class TraitorCard {
         return factionName;
     }
 
+    public void setEmojiFaction(String emojiFaction) {
+        this.emojiFaction = emojiFaction;
+    }
+
     public String getFactionEmoji() {
         if (name.equals("Cheap Hero"))
             return Emojis.WEIRDING;

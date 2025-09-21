@@ -437,11 +437,12 @@ public class SetupCommands {
         String userName = player.getEffectiveName();
         faction = new HomebrewFaction(factionName, playerName, userName);
         game.addFaction(faction);
-        String jsonResults = loadJsonString(discordGame.getGameCategory(), factionName);
+        String jsonResults = loadJsonString(discordGame, factionName);
         Gson gson = DiscordGame.createGsonDeserializer();
         HomebrewFaction.FactionSpecs specs;
         specs = gson.fromJson(jsonResults, HomebrewFaction.FactionSpecs.class);
         faction.initalizeFromSpecs(specs);
+        String proxyFaction = specs.getFactionProxy();
 
         Category gameCategory = discordGame.getGameCategory();
         game.getNexusDeck().add(new NexusCard(factionName));
@@ -460,11 +461,13 @@ public class SetupCommands {
         discordGame.getTurnSummary().addUser(game.getModRoleMention());
         discordGame.getTurnSummary().addUser(playerName);
         removePlayerFromWaitingList(event, discordGame, playerName);
+        game.getModInfo().publish(factionName + " has been set up with " + proxyFaction + " as the proxy faction.\nIf " + proxyFaction + " is in the game, you can set a different proxy with **/homebrew set-proxy-faction**.");
     }
 
-    public static String loadJsonString(Category category, String factionName) throws InvalidGameStateException {
-        TextChannel playerStatsChannel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("mod-info")).findFirst().orElseThrow(() -> new IllegalStateException("The mod-info channel was not found."));
-        MessageHistory h = playerStatsChannel.getHistory();
+    public static String loadJsonString(DiscordGame discordGame, String factionName) throws InvalidGameStateException {
+        Category category = discordGame.getGameCategory();
+        TextChannel channel = category.getTextChannels().stream().filter(c -> c.getName().equalsIgnoreCase("mod-info")).findFirst().orElseThrow(() -> new IllegalStateException("The mod-info channel was not found."));
+        MessageHistory h = channel.getHistory();
         h.retrievePast(100).complete();
         List<Message> ml = h.getRetrievedHistory();
         for (Message m : ml) {
@@ -477,13 +480,42 @@ public class SetupCommands {
                         String jsonResults = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
                         future.get().close();
                         return jsonResults;
-                    } catch (IOException | InterruptedException | ExecutionException e) {
-                        // Could not load from json file. Complete new set will be generated from game-results
+                    } catch (IOException | InterruptedException | ExecutionException ignored) {}
+                }
+            }
+        }
+        return loadJsonStringFromHomebrewResources(discordGame, factionName);
+    }
+
+    public static String loadJsonStringFromHomebrewResources(DiscordGame discordGame, String factionName) throws InvalidGameStateException {
+        Guild guild = discordGame.getGuild();
+        List<Category> categoryList = guild.getCategoriesByName("Homebrew Resources", false);
+        if (!categoryList.isEmpty()) {
+            Category gameResources = categoryList.getFirst();
+            List<TextChannel> channels = gameResources.getTextChannels().stream().toList();
+            for (TextChannel channel : channels) {
+                if (channel.getName().equals(factionName.toLowerCase())) {
+                    MessageHistory h = channel.getHistory();
+                    h.retrievePast(100).complete();
+                    List<Message> ml = h.getRetrievedHistory();
+                    for (Message m : ml) {
+                        List<Message.Attachment> messageList =  m.getAttachments();
+                        if (!messageList.isEmpty()) {
+                            Message.Attachment encoded = m.getAttachments().getFirst();
+                            if (encoded.getFileName().equals(factionName + ".json")) {
+                                CompletableFuture<InputStream> future = encoded.getProxy().download();
+                                try {
+                                    String jsonResults = new String(future.get().readAllBytes(), StandardCharsets.UTF_8);
+                                    future.get().close();
+                                    return jsonResults;
+                                } catch (IOException | InterruptedException | ExecutionException ignored) {}
+                            }
+                        }
                     }
                 }
             }
         }
-        throw new InvalidGameStateException(factionName + ".json not found in mod-info.");
+        throw new InvalidGameStateException(factionName + ".json not found in Homebrew Resources category");
     }
 
     public static void showGameOptions(Game game) {
