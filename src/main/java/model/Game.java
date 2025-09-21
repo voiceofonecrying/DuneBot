@@ -1647,7 +1647,7 @@ public class Game {
             factionsToShip.removeLast();
             juiceOfSaphoLast = true;
         }
-        List<DuneChoice> choices = new ArrayList<>(factionsToShip.stream().map(f -> new DuneChoice("primary", "guild-defer-to-" + f, null, Emojis.getFactionEmoji(f), false)).toList());
+        List<DuneChoice> choices = new ArrayList<>(factionsToShip.stream().map(f -> new DuneChoice("primary", "guild-defer-to-" + f, null, getFaction(f).getEmoji(), false)).toList());
         if (juiceOfSaphoLast)
             choices.getLast().setDisabled(true);
         choices.add(new DuneChoice("secondary", "guild-take-turn", "Take turn next."));
