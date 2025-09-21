@@ -177,12 +177,12 @@ public class FactionView {
             occupiedSpice = hbf.getOccupiedIncome();
         }
         String thumbnail = CardImages.getHomeworldImageLink(discordGame.getEvent().getGuild(), homeworldCard.name());
-        if (faction instanceof HomebrewFaction hbFaction) {
-            String message = hbFaction.getHomeworldImageMessage();
-            if (message != null)
-                try {
-                    thumbnail = ShowCommands.getHomebrewFactionImageUrl(discordGame, message);
-                } catch (Exception ignored) {}
+        if (faction instanceof HomebrewFaction) {
+            try {
+                String imageUrl = ShowCommands.getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, faction.getName().toLowerCase(), "homeworld", faction.getHomeworld());
+                if (imageUrl != null)
+                    thumbnail = imageUrl;
+            } catch (Exception ignored) {}
         }
         EmbedBuilder homeworldBuilder = new EmbedBuilder()
                 .setTitle(homeworldName + " Homeworld")

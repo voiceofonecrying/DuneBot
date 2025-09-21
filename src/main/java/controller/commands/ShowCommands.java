@@ -13,6 +13,7 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
@@ -93,10 +94,9 @@ public class ShowCommands {
 
     private static BufferedImage getHomeworldImage(DiscordGame discordGame, Faction faction) throws IOException {
         if (faction instanceof HomebrewFaction hbFaction) {
-            String message = hbFaction.getHomeworldImageMessage();
-            if (message != null) {
+            String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, faction.getName().toLowerCase(), "homeworld", faction.getHomeworld());
+            if (imageUrl != null) {
                 try {
-                    String imageUrl = getHomebrewFactionImageUrl(discordGame, message);
                     InputStream is = new URI(imageUrl).toURL().openStream();
                     BufferedImage bi = ImageIO.read(is);
                     bi = resize(bi, 1024, 1024);
@@ -125,17 +125,22 @@ public class ShowCommands {
         return FileUpload.fromData(inputStream, name + ".png");
     }
 
-    public static String getHomebrewFactionImageUrl(DiscordGame discordGame, String imageMessageLink) {
-        String serverId = imageMessageLink.replace("https://discord.com/channels/", "");
-        int channelIdStart = serverId.indexOf("/") + 1;
-        int channelIdEnd = serverId.indexOf("/", channelIdStart);
-        String channelId = serverId.substring(channelIdStart, channelIdEnd);
-        int messageIdStart = channelIdEnd + 1;
-        String messageId = serverId.substring(messageIdStart);
-        Category category = discordGame.getGameCategory();
-        TextChannel channel = category.getTextChannels().stream().filter(c -> c.getId().equals(channelId)).findFirst().orElseThrow();
-        Message msg = channel.retrieveMessageById(messageId).complete();
-        return msg.getAttachments().getFirst().getUrl();
+    public static String getHomebrewFactionImageUrlFromHomebrewChannel(DiscordGame discordGame, String factionThread, String imageType, String name) {
+        List<Category> categoryList = discordGame.getGuild().getCategoriesByName("Homebrew Resources", false);
+        if (!categoryList.isEmpty()) {
+            Category gameResources = categoryList.getFirst();
+            List<TextChannel> channels = gameResources.getTextChannels().stream().filter(c -> c.getName().equals(factionThread)).toList();
+            if (!channels.isEmpty()) {
+                TextChannel homebrewResources = channels.getFirst();
+                List<ThreadChannel> threadChannels = homebrewResources.getThreadChannels().stream().filter(t -> t.getName().equals(imageType)).toList();
+                if (!threadChannels.isEmpty()) {
+                    Optional<Message> optMsg = threadChannels.getFirst().getIterableHistory().stream().filter(m -> m.getContentRaw().equals(name)).findFirst();
+                    if (optMsg.isPresent())
+                        return optMsg.get().getAttachments().getFirst().getUrl();
+                }
+            }
+        }
+        return null;
     }
 
     public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException, InvalidGameStateException {
@@ -219,9 +224,9 @@ public class ShowCommands {
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage;
             if (faction instanceof HomebrewFaction) {
-                if (leader.getHomebrewImageMessage() != null) {
+                String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, faction.getName().toLowerCase(), "leaders", leader.getName());
+                if (imageUrl != null) {
                     try {
-                        String imageUrl = getHomebrewFactionImageUrl(discordGame, leader.getHomebrewImageMessage());
                         InputStream is = new URI(imageUrl).toURL().openStream();
                         leaderImage = ImageIO.read(is);
                     } catch (URISyntaxException e) {
@@ -1013,25 +1018,20 @@ public class ShowCommands {
             Faction leaderFaction = game.getFaction(leader.getOriginalFactionName());
             BufferedImage leaderImage;
             if (leaderFaction instanceof HomebrewFaction) {
-                String message = leader.getHomebrewImageMessage();
-                if (message == null)
-                    leaderImage = getSigilImage(leaderFaction);
-                else {
+                leaderImage = getSigilImage(leaderFaction);
+                String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leaderFaction.getName().toLowerCase(), "leaders", leader.getName());
+                if (imageUrl != null) {
                     try {
-                        String imageUrl = getHomebrewFactionImageUrl(discordGame, message);
                         InputStream is = new URI(imageUrl).toURL().openStream();
-                        BufferedImage bi = ImageIO.read(is);
-                        bi = resize(bi, 1024, 1024);
-                        leaderImage = bi;
-                    } catch (Exception e) {
-                        leaderImage = getSigilImage(leaderFaction);
-                    }
+                        leaderImage = ImageIO.read(is);
+                    } catch (Exception ignored) {}
                 }
             } else if (leader.isFaceDown()) {
                 leaderImage = getSigilImage(leaderFaction);
             } else {
                 leaderImage = getResourceImage(leader.getName());
             }
+            assert leaderImage != null;
             if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 70, 70);
             else leaderImage = resize(leaderImage, 70, 42);
             Point tanksCoordinates = Initializers.getPoints("Leaders Tanks").get(i);
