@@ -674,7 +674,7 @@ public class ReportsCommands {
         return updateStats(event.getGuild(), event.getJDA(), true, members, publishIfNoNewGames, publishStatsFileOnly);
     }
 
-    public static String statsDiagnostic(SlashCommandInteractionEvent event, List<Member> members) throws InterruptedException {
+    public static String statsDiagnostic(SlashCommandInteractionEvent event, List<Member> members) {
         OptionMapping optionMapping = event.getOption(message.getName());
         String channelString = optionMapping.getAsString();
         JDA mainJDA = event.getJDA();
@@ -780,31 +780,52 @@ public class ReportsCommands {
         return tagEmojis(guild, factionStatsString.toString());
     }
 
+    private static class FactionAllyPerformance {
+        String name1;
+        String name2;
+        int numGames;
+        int numWins;
+
+        FactionAllyPerformance(String name1, String name2, int numGames, int numWins) {
+            this.name1 = name1;
+            this.name2 = name2;
+            this.numGames = numGames;
+            this.numWins = numWins;
+        }
+    }
+
     public static String writeFactionAllyPerformance(Guild guild, GRList gameResults) {
-        List<MutableTriple<String, String, Integer>> factionAllyWinsTriple = new ArrayList<>();
+        List<FactionAllyPerformance> factionAllyPerformances = new ArrayList<>();
         for (String name1 : factionNames) {
             boolean foundNewName = false;
             for (String name2 : factionNames) {
-                if (name1.equals(name2)) foundNewName = true;
+                if (name1.equals(name2))
+                    foundNewName = true;
                 else if (foundNewName) {
                     Set<String> factions =  Set.of(name1, name2);
                     int factionAllyWins = gameResults.gameResults.stream()
                             .filter(gr -> gr.getWinningFactions().stream().anyMatch(s -> s.equals(factions)))
                             .toList().size();
+                    int factionAllyGames = gameResults.gameResults.stream()
+                            .filter(gr -> gr.getFieldValue(name1) != null && gr.getFieldValue(name2) != null)
+                            .toList().size();
                     if (factionAllyWins > 0)
-                        factionAllyWinsTriple.add(MutableTriple.of(name1, name2, factionAllyWins));
+                        factionAllyPerformances.add(new FactionAllyPerformance(name1, name2, factionAllyGames, factionAllyWins));
                 }
             }
         }
-        factionAllyWinsTriple.sort((a, b) -> Integer.compare(b.getRight(), a.getRight()));
+        factionAllyPerformances.sort((a, b) -> Integer.compare(b.numWins, a.numWins));
         StringBuilder result = new StringBuilder("__Most Faction Alliance Wins__\n");
         int lines = 0;
         int currentWins = Integer.MAX_VALUE;
-        for (MutableTriple<String, String, Integer> fawt : factionAllyWinsTriple) {
-            if (fawt.getRight() != currentWins && lines > 5)
+        String ofGamesWithBothFactions = " of games with both factions";
+        for (FactionAllyPerformance fp : factionAllyPerformances) {
+            if (fp.numWins != currentWins && lines > 5)
                 break;
-            result.append(tagEmojis(guild, fawt.getRight() + " - " + Emojis.getFactionEmoji(capitalize(fawt.getLeft())) + " " + Emojis.getFactionEmoji(capitalize(fawt.getMiddle())) + "\n"));
-            currentWins = fawt.getRight();
+            String winPercentage = new DecimalFormat("#0.0%").format((float)fp.numWins/fp.numGames);
+            result.append(tagEmojis(guild, fp.numWins + " - " + Emojis.getFactionEmoji(capitalize(fp.name1)) + " " + Emojis.getFactionEmoji(capitalize(fp.name2)) + " - " + winPercentage + ofGamesWithBothFactions + "\n"));
+            ofGamesWithBothFactions = "";
+            currentWins = fp.numWins;
             lines++;
         }
         return result.toString();
