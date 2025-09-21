@@ -46,9 +46,46 @@ public class HomebrewFaction extends Faction{
         int highBattleExplosion;
         int lowBattleExplosion;
         int lowRevivalCharity;
+
+        public String getFactionProxy() {
+            return factionProxy;
+        }
     }
 
     public void initalizeFromSpecs(FactionSpecs specs) {
+        setFactionProxy(specs.factionProxy);
+        spice = specs.spice;
+        handLimit = specs.handLimit;
+        freeRevival = specs.freeRevival;
+        maxRevival = specs.maxRevival;
+        for (FactionSpecs.LeaderSpecs ls : specs.leaders) {
+            Leader leader = new Leader(ls.name, ls.value, name, factionProxy,  null, false);
+            leaders.add(leader);
+            game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
+        }
+        homeworld = specs.homeworld;
+        if (specs.homeworldProxy != null)
+            homeworldProxy = specs.homeworldProxy;
+        highThreshold = specs.highThreshold;
+        highDescription = specs.highDescription;
+        lowThreshold = specs.lowThreshold;
+        lowDescription = specs.lowDescription;
+        occupiedDescription = specs.occupiedDescription;
+        occupiedIncome = specs.occupiedIncome;
+        highBattleExplosion = specs.highBattleExplosion;
+        lowBattleExplosion = specs.lowBattleExplosion;
+        lowRevivalCharity = specs.lowRevivalCharity;
+
+        Territory hwTerritory = game.getTerritories().addHomeworld(game, homeworld, name);
+        hwTerritory.addForces(name, 20);
+        game.getHomeworlds().put(name, homeworld);
+    }
+
+    public String getFactionProxy() {
+        return factionProxy;
+    }
+
+    public void setFactionProxy(String factionProxy) {
         HashMap<String, String> homeworldName = new HashMap<>();
         homeworldName.put("Atreides", "Caladan");
         homeworldName.put("BG", "Wallach IX");
@@ -62,39 +99,9 @@ public class HomebrewFaction extends Faction{
         homeworldName.put("Ix", "Ix");
         homeworldName.put("Moritani", "Grumman");
         homeworldName.put("Richese", "Richese");
-        factionProxy = specs.factionProxy;
-        spice = specs.spice;
-        handLimit = specs.handLimit;
-        freeRevival = specs.freeRevival;
-        maxRevival = specs.maxRevival;
-        for (FactionSpecs.LeaderSpecs ls : specs.leaders) {
-            Leader leader = new Leader(ls.name, ls.value, name, factionProxy,  null, false);
-            leaders.add(leader);
-            game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
-        }
-        homeworld = specs.homeworld;
-        if (specs.homeworldProxy == null)
-            homeworldProxy = homeworldName.get(factionProxy);
-        else
-            homeworldProxy = specs.homeworldProxy;
-        highThreshold = specs.highThreshold;
-        highDescription = specs.highDescription;
-        lowThreshold = specs.lowThreshold;
-        lowDescription = specs.lowDescription;
-        occupiedDescription = specs.occupiedDescription;
-        occupiedIncome = specs.occupiedIncome;
-        highBattleExplosion = specs.highBattleExplosion;
-        lowBattleExplosion = specs.lowBattleExplosion;
-        lowRevivalCharity = specs.lowRevivalCharity;
-
+        this.factionProxy = factionProxy;
         emoji = Emojis.getFactionEmoji(factionProxy);
-        Territory hwTerritory = game.getTerritories().addHomeworld(game, homeworld, name);
-        hwTerritory.addForces(name, 20);
-        game.getHomeworlds().put(name, homeworld);
-    }
-
-    public String getFactionProxy() {
-        return factionProxy;
+        homeworldProxy = homeworldName.get(factionProxy);
     }
 
     public String getHomeworldProxy() {
