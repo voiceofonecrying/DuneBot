@@ -5,9 +5,11 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.utils.FileUpload;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -68,8 +70,43 @@ public class CardImages {
                 Pattern.quote(cardName.trim()) + ".*",
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
+        Optional<FileUpload> ofu = getCardImage(guild, "homeworlds", pattern, cardName);
+        if (ofu.isPresent())
+            return ofu;
+        else {
+            FileUpload u = getHomebrewHomeworldCardImage(guild, cardName);
+            if (u != null)
+                return Optional.of(u);
+        }
+        return Optional.empty();
+    }
 
-        return getCardImage(guild, "homeworlds", pattern, cardName);
+    public static FileUpload getHomebrewHomeworldCardImage(Guild guild, String cardName) {
+        List<Category> categoryList = guild.getCategoriesByName("Homebrew Resources", false);
+        if (!categoryList.isEmpty()) {
+            Category gameResources = categoryList.getFirst();
+            List<TextChannel> channels = gameResources.getTextChannels().stream().toList();
+            for (TextChannel c : channels) {
+                List<ThreadChannel> threadChannels = c.getThreadChannels().stream().filter(t -> t.getName().equals("homeworld-cards")).toList();
+                if (!threadChannels.isEmpty()) {
+                    Optional<Message> optMsg = threadChannels.getFirst().getIterableHistory().stream().filter(m -> m.getContentRaw().equals(cardName)).findFirst();
+                    if (optMsg.isPresent()) {
+                        List<Message.Attachment> atts = optMsg.get().getAttachments();
+                        if (!atts.isEmpty()) {
+                            Message.Attachment att = atts.getFirst();
+                            String imageUrl = att.getUrl();
+                            if (!imageUrl.isEmpty()) {
+                                try {
+                                    InputStream is = new URI(imageUrl).toURL().openStream();
+                                    return FileUpload.fromData(is, att.getFileName());
+                                } catch (Exception ignored) {}
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     public static Optional<FileUpload> getPredictionImage(Guild guild, String cardName) {
