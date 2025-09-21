@@ -62,7 +62,16 @@ public class CardImages {
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
-        return getCardImage(guild, "traitor-cards", pattern, cardName);
+//        return getCardImage(guild, "traitor-cards", pattern, cardName);
+        Optional<FileUpload> ofu = getCardImage(guild, "traitor-cards", pattern, cardName);
+        if (ofu.isPresent())
+            return ofu;
+        else {
+            FileUpload u = getHomebrewCardImage(guild, "traitor-cards", cardName);
+            if (u != null)
+                return Optional.of(u);
+        }
+        return Optional.empty();
     }
 
     public static Optional<FileUpload> getHomeworldImage(Guild guild, String cardName) {
@@ -74,20 +83,20 @@ public class CardImages {
         if (ofu.isPresent())
             return ofu;
         else {
-            FileUpload u = getHomebrewHomeworldCardImage(guild, cardName);
+            FileUpload u = getHomebrewCardImage(guild, "homeworld-cards", cardName);
             if (u != null)
                 return Optional.of(u);
         }
         return Optional.empty();
     }
 
-    public static FileUpload getHomebrewHomeworldCardImage(Guild guild, String cardName) {
+    public static FileUpload getHomebrewCardImage(Guild guild, String cardType, String cardName) {
         List<Category> categoryList = guild.getCategoriesByName("Homebrew Resources", false);
         if (!categoryList.isEmpty()) {
             Category gameResources = categoryList.getFirst();
             List<TextChannel> channels = gameResources.getTextChannels().stream().toList();
             for (TextChannel c : channels) {
-                List<ThreadChannel> threadChannels = c.getThreadChannels().stream().filter(t -> t.getName().equals("homeworld-cards")).toList();
+                List<ThreadChannel> threadChannels = c.getThreadChannels().stream().filter(t -> t.getName().equals(cardType)).toList();
                 if (!threadChannels.isEmpty()) {
                     Optional<Message> optMsg = threadChannels.getFirst().getIterableHistory().stream().filter(m -> m.getContentRaw().equals(cardName)).findFirst();
                     if (optMsg.isPresent()) {

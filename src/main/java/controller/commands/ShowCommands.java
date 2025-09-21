@@ -272,10 +272,14 @@ public class ShowCommands {
         offset = 0;
 
         //Place Traitor Cards
+        List<String> homebrewTraitors = new ArrayList<>();
         for (TraitorCard traitorCard : faction.getTraitorHand()) {
-            if (!traitorCard.getName().equals("Cheap Hero") && game.getFaction(traitorCard.getFactionName()) instanceof HomebrewFaction)
-                traitorCard = new TraitorCard("Cheap Hero",  "Any", 0);
             Optional<FileUpload> image = CardImages.getTraitorImage(discordGame.getEvent().getGuild(), traitorCard.getName());
+            if (image.isEmpty() && game.getFaction(traitorCard.getFactionName()) instanceof HomebrewFaction) {
+                homebrewTraitors.add("Cheap Hero (0) Traitor above is really " + traitorCard.getEmojiNameAndStrengthString());
+                traitorCard = new TraitorCard("Cheap Hero", "Any", 0);
+                image = CardImages.getTraitorImage(discordGame.getEvent().getGuild(), traitorCard.getName());
+            }
             if (image.isPresent()) {
                 BufferedImage cardImage = ImageIO.read(image.get().getData());
                 cardImage = resize(cardImage, 988, 1376);
@@ -421,10 +425,6 @@ public class ShowCommands {
             if (!leadersToWriteAsText.isEmpty())
                 discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", leadersToWriteAsText.stream().map(Leader::getEmoiNameAndValueString).toList()));
         }
-        List<String> homebrewTraitors = new ArrayList<>();
-        for (TraitorCard traitorCard : faction.getTraitorHand())
-            if (!traitorCard.getName().equals("Cheap Hero") && game.getFaction(traitorCard.getFactionName()) instanceof HomebrewFaction)
-                homebrewTraitors.add("Cheap Hero (0) Traitor above is really " + traitorCard.getEmojiNameAndStrengthString());
         if (!homebrewTraitors.isEmpty())
             discordGame.queueMessage(infoChannelName, "__Traitors:__\n" + String.join("\n", homebrewTraitors));
         if (!leadersInTerritories.isEmpty())
