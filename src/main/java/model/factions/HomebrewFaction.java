@@ -12,8 +12,6 @@ import java.util.List;
 public class HomebrewFaction extends Faction{
     String factionProxy;
     String homeworldProxy;
-    String homeworldImageLinkTest;
-    String homeworldImageMessage;
     String highDescription;
     String lowDescription;
     String occupiedDescription;
@@ -29,7 +27,6 @@ public class HomebrewFaction extends Faction{
         public static class LeaderSpecs {
             String name;
             int value;
-            String discImageMessage;
         }
 
         String factionProxy;
@@ -40,7 +37,6 @@ public class HomebrewFaction extends Faction{
         List<LeaderSpecs> leaders;
         String homeworld;
         String homeworldProxy;
-        String homeworldImageMessage;
         int highThreshold = 12;
         String highDescription;
         int lowThreshold = 11;
@@ -73,7 +69,6 @@ public class HomebrewFaction extends Faction{
         maxRevival = specs.maxRevival;
         for (FactionSpecs.LeaderSpecs ls : specs.leaders) {
             Leader leader = new Leader(ls.name, ls.value, name, factionProxy,  null, false);
-            leader.setHomebrewImageMessage(ls.discImageMessage);
             leaders.add(leader);
             game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
         }
@@ -82,7 +77,6 @@ public class HomebrewFaction extends Faction{
             homeworldProxy = homeworldName.get(factionProxy);
         else
             homeworldProxy = specs.homeworldProxy;
-        homeworldImageMessage = specs.homeworldImageMessage;
         highThreshold = specs.highThreshold;
         highDescription = specs.highDescription;
         lowThreshold = specs.lowThreshold;
@@ -105,22 +99,6 @@ public class HomebrewFaction extends Faction{
 
     public String getHomeworldProxy() {
         return homeworldProxy;
-    }
-
-    public String getHomeworldImageLinkTest() {
-        return homeworldImageLinkTest;
-    }
-
-    public void setHomeworldImageLinkTest(String homeworldImageLinkTest) {
-        this.homeworldImageLinkTest = homeworldImageLinkTest;
-    }
-
-    public String getHomeworldImageMessage() {
-        return homeworldImageMessage;
-    }
-
-    public void setHomeworldImageMessage(String homeworldImageMessage) {
-        this.homeworldImageMessage = homeworldImageMessage;
     }
 
     public String getHighDescription() {

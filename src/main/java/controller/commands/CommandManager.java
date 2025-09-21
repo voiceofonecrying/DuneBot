@@ -15,7 +15,6 @@ import model.factions.*;
 import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
@@ -301,9 +300,6 @@ public class CommandManager extends ListenerAdapter {
                 case "moritani-assassinate-traitor" -> assassinateTraitor(discordGame, game);
                 case "game-result" -> ReportsCommands.gameResult(event, discordGame, game);
                 case "save-game-bot-data" -> ReportsCommands.saveGameBotData(event, discordGame, game);
-                case "set-homebrew-homeworld-image" -> setHomebrewHomeworldImage(discordGame, game);
-                case "set-homebrew-image-test" -> setHomebrewImageTest(discordGame, game);
-                case "homebrew-image-test" -> homebrewImageTest(discordGame, game);
             }
 
             if (!(name.equals("setup") && Objects.requireNonNull(event.getSubcommandName()).equals("faction")))
@@ -317,63 +313,6 @@ public class CommandManager extends ListenerAdapter {
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
-        }
-    }
-
-    public void setHomebrewHomeworldImage(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String messageLink = discordGame.required(message).getAsString();
-        Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
-        if (faction == null) {
-            game.getModInfo().publish("No homebrew factions in the game.");
-            return;
-        }
-        HomebrewFaction homebrewFaction = (HomebrewFaction) faction;
-        homebrewFaction.setHomeworldImageMessage(messageLink);
-        discordGame.pushGame();
-    }
-
-    public void setHomebrewImageTest(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
-        String messageLink = discordGame.required(message).getAsString();
-        Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
-        if (faction == null) {
-            game.getModInfo().publish("No homebrew factions in the game.");
-            return;
-        }
-        HomebrewFaction homebrewFaction = (HomebrewFaction) faction;
-        homebrewFaction.setHomeworldImageLinkTest(messageLink);
-        discordGame.pushGame();
-    }
-
-    public void homebrewImageTest(DiscordGame discordGame, Game game) {
-        Faction faction = game.getFactions().stream().filter(f -> f instanceof HomebrewFaction).findFirst().orElse(null);
-        if (faction == null) {
-            game.getModInfo().publish("No homebrew factions in the game.");
-            return;
-        }
-        HomebrewFaction homebrewFaction = (HomebrewFaction) faction;
-        String homebrewImageLinkTest = homebrewFaction.getHomeworldImageLinkTest();
-        if (homebrewImageLinkTest == null) {
-            game.getModInfo().publish("No homebrew image link test value.");
-            return;
-        }
-        try {
-//            game.getModInfo().publish(ShowCommands.getHomeworldFactionImageUrl(discordGame, homebrewImageLinkTest));
-            String serverId = homebrewImageLinkTest.replace("https://discord.com/channels/", "");
-            int channelIdStart = serverId.indexOf("/") + 1;
-            int channelIdEnd = serverId.indexOf("/", channelIdStart);
-            String channelId = serverId.substring(channelIdStart, channelIdEnd);
-            int messageIdStart = channelIdEnd + 1;
-            String messageId = serverId.substring(messageIdStart);
-            Category category = discordGame.getGameCategory();
-            TextChannel channel = category.getTextChannels().stream().filter(c -> c.getId().equals(channelId)).findFirst().orElseThrow();
-            Message msg = channel.retrieveMessageById(messageId).complete();
-            game.getModInfo().publish("Message link: " + homebrewImageLinkTest
-                    + "\nChannel ID: " + channelId
-                    + "\nMessage ID: " + messageId
-                    + "\nNum attachments: " + msg.getAttachments().size()
-            );
-        } catch (Exception e) {
-            game.getModInfo().publish(Arrays.toString(e.getStackTrace()));
         }
     }
 

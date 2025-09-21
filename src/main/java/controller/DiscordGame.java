@@ -15,6 +15,7 @@ import model.factions.AtreidesFaction;
 import model.factions.Faction;
 import model.factions.FactionTypeSelector;
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageEmbed;
 import net.dv8tion.jda.api.entities.MessageHistory;
@@ -50,6 +51,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DiscordGame {
+    private final Guild guild;
     private final Category gameCategory;
     private final List<DiscordRequest> discordRequests = new ArrayList<>();
     private List<TextChannel> textChannelList;
@@ -63,29 +65,38 @@ public class DiscordGame {
         this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
         this.event = event;
+        this.guild = event.getGuild();
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
     }
 
     public DiscordGame(@NotNull MessageReceivedEvent event) throws ChannelNotFoundException {
         this.gameCategory = categoryFromEvent(event);
         this.game = this.getGame();
+        this.guild = event.getGuild();
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
     }
 
     public DiscordGame(@NotNull CommandAutoCompleteInteractionEvent event) {
         this.gameCategory = categoryFromEvent(event);
+        this.guild = event.getGuild();
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(event.getGuild()).getId());
     }
 
     public DiscordGame(Category category) {
         this.gameCategory = category;
+        this.guild = category.getGuild();
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(category.getGuild()).getId());
     }
 
     public DiscordGame(Category category, boolean isNew) throws ChannelNotFoundException {
         this.gameCategory = category;
         if (!isNew) this.game = getGame();
+        this.guild = category.getGuild();
         emojis = EmojiCache.getEmojis(Objects.requireNonNull(category.getGuild()).getId());
+    }
+
+    public Guild getGuild() {
+        return guild;
     }
 
     public static Category categoryFromEvent(@NotNull GenericInteractionCreateEvent event) {
