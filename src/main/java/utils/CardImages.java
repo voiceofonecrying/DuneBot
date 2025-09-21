@@ -53,7 +53,15 @@ public class CardImages {
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
-        return getCardImage(guild, "nexus-cards", pattern, cardName);
+        Optional<FileUpload> ofu = getCardImage(guild, "nexus-cards", pattern, cardName);
+        if (ofu.isPresent())
+            return ofu;
+        else {
+            FileUpload u = getHomebrewCardImage(guild, "nexus-card", cardName);
+            if (u != null)
+                return Optional.of(u);
+        }
+        return Optional.empty();
     }
 
     public static Optional<FileUpload> getTraitorImage(Guild guild, String cardName) {
@@ -62,7 +70,6 @@ public class CardImages {
                 Pattern.DOTALL | Pattern.CASE_INSENSITIVE
         );
 
-//        return getCardImage(guild, "traitor-cards", pattern, cardName);
         Optional<FileUpload> ofu = getCardImage(guild, "traitor-cards", pattern, cardName);
         if (ofu.isPresent())
             return ofu;

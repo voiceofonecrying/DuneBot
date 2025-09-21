@@ -64,6 +64,13 @@ public class EventListener extends ListenerAdapter {
                 case "nexus" -> CardImages.getNexusImage(guild, cardName).ifPresent(fileUploads::add);
             }
         }
+        int planetEmojiIndex = message.indexOf("\uD83E\uDE90");
+        if (planetEmojiIndex != -1) {
+            String homeworldMessage = message.substring(planetEmojiIndex + 2);
+            planetEmojiIndex = homeworldMessage.indexOf("\uD83E\uDE90");
+            String cardName = homeworldMessage.substring(0, planetEmojiIndex).replace("\uD83E\uDE90", "").trim();
+            fileUploads.addAll(getHomeworldCardImages(guild, cardName));
+        }
         if (!fileUploads.isEmpty()) {
             event.getChannel().sendFiles(fileUploads).queue();
         }
@@ -116,17 +123,6 @@ public class EventListener extends ListenerAdapter {
                         .filter(faction -> strippedEmoji.equals(faction.getName().toLowerCase()) || strippedEmoji.equals(((HomebrewFaction) faction).getFactionProxy().toLowerCase()))
                         .forEach(faction -> mentionedPlayers.add(faction.getPlayer()));
             }
-        }
-
-        int planetEmojiIndex = message.indexOf("\uD83E\uDE90");
-        if (planetEmojiIndex != -1) {
-            String homeworldMessage = message.substring(planetEmojiIndex + 2);
-            planetEmojiIndex = homeworldMessage.indexOf("\uD83E\uDE90");
-            String cardName = homeworldMessage.substring(0, planetEmojiIndex).replace("\uD83E\uDE90", "").trim();
-            fileUploads.addAll(getHomeworldCardImages(guild, cardName));
-        }
-        if (!fileUploads.isEmpty()) {
-            event.getChannel().sendFiles(fileUploads).queue();
         }
 
         if (!mentionedPlayers.isEmpty())
