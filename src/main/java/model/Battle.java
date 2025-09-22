@@ -903,9 +903,15 @@ public class Battle {
         if (faction instanceof HarkonnenFaction harkonnen && battlePlan.isLeaderAlive())
             resolution += handleCapturedLeaderReturn(harkonnen, battlePlan, executeResolution);
 
-        Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
-        Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
-        resolution += handleHarkonnenLeaderCapture(game, winner, loser, isLoser, executeResolution);
+        Faction winner = getAggressor(game);
+        Faction loser = getDefender(game);
+        String loserLeaderKilled = defenderBattlePlan.getLeader() == null || defenderBattlePlan.isLeaderAlive() ? null : defenderBattlePlan.getLeader().getName();
+        if (!isAggressorWin(game)) {
+            winner = getDefender(game);
+            loser = getAggressor(game);
+            loserLeaderKilled = aggressorBattlePlan.getLeader() == null || aggressorBattlePlan.isLeaderAlive() ? null : aggressorBattlePlan.getLeader().getName();
+        }
+        resolution += handleHarkonnenLeaderCapture(game, winner, loser, loserLeaderKilled, isLoser, executeResolution);
         if (!isLoser && winner instanceof AtreidesFaction atreides) {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
@@ -1298,11 +1304,14 @@ public class Battle {
         return resolution;
     }
 
-    protected String handleHarkonnenLeaderCapture(Game game, Faction winner, Faction loser, boolean isLoser, boolean executeResolution) {
+    protected String handleHarkonnenLeaderCapture(Game game, Faction winner, Faction loser, String loserKilledLeader, boolean isLoser, boolean executeResolution) {
         String resolution = "";
         if (!isLoser && winner instanceof HarkonnenFaction harkonnen) {
             if (executeResolution) {
-                List<Leader> eligibleLeaders = new ArrayList<>(loser.getLeaders().stream().filter(l -> l.getBattleTerritoryName() == null || sectorNames.contains(l.getBattleTerritoryName())).filter(l -> !(l.getName().equals("Kwisatz Haderach") || l.getName().equals("Auditor"))).toList());
+                List<Leader> eligibleLeaders = new ArrayList<>(loser.getLeaders().stream()
+                        .filter(l -> !l.getName().equals(loserKilledLeader))
+                        .filter(l -> l.getBattleTerritoryName() == null || sectorNames.contains(l.getBattleTerritoryName()))
+                        .filter(l -> !(l.getName().equals("Kwisatz Haderach") || l.getName().equals("Auditor"))).toList());
                 if (eligibleLeaders.isEmpty()) {
                     game.getTurnSummary().publish(loser.getEmoji() + " has no eligible leaders to capture.");
                 } else {
