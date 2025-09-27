@@ -93,20 +93,17 @@ class GameTest extends DuneTest {
 
         @Test
         void testWormsToPlace() {
-            fremen.presentWormPlacementChoices("Funeral Plain", "Shai-Hulud");
-            fremen.addWormToPlace();
+            fremen.addWormToPlace("Funeral Plain", "Shai-Hulud");
             assertThrows(InvalidGameStateException.class, () -> game.spiceBlowPhaseNextStep());
         }
 
         @Test
         void testWormsWerePlaced() {
-            fremen.presentWormPlacementChoices("Funeral Plain", "Shai-Hulud");
-            fremen.addWormToPlace();
-            fremen.presentWormPlacementChoices("The Great Flat", "Shai-Hulud");
-            fremen.addWormToPlace();
-            fremen.placeWorm(sietchTabr, false);
+            fremen.addWormToPlace("Funeral Plain", "Shai-Hulud");
+            fremen.addWormToPlace("The Great Flat", "Shai-Hulud");
+            fremen.placeWorm(sietchTabr);
             assertThrows(InvalidGameStateException.class, () -> game.spiceBlowPhaseNextStep());
-            fremen.placeWorm(garaKulon, false);
+            fremen.placeWorm(garaKulon);
             assertDoesNotThrow(() -> game.spiceBlowPhaseNextStep());
         }
     }

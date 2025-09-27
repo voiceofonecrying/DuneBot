@@ -153,9 +153,9 @@ public class Movement {
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
             ((FremenFaction) faction).setWormRideActive(false);
         } else if (moveType == MoveType.SHAI_HULUD_PLACEMENT) {
-            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()), true);
+            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
         } else if (moveType == MoveType.GREAT_MAKER_PLACEMENT) {
-            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()), true);
+            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
         } else if (moveType == MoveType.FREMEN_AMBASSADOR) {
             faction.getChat().reply("You will not ride the worm with the Fremen Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm with the Fremen Ambassador.");
