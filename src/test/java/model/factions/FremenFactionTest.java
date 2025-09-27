@@ -37,20 +37,45 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#twoWormsToPlace")
+    class TwoWormsToPlace {
+        @BeforeEach
+        public void setUp() {
+            faction.addWormToPlace("Gara Kulon", "Shai-Hulud");
+            assertEquals(1, faction.getWormsToPlace());
+            faction.addWormToPlace("Gara Kulon", "Great Maker");
+            assertEquals(2, faction.getWormsToPlace());
+        }
+
+        @Test
+        public void testSecondCallDoesNotPresentChoicesYet() {
+            assertEquals(1, chat.getMessages().size());
+            assertEquals(1, chat.getChoices().size());
+        }
+
+        @Test
+        public void testPlacingFirstWormPresentsSecondWormChoices() {
+            faction.placeWorm(game.getTerritory("Funeral Plain"));
+            assertEquals(1, faction.getWormsToPlace());
+            assertEquals(3, chat.getMessages().size());
+            assertEquals(2, chat.getChoices().size());
+        }
+    }
+
+    @Nested
     @DisplayName("#placeWorm")
     class PlaceWorm {
         @BeforeEach
         public void setUp() {
             game.setTurn(2);
             faction.placeForcesFromReserves(game.getTerritory("Sietch Tabr"), 17, false);
-            faction.presentWormPlacementChoices("Gara Kulon", "Shai-Hulud");
-            faction.addWormToPlace();
+            faction.addWormToPlace("Gara Kulon", "Shai-Hulud");
             assertEquals(1, faction.getWormsToPlace());
         }
 
         @Test
         public void testPlaceShaiHulud() {
-            faction.placeWorm(game.getTerritory("Funeral Plain"), false);
+            faction.placeWorm(game.getTerritory("Funeral Plain"));
             assertEquals("Shai-Hulud has been placed in Funeral Plain.\n", turnSummary.getMessages().getFirst());
             assertEquals("You placed Shai-Hulud in Funeral Plain.", chat.getMessages().getLast());
             assertEquals(0, faction.getWormsToPlace());
@@ -59,7 +84,7 @@ class FremenFactionTest extends FactionTestTemplate {
         @Test
         public void testPlaceGreatMaker() {
             faction.getMovement().setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
-            faction.placeWorm(game.getTerritory("Funeral Plain"), false);
+            faction.placeWorm(game.getTerritory("Funeral Plain"));
             assertEquals("Great Maker has been placed in Funeral Plain.\nAfter the Nexus, 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n", turnSummary.getMessages().getFirst());
             assertEquals("You placed Great Maker in Funeral Plain.", chat.getMessages().getLast());
             assertEquals(0, faction.getWormsToPlace());
@@ -67,18 +92,18 @@ class FremenFactionTest extends FactionTestTemplate {
 
         @Test
         public void testLeaveShaiHuludWhereItIs() {
-            faction.placeWorm(game.getTerritory("Funeral Plain"), true);
-            assertEquals("Shai-Hulud remains in Funeral Plain.\n", turnSummary.getMessages().getFirst());
-            assertEquals("You left Shai-Hulud in Funeral Plain.", chat.getMessages().getLast());
+            faction.placeWorm(game.getTerritory("Gara Kulon"));
+            assertEquals("Shai-Hulud remains in Gara Kulon.\n", turnSummary.getMessages().getFirst());
+            assertEquals("You left Shai-Hulud in Gara Kulon.", chat.getMessages().getLast());
             assertEquals(0, faction.getWormsToPlace());
         }
 
         @Test
         public void testLeaveGreatMakerWhereItIs() {
             faction.getMovement().setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
-            faction.placeWorm(game.getTerritory("Funeral Plain"), true);
-            assertEquals("Great Maker remains in Funeral Plain.\nAfter the Nexus, 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n", turnSummary.getMessages().getFirst());
-            assertEquals("You left Great Maker in Funeral Plain.", chat.getMessages().getLast());
+            faction.placeWorm(game.getTerritory("Gara Kulon"));
+            assertEquals("Great Maker remains in Gara Kulon.\nAfter the Nexus, 3 " + Emojis.FREMEN_FEDAYKIN + " in reserves may ride Great Maker!\n", turnSummary.getMessages().getFirst());
+            assertEquals("You left Great Maker in Gara Kulon.", chat.getMessages().getLast());
             assertEquals(0, faction.getWormsToPlace());
         }
     }

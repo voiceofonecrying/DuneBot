@@ -88,7 +88,7 @@ public class MovementButtonActions {
             Territory territory = territorySectors.getFirst();
             MoveType moveType = faction.getMovement().getMoveType();
             if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
-                game.getFremenFaction().placeWorm(territory, false);
+                game.getFremenFaction().placeWorm(territory);
             } else {
                 faction.getMovement().setMovingTo(territory.getTerritoryName());
                 presentForcesChoices(event, faction);
@@ -107,7 +107,7 @@ public class MovementButtonActions {
         String territoryName = event.getComponentId().replace("sector-", "").replace(choicePrefix, "");
         MoveType moveType = faction.getMovement().getMoveType();
         if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
-            game.getFremenFaction().placeWorm(game.getTerritory(territoryName), false);
+            game.getFremenFaction().placeWorm(game.getTerritory(territoryName));
         } else {
             faction.getMovement().setMovingTo(territoryName);
             presentForcesChoices(event, faction);

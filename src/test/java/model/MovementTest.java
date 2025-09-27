@@ -59,7 +59,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testShaiHuludPlacement() {
-            fremen.addWormToPlace();
+            fremen.addWormToPlace("Funeral Plain", "Shai-Hulud");
             assertEquals(1, fremen.getWormsToPlace());
             movement = fremen.getMovement();
             movement.setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
@@ -74,7 +74,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testGreatMakerPlacement() {
-            fremen.addWormToPlace();
+            fremen.addWormToPlace("Funeral Plain", "Great Maker");
             assertEquals(1, fremen.getWormsToPlace());
             movement = fremen.getMovement();
             movement.setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
@@ -169,7 +169,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testShaiHuludPlacement() {
-            fremen.addWormToPlace();
+            fremen.addWormToPlace("Funeral Plain", "Shai-Hulud");
             assertEquals(1, fremen.getWormsToPlace());
             movement = fremen.getMovement();
             movement.setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
@@ -186,7 +186,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testGreatMakerPlacement() {
-            fremen.addWormToPlace();
+            fremen.addWormToPlace("Funeral Plain", "Great Maker");
             assertEquals(1, fremen.getWormsToPlace());
             movement = fremen.getMovement();
             movement.setMoveType(MoveType.GREAT_MAKER_PLACEMENT);

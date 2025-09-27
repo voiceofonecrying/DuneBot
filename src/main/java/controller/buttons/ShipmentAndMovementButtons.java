@@ -521,7 +521,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         ).findFirst().orElseThrow();
 
         if (shaiHuludPlacement || greatMakerPlacement) {
-            game.getFremenFaction().placeWorm(territory, false);
+            game.getFremenFaction().placeWorm(territory);
             discordGame.pushGame();
             return;
         } else if (btHTPlacement) {
@@ -841,7 +841,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
         if (territory.size() == 1) {
             if (shaiHuludPlacement || greatMakerPlacement) {
-                game.getFremenFaction().placeWorm(territory.getFirst(), false);
+                game.getFremenFaction().placeWorm(territory.getFirst());
                 discordGame.pushGame();
                 return;
             }
@@ -992,7 +992,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
             }
             case "-place-shai-hulud", "-place-great-maker" -> {
-                game.getFremenFaction().placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()), true);
+                game.getFremenFaction().placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
             }
             case "-guild-ambassador" -> {

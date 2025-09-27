@@ -19,7 +19,8 @@ public class FremenFaction extends Faction {
     int startingForcesPlaced;
     List<String> wormRides;
     boolean wormRideActive;
-    int wormsToPlace;
+    List<String> worms;
+    String territoryWithWorms;
 
     public FremenFaction(String player, String userName) throws IOException {
         super("Fremen", player, userName);
@@ -162,21 +163,49 @@ public class FremenFaction extends Faction {
         chat.reply("Where would you like to place " + wormName + "? " + player, choices);
     }
 
-    public void addWormToPlace() {
-        wormsToPlace++;
+    public void presentWormPlacementChoices() {
+        String wormName = worms.getFirst();
+        if (wormName.equals("Great Maker"))
+            movement.setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
+        else
+            movement.setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
+        movement.setMovingFrom(territoryWithWorms);
+        String buttonPrefix = movement.getChoicePrefix();
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice(buttonPrefix + "spice-blow", "Spice Blow Territories"));
+        choices.add(new DuneChoice(buttonPrefix + "other", "Other Sand Territories"));
+        choices.add(new DuneChoice("secondary", buttonPrefix + "pass", "Keep it in " + territoryWithWorms));
+        chat.reply("Where would you like to place " + wormName + "? " + player, choices);
     }
 
     public int getWormsToPlace() {
-        return wormsToPlace;
+        return worms == null ? 0 : worms.size();
     }
 
-    public void placeWorm(Territory territory, boolean leftWhereItAppeared) {
+    public void addWormToPlace(String territoryName, String wormName) {
+        if (worms == null) {
+            worms = new ArrayList<>();
+            territoryWithWorms = territoryName;
+        }
+        worms.add(wormName);
+        if (worms.size() == 1)
+            presentWormPlacementChoices();
+    }
+
+    public void placeWorm(Territory territory) {
+        boolean leftWhereItAppeared = territoryWithWorms.equals(territory.getTerritoryName());
         String wormName = movement.getMoveType() == MoveType.GREAT_MAKER_PLACEMENT ? "Great Maker" : "Shai-Hulud";
         String action = leftWhereItAppeared ? "left " : "placed ";
         String territoryName = territory.getTerritoryName();
         game.placeShaiHulud(territoryName, wormName, false, leftWhereItAppeared);
-        wormsToPlace--;
         chat.reply("You " + action + wormName + " in " + territoryName + ".");
+        worms.removeFirst();
+        if (worms.isEmpty()) {
+            worms = null;
+            territoryWithWorms = null;
+        } else {
+            presentWormPlacementChoices();
+        }
     }
 
     public int countFreeStarredRevival() {

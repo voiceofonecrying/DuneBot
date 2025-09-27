@@ -1465,8 +1465,7 @@ public class Game {
                     FremenFaction fremen = getFremenFactionOrNull();
                     if (fremen != null) {
                         message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
-                        fremen.presentWormPlacementChoices(Objects.requireNonNull(lastCard).name(), drawn.name());
-                        fremen.addWormToPlace();
+                        fremen.addWormToPlace(Objects.requireNonNull(lastCard).name(), drawn.name());
                     }
                     message.append("\n");
                 }
