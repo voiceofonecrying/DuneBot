@@ -903,15 +903,9 @@ public class Battle {
         if (faction instanceof HarkonnenFaction harkonnen && battlePlan.isLeaderAlive())
             resolution += handleCapturedLeaderReturn(harkonnen, battlePlan, executeResolution);
 
-        Faction winner = getAggressor(game);
-        Faction loser = getDefender(game);
-        String loserLeaderKilled = defenderBattlePlan.getLeader() == null || defenderBattlePlan.isLeaderAlive() ? null : defenderBattlePlan.getLeader().getName();
-        if (!isAggressorWin(game)) {
-            winner = getDefender(game);
-            loser = getAggressor(game);
-            loserLeaderKilled = aggressorBattlePlan.getLeader() == null || aggressorBattlePlan.isLeaderAlive() ? null : aggressorBattlePlan.getLeader().getName();
-        }
-        resolution += handleHarkonnenLeaderCapture(game, winner, loser, loserLeaderKilled, isLoser, executeResolution);
+        Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
+        Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
+        resolution += handleHarkonnenLeaderCapture(game, winner, loser, isLoser, executeResolution);
         if (!isLoser && winner instanceof AtreidesFaction atreides) {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
@@ -1304,10 +1298,12 @@ public class Battle {
         return resolution;
     }
 
-    protected String handleHarkonnenLeaderCapture(Game game, Faction winner, Faction loser, String loserKilledLeader, boolean isLoser, boolean executeResolution) {
+    protected String handleHarkonnenLeaderCapture(Game game, Faction winner, Faction loser, boolean isLoser, boolean executeResolution) throws InvalidGameStateException {
         String resolution = "";
+        BattlePlan loserBattlePlan = isAggressorWin(game) ? defenderBattlePlan : aggressorBattlePlan;
         if (!isLoser && winner instanceof HarkonnenFaction harkonnen) {
             if (executeResolution) {
+                String loserKilledLeader = loserBattlePlan.getLeader() == null || loserBattlePlan.isLeaderAlive() ? null : loserBattlePlan.getLeader().getName();
                 List<Leader> eligibleLeaders = new ArrayList<>(loser.getLeaders().stream()
                         .filter(l -> !l.getName().equals(loserKilledLeader))
                         .filter(l -> l.getBattleTerritoryName() == null || sectorNames.contains(l.getBattleTerritoryName()))
