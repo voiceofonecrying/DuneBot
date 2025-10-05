@@ -995,11 +995,6 @@ public class ShipmentAndMovementButtons implements Pressable {
                 game.getFremenFaction().placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
                 deleteShipMoveButtonsInChannel(event.getMessageChannel());
             }
-            case "-guild-ambassador" -> {
-                discordGame.queueMessage("You will not ship with your Guild ambassador.");
-                game.getTurnSummary().publish(Emojis.ECAZ + " does not ship with their Guild ambassador.");
-                faction.getShipment().clear();
-            }
             case "-bt-ht" -> {
                 discordGame.queueMessage("You will leave your free revivals on Tleilaxu.");
                 game.getTurnSummary().publish(Emojis.BT + " leaves their free revivals on Tleilaxu.");
