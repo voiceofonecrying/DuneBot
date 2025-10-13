@@ -143,6 +143,12 @@ public final class Emojis {
             case "Moritani" -> {
                 return MORITANI_TROOP;
             }
+            case "Mikarrol" -> {
+                return ECAZ_TROOP;
+            }
+            case "Wydras" -> {
+                return ATREIDES_TROOP;
+            }
         }
         return MORITANI_TROOP;
     }
