@@ -49,30 +49,32 @@ public class EventListener extends ListenerAdapter {
         Guild guild = event.getGuild();
         String message = event.getMessage().getContentStripped();
 
-        Matcher cardMatcher = cardPattern.matcher(message);
+        if (!event.getChannel().getName().equals("bot-data")) {
+            Matcher cardMatcher = cardPattern.matcher(message);
 
-        List<FileUpload> fileUploads = new ArrayList<>();
+            List<FileUpload> fileUploads = new ArrayList<>();
 
-        while (cardMatcher.find()) {
-            String cardName = cardMatcher.group(2).strip();
-            String cardType = cardMatcher.group(1);
+            while (cardMatcher.find()) {
+                String cardName = cardMatcher.group(2).strip();
+                String cardType = cardMatcher.group(1);
 
-            switch (cardType) {
-                case "treachery" -> CardImages.getTreacheryCardImage(guild, cardName).ifPresent(fileUploads::add);
-                case "leader" -> CardImages.getLeaderSkillImage(guild, cardName).ifPresent(fileUploads::add);
-                case "stronghold" -> CardImages.getStrongholdImage(guild, cardName).ifPresent(fileUploads::add);
-                case "nexus" -> CardImages.getNexusImage(guild, cardName).ifPresent(fileUploads::add);
+                switch (cardType) {
+                    case "treachery" -> CardImages.getTreacheryCardImage(guild, cardName).ifPresent(fileUploads::add);
+                    case "leader" -> CardImages.getLeaderSkillImage(guild, cardName).ifPresent(fileUploads::add);
+                    case "stronghold" -> CardImages.getStrongholdImage(guild, cardName).ifPresent(fileUploads::add);
+                    case "nexus" -> CardImages.getNexusImage(guild, cardName).ifPresent(fileUploads::add);
+                }
             }
-        }
-        int planetEmojiIndex = message.indexOf("\uD83E\uDE90");
-        if (planetEmojiIndex != -1) {
-            String homeworldMessage = message.substring(planetEmojiIndex + 2);
-            planetEmojiIndex = homeworldMessage.indexOf("\uD83E\uDE90");
-            String cardName = homeworldMessage.substring(0, planetEmojiIndex).replace("\uD83E\uDE90", "").trim();
-            fileUploads.addAll(getHomeworldCardImages(guild, cardName));
-        }
-        if (!fileUploads.isEmpty()) {
-            event.getChannel().sendFiles(fileUploads).queue();
+            int planetEmojiIndex = message.indexOf("\uD83E\uDE90");
+            if (planetEmojiIndex != -1) {
+                String homeworldMessage = message.substring(planetEmojiIndex + 2);
+                planetEmojiIndex = homeworldMessage.indexOf("\uD83E\uDE90");
+                String cardName = homeworldMessage.substring(0, planetEmojiIndex).replace("\uD83E\uDE90", "").trim();
+                fileUploads.addAll(getHomeworldCardImages(guild, cardName));
+            }
+            if (!fileUploads.isEmpty()) {
+                event.getChannel().sendFiles(fileUploads).queue();
+            }
         }
 
         if (Objects.requireNonNull(event.getMember()).getUser().isBot()) return;
