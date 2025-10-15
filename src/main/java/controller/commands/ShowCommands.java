@@ -771,6 +771,29 @@ public class ShowCommands {
         coordinates = Initializers.getDrawCoordinates("phase " + (game.getPhaseForTracker()));
         board = overlay(board, phaseMarker, coordinates, 1);
 
+        //Place CHOAM inflation token if active
+        if (game.hasCHOAMFaction()) {
+            ChoamFaction choam = (ChoamFaction) game.getFaction("CHOAM");
+            int currentTurn = game.getTurn();
+
+            // Only show if inflation is active for current or future turns
+            if (choam.getFirstInflationRound() > 0 && choam.getFirstInflationRound() + 1 >= currentTurn) {
+                enums.ChoamInflationType currentInflation = choam.getInflationType(currentTurn);
+
+                if (currentInflation != null) {
+                    // Map enum to image name
+                    String inflationImageName = switch (currentInflation) {
+                        case DOUBLE -> "Inflation Double";
+                        case CANCEL -> "Inflation Cancel";
+                    };
+                    BufferedImage inflationToken = getResourceImage(inflationImageName);
+                    inflationToken = resize(inflationToken, 50, 50);
+                    Point inflationCoordinates = Initializers.getDrawCoordinates("phase 3");
+                    board = overlay(board, inflationToken, inflationCoordinates, 1);
+                }
+            }
+        }
+
         //Place pieces in territories
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
@@ -1368,15 +1391,22 @@ public class ShowCommands {
         if (!discoveryTokensLocations.isEmpty() || !undiscoveredTokensLocations.isEmpty())
             embedBuilder.addField("Discovery Token Locations", String.join("\n", List.of(discoveryString, undiscoveredString)), true);
 
-        List<String> ambassadorLocations = game.getTerritories().values().stream().filter(Territory::hasEcazAmbassador).map(t -> Emojis.getFactionEmoji(t.getEcazAmbassador()) + " is in " + t.getTerritoryName()).toList();
-        if (!ambassadorLocations.isEmpty())
-            embedBuilder.addField(discordGame.tagEmojis(Emojis.ECAZ + " Ambassador Locations"), discordGame.tagEmojis(String.join("\n", ambassadorLocations)), false);
+        // Create FactionView instances once for all factions
+        List<FactionView> factionViews = new ArrayList<>();
+        for (Faction faction : game.getFactions()) {
+            factionViews.add(FactionView.factory(discordGame, faction));
+        }
+
+        // Add faction-specific fields to the shared embed
+        for (FactionView factionView : factionViews) {
+            factionView.sharedFrontOfShieldFields().forEach(embedBuilder::addField);
+        }
 
         builder.addEmbeds(embedBuilder.build());
         discordGame.queueMessage("front-of-shield", builder);
 
-        for (Faction faction : game.getFactions()) {
-            FactionView factionView = FactionView.factory(discordGame, faction);
+        // Use the same FactionView instances for public messages
+        for (FactionView factionView : factionViews) {
             builder = factionView.getPublicMessage();
             discordGame.queueMessage("front-of-shield", builder);
         }
