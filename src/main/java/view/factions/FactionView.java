@@ -25,6 +25,7 @@ public class FactionView {
     public static FactionView factory(DiscordGame discordGame, Faction faction) throws ChannelNotFoundException {
         return switch (faction) {
             case BTFaction btFaction -> new BTView(discordGame, btFaction);
+            case ChoamFaction choamFaction -> new ChoamView(discordGame, choamFaction);
             case EcazFaction ecazFaction -> new EcazView(discordGame, ecazFaction);
             case EmperorFaction emperorFaction -> new EmperorView(discordGame, emperorFaction);
             case MoritaniFaction moritaniFaction -> new MoritaniView(discordGame, moritaniFaction);
@@ -138,6 +139,14 @@ public class FactionView {
     }
 
     protected List<MessageEmbed> additionalEmbedsBottom() {
+        return new ArrayList<>();
+    }
+
+    /**
+     * Returns fields to be added to the shared front-of-shield embed (the top embed with Deck Sizes, etc.)
+     * Override this in faction-specific views to add game-wide information.
+     */
+    public List<MessageEmbed.Field> sharedFrontOfShieldFields() {
         return new ArrayList<>();
     }
 
