@@ -1391,17 +1391,22 @@ public class ShowCommands {
         if (!discoveryTokensLocations.isEmpty() || !undiscoveredTokensLocations.isEmpty())
             embedBuilder.addField("Discovery Token Locations", String.join("\n", List.of(discoveryString, undiscoveredString)), true);
 
-        // Add faction-specific fields to the shared embed
+        // Create FactionView instances once for all factions
+        List<FactionView> factionViews = new ArrayList<>();
         for (Faction faction : game.getFactions()) {
-            FactionView factionView = FactionView.factory(discordGame, faction);
+            factionViews.add(FactionView.factory(discordGame, faction));
+        }
+
+        // Add faction-specific fields to the shared embed
+        for (FactionView factionView : factionViews) {
             factionView.sharedFrontOfShieldFields().forEach(embedBuilder::addField);
         }
 
         builder.addEmbeds(embedBuilder.build());
         discordGame.queueMessage("front-of-shield", builder);
 
-        for (Faction faction : game.getFactions()) {
-            FactionView factionView = FactionView.factory(discordGame, faction);
+        // Use the same FactionView instances for public messages
+        for (FactionView factionView : factionViews) {
             builder = factionView.getPublicMessage();
             discordGame.queueMessage("front-of-shield", builder);
         }

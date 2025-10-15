@@ -36,23 +36,11 @@ public class ChoamView extends FactionView {
                 List<String> inflationMessages = new ArrayList<>();
 
                 if (currentInflation != null) {
-                    String message = "R" + currentTurn + ": **" + currentInflation + "**";
-                    if (currentInflation == ChoamInflationType.DOUBLE) {
-                        message += " (x2, NO BRIBES)";
-                    } else if (currentInflation == ChoamInflationType.CANCEL) {
-                        message += " (Cancelled)";
-                    }
-                    inflationMessages.add(message);
+                    inflationMessages.add(buildInflationMessage(currentTurn, currentInflation));
                 }
 
                 if (nextInflation != null && nextInflation != currentInflation) {
-                    String message = "R" + nextTurn + ": **" + nextInflation + "**";
-                    if (nextInflation == ChoamInflationType.DOUBLE) {
-                        message += " (x2, NO BRIBES)";
-                    } else if (nextInflation == ChoamInflationType.CANCEL) {
-                        message += " (Cancelled)";
-                    }
-                    inflationMessages.add(message);
+                    inflationMessages.add(buildInflationMessage(nextTurn, nextInflation));
                 }
 
                 if (!inflationMessages.isEmpty()) {
@@ -66,5 +54,15 @@ public class ChoamView extends FactionView {
         }
 
         return fields;
+    }
+
+    private String buildInflationMessage(int round, ChoamInflationType inflation) {
+        String message = "R" + round + ": **" + inflation + "**";
+        if (inflation == ChoamInflationType.DOUBLE) {
+            message += " (x2, NO BRIBES)";
+        } else if (inflation == ChoamInflationType.CANCEL) {
+            message += " (Cancelled)";
+        }
+        return message;
     }
 }
