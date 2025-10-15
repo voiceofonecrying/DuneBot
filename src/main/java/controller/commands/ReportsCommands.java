@@ -427,6 +427,7 @@ public class ReportsCommands {
         players.addAll(gameResults.stream().map(GameResult::getIx).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getMoritani).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getRichese).filter(Objects::nonNull).collect(Collectors.toSet()));
+        players.addAll(gameResults.stream().map(GameResult::getMikarrol).filter(Objects::nonNull).collect(Collectors.toSet()));
         return players;
     }
 
@@ -514,7 +515,8 @@ public class ReportsCommands {
                 + gameResults.gameResults.stream().filter(gr -> gr.getHarkonnen() != null && gr.getHarkonnen().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getIx() != null && gr.getIx().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getMoritani() != null && gr.getMoritani().equals(playerName)).toList().size()
-                + gameResults.gameResults.stream().filter(gr -> gr.getRichese() != null && gr.getRichese().equals(playerName)).toList().size();
+                + gameResults.gameResults.stream().filter(gr -> gr.getRichese() != null && gr.getRichese().equals(playerName)).toList().size()
+                + gameResults.gameResults.stream().filter(gr -> gr.getMikarrol() != null && gr.getMikarrol().equals(playerName)).toList().size();
         int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
 
         int totalWins = 0;
@@ -1004,6 +1006,7 @@ public class ReportsCommands {
         int ixGames;
         int moritaniGames;
         int richGames;
+        int mikarrolGames;
         int atreidesWins;
         int bgWins;
         int btWins;
@@ -1016,6 +1019,7 @@ public class ReportsCommands {
         int ixWins;
         int moritaniWins;
         int richWins;
+        int mikarrolWins;
 
         public String publish(String playerTag, Guild guild) {
             String returnString = playerTag + " has played in " + games + " games and won " + wins;
@@ -1067,6 +1071,10 @@ public class ReportsCommands {
                 returnString += "\n" + Emojis.MORITANI + " " + moritaniGames + " games";
                 if (moritaniWins > 0) returnString += ", " + moritaniWins + " wins";
             }
+            if (mikarrolGames > 0) {
+                returnString += "\nMikarrol " + mikarrolGames + " games";
+                if (mikarrolWins > 0) returnString += ", " + mikarrolWins + " wins";
+            }
             return tagEmojis(guild, returnString);
         }
     }
@@ -1116,6 +1124,9 @@ public class ReportsCommands {
             } else if (gameResult.getRichese() != null && gameResult.getRichese().equals(playerName)) {
                 pr.richGames++;
                 if (winner) pr.richWins++;
+            } else if (gameResult.getMikarrol() != null && gameResult.getMikarrol().equals(playerName)) {
+                pr.mikarrolGames++;
+                if (winner) pr.mikarrolWins++;
             }
         }
         return pr;
