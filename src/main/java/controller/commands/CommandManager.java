@@ -10,6 +10,7 @@ import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import helpers.ExceptionHandler;
 import model.*;
 import model.factions.*;
 import net.dv8tion.jda.api.Permission;
@@ -207,6 +208,10 @@ public class CommandManager extends ListenerAdapter {
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
+            Category category = DiscordGame.categoryFromEvent(event);
+            if (category != null) {
+                ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getName());
+            }
         } finally {
             CommandCompletionGuard.decrementCommandCount();
         }
@@ -313,6 +318,10 @@ public class CommandManager extends ListenerAdapter {
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
+            Category category = DiscordGame.categoryFromEvent(event);
+            if (category != null) {
+                ExceptionHandler.sendExceptionToModInfo(category, e, "Game command: " + event.getName());
+            }
         }
     }
 

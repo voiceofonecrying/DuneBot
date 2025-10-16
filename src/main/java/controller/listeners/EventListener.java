@@ -5,6 +5,8 @@ import constants.Emojis;
 import controller.CommandCompletionGuard;
 import exceptions.ChannelNotFoundException;
 import controller.DiscordGame;
+import helpers.ExceptionHandler;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import model.Game;
 import model.factions.HomebrewFaction;
 import net.dv8tion.jda.api.JDA;
@@ -46,10 +48,11 @@ public class EventListener extends ListenerAdapter {
     }
 
     public void runOnMessageReceived(@NotNull MessageReceivedEvent event) {
-        Guild guild = event.getGuild();
-        String message = event.getMessage().getContentStripped();
+        try {
+            Guild guild = event.getGuild();
+            String message = event.getMessage().getContentStripped();
 
-        if (!event.getChannel().getName().equals("bot-data")) {
+            if (!event.getChannel().getName().equals("bot-data")) {
             Matcher cardMatcher = cardPattern.matcher(message);
 
             List<FileUpload> fileUploads = new ArrayList<>();
@@ -147,6 +150,18 @@ public class EventListener extends ListenerAdapter {
                                 .addActionRow(buttons);
                         event.getChannel().sendMessage(response.build()).queue();
                     });
+        }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Category category = DiscordGame.categoryFromEvent(event);
+            if (category != null) {
+                String messageText = event.getMessage().getContentStripped();
+                String truncatedMessage = messageText.length() > 100 ? messageText.substring(0, 100) + "..." : messageText;
+                String context = String.format("Message received in channel: %s | Message: \"%s\"",
+                    event.getChannel().getName(),
+                    truncatedMessage);
+                ExceptionHandler.sendExceptionToModInfo(category, e, context);
+            }
         }
     }
 

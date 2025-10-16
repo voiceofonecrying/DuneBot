@@ -5,9 +5,11 @@ import controller.Queue;
 import controller.commands.ShowCommands;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
+import helpers.ExceptionHandler;
 import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -169,6 +171,10 @@ public class ButtonManager extends ListenerAdapter {
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
             e.printStackTrace();
+            Category category = DiscordGame.categoryFromEvent(event);
+            if (category != null) {
+                ExceptionHandler.sendExceptionToModInfo(category, e, "Button press: " + event.getComponentId());
+            }
         }
     }
 }
