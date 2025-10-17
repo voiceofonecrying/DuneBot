@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class ShipmentAndMovementButtons implements Pressable {
 
 
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
+    public static boolean press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, IOException, InvalidGameStateException {
 
         if (event.getComponentId().startsWith("ship-sector-")) filterBySector(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("ship-to-reserves-")) {
@@ -74,22 +74,27 @@ public class ShipmentAndMovementButtons implements Pressable {
         else if (event.getComponentId().startsWith("richese-ally-no-field-ship-"))
             richeseNoFieldShip(event, game, discordGame, true);
         else if (event.getComponentId().startsWith("guild-defer-to-")) guildDeferTo(event, game, discordGame);
-        switch (event.getComponentId()) {
-            case "shipment" -> queueShippingButtons(event, game, discordGame);
-            case "karama-execute-shipment" -> karamaExecuteShipment(event, game, discordGame);
-            case "juice-of-sapho-first" -> playJuiceOfSapho(event, game, discordGame, false);
-            case "juice-of-sapho-last" -> playJuiceOfSapho(event, game, discordGame, true);
-            case "juice-of-sapho-don't-play" -> juiceOfSaphoDontPlay(event, game, discordGame);
-            case "guild-take-turn" -> guildTakeTurn(game, discordGame);
-            case "guild-wait-last" -> guildWaitLast(game, discordGame);
-            case "guild-defer" -> guildDefer(game, discordGame);
-            case "guild-select" -> guildSelect(game, discordGame);
-            case "richese-no-field-move" -> richeseNoFieldMove(event, game, discordGame);
-            case "guild-cross-ship" -> crossShip(event, game, discordGame);
-            case "guild-ship-to-reserves" -> shipToReserves(game, discordGame);
-            case "hajr" -> hajr(event, game, discordGame, true);
-            case "Ornithopter" -> hajr(event, game, discordGame, false);
-        }
+        else
+            switch (event.getComponentId()) {
+                case "shipment" -> queueShippingButtons(event, game, discordGame);
+                case "karama-execute-shipment" -> karamaExecuteShipment(event, game, discordGame);
+                case "juice-of-sapho-first" -> playJuiceOfSapho(event, game, discordGame, false);
+                case "juice-of-sapho-last" -> playJuiceOfSapho(event, game, discordGame, true);
+                case "juice-of-sapho-don't-play" -> juiceOfSaphoDontPlay(event, game, discordGame);
+                case "guild-take-turn" -> guildTakeTurn(game, discordGame);
+                case "guild-wait-last" -> guildWaitLast(game, discordGame);
+                case "guild-defer" -> guildDefer(game, discordGame);
+                case "guild-select" -> guildSelect(game, discordGame);
+                case "richese-no-field-move" -> richeseNoFieldMove(event, game, discordGame);
+                case "guild-cross-ship" -> crossShip(event, game, discordGame);
+                case "guild-ship-to-reserves" -> shipToReserves(game, discordGame);
+                case "hajr" -> hajr(event, game, discordGame, true);
+                case "Ornithopter" -> hajr(event, game, discordGame, false);
+                default -> {
+                    return false;
+                }
+            }
+        return true;
     }
 
     public static void deleteShipMoveButtonsInChannel(MessageChannel channel) {
