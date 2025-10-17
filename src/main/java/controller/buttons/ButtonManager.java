@@ -135,7 +135,6 @@ public class ButtonManager extends ListenerAdapter {
             else if (event.getComponentId().startsWith("faction"))
                 FactionButtons.press(event, game, discordGame);
             else {
-                ShipmentAndMovementButtons.press(event, game, discordGame);
                 switch (event.getComponentId()) {
                     case "graphic" -> {
                         getButtonPresser(event, game).setGraphicDisplay(true);
@@ -159,11 +158,11 @@ public class ButtonManager extends ListenerAdapter {
                         discordGame.pushGame();
                         ShowCommands.sendCharityAction(discordGame, getButtonPresser(event, game), true);
                     }
-                    // Restore the commented code below after ShipmentAndMovementButtons follow the prefix pattern.
-//                    default -> {
-//                        // Button not recognized by any handler
-//                        throw new RuntimeException("Button not found: " + event.getComponentId());
-//                    }
+                    default -> {
+                        if (!ShipmentAndMovementButtons.press(event, game, discordGame))
+                            // Button not recognized by any handler
+                            throw new RuntimeException("Button not found: " + event.getComponentId());
+                    }
                 }
             }
 
