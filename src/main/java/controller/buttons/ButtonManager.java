@@ -158,10 +158,11 @@ public class ButtonManager extends ListenerAdapter {
                         discordGame.pushGame();
                         ShowCommands.sendCharityAction(discordGame, getButtonPresser(event, game), true);
                     }
-                    default -> {
-                        // Button not recognized by any handler
-                        throw new RuntimeException("Button not found: " + event.getComponentId());
-                    }
+                    // Restore the commented code below after ShipmentAndMovementButtons and FactionButtons follow the prefix pattern.
+//                    default -> {
+//                        // Button not recognized by any handler
+//                        throw new RuntimeException("Button not found: " + event.getComponentId());
+//                    }
                 }
             }
 
