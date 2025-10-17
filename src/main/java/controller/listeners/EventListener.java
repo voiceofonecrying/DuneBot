@@ -143,12 +143,17 @@ public class EventListener extends ListenerAdapter {
                     .findFirst().ifPresent(emoji -> {
                         List<Button> buttons = new ArrayList<>();
                         String recipientLowerCase = threadChannel.getName().replace("-whispers", "");
-                        buttons.add(Button.primary("whisper-" + recipientLowerCase + "-yes-" + event.getMessage().getContentRaw(), "Yes"));
-                        buttons.add(Button.primary("whisper-" + recipientLowerCase + "-no", "No"));
-                        MessageCreateBuilder response = new MessageCreateBuilder()
-                                .setContent("Would you like to send this message as a whisper to " + emoji + "?\n" + event.getMessage().getContentRaw())
-                                .addActionRow(buttons);
-                        event.getChannel().sendMessage(response.build()).queue();
+                        String yesId = "faction-whisper-" + recipientLowerCase + "-yes-" + event.getMessage().getContentRaw();
+                        if (yesId.length() > 100) {
+                            event.getChannel().sendMessage("That message was not sent as a whisper.").queue();
+                        } else {
+                            buttons.add(Button.primary(yesId, "Yes"));
+                            buttons.add(Button.primary("faction-whisper-" + recipientLowerCase + "-no", "No"));
+                            MessageCreateBuilder response = new MessageCreateBuilder()
+                                    .setContent("Would you like to send this message as a whisper to " + emoji + "?\n" + event.getMessage().getContentRaw())
+                                    .addActionRow(buttons);
+                            event.getChannel().sendMessage(response.build()).queue();
+                        }
                     });
         }
         } catch (Exception e) {
