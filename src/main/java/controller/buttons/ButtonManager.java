@@ -158,6 +158,10 @@ public class ButtonManager extends ListenerAdapter {
                         discordGame.pushGame();
                         ShowCommands.sendCharityAction(discordGame, getButtonPresser(event, game), true);
                     }
+                    default -> {
+                        // Button not recognized by any handler
+                        throw new RuntimeException("Button not found: " + event.getComponentId());
+                    }
                 }
             }
 
@@ -173,7 +177,7 @@ public class ButtonManager extends ListenerAdapter {
             e.printStackTrace();
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
-                ExceptionHandler.sendExceptionToModInfo(category, e, "Button press: " + event.getComponentId());
+                ExceptionHandler.sendExceptionToModInfo(category, e, "Button press: " + event.getComponentId(), event.getUser());
             }
         }
     }

@@ -160,7 +160,7 @@ public class EventListener extends ListenerAdapter {
                 String context = String.format("Message received in channel: %s | Message: \"%s\"",
                     event.getChannel().getName(),
                     truncatedMessage);
-                ExceptionHandler.sendExceptionToModInfo(category, e, context);
+                ExceptionHandler.sendExceptionToModInfo(category, e, context, event.getAuthor());
             }
         }
     }
