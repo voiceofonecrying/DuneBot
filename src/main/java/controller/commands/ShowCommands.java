@@ -528,23 +528,23 @@ public class ShowCommands {
             if (faction.getSpice() > 0 && !faction.isAllySpiceFinishedForTurn()) {
                 String message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping.";
                 List<Button> buttons = new ArrayList<>();
-                buttons.add(Button.primary("ally-support-number", "Pick a number").withDisabled(faction.getSpice() == 0));
+                buttons.add(Button.primary("faction-ally-support-number", "Pick a number").withDisabled(faction.getSpice() == 0));
 //                if (faction.getSpice() >= 4)
-//                    buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 4) + "-quarter", "1/4 (" + Math.floorDiv(faction.getSpice(), 4) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 4)));
+//                    buttons.add(Button.secondary("faction-ally-support-" + Math.floorDiv(faction.getSpice(), 4) + "-quarter", "1/4 (" + Math.floorDiv(faction.getSpice(), 4) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 4)));
                 if (faction.getSpice() >= 2)
-                    buttons.add(Button.secondary("ally-support-" + Math.floorDiv(faction.getSpice(), 2) + "-half", "Half (" + Math.floorDiv(faction.getSpice(), 2) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 2)));
-                buttons.add(Button.secondary("ally-support-" + faction.getSpice() + "-max", "Max (" + faction.getSpice() + ")").withDisabled(faction.getSpiceForAlly() == faction.getSpice()));
-                buttons.add(Button.secondary("ally-support-reset", "Reset support (0)").withDisabled(faction.getSpiceForAlly() == 0));
+                    buttons.add(Button.secondary("faction-ally-support-" + Math.floorDiv(faction.getSpice(), 2) + "-half", "Half (" + Math.floorDiv(faction.getSpice(), 2) + ")").withDisabled(faction.getSpiceForAlly() == Math.floorDiv(faction.getSpice(), 2)));
+                buttons.add(Button.secondary("faction-ally-support-" + faction.getSpice() + "-max", "Max (" + faction.getSpice() + ")").withDisabled(faction.getSpiceForAlly() == faction.getSpice()));
+                buttons.add(Button.secondary("faction-ally-support-reset", "Reset support (0)").withDisabled(faction.getSpiceForAlly() == 0));
                 switch (faction) {
                     case GuildFaction guild -> {
                         if (guild.isAllySpiceForShipping()) {
                             message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding AND shipping.";
                             if (faction.getSpiceForAlly() > 0)
                                 message += "\nShipping " + Emojis.SPICE + " will go to the bank, not to you.";
-                            buttons.add(Button.success("ally-support-noshipping", "Don't support shipping"));
+                            buttons.add(Button.success("faction-ally-support-noshipping", "Don't support shipping"));
                         } else {
                             message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding ONLY.";
-                            buttons.add(Button.danger("ally-support-shipping", "Support shipping"));
+                            buttons.add(Button.danger("faction-ally-support-shipping", "Support shipping"));
                         }
                     }
                     case ChoamFaction choam -> {
@@ -552,10 +552,10 @@ public class ShowCommands {
                             message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding, shipping, AND battles.";
                             if (faction.getSpiceForAlly() > 0)
                                 message += "\nCombat " + Emojis.SPICE + " will go to the bank, not to you.";
-                            buttons.add(Button.success("ally-support-nobattles", "Don't support battles"));
+                            buttons.add(Button.success("faction-ally-support-nobattles", "Don't support battles"));
                         } else {
                             message = "You are currently offering " + faction.getSpiceForAlly() + " " + Emojis.SPICE + " to " + allyEmoji + " for bidding and shipping ONLY";
-                            buttons.add(Button.danger("ally-support-battles", "Support battles"));
+                            buttons.add(Button.danger("faction-ally-support-battles", "Support battles"));
                         }
                     }
                     case EmperorFaction ignored ->

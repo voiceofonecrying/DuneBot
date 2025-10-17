@@ -21,8 +21,8 @@ import static controller.buttons.ShipmentAndMovementButtons.getButtonComparator;
 
 public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        if (event.getComponentId().startsWith("ally-support-")) allySpiceSupport(event, game, discordGame);
-        else if (event.getComponentId().startsWith("whisper-")) whisper(event, game, discordGame);
+        if (event.getComponentId().startsWith("faction-ally-support-")) allySpiceSupport(event, game, discordGame);
+        else if (event.getComponentId().startsWith("faction-whisper-")) whisper(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-storm-dial-")) stormDial(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-charity-")) charity(event, game, discordGame);
         else if (event.getComponentId().equals("faction-pay-extortion")) payExtortion(event, game, discordGame);
@@ -39,7 +39,7 @@ public class FactionButtons {
                 TreeSet<Button> buttonList = new TreeSet<>(getButtonComparator());
                 int limit = Math.min(faction.getSpice(), 40);
                 for (int i = 0; i <= limit; i++)
-                    buttonList.add(Button.primary("ally-support-" + i + "-number", i + (i == faction.getSpiceForAlly() ? " (Current)" : "")));
+                    buttonList.add(Button.primary("faction-ally-support-" + i + "-number", i + (i == faction.getSpiceForAlly() ? " (Current)" : "")));
                 arrangeButtonsAndSend("How much would you like to offer in support?", buttonList, discordGame);
                 return;
             }
@@ -72,7 +72,7 @@ public class FactionButtons {
                 }
             }
             default -> {
-                faction.setSpiceForAlly(Integer.parseInt(support.replace("ally-support-", "")));
+                faction.setSpiceForAlly(Integer.parseInt(support.replace("faction-ally-support-", "")));
                 game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
             }
         }
@@ -82,10 +82,10 @@ public class FactionButtons {
 
     private static void whisper(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        String recipient = event.getComponentId().split("-")[1];
-        String action = event.getComponentId().split("-")[2];
+        String recipient = event.getComponentId().split("-")[2];
+        String action = event.getComponentId().split("-")[3];
         if (action.equals("yes")) {
-            String message = event.getComponentId().replace("whisper-" + recipient + "-yes-", "");
+            String message = event.getComponentId().replace("faction-whisper-" + recipient + "-yes-", "");
             switch (recipient) {
                 case "bg" -> recipient = "BG";
                 case "bt" -> recipient = "BT";
