@@ -134,6 +134,8 @@ public class ButtonManager extends ListenerAdapter {
                 TraitorButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("faction"))
                 FactionButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("ally-support"))
+                FactionButtons.press(event, game, discordGame);
             else {
                 switch (event.getComponentId()) {
                     case "graphic" -> {
