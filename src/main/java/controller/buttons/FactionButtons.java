@@ -22,6 +22,7 @@ import static controller.buttons.ShipmentAndMovementButtons.getButtonComparator;
 public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("faction-ally-support-")) allySpiceSupport(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ally-support-")) allySpiceSupport(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-whisper-")) whisper(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-storm-dial-")) stormDial(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-charity-")) charity(event, game, discordGame);
@@ -72,7 +73,10 @@ public class FactionButtons {
                 }
             }
             default -> {
-                faction.setSpiceForAlly(Integer.parseInt(support.replace("faction-ally-support-", "")));
+                if (event.getComponentId().startsWith("ally-support-"))
+                    faction.setSpiceForAlly(Integer.parseInt(support.replace("ally-support-", "")));
+                else
+                    faction.setSpiceForAlly(Integer.parseInt(support.replace("faction-ally-support-", "")));
                 game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
             }
         }
