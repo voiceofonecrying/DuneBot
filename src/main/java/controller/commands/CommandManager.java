@@ -210,7 +210,7 @@ public class CommandManager extends ListenerAdapter {
             e.printStackTrace();
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
-                ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getName());
+                ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getCommandString(), event.getUser());
             }
         } finally {
             CommandCompletionGuard.decrementCommandCount();
@@ -320,7 +320,7 @@ public class CommandManager extends ListenerAdapter {
             e.printStackTrace();
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
-                ExceptionHandler.sendExceptionToModInfo(category, e, "Game command: " + event.getName());
+                ExceptionHandler.sendExceptionToModInfo(category, e, "Game command: " + event.getCommandString(), event.getUser());
             }
         }
     }

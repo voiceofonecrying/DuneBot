@@ -2,6 +2,7 @@ package helpers;
 
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.utils.FileUpload;
 
@@ -25,8 +26,9 @@ public class ExceptionHandler {
      * @param category The game category where the exception occurred
      * @param exception The exception that was thrown
      * @param context Additional context about where the exception occurred (e.g., "Button press: storm-advance")
+     * @param user The user who triggered the event that caused the exception (can be null)
      */
-    public static void sendExceptionToModInfo(Category category, Throwable exception, String context) {
+    public static void sendExceptionToModInfo(Category category, Throwable exception, String context, User user) {
         if (category == null) {
             System.err.println("Cannot send exception to mod-info: category is null");
             exception.printStackTrace();
@@ -38,10 +40,12 @@ public class ExceptionHandler {
 
             // Create the error message
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            String userInfo = user != null ? "\n**User:** " + user.getAsTag() : "";
             String errorMessage = String.format(
-                "**Error occurred at %s**\n**Context:** %s\n**Exception:** %s: %s",
+                "**Error occurred at %s**\n**Context:** %s%s\n**Exception:** %s: %s",
                 timestamp,
                 context,
+                userInfo,
                 exception.getClass().getSimpleName(),
                 exception.getMessage() != null ? exception.getMessage() : "(no message)"
             );
@@ -84,20 +88,4 @@ public class ExceptionHandler {
         }
     }
 
-    /**
-     * Sends an exception report to the #mod-info channel using a DiscordGame instance.
-     *
-     * @param discordGame The DiscordGame instance
-     * @param exception The exception that was thrown
-     * @param context Additional context about where the exception occurred
-     */
-    public static void sendExceptionToModInfo(DiscordGame discordGame, Throwable exception, String context) {
-        if (discordGame == null) {
-            System.err.println("Cannot send exception to mod-info: discordGame is null");
-            exception.printStackTrace();
-            return;
-        }
-
-        sendExceptionToModInfo(discordGame.getGameCategory(), exception, context);
-    }
 }
