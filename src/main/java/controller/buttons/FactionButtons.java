@@ -33,7 +33,9 @@ public class FactionButtons {
 
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        String support = event.getComponentId().split("-")[2];
+        String support = event.getComponentId().split("-")[3];
+        if (event.getComponentId().startsWith("ally-support-"))
+            support = event.getComponentId().split("-")[3];
         String ally = faction.getAlly();
         switch (support) {
             case "number" -> {
