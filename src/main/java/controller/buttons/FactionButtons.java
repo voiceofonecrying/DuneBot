@@ -75,10 +75,7 @@ public class FactionButtons {
                 }
             }
             default -> {
-                if (event.getComponentId().startsWith("ally-support-"))
-                    faction.setSpiceForAlly(Integer.parseInt(support.replace("ally-support-", "")));
-                else
-                    faction.setSpiceForAlly(Integer.parseInt(support.replace("faction-ally-support-", "")));
+                faction.setSpiceForAlly(Integer.parseInt(support));
                 game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
             }
         }
