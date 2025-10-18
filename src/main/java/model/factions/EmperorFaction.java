@@ -9,7 +9,9 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -209,7 +211,8 @@ public class EmperorFaction extends Faction {
     public void presentKaitainHighThresholdChoices() {
         if (game.hasGameOption(GameOption.HOMEWORLDS)) {
             if (isHighThreshold) {
-                List<DuneChoice> choices = treacheryHand.stream().map(card -> new DuneChoice("emperor-discard-" + card.name(), card.name())).collect(Collectors.toList());
+                Set<String> cardNames = new HashSet<>(treacheryHand.stream().map(TreacheryCard::name).toList());
+                List<DuneChoice> choices = cardNames.stream().map(c -> new DuneChoice("emperor-discard-" + c, c)).collect(Collectors.toList());
                 if (choices.isEmpty()) {
                     chat.publish("You have no " + Emojis.TREACHERY + " cards for Kaitain High Threshold.");
                 } else {
