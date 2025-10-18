@@ -33,7 +33,9 @@ public class FactionButtons {
 
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        String support = event.getComponentId().split("-")[2];
+        String support = event.getComponentId().split("-")[3];
+        if (event.getComponentId().startsWith("ally-support-"))
+            support = event.getComponentId().split("-")[3];
         String ally = faction.getAlly();
         switch (support) {
             case "number" -> {
@@ -73,10 +75,7 @@ public class FactionButtons {
                 }
             }
             default -> {
-                if (event.getComponentId().startsWith("ally-support-"))
-                    faction.setSpiceForAlly(Integer.parseInt(support.replace("ally-support-", "")));
-                else
-                    faction.setSpiceForAlly(Integer.parseInt(support.replace("faction-ally-support-", "")));
+                faction.setSpiceForAlly(Integer.parseInt(support));
                 game.getFaction(ally).getChat().publish("Your ally will support you with " + faction.getSpiceForAlly() + " " + Emojis.SPICE + faction.getSpiceSupportPhasesString());
             }
         }
