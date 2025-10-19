@@ -3,13 +3,19 @@ package testutil.discord;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
+import net.dv8tion.jda.api.requests.restaction.ThreadChannelAction;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import testutil.discord.state.*;
 
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 /**
@@ -141,6 +147,105 @@ public class StatefulMockFactory {
                 .collect(Collectors.toList());
         });
 
+        // createCategory() creates a category in state
+        lenient().when(guild.createCategory(anyString())).thenAnswer(inv -> {
+            String categoryName = inv.getArgument(0);
+            MockCategoryState categoryState = guildState.createCategory(categoryName);
+
+            // Use array to work around lambda capture restriction
+            final ChannelAction[] actionHolder = new ChannelAction[1];
+
+            @SuppressWarnings("unchecked")
+            ChannelAction<Category> action = (ChannelAction<Category>) mock(ChannelAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // Permission override methods return the action itself for chaining
+                if (methodName.equals("addPermissionOverride") ||
+                    methodName.equals("addMemberPermissionOverride") ||
+                    methodName.equals("addRolePermissionOverride")) {
+                    return actionHolder[0];
+                }
+
+                // complete() returns the created category
+                if (methodName.equals("complete")) {
+                    return mockCategory(categoryState, guildState);
+                }
+
+                // Default: return null for other methods
+                return null;
+            });
+
+            actionHolder[0] = action;
+            return action;
+        });
+
+        // getCategoryById() looks up category from state
+        lenient().when(guild.getCategoryById(anyLong())).thenAnswer(inv -> {
+            long categoryId = inv.getArgument(0);
+            MockCategoryState categoryState = guildState.getCategory(categoryId);
+            return categoryState != null ? mockCategory(categoryState, guildState) : null;
+        });
+
+        // getCategoriesByName() searches for categories by name
+        lenient().when(guild.getCategoriesByName(anyString(), anyBoolean())).thenAnswer(inv -> {
+            String categoryName = inv.getArgument(0);
+            boolean ignoreCase = inv.getArgument(1);
+
+            return guildState.getCategories().stream()
+                    .filter(categoryState -> {
+                        if (ignoreCase) {
+                            return categoryState.getCategoryName().equalsIgnoreCase(categoryName);
+                        } else {
+                            return categoryState.getCategoryName().equals(categoryName);
+                        }
+                    })
+                    .map(categoryState -> mockCategory(categoryState, guildState))
+                    .collect(Collectors.toList());
+        });
+
+        // getPublicRole() returns a mock @everyone role
+        lenient().when(guild.getPublicRole()).thenAnswer(inv -> {
+            Role publicRole = mock(Role.class);
+            lenient().when(publicRole.getIdLong()).thenReturn(guildState.getGuildId());
+            lenient().when(publicRole.getId()).thenReturn(String.valueOf(guildState.getGuildId()));
+            lenient().when(publicRole.getName()).thenReturn("@everyone");
+            return publicRole;
+        });
+
+        // getRolesByName() searches for roles by name
+        lenient().when(guild.getRolesByName(anyString(), anyBoolean())).thenAnswer(inv -> {
+            String roleName = inv.getArgument(0);
+            boolean ignoreCase = inv.getArgument(1);
+
+            return guildState.getRoles().stream()
+                    .filter(roleState -> {
+                        if (ignoreCase) {
+                            return roleState.getRoleName().equalsIgnoreCase(roleName);
+                        } else {
+                            return roleState.getRoleName().equals(roleName);
+                        }
+                    })
+                    .map(StatefulMockFactory::mockRole)
+                    .collect(Collectors.toList());
+        });
+
+        // getMemberById() looks up member from state
+        lenient().when(guild.getMemberById(anyString())).thenAnswer(inv -> {
+            String userId = inv.getArgument(0);
+            long userIdLong = Long.parseLong(userId);
+            MockMemberState memberState = guildState.getMember(userIdLong);
+            return memberState != null ? mockMember(memberState, guildState) : null;
+        });
+
+        // addRoleToMember() returns a mock AuditableRestAction
+        lenient().when(guild.addRoleToMember(any(Member.class), any(Role.class))).thenAnswer(inv -> {
+            net.dv8tion.jda.api.requests.restaction.AuditableRestAction<Void> action =
+                mock(net.dv8tion.jda.api.requests.restaction.AuditableRestAction.class);
+            lenient().when(action.complete()).thenReturn(null);
+            doNothing().when(action).queue();
+            return action;
+        });
+
         return guild;
     }
 
@@ -180,6 +285,37 @@ public class StatefulMockFactory {
         // Mock guild reference
         Guild guild = mockGuild(guildState);
         lenient().when(category.getGuild()).thenReturn(guild);
+
+        // createTextChannel() creates a channel in state
+        lenient().when(category.createTextChannel(anyString())).thenAnswer(inv -> {
+            String channelName = inv.getArgument(0);
+            MockChannelState channelState = guildState.createTextChannel(channelName, categoryState.getCategoryId());
+
+            // Use array to work around lambda capture restriction
+            final ChannelAction[] actionHolder = new ChannelAction[1];
+
+            @SuppressWarnings("unchecked")
+            ChannelAction<TextChannel> action = (ChannelAction<TextChannel>) mock(ChannelAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // Permission override methods return the action itself for chaining
+                if (methodName.equals("addPermissionOverride") ||
+                    methodName.equals("addMemberPermissionOverride") ||
+                    methodName.equals("addRolePermissionOverride")) {
+                    return actionHolder[0];
+                }
+
+                // complete() returns the created channel
+                if (methodName.equals("complete")) {
+                    return mockTextChannel(channelState, guildState);
+                }
+
+                return null;
+            });
+
+            actionHolder[0] = action;
+            return action;
+        });
 
         return category;
     }
@@ -236,9 +372,32 @@ public class StatefulMockFactory {
             MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, content);
             channelState.addMessage(message);
 
-            // Return mock action
-            MessageCreateAction action = mock(MessageCreateAction.class);
-            doNothing().when(action).queue();
+            // Return mock action that supports chaining and complete
+            final MessageCreateAction[] actionHolder = new MessageCreateAction[1];
+            MessageCreateAction action = mock(MessageCreateAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // Chaining methods return the action itself
+                if (methodName.equals("addFiles") ||
+                    methodName.equals("setFiles") ||
+                    methodName.equals("addActionRow") ||
+                    methodName.equals("addComponents")) {
+                    return actionHolder[0];
+                }
+
+                // complete() returns null (void return for file uploads)
+                if (methodName.equals("complete")) {
+                    return null;
+                }
+
+                // queue() does nothing
+                if (methodName.equals("queue")) {
+                    return null;
+                }
+
+                return null;
+            });
+            actionHolder[0] = action;
             return action;
         });
 
@@ -248,13 +407,153 @@ public class StatefulMockFactory {
             MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, data.getContent());
             channelState.addMessage(message);
 
+            // Return mock action that supports chaining and complete
+            final MessageCreateAction[] actionHolder = new MessageCreateAction[1];
+            MessageCreateAction action = mock(MessageCreateAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // Chaining methods return the action itself
+                if (methodName.equals("addFiles") ||
+                    methodName.equals("setFiles") ||
+                    methodName.equals("addActionRow") ||
+                    methodName.equals("addComponents")) {
+                    return actionHolder[0];
+                }
+
+                // complete() returns null (void return for file uploads)
+                if (methodName.equals("complete")) {
+                    return null;
+                }
+
+                // queue() does nothing
+                if (methodName.equals("queue")) {
+                    return null;
+                }
+
+                return null;
+            });
+            actionHolder[0] = action;
+            return action;
+        });
+
+        // createThreadChannel() creates a thread in state (1-parameter version)
+        lenient().when(channel.createThreadChannel(anyString())).thenAnswer(inv -> {
+            String threadName = inv.getArgument(0);
+            MockThreadChannelState threadState = guildState.createThread(threadName, channelState.getChannelId());
+
+            // Use array to work around lambda capture restriction
+            final ThreadChannelAction[] actionHolder = new ThreadChannelAction[1];
+
+            ThreadChannelAction action = mock(ThreadChannelAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // Setter methods return the action itself for chaining
+                if (methodName.equals("setInvitable") ||
+                    methodName.equals("setAutoArchiveDuration")) {
+                    return actionHolder[0];
+                }
+
+                // complete() returns the created thread
+                if (methodName.equals("complete")) {
+                    return mockThreadChannel(threadState, guildState);
+                }
+
+                return null;
+            });
+
+            actionHolder[0] = action;
+            return action;
+        });
+
+        // createThreadChannel() creates a thread in state (2-parameter version)
+        lenient().when(channel.createThreadChannel(anyString(), anyBoolean())).thenAnswer(inv -> {
+            String threadName = inv.getArgument(0);
+            MockThreadChannelState threadState = guildState.createThread(threadName, channelState.getChannelId());
+
+            // Use array to work around lambda capture restriction
+            final ThreadChannelAction[] actionHolder = new ThreadChannelAction[1];
+
+            ThreadChannelAction action = mock(ThreadChannelAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // Setter methods return the action itself for chaining
+                if (methodName.equals("setInvitable") ||
+                    methodName.equals("setAutoArchiveDuration")) {
+                    return actionHolder[0];
+                }
+
+                // complete() returns the created thread
+                if (methodName.equals("complete")) {
+                    return mockThreadChannel(threadState, guildState);
+                }
+
+                return null;
+            });
+
+            actionHolder[0] = action;
+            return action;
+        });
+
+        return channel;
+    }
+
+    /**
+     * Creates a ThreadChannel mock backed by state.
+     *
+     * <p>The returned mock represents a Discord thread channel. Thread channels
+     * are special channels that branch off from regular text channels for focused discussions.
+     *
+     * <p><b>Stubbed Methods:</b>
+     * <ul>
+     *   <li>{@code getIdLong()} - Returns thread ID from state</li>
+     *   <li>{@code getId()} - Returns thread ID as string</li>
+     *   <li>{@code getName()} - Returns thread name from state</li>
+     *   <li>{@code getGuild()} - Returns a guild mock backed by the provided guild state</li>
+     *   <li>{@code sendMessage(String)} - <b>STORES THE MESSAGE IN STATE</b></li>
+     *   <li>{@code sendMessage(MessageCreateData)} - <b>STORES THE MESSAGE IN STATE</b></li>
+     * </ul>
+     *
+     * @param threadState The thread state where messages will be stored
+     * @param guildState The parent guild state (needed to generate message IDs and create guild mock)
+     * @return A Mockito mock of {@link ThreadChannel} backed by the provided state
+     */
+    public static ThreadChannel mockThreadChannel(MockThreadChannelState threadState, MockGuildState guildState) {
+        ThreadChannel thread = mock(ThreadChannel.class);
+
+        lenient().when(thread.getIdLong()).thenReturn(threadState.getThreadId());
+        lenient().when(thread.getId()).thenReturn(String.valueOf(threadState.getThreadId()));
+        lenient().when(thread.getName()).thenReturn(threadState.getThreadName());
+
+        // getGuild() returns stateful guild mock
+        Guild guild = mockGuild(guildState);
+        lenient().when(thread.getGuild()).thenReturn(guild);
+
+        // sendMessage() STORES the message in state
+        lenient().when(thread.sendMessage(anyString())).thenAnswer(inv -> {
+            String content = inv.getArgument(0);
+            long messageId = guildState.getServer().nextMessageId();
+            MockMessageState message = new MockMessageState(messageId, threadState.getThreadId(), 0L, content);
+            threadState.addMessage(message);
+
             // Return mock action
             MessageCreateAction action = mock(MessageCreateAction.class);
             doNothing().when(action).queue();
             return action;
         });
 
-        return channel;
+        lenient().when(thread.sendMessage(any(MessageCreateData.class))).thenAnswer(inv -> {
+            MessageCreateData data = inv.getArgument(0);
+            long messageId = guildState.getServer().nextMessageId();
+            MockMessageState message = new MockMessageState(messageId, threadState.getThreadId(), 0L, data.getContent());
+            threadState.addMessage(message);
+
+            // Return mock action
+            MessageCreateAction action = mock(MessageCreateAction.class);
+            doNothing().when(action).queue();
+            return action;
+        });
+
+        return thread;
     }
 
     /**
