@@ -541,13 +541,12 @@ public class Battle {
             battlePlan = defenderBattlePlan;
         else
             throw new InvalidGameStateException(factionName + " is not in the current battle.");
-        if (!battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
+        if (!battlePlan.isDialedForcesSettled())
             game.getGameActions().publish(Emojis.getFactionEmoji(factionName) + " battle plan submitted.");
         battlePlan.setForcesDialed(regularDialed, specialDialed);
         String emojiFactionName = factionName.equals("Ecaz") ? ecazAllyName : factionName;
-        String regularEmoji = Emojis.getForceEmoji(emojiFactionName);
-        String starredEmoji = Emojis.getForceEmoji(emojiFactionName + "*");
-        String planUpdatedString = "Battle plan updated to dial " + regularDialed + " " + regularEmoji + " " + specialDialed + " " + starredEmoji +".";
+        Faction emojiFaction = game.getFaction(emojiFactionName);
+        String planUpdatedString = "Battle plan updated to dial " + emojiFaction.forcesStringWithZeroes(regularDialed, specialDialed);
         String forcesRemainingString = battlePlan.getForcesRemainingString();
         return planUpdatedString + "\n" + forcesRemainingString;
     }
