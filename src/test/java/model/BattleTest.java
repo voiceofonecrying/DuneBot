@@ -571,10 +571,11 @@ class BattleTest extends DuneTest {
             assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
             assertEquals(3, bp.getRegularDialed());
             assertEquals(1, bp.getSpecialDialed());
-            battle.updateTroopsDialed(game, "Ecaz", 5, 0);
+            String updateMessage = battle.updateTroopsDialed(game, "Ecaz", 5, 0);
             assertEquals(5, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
             assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals("Battle plan updated to dial 5 " + Emojis.EMPEROR_TROOP + " 0 " + Emojis.EMPEROR_SARDAUKAR + "\nThis will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", updateMessage);
         }
     }
 
@@ -1354,28 +1355,31 @@ class BattleTest extends DuneTest {
             @Test
             void testEmperorLosesOnly3MoreToLasgunShieldOnSalusaSecundusDialedAway1Sardaukar() throws InvalidGameStateException {
                 battle.setBattlePlan(game, emperor, bashar, null, false, 1, false, 0, null, null);
-                battle.updateTroopsDialed(game, "Emperor", 0, 1);
+                String updateMessage = battle.updateTroopsDialed(game, "Emperor", 0, 1);
                 battle.printBattleResolution(game, false, true);
                 assertEquals(0, salusaSecundus.getForceStrength("Emperor"));
                 assertEquals(4, salusaSecundus.getForceStrength("Emperor*"));
+                assertEquals("Battle plan updated to dial 0 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + "\nThis will leave 3 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + " in Salusa Secundus if you win.", updateMessage);
             }
 
             @Test
             void testEmperorLosesOnly2MoreToLasgunShieldOnSalusaSecundusDialedAway1Sardaukar3Force() throws InvalidGameStateException {
                 battle.setBattlePlan(game, emperor, bashar, null, false, 2, true, 0, null, null);
-                battle.updateTroopsDialed(game, "Emperor", 3, 1);
+                String updateMessage = battle.updateTroopsDialed(game, "Emperor", 3, 1);
                 battle.printBattleResolution(game, false, true);
                 assertEquals(0, salusaSecundus.getForceStrength("Emperor"));
                 assertEquals(1, salusaSecundus.getForceStrength("Emperor*"));
+                assertEquals("Battle plan updated to dial 3 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + "\nThis will leave 4 " + Emojis.EMPEROR_SARDAUKAR + " in Salusa Secundus if you win.", updateMessage);
             }
 
             @Test
             void testEmperorDialsAwayAllBut1WithLasgunShieldOnSalusaSecundus() throws InvalidGameStateException {
                 battle.setBattlePlan(game, emperor, bashar, null, false, 5, true, 0, null, null);
-                battle.updateTroopsDialed(game, "Emperor", 3, 4);
+                String updateMessage = battle.updateTroopsDialed(game, "Emperor", 3, 4);
                 battle.printBattleResolution(game, false, true);
                 assertEquals(0, salusaSecundus.getForceStrength("Emperor"));
                 assertEquals(0, salusaSecundus.getForceStrength("Emperor*"));
+                assertEquals("Battle plan updated to dial 3 " + Emojis.EMPEROR_TROOP + " 4 " + Emojis.EMPEROR_SARDAUKAR + "\nThis will leave 1 " + Emojis.EMPEROR_SARDAUKAR + " in Salusa Secundus if you win.", updateMessage);
             }
         }
     }
