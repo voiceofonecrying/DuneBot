@@ -147,7 +147,7 @@ public final class Emojis {
                 return ECAZ_TROOP;
             }
             case "Wydras" -> {
-                return ATREIDES_TROOP;
+                return BG_FIGHTER;
             }
         }
         return MORITANI_TROOP;
