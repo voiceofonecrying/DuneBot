@@ -4,7 +4,9 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
+import net.dv8tion.jda.api.entities.channel.unions.MessageChannelUnion;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.InteractionHook;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
@@ -395,5 +397,135 @@ class MockSlashCommandEventBuilderTest {
 
         assertThat(event.getOption("special").getAsString())
                 .isEqualTo("Test @#$% & <emoji> :test:");
+    }
+
+    @Test
+    @DisplayName("Should create event with subcommand name")
+    void shouldCreateEventWithSubcommandName() {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("setup")
+                .setSubcommandName("faction")
+                .build();
+
+        assertThat(event.getName()).isEqualTo("setup");
+        assertThat(event.getSubcommandName()).isEqualTo("faction");
+    }
+
+    @Test
+    @DisplayName("Should return null for subcommand name when not set")
+    void shouldReturnNullForSubcommandNameWhenNotSet() {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("test-command")
+                .build();
+
+        assertThat(event.getSubcommandName()).isNull();
+    }
+
+    @Test
+    @DisplayName("Should generate command string without subcommand")
+    void shouldGenerateCommandStringWithoutSubcommand() {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("new-game")
+                .build();
+
+        assertThat(event.getCommandString()).isEqualTo("/new-game");
+    }
+
+    @Test
+    @DisplayName("Should generate command string with subcommand")
+    void shouldGenerateCommandStringWithSubcommand() {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("setup")
+                .setSubcommandName("faction")
+                .build();
+
+        assertThat(event.getCommandString()).isEqualTo("/setup faction");
+    }
+
+    @Test
+    @DisplayName("Should support instanceof TextChannel for channel")
+    void shouldSupportInstanceofTextChannelForChannel() {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("test-command")
+                .setChannel(channelState)
+                .build();
+
+        MessageChannelUnion channel = event.getChannel();
+        assertThat(channel).isNotNull();
+
+        // Test the key feature: instanceof TextChannel should work
+        assertThat(channel).isInstanceOf(TextChannel.class);
+
+        // This is critical for DiscordGame.categoryFromEvent() which does:
+        // if (event.getChannel() instanceof TextChannel)
+        TextChannel textChannel = (TextChannel) channel;
+        assertThat(textChannel.getName()).isEqualTo("test-channel");
+    }
+
+    @Test
+    @DisplayName("Should return parent category for channel")
+    void shouldReturnParentCategoryForChannel() {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("test-command")
+                .setChannel(channelState)
+                .build();
+
+        TextChannel channel = event.getChannel().asTextChannel();
+        Category category = channel.getParentCategory();
+
+        assertThat(category).isNotNull();
+        assertThat(category.getIdLong()).isEqualTo(categoryState.getCategoryId());
+        assertThat(category.getName()).isEqualTo("test-category");
+    }
+
+    @Test
+    @DisplayName("Should return guild from channel")
+    void shouldReturnGuildFromChannel() {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("test-command")
+                .setChannel(channelState)
+                .build();
+
+        TextChannel channel = event.getChannel().asTextChannel();
+        Guild guild = channel.getGuild();
+
+        assertThat(guild).isNotNull();
+        assertThat(guild.getIdLong()).isEqualTo(guildState.getGuildId());
+        assertThat(guild.getName()).isEqualTo("Test Server");
+    }
+
+    @Test
+    @DisplayName("Should support E2E scenario with setup faction command")
+    void shouldSupportE2EScenarioWithSetupFactionCommand() {
+        MockRoleState gameRole = guildState.createRole("Game #1");
+
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setCommandName("setup")
+                .setSubcommandName("faction")
+                .setMember(memberState)
+                .setChannel(channelState)
+                .addStringOption("faction", "atreides")
+                .addRoleOption("game-role", gameRole)
+                .build();
+
+        // Verify all aspects of the event work together
+        assertThat(event.getName()).isEqualTo("setup");
+        assertThat(event.getSubcommandName()).isEqualTo("faction");
+        assertThat(event.getCommandString()).isEqualTo("/setup faction");
+
+        // Verify options
+        assertThat(event.getOption("faction").getAsString()).isEqualTo("atreides");
+        assertThat(event.getOption("game-role").getAsRole().getName()).isEqualTo("Game #1");
+
+        // Verify member
+        assertThat(event.getMember()).isNotNull();
+        assertThat(event.getUser()).isNotNull();
+
+        // Verify channel (critical for DiscordGame.categoryFromEvent())
+        assertThat(event.getChannel()).isInstanceOf(TextChannel.class);
+        TextChannel channel = (TextChannel) event.getChannel();
+        assertThat(channel.getName()).isEqualTo("test-channel");
+        assertThat(channel.getParentCategory()).isNotNull();
+        assertThat(channel.getGuild()).isNotNull();
     }
 }
