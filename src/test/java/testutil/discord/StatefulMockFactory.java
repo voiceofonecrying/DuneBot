@@ -1,15 +1,27 @@
 package testutil.discord;
 
+import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
+import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.requests.RestAction;
+import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
+import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.requests.restaction.MessageCreateAction;
 import net.dv8tion.jda.api.requests.restaction.ThreadChannelAction;
+import net.dv8tion.jda.api.requests.restaction.pagination.ThreadChannelPaginationAction;
+import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import testutil.discord.state.*;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -85,6 +97,57 @@ import static org.mockito.Mockito.*;
  * @see MockChannelState
  */
 public class StatefulMockFactory {
+
+    // ========== Helper Methods for Type-Safe Mock Creation ==========
+
+    /**
+     * Creates a mock RestAction with proper generic types.
+     * <p>
+     * This helper method centralizes the unchecked warning suppression required
+     * due to Java's type erasure when creating mocks of generic types.
+     * See: https://github.com/mockito/mockito/issues/1531
+     *
+     * @param <T> The return type of the RestAction
+     * @return A properly typed mock RestAction
+     */
+    @SuppressWarnings("unchecked") // Required due to Mockito's generic type handling limitations
+    private static <T> RestAction<T> createMockRestAction() {
+        return mock(RestAction.class);
+    }
+
+    /**
+     * Creates a mock CacheRestAction with proper generic types.
+     */
+    @SuppressWarnings("unchecked") // Required due to Mockito's generic type handling limitations
+    private static <T> CacheRestAction<T> createMockCacheRestAction() {
+        return mock(CacheRestAction.class);
+    }
+
+    /**
+     * Creates a mock AuditableRestAction with proper generic types.
+     */
+    @SuppressWarnings("unchecked") // Required due to Mockito's generic type handling limitations
+    private static <T> AuditableRestAction<T> createMockAuditableRestAction() {
+        return mock(AuditableRestAction.class);
+    }
+
+    /**
+     * Safely adds FileUpload items from a collection to a list.
+     * <p>
+     * This method performs runtime type checking to ensure type safety
+     * when handling collections with unknown generic types.
+     *
+     * @param collection The collection to extract FileUploads from
+     * @param targetList The list to add FileUploads to
+     */
+    private static void addFileUploadsFromCollection(Collection<?> collection, List<FileUpload> targetList) {
+        for (Object item : collection) {
+            if (item instanceof FileUpload) {
+                targetList.add((FileUpload) item);
+            }
+            // Silently ignore non-FileUpload items for safety
+        }
+    }
 
     /**
      * Creates a Guild mock backed by state.
@@ -203,6 +266,23 @@ public class StatefulMockFactory {
                     .collect(Collectors.toList());
         });
 
+        // getTextChannelsByName() searches for text channels by name
+        lenient().when(guild.getTextChannelsByName(anyString(), anyBoolean())).thenAnswer(inv -> {
+            String channelName = inv.getArgument(0);
+            boolean ignoreCase = inv.getArgument(1);
+
+            return guildState.getChannels().stream()
+                    .filter(channelState -> {
+                        if (ignoreCase) {
+                            return channelState.getChannelName().equalsIgnoreCase(channelName);
+                        } else {
+                            return channelState.getChannelName().equals(channelName);
+                        }
+                    })
+                    .map(channelState -> mockTextChannel(channelState, guildState))
+                    .collect(Collectors.toList());
+        });
+
         // getPublicRole() returns a mock @everyone role
         lenient().when(guild.getPublicRole()).thenAnswer(inv -> {
             Role publicRole = mock(Role.class);
@@ -237,10 +317,37 @@ public class StatefulMockFactory {
             return memberState != null ? mockMember(memberState, guildState) : null;
         });
 
-        // addRoleToMember() returns a mock AuditableRestAction
+        // addRoleToMember() adds the role to the member state and returns a mock AuditableRestAction
         lenient().when(guild.addRoleToMember(any(Member.class), any(Role.class))).thenAnswer(inv -> {
-            net.dv8tion.jda.api.requests.restaction.AuditableRestAction<Void> action =
-                mock(net.dv8tion.jda.api.requests.restaction.AuditableRestAction.class);
+            Member member = inv.getArgument(0);
+            Role role = inv.getArgument(1);
+
+            // Find the member state and add the role
+            long userId = member.getIdLong();
+            MockMemberState memberState = guildState.getMember(userId);
+            if (memberState != null) {
+                memberState.addRole(role.getIdLong());
+            }
+
+            AuditableRestAction<Void> action = createMockAuditableRestAction();
+            lenient().when(action.complete()).thenReturn(null);
+            doNothing().when(action).queue();
+            return action;
+        });
+
+        // removeRoleFromMember() removes the role from the member state and returns a mock AuditableRestAction
+        lenient().when(guild.removeRoleFromMember(any(Member.class), any(Role.class))).thenAnswer(inv -> {
+            Member member = inv.getArgument(0);
+            Role role = inv.getArgument(1);
+
+            // Find the member state and remove the role
+            long userId = member.getIdLong();
+            MockMemberState memberState = guildState.getMember(userId);
+            if (memberState != null) {
+                memberState.removeRole(role.getIdLong());
+            }
+
+            AuditableRestAction<Void> action = createMockAuditableRestAction();
             lenient().when(action.complete()).thenReturn(null);
             doNothing().when(action).queue();
             return action;
@@ -365,33 +472,86 @@ public class StatefulMockFactory {
         Guild guild = mockGuild(guildState);
         lenient().when(channel.getGuild()).thenReturn(guild);
 
+        // getParentCategory() returns the category this channel belongs to
+        long categoryId = channelState.getCategoryId();
+        MockCategoryState categoryState = guildState.getCategories().stream()
+                .filter(c -> c.getCategoryId() == categoryId)
+                .findFirst()
+                .orElse(null);
+        if (categoryState != null) {
+            Category category = mockCategory(categoryState, guildState);
+            lenient().when(channel.getParentCategory()).thenReturn(category);
+        }
+
+        // retrieveArchivedPublicThreadChannels() and retrieveArchivedPrivateThreadChannels()
+        // Return thread channels that exist for this channel
+        ThreadChannelPaginationAction publicThreadsAction =
+            mock(ThreadChannelPaginationAction.class, RETURNS_DEEP_STUBS);
+
+        List<ThreadChannel> publicThreads =
+            guildState.getThreadsInChannel(channelState.getChannelId()).stream()
+                .map(threadState -> mockThreadChannel(threadState, guildState))
+                .collect(java.util.stream.Collectors.toList());
+
+        lenient().when(publicThreadsAction.complete()).thenReturn(publicThreads);
+        lenient().when(channel.retrieveArchivedPublicThreadChannels()).thenReturn(publicThreadsAction);
+
+        ThreadChannelPaginationAction privateThreadsAction =
+            mock(ThreadChannelPaginationAction.class, RETURNS_DEEP_STUBS);
+        lenient().when(privateThreadsAction.complete()).thenReturn(Collections.emptyList());
+        lenient().when(channel.retrieveArchivedPrivateThreadChannels()).thenReturn(privateThreadsAction);
+
         // sendMessage() STORES the message in state
         lenient().when(channel.sendMessage(anyString())).thenAnswer(inv -> {
-            String content = inv.getArgument(0);
+            final String[] currentContent = {inv.getArgument(0)};  // Use array to allow modification
             long messageId = guildState.getServer().nextMessageId();
-            MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, content);
-            channelState.addMessage(message);
+
+            // Use a list to track file attachments
+            final List<FileUpload> fileAttachments = new ArrayList<>();
 
             // Return mock action that supports chaining and complete
             final MessageCreateAction[] actionHolder = new MessageCreateAction[1];
             MessageCreateAction action = mock(MessageCreateAction.class, inv2 -> {
                 String methodName = inv2.getMethod().getName();
 
+                // getContent() returns the current content
+                if (methodName.equals("getContent")) {
+                    return currentContent[0];
+                }
+
+                // setContent() updates the content and returns the action for chaining
+                if (methodName.equals("setContent")) {
+                    currentContent[0] = inv2.getArgument(0);
+                    return actionHolder[0];
+                }
+
+                // Capture file attachments
+                if (methodName.equals("addFiles")) {
+                    // addFiles can take varargs or Collection
+                    Object[] args = inv2.getArguments();
+                    for (Object arg : args) {
+                        if (arg instanceof FileUpload) {
+                            fileAttachments.add((FileUpload) arg);
+                        } else if (arg instanceof Collection) {
+                            // Use type-safe helper method instead of unchecked cast
+                            addFileUploadsFromCollection((Collection<?>) arg, fileAttachments);
+                        }
+                    }
+                    return actionHolder[0];
+                }
+
                 // Chaining methods return the action itself
-                if (methodName.equals("addFiles") ||
-                    methodName.equals("setFiles") ||
+                if (methodName.equals("setFiles") ||
                     methodName.equals("addActionRow") ||
                     methodName.equals("addComponents")) {
                     return actionHolder[0];
                 }
 
-                // complete() returns null (void return for file uploads)
-                if (methodName.equals("complete")) {
-                    return null;
-                }
-
-                // queue() does nothing
-                if (methodName.equals("queue")) {
+                // complete() or queue() finalizes the message with attachments
+                if (methodName.equals("complete") || methodName.equals("queue")) {
+                    // Create message with attachments and add to channel
+                    MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, currentContent[0], fileAttachments);
+                    channelState.addMessage(message);
                     return null;
                 }
 
@@ -404,35 +564,106 @@ public class StatefulMockFactory {
         lenient().when(channel.sendMessage(any(MessageCreateData.class))).thenAnswer(inv -> {
             MessageCreateData data = inv.getArgument(0);
             long messageId = guildState.getServer().nextMessageId();
-            MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, data.getContent());
-            channelState.addMessage(message);
+
+            // Extract file attachments from MessageCreateData
+            List<FileUpload> fileAttachments = new ArrayList<>(data.getFiles());
 
             // Return mock action that supports chaining and complete
             final MessageCreateAction[] actionHolder = new MessageCreateAction[1];
             MessageCreateAction action = mock(MessageCreateAction.class, inv2 -> {
                 String methodName = inv2.getMethod().getName();
 
+                // Capture additional file attachments
+                if (methodName.equals("addFiles")) {
+                    Object[] args = inv2.getArguments();
+                    for (Object arg : args) {
+                        if (arg instanceof FileUpload) {
+                            fileAttachments.add((FileUpload) arg);
+                        } else if (arg instanceof Collection) {
+                            // Use type-safe helper method instead of unchecked cast
+                            addFileUploadsFromCollection((Collection<?>) arg, fileAttachments);
+                        }
+                    }
+                    return actionHolder[0];
+                }
+
                 // Chaining methods return the action itself
-                if (methodName.equals("addFiles") ||
-                    methodName.equals("setFiles") ||
+                if (methodName.equals("setFiles") ||
                     methodName.equals("addActionRow") ||
                     methodName.equals("addComponents")) {
                     return actionHolder[0];
                 }
 
-                // complete() returns null (void return for file uploads)
-                if (methodName.equals("complete")) {
-                    return null;
-                }
-
-                // queue() does nothing
-                if (methodName.equals("queue")) {
+                // complete() or queue() finalizes the message with attachments
+                if (methodName.equals("complete") || methodName.equals("queue")) {
+                    MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, data.getContent(), fileAttachments);
+                    channelState.addMessage(message);
                     return null;
                 }
 
                 return null;
             });
             actionHolder[0] = action;
+            return action;
+        });
+
+        // getHistory() returns a MessageHistory that can retrieve messages with attachments
+        MessageHistory messageHistory = mock(MessageHistory.class, RETURNS_DEEP_STUBS);
+        lenient().when(channel.getHistory()).thenReturn(messageHistory);
+
+        // retrievePast() retrieves messages from the channel state
+        lenient().when(messageHistory.retrievePast(anyInt())).thenAnswer(inv -> {
+            int limit = inv.getArgument(0);
+            List<MockMessageState> messageStates = channelState.getMessages();
+
+            // Get the most recent 'limit' messages
+            List<MockMessageState> recentMessages = messageStates.subList(
+                Math.max(0, messageStates.size() - limit),
+                messageStates.size()
+            );
+
+            // Convert to Message mocks
+            List<Message> messages = new ArrayList<>();
+            for (MockMessageState msgState : recentMessages) {
+                Message msg = mock(Message.class, RETURNS_DEEP_STUBS);
+                lenient().when(msg.getContentRaw()).thenReturn(msgState.getContent());
+                lenient().when(msg.getIdLong()).thenReturn(msgState.getMessageId());
+
+                // Mock attachments
+                List<Message.Attachment> attachments = new ArrayList<>();
+                for (FileUpload fileUpload : msgState.getAttachments()) {
+                    Message.Attachment attachment =
+                        mock(Message.Attachment.class, RETURNS_DEEP_STUBS);
+
+                    // Store the file data
+                    byte[] fileData = null;
+                    try {
+                        fileData = fileUpload.getData().readAllBytes();
+                    } catch (Exception e) {
+                        fileData = new byte[0];
+                    }
+
+                    final byte[] finalFileData = fileData;
+                    lenient().when(attachment.getProxy().download()).thenAnswer(inv2 -> {
+                        return java.util.concurrent.CompletableFuture.completedFuture(
+                            new java.io.ByteArrayInputStream(finalFileData)
+                        );
+                    });
+
+                    attachments.add(attachment);
+                }
+
+                lenient().when(msg.getAttachments()).thenReturn(attachments);
+                messages.add(msg);
+            }
+
+            // Mock the completion of retrievePast
+            RestAction<List<Message>> action = createMockRestAction();
+            lenient().when(action.complete()).thenReturn(messages);
+
+            // Also update the MessageHistory to return these messages
+            lenient().when(messageHistory.getRetrievedHistory()).thenReturn(messages);
+
             return action;
         });
 
@@ -494,6 +725,25 @@ public class StatefulMockFactory {
             return action;
         });
 
+        // getJDA() returns a mock JDA with getSelfUser() for permission checking
+        JDA jda = mock(JDA.class, RETURNS_DEEP_STUBS);
+        lenient().when(channel.getJDA()).thenReturn(jda);
+
+        // Create a self user for the bot (ID 1)
+        SelfUser selfUser = mock(SelfUser.class);
+        lenient().when(selfUser.getIdLong()).thenReturn(1L);
+        lenient().when(selfUser.getId()).thenReturn("1");
+        lenient().when(jda.getSelfUser()).thenReturn(selfUser);
+
+        // Create a self member with full permissions
+        Member selfMember = mock(Member.class, RETURNS_DEEP_STUBS);
+        lenient().when(selfMember.getIdLong()).thenReturn(1L);
+        lenient().when(selfMember.getId()).thenReturn("1");
+        lenient().when(selfMember.getUser()).thenReturn(selfUser);
+        lenient().when(selfMember.hasAccess(any())).thenReturn(true);
+        lenient().when(selfMember.hasPermission(any(GuildChannel.class), any(Permission[].class))).thenReturn(true);
+        lenient().when(guild.getSelfMember()).thenReturn(selfMember);
+
         return channel;
     }
 
@@ -528,16 +778,62 @@ public class StatefulMockFactory {
         Guild guild = mockGuild(guildState);
         lenient().when(thread.getGuild()).thenReturn(guild);
 
+        // getJDA() returns a mock JDA that supports retrieveUserById()
+        JDA jda = mock(JDA.class, RETURNS_DEEP_STUBS);
+        lenient().when(thread.getJDA()).thenReturn(jda);
+
+        // Mock retrieveUserById() to return a CacheRestAction with a user
+        lenient().when(jda.retrieveUserById(anyString())).thenAnswer(inv -> {
+            String userId = inv.getArgument(0);
+            long userIdLong = Long.parseLong(userId);
+            MockUserState userState = guildState.getUser(userIdLong);
+            User user = userState != null ? mockUser(userState) : mock(User.class);
+
+            CacheRestAction<User> action = createMockCacheRestAction();
+            doNothing().when(action).queue(any());
+            lenient().when(action.complete()).thenReturn(user);
+            return action;
+        });
+
+        // addThreadMember() returns a RestAction
+        lenient().when(thread.addThreadMember(any(User.class))).thenAnswer(inv -> {
+            RestAction<Void> action = createMockRestAction();
+            doNothing().when(action).queue();
+            lenient().when(action.complete()).thenReturn(null);
+            return action;
+        });
+
         // sendMessage() STORES the message in state
         lenient().when(thread.sendMessage(anyString())).thenAnswer(inv -> {
-            String content = inv.getArgument(0);
+            final String[] currentContent = {inv.getArgument(0)};  // Use array to allow modification
             long messageId = guildState.getServer().nextMessageId();
-            MockMessageState message = new MockMessageState(messageId, threadState.getThreadId(), 0L, content);
-            threadState.addMessage(message);
 
-            // Return mock action
-            MessageCreateAction action = mock(MessageCreateAction.class);
-            doNothing().when(action).queue();
+            // Return mock action with getContent() and setContent() support
+            final MessageCreateAction[] actionHolder = new MessageCreateAction[1];
+            MessageCreateAction action = mock(MessageCreateAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // getContent() returns the current content
+                if (methodName.equals("getContent")) {
+                    return currentContent[0];
+                }
+
+                // setContent() updates the content and returns the action for chaining
+                if (methodName.equals("setContent")) {
+                    currentContent[0] = inv2.getArgument(0);
+                    return actionHolder[0];
+                }
+
+                // queue() or complete() finalizes the message
+                if (methodName.equals("queue") || methodName.equals("complete")) {
+                    MockMessageState message = new MockMessageState(messageId, threadState.getThreadId(), 0L, currentContent[0]);
+                    threadState.addMessage(message);
+                    return null;
+                }
+
+                return null;
+            });
+            actionHolder[0] = action;
             return action;
         });
 
@@ -582,6 +878,7 @@ public class StatefulMockFactory {
         lenient().when(user.getName()).thenReturn(userState.getUsername());
         lenient().when(user.getDiscriminator()).thenReturn(userState.getDiscriminator());
         lenient().when(user.getAsTag()).thenReturn(userState.getAsTag());
+        lenient().when(user.getAsMention()).thenReturn("<@" + userState.getUserId() + ">");
 
         return user;
     }
@@ -615,6 +912,8 @@ public class StatefulMockFactory {
         lenient().when(member.getUser()).thenReturn(user);
         lenient().when(member.getIdLong()).thenReturn(memberState.getUserId());
         lenient().when(member.getId()).thenReturn(String.valueOf(memberState.getUserId()));
+        lenient().when(member.getAsMention()).thenReturn("<@" + memberState.getUserId() + ">");
+        lenient().when(member.getEffectiveName()).thenReturn(userState.getUsername());
 
         // getRoles() reads from state
         lenient().when(member.getRoles()).thenAnswer(inv -> {
@@ -653,6 +952,7 @@ public class StatefulMockFactory {
         lenient().when(role.getIdLong()).thenReturn(roleState.getRoleId());
         lenient().when(role.getId()).thenReturn(String.valueOf(roleState.getRoleId()));
         lenient().when(role.getName()).thenReturn(roleState.getRoleName());
+        lenient().when(role.getAsMention()).thenReturn("<@&" + roleState.getRoleId() + ">");
 
         return role;
     }

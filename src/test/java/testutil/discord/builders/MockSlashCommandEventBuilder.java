@@ -19,9 +19,9 @@ import java.util.Map;
 
 import static org.mockito.ArgumentMatchers.anyBoolean;
 import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
+import static org.mockito.Mockito.withSettings;
 
 /**
  * Builder for creating mock SlashCommandInteractionEvent objects backed by stateful mocks.
@@ -58,6 +58,7 @@ public class MockSlashCommandEventBuilder {
     private MockMemberState memberState;
     private Member mockMember;
     private String commandName;
+    private String subcommandName;
     private final Map<String, Object> options = new HashMap<>();
     private TextChannel mockChannel;
 
@@ -91,6 +92,17 @@ public class MockSlashCommandEventBuilder {
      */
     public MockSlashCommandEventBuilder setCommandName(String commandName) {
         this.commandName = commandName;
+        return this;
+    }
+
+    /**
+     * Sets the subcommand name (e.g., "faction" for "/setup faction").
+     *
+     * @param subcommandName The subcommand name
+     * @return This builder for chaining
+     */
+    public MockSlashCommandEventBuilder setSubcommandName(String subcommandName) {
+        this.subcommandName = subcommandName;
         return this;
     }
 
@@ -158,6 +170,7 @@ public class MockSlashCommandEventBuilder {
 
         // Basic event properties
         when(event.getName()).thenReturn(commandName);
+        when(event.getSubcommandName()).thenReturn(subcommandName);
         when(event.getGuild()).thenReturn(mockGuild);
 
         // Member and user
@@ -169,9 +182,31 @@ public class MockSlashCommandEventBuilder {
         }
 
         // Channel context (can be null)
+        // Create a MessageChannelUnion that also implements TextChannel for instanceof checks
         if (mockChannel != null) {
-            when(event.getChannel()).thenReturn(mock(MessageChannelUnion.class));
-            when(event.getChannel().asTextChannel()).thenReturn(mockChannel);
+            MessageChannelUnion channelUnion = mock(MessageChannelUnion.class,
+                withSettings().extraInterfaces(TextChannel.class));
+
+            // Make the union return our TextChannel when asTextChannel() is called
+            when(channelUnion.asTextChannel()).thenReturn(mockChannel);
+
+            // Extract values from mockChannel first to avoid nested stubbing
+            String channelName = mockChannel.getName();
+            long channelId = mockChannel.getIdLong();
+            String channelIdStr = mockChannel.getId();
+            net.dv8tion.jda.api.entities.channel.concrete.Category parentCategory = mockChannel.getParentCategory();
+            Guild channelGuild = mockChannel.getGuild();
+
+            // Make the union act as the TextChannel for properties
+            // Cast to TextChannel to set up its methods
+            TextChannel channelAsText = (TextChannel) channelUnion;
+            when(channelAsText.getName()).thenReturn(channelName);
+            when(channelAsText.getIdLong()).thenReturn(channelId);
+            when(channelAsText.getId()).thenReturn(channelIdStr);
+            when(channelAsText.getParentCategory()).thenReturn(parentCategory);
+            when(channelAsText.getGuild()).thenReturn(channelGuild);
+
+            when(event.getChannel()).thenReturn(channelUnion);
         }
 
         // Command options
@@ -194,15 +229,8 @@ public class MockSlashCommandEventBuilder {
             when(event.getOption(optionName)).thenReturn(mockOption);
         }
 
-        // InteractionHook for deferred replies
-        InteractionHook mockHook = mock(InteractionHook.class);
-
-        @SuppressWarnings("unchecked")
-        WebhookMessageEditAction editAction = mock(WebhookMessageEditAction.class);
-        doNothing().when(editAction).queue();
-
-        when(mockHook.editOriginal(anyString())).thenReturn(editAction);
-
+        // InteractionHook for deferred replies - using RETURNS_DEEP_STUBS to handle method chains
+        InteractionHook mockHook = mock(InteractionHook.class, RETURNS_DEEP_STUBS);
         when(event.getHook()).thenReturn(mockHook);
 
         // deferReply support
@@ -211,7 +239,11 @@ public class MockSlashCommandEventBuilder {
         when(event.deferReply(anyBoolean())).thenReturn(mockReplyAction);
 
         // Command string for debugging
-        when(event.getCommandString()).thenReturn("/" + commandName);
+        String commandString = "/" + commandName;
+        if (subcommandName != null) {
+            commandString += " " + subcommandName;
+        }
+        when(event.getCommandString()).thenReturn(commandString);
 
         return event;
     }

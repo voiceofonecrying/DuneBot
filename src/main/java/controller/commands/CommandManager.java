@@ -52,6 +52,19 @@ import static controller.commands.ShowCommands.*;
 public class CommandManager extends ListenerAdapter {
     public List<Member> members = new ArrayList<>();
 
+    /**
+     * When true, commands execute synchronously instead of async.
+     * Useful for testing to avoid thread-local issues with mocks.
+     */
+    private static volatile boolean runSynchronously = false;
+
+    /**
+     * Enable synchronous command execution (for testing).
+     */
+    public static void setRunSynchronously(boolean sync) {
+        runSynchronously = sync;
+    }
+
     public void gatherMembers(List<Member> members) {
         this.members.addAll(members);
     }
@@ -201,9 +214,17 @@ public class CommandManager extends ListenerAdapter {
 
                 // Incrementing count again because it will be decremented when the future is resolved.
                 CommandCompletionGuard.incrementCommandCount();
-                Queue.putFuture(categoryName, future
-                        .thenRunAsync(() -> runGameCommand(event))
-                        .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
+
+                // Use synchronous execution in test mode to avoid thread-local mock issues
+                if (runSynchronously) {
+                    Queue.putFuture(categoryName, future
+                            .thenRun(() -> runGameCommand(event))
+                            .thenRun(CommandCompletionGuard::decrementCommandCount));
+                } else {
+                    Queue.putFuture(categoryName, future
+                            .thenRunAsync(() -> runGameCommand(event))
+                            .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
+                }
             }
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
