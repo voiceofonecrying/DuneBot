@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- Console appender for test output - simpler format -->
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
+
+    <!-- Root logger - ERROR level to keep tests quiet -->
+    <root level="ERROR">
+        <appender-ref ref="STDOUT" />
+    </root>
+
+    <!-- Suppress expected errors from CommandManager during tests -->
+    <!-- This prevents stack traces for expected IllegalArgumentException, etc. -->
+    <logger name="controller.commands.CommandManager" level="OFF"/>
+
+    <!-- Suppress expected errors from ButtonManager during tests -->
+    <logger name="controller.buttons.ButtonManager" level="OFF"/>
+</configuration>

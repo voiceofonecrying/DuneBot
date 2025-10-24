@@ -20,6 +20,8 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import utils.CardImages;
 
 import java.util.*;
@@ -28,6 +30,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class EventListener extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(EventListener.class);
     JDA jda;
 
     public EventListener(JDA jda) {
@@ -157,7 +160,7 @@ public class EventListener extends ListenerAdapter {
                     });
         }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Error handling message received event in channel: {}", event.getChannel().getName(), e);
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
                 String messageText = event.getMessage().getContentStripped();
@@ -172,7 +175,7 @@ public class EventListener extends ListenerAdapter {
 
     List<FileUpload> getHomeworldCardImages(Guild guild, String cardName) {
         cardName = cardName.trim();
-        System.out.println(cardName);
+        logger.debug("Loading homeworld card images for: {}", cardName);
         List<FileUpload> list = new ArrayList<>();
         CardImages.getHomeworldImage(guild, cardName + " High").ifPresent(list::add);
         CardImages.getHomeworldImage(guild, cardName + " Low").ifPresent(list::add);

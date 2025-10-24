@@ -16,6 +16,8 @@ import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 import net.dv8tion.jda.api.events.interaction.component.GenericComponentInteractionCreateEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashSet;
 import java.util.List;
@@ -26,6 +28,8 @@ import java.util.concurrent.CompletableFuture;
 import static controller.commands.ShowCommands.refreshChangedInfo;
 
 public class ButtonManager extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(ButtonManager.class);
+
     static boolean allowModButtonPress = false;
     static Set<Long> buttonMessageIds = new HashSet<>();
 
@@ -51,9 +55,9 @@ public class ButtonManager extends ListenerAdapter {
                         .orElseThrow();
             }
         } catch (Exception e) {
-            System.out.println(Objects.requireNonNull(event.getMember()).getUser().getId());
+            logger.error("Failed to identify button presser. User ID: {}", Objects.requireNonNull(event.getMember()).getUser().getId());
             for (Faction faction : game.getFactions()) {
-                System.out.println(faction.getPlayer());
+                logger.error("Faction player: {}", faction.getPlayer());
             }
             throw e;
         }
@@ -177,7 +181,7 @@ public class ButtonManager extends ListenerAdapter {
             event.getHook().editOriginal(e.getMessage()).queue();
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
-            e.printStackTrace();
+            logger.error("Button interaction failed: {}", event.getComponentId(), e);
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
                 ExceptionHandler.sendExceptionToModInfo(category, e, "Button press: " + event.getComponentId(), event.getUser());

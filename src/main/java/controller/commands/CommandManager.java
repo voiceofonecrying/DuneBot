@@ -34,6 +34,8 @@ import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import templates.ChannelPermissions;
 
 import java.awt.*;
@@ -50,6 +52,8 @@ import static controller.commands.CommandOptions.*;
 import static controller.commands.ShowCommands.*;
 
 public class CommandManager extends ListenerAdapter {
+    private static final Logger logger = LoggerFactory.getLogger(CommandManager.class);
+
     public List<Member> members = new ArrayList<>();
 
     /**
@@ -228,7 +232,7 @@ public class CommandManager extends ListenerAdapter {
             }
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
-            e.printStackTrace();
+            logger.error("Slash command execution failed: {}", event.getCommandString(), e);
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
                 ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getCommandString(), event.getUser());
@@ -338,7 +342,7 @@ public class CommandManager extends ListenerAdapter {
             event.getHook().editOriginal(e.getMessage()).queue();
         } catch (Exception e) {
             event.getHook().editOriginal(e.getMessage()).queue();
-            e.printStackTrace();
+            logger.error("Game command execution failed: {}", event.getCommandString(), e);
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
                 ExceptionHandler.sendExceptionToModInfo(category, e, "Game command: " + event.getCommandString(), event.getUser());
@@ -365,7 +369,7 @@ public class CommandManager extends ListenerAdapter {
             Game game = discordGame.getGame();
             event.replyChoices(CommandOptions.getCommandChoices(event, discordGame, game)).queue();
         } catch (ChannelNotFoundException e) {
-            System.err.println(e.getMessage());
+            logger.error("Command autocomplete failed: channel not found", e);
             throw new RuntimeException(e);
         }
     }

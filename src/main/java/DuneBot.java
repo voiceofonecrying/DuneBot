@@ -12,12 +12,14 @@ import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.exceptions.InvalidTokenException;
 import net.dv8tion.jda.api.requests.GatewayIntent;
 import okhttp3.OkHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import sun.misc.Signal;
 
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 public class DuneBot {
+    private static final Logger logger = LoggerFactory.getLogger(DuneBot.class);
     public static String getConfigValue(String variable, boolean isRequired) {
         if (System.getenv(variable) != null) {
             return System.getenv(variable);
@@ -36,8 +38,8 @@ public class DuneBot {
     }
 
     public static void main(String[] args) {
-        System.out.println("There are " + CommandManager.getAllCommands().size() + " commands in DuneBot.");
-        Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
+        logger.info("There are {} commands in DuneBot", CommandManager.getAllCommands().size());
+        java.util.logging.Logger.getLogger(OkHttpClient.class.getName()).setLevel(Level.FINE);
         try {
             String token = getConfigValue("TOKEN", true);
 
@@ -65,23 +67,24 @@ public class DuneBot {
             });
 
             Signal.handle(new Signal("USR1"), signal -> {
-                System.out.println("Received USR1 signal. Stopping all commands...");
+                logger.info("Received USR1 signal. Stopping all commands...");
                 jda.removeEventListener(eventListener, commandManager, buttonManager);
                 CommandCompletionGuard.blockUntilNoCommands();
                 System.exit(0);
             });
 
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("Shutting down bot...");
+                logger.info("Shutting down bot...");
                 jda.shutdown();
             }));
         } catch (DotenvException e) {
-            System.err.println("Dotenv file or Token not found.");
+            logger.error("Dotenv file or Token not found", e);
             throw new RuntimeException(e);
         } catch (InvalidTokenException e) {
-            System.err.println("Invalid Token");
+            logger.error("Invalid Token", e);
             throw new RuntimeException(e);
         } catch (InterruptedException e) {
+            logger.error("Bot interrupted during startup", e);
             throw new RuntimeException(e);
         }
     }

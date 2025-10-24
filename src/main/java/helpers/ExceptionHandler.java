@@ -5,6 +5,8 @@ import exceptions.ChannelNotFoundException;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.utils.FileUpload;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -17,6 +19,7 @@ import java.time.format.DateTimeFormatter;
  * Sends exception details to the #mod-info channel in the game category.
  */
 public class ExceptionHandler {
+    private static final Logger logger = LoggerFactory.getLogger(ExceptionHandler.class);
 
     /**
      * Sends an exception report to the #mod-info channel in the game category.
@@ -30,8 +33,7 @@ public class ExceptionHandler {
      */
     public static void sendExceptionToModInfo(Category category, Throwable exception, String context, User user) {
         if (category == null) {
-            System.err.println("Cannot send exception to mod-info: category is null");
-            exception.printStackTrace();
+            logger.error("Cannot send exception to mod-info: category is null", exception);
             return;
         }
 
@@ -74,17 +76,11 @@ public class ExceptionHandler {
                 .queue();
 
         } catch (ChannelNotFoundException e) {
-            System.err.println("Could not find mod-info channel to send exception report");
-            System.err.println("Original exception:");
-            exception.printStackTrace();
-            System.err.println("Channel not found exception:");
-            e.printStackTrace();
+            logger.error("Could not find mod-info channel to send exception report. Original exception: {}", exception.getMessage(), exception);
+            logger.error("Channel not found exception", e);
         } catch (Exception e) {
-            System.err.println("Error while trying to send exception to mod-info channel");
-            System.err.println("Original exception:");
-            exception.printStackTrace();
-            System.err.println("Error sending to mod-info:");
-            e.printStackTrace();
+            logger.error("Error while trying to send exception to mod-info channel. Original exception: {}", exception.getMessage(), exception);
+            logger.error("Error sending to mod-info", e);
         }
     }
 
