@@ -10,6 +10,8 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.MockedStatic;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import testutil.discord.StatefulMockFactory;
 import testutil.discord.builders.MockSlashCommandEventBuilder;
 import testutil.discord.state.*;
@@ -39,6 +41,7 @@ import static org.mockito.Mockito.when;
  * aspects of setup commands (factions, game options, roles, etc.).
  */
 abstract class SetupCommandsE2ETestBase {
+    private static final Logger logger = LoggerFactory.getLogger(SetupCommandsE2ETestBase.class);
 
     protected MockDiscordServer server;
     protected MockGuildState guildState;
@@ -114,8 +117,7 @@ abstract class SetupCommandsE2ETestBase {
         try {
             commandManager.onSlashCommandInteraction(newGameEvent);
         } catch (Exception e) {
-            System.err.println("Failed to create new game:");
-            e.printStackTrace();
+            logger.error("Failed to create new game during test setup", e);
             throw e;
         }
 
@@ -137,8 +139,7 @@ abstract class SetupCommandsE2ETestBase {
         try {
             game = parseGameFromBotData();
         } catch (Exception e) {
-            System.err.println("Failed to parse game from bot-data:");
-            e.printStackTrace();
+            logger.error("Failed to parse game from bot-data during test setup", e);
             throw e;
         }
     }

@@ -40,6 +40,8 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import net.dv8tion.jda.api.utils.messages.MessageCreateData;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -51,6 +53,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class DiscordGame {
+    private static final Logger logger = LoggerFactory.getLogger(DiscordGame.class);
     private final Guild guild;
     private final Category gameCategory;
     private final List<DiscordRequest> discordRequests = new ArrayList<>();
@@ -359,7 +362,7 @@ public class DiscordGame {
             future.get().close();
             return gameJson;
         } catch (IOException | InterruptedException | ExecutionException e) {
-            System.out.println("Didn't work...");
+            logger.error("Failed to read game JSON from attachment", e);
             return "";
         }
     }
@@ -708,7 +711,7 @@ public class DiscordGame {
             try {
                 discordRequest.complete();
             } catch (Exception e) {
-                e.printStackTrace();
+                logger.error("Failed to send Discord message", e);
             }
         }
         discordRequests.clear();
