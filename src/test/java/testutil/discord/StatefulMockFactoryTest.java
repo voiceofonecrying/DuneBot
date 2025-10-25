@@ -367,6 +367,80 @@ class StatefulMockFactoryTest {
         assertThat(channel.getJDA().getSelfUser().getIdLong()).isEqualTo(1L);
     }
 
+    @Test
+    @DisplayName("mockTextChannel() sendMessage(MessageCreateData) with empty content should handle getContent() safely")
+    void mockTextChannel_sendMessageWithMessageCreateData_emptyContent_shouldHandleGetContentSafely() {
+        MockChannelState channelState = guildState.createTextChannel("test-channel", 0L);
+        TextChannel channel = StatefulMockFactory.mockTextChannel(channelState, guildState);
+
+        // Create MessageCreateData with file-only message (empty content)
+        byte[] fileData = "attachment data".getBytes();
+        FileUpload fileUpload = FileUpload.fromData(new ByteArrayInputStream(fileData), "file.txt");
+        net.dv8tion.jda.api.utils.messages.MessageCreateData messageData =
+                new net.dv8tion.jda.api.utils.messages.MessageCreateBuilder()
+                        .addFiles(fileUpload)
+                        .build();
+
+        MessageCreateAction action = channel.sendMessage(messageData);
+
+        // getContent() should return empty string (never null) even for file-only messages
+        String content = action.getContent();
+        assertThat(content).isNotNull();
+        assertThat(content).isEmpty();
+
+        // Should be able to call setContent() without NPE
+        action.setContent("Tagged content");
+        assertThat(action.getContent()).isEqualTo("Tagged content");
+    }
+
+    @Test
+    @DisplayName("mockTextChannel() sendMessage(MessageCreateData) should support setContent() after creation")
+    void mockTextChannel_sendMessageWithMessageCreateData_shouldSupportSetContent() {
+        MockChannelState channelState = guildState.createTextChannel("test-channel", 0L);
+        TextChannel channel = StatefulMockFactory.mockTextChannel(channelState, guildState);
+
+        // Create MessageCreateData with content
+        net.dv8tion.jda.api.utils.messages.MessageCreateData messageData =
+                new net.dv8tion.jda.api.utils.messages.MessageCreateBuilder()
+                        .setContent("Initial content")
+                        .build();
+
+        MessageCreateAction action = channel.sendMessage(messageData);
+
+        // Should be able to modify content via setContent()
+        action.setContent("Modified content");
+        assertThat(action.getContent()).isEqualTo("Modified content");
+
+        action.queue();
+
+        // Verify modified content was stored
+        assertThat(channelState.getMessages()).hasSize(1);
+        assertThat(channelState.getMessages().get(0).getContent()).isEqualTo("Modified content");
+    }
+
+    @Test
+    @DisplayName("mockTextChannel() sendMessage(MessageCreateData) should store file attachments")
+    void mockTextChannel_sendMessageWithMessageCreateData_shouldStoreFileAttachments() {
+        MockChannelState channelState = guildState.createTextChannel("test-channel", 0L);
+        TextChannel channel = StatefulMockFactory.mockTextChannel(channelState, guildState);
+
+        // Create MessageCreateData with file attachment
+        byte[] fileData = "test attachment".getBytes();
+        FileUpload fileUpload = FileUpload.fromData(new ByteArrayInputStream(fileData), "test.txt");
+        net.dv8tion.jda.api.utils.messages.MessageCreateData messageData =
+                new net.dv8tion.jda.api.utils.messages.MessageCreateBuilder()
+                        .setContent("Message with file")
+                        .addFiles(fileUpload)
+                        .build();
+
+        channel.sendMessage(messageData).queue();
+
+        // Verify file attachment was stored
+        assertThat(channelState.getMessages()).hasSize(1);
+        assertThat(channelState.getMessages().get(0).getContent()).isEqualTo("Message with file");
+        assertThat(channelState.getMessages().get(0).getAttachments()).hasSize(1);
+    }
+
     // ========== Category Mock Tests ==========
 
     @Test
@@ -476,6 +550,83 @@ class StatefulMockFactoryTest {
         User user = action.complete();
         assertThat(user).isNotNull();
         assertThat(user.getName()).isEqualTo("TestUser");
+    }
+
+    @Test
+    @DisplayName("mockThreadChannel() sendMessage(MessageCreateData) with empty content should handle getContent() safely")
+    void mockThreadChannel_sendMessageWithMessageCreateData_emptyContent_shouldHandleGetContentSafely() {
+        MockChannelState channelState = guildState.createTextChannel("parent-channel", 0L);
+        MockThreadChannelState threadState = guildState.createThread("Test Thread", channelState.getChannelId());
+        ThreadChannel thread = StatefulMockFactory.mockThreadChannel(threadState, guildState);
+
+        // Create MessageCreateData with file-only message (empty content)
+        byte[] fileData = "board image data".getBytes();
+        FileUpload fileUpload = FileUpload.fromData(new ByteArrayInputStream(fileData), "board.png");
+        net.dv8tion.jda.api.utils.messages.MessageCreateData messageData =
+                new net.dv8tion.jda.api.utils.messages.MessageCreateBuilder()
+                        .addFiles(fileUpload)
+                        .build();
+
+        MessageCreateAction action = thread.sendMessage(messageData);
+
+        // getContent() should return empty string (never null) even for file-only messages
+        String content = action.getContent();
+        assertThat(content).isNotNull();
+        assertThat(content).isEmpty();
+
+        // Should be able to call setContent() without NPE
+        action.setContent("Tagged content");
+        assertThat(action.getContent()).isEqualTo("Tagged content");
+    }
+
+    @Test
+    @DisplayName("mockThreadChannel() sendMessage(MessageCreateData) should support setContent() after creation")
+    void mockThreadChannel_sendMessageWithMessageCreateData_shouldSupportSetContent() {
+        MockChannelState channelState = guildState.createTextChannel("parent-channel", 0L);
+        MockThreadChannelState threadState = guildState.createThread("Test Thread", channelState.getChannelId());
+        ThreadChannel thread = StatefulMockFactory.mockThreadChannel(threadState, guildState);
+
+        // Create MessageCreateData with null content
+        byte[] fileData = "test data".getBytes();
+        FileUpload fileUpload = FileUpload.fromData(new ByteArrayInputStream(fileData), "test.png");
+        net.dv8tion.jda.api.utils.messages.MessageCreateData messageData =
+                new net.dv8tion.jda.api.utils.messages.MessageCreateBuilder()
+                        .addFiles(fileUpload)
+                        .build();
+
+        MessageCreateAction action = thread.sendMessage(messageData);
+
+        // Should be able to modify content via setContent()
+        action.setContent("Modified content with emoji tags");
+        assertThat(action.getContent()).isEqualTo("Modified content with emoji tags");
+
+        action.queue();
+
+        // Verify modified content was stored
+        assertThat(threadState.getMessages()).hasSize(1);
+        assertThat(threadState.getMessages().get(0).getContent()).isEqualTo("Modified content with emoji tags");
+    }
+
+    @Test
+    @DisplayName("mockThreadChannel() sendMessage(MessageCreateData) should store file attachments")
+    void mockThreadChannel_sendMessageWithMessageCreateData_shouldStoreFileAttachments() {
+        MockChannelState channelState = guildState.createTextChannel("parent-channel", 0L);
+        MockThreadChannelState threadState = guildState.createThread("Test Thread", channelState.getChannelId());
+        ThreadChannel thread = StatefulMockFactory.mockThreadChannel(threadState, guildState);
+
+        // Create MessageCreateData with file attachment
+        byte[] fileData = "board image".getBytes();
+        FileUpload fileUpload = FileUpload.fromData(new ByteArrayInputStream(fileData), "board.png");
+        net.dv8tion.jda.api.utils.messages.MessageCreateData messageData =
+                new net.dv8tion.jda.api.utils.messages.MessageCreateBuilder()
+                        .addFiles(fileUpload)
+                        .build();
+
+        thread.sendMessage(messageData).queue();
+
+        // Verify file attachment was stored
+        assertThat(threadState.getMessages()).hasSize(1);
+        assertThat(threadState.getMessages().get(0).getAttachments()).hasSize(1);
     }
 
     // ========== User Mock Tests ==========

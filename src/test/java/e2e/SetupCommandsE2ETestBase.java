@@ -18,6 +18,7 @@ import testutil.discord.state.*;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -99,8 +100,8 @@ abstract class SetupCommandsE2ETestBase {
         moderatorMember = guildState.createMember(moderatorUser.getUserId());
         moderatorMember.addRole(modRole.getRoleId());
 
-        // Initialize EmojiCache with empty emoji list for this guild
-        EmojiCache.setEmojis(String.valueOf(guildState.getGuildId()), Collections.emptyList());
+        // Initialize EmojiCache with mock emojis for this guild
+        setupMockEmojis();
 
         // Create CommandManager instance
         commandManager = new CommandManager();
@@ -183,5 +184,37 @@ abstract class SetupCommandsE2ETestBase {
         } catch (Exception e) {
             throw new IOException("Failed to parse game JSON", e);
         }
+    }
+
+    /**
+     * Set up mock faction emojis for the test guild.
+     * These emojis are used by the bot for faction identification in messages and buttons.
+     * Creates properly formatted emoji strings that JDA's Emoji.fromFormatted() can parse.
+     */
+    protected void setupMockEmojis() {
+        List<net.dv8tion.jda.api.entities.emoji.RichCustomEmoji> mockEmojis = new ArrayList<>();
+
+        // Common faction emoji names (without colons, as stored in EmojiCache)
+        String[] emojiNames = {"atreides", "harkonnen", "emperor", "fremen", "guild", "bt", "ix", "tleilaxu", "bg", "choam", "richese", "ecaz", "moritani"};
+
+        for (int i = 0; i < emojiNames.length; i++) {
+            String emojiName = emojiNames[i];
+            long emojiId = 100000000L + i;
+
+            net.dv8tion.jda.api.entities.emoji.RichCustomEmoji emoji =
+                    mock(net.dv8tion.jda.api.entities.emoji.RichCustomEmoji.class);
+
+            // Mock the methods that EmojiCache and DiscordGame use
+            when(emoji.getName()).thenReturn(emojiName);
+            when(emoji.getIdLong()).thenReturn(emojiId);
+            when(emoji.getAsMention()).thenReturn("<:" + emojiName + ":" + emojiId + ">");
+            // CRITICAL: getFormatted() must return properly formatted string for Emoji.fromFormatted() to work
+            when(emoji.getFormatted()).thenReturn("<:" + emojiName + ":" + emojiId + ">");
+
+            mockEmojis.add(emoji);
+        }
+
+        // Set the emojis in EmojiCache so DiscordGame can find them
+        EmojiCache.setEmojis(String.valueOf(guildState.getGuildId()), mockEmojis);
     }
 }

@@ -565,13 +565,26 @@ public class StatefulMockFactory {
             MessageCreateData data = inv.getArgument(0);
             long messageId = guildState.getServer().nextMessageId();
 
-            // Extract file attachments from MessageCreateData
+            // Extract file attachments from MessageCreateData and make mutable content
             List<FileUpload> fileAttachments = new ArrayList<>(data.getFiles());
+            final String[] currentContent = {data.getContent() != null ? data.getContent() : ""};
 
             // Return mock action that supports chaining and complete
             final MessageCreateAction[] actionHolder = new MessageCreateAction[1];
             MessageCreateAction action = mock(MessageCreateAction.class, inv2 -> {
                 String methodName = inv2.getMethod().getName();
+
+                // getContent() returns the current content (never null)
+                if (methodName.equals("getContent")) {
+                    return currentContent[0];
+                }
+
+                // setContent() updates the content and returns the action for chaining
+                if (methodName.equals("setContent")) {
+                    String newContent = inv2.getArgument(0);
+                    currentContent[0] = newContent != null ? newContent : "";
+                    return actionHolder[0];
+                }
 
                 // Capture additional file attachments
                 if (methodName.equals("addFiles")) {
@@ -596,7 +609,7 @@ public class StatefulMockFactory {
 
                 // complete() or queue() finalizes the message with attachments
                 if (methodName.equals("complete") || methodName.equals("queue")) {
-                    MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, data.getContent(), fileAttachments);
+                    MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, currentContent[0], fileAttachments);
                     channelState.addMessage(message);
                     return null;
                 }
@@ -840,12 +853,59 @@ public class StatefulMockFactory {
         lenient().when(thread.sendMessage(any(MessageCreateData.class))).thenAnswer(inv -> {
             MessageCreateData data = inv.getArgument(0);
             long messageId = guildState.getServer().nextMessageId();
-            MockMessageState message = new MockMessageState(messageId, threadState.getThreadId(), 0L, data.getContent());
-            threadState.addMessage(message);
 
-            // Return mock action
-            MessageCreateAction action = mock(MessageCreateAction.class);
-            doNothing().when(action).queue();
+            // Extract file attachments from MessageCreateData and make mutable content
+            List<FileUpload> fileAttachments = new ArrayList<>(data.getFiles());
+            final String[] currentContent = {data.getContent() != null ? data.getContent() : ""};
+
+            // Return mock action that supports chaining and complete
+            final MessageCreateAction[] actionHolder = new MessageCreateAction[1];
+            MessageCreateAction action = mock(MessageCreateAction.class, inv2 -> {
+                String methodName = inv2.getMethod().getName();
+
+                // getContent() returns the current content (never null)
+                if (methodName.equals("getContent")) {
+                    return currentContent[0];
+                }
+
+                // setContent() updates the content and returns the action for chaining
+                if (methodName.equals("setContent")) {
+                    String newContent = inv2.getArgument(0);
+                    currentContent[0] = newContent != null ? newContent : "";
+                    return actionHolder[0];
+                }
+
+                // Capture additional file attachments
+                if (methodName.equals("addFiles")) {
+                    Object[] args = inv2.getArguments();
+                    for (Object arg : args) {
+                        if (arg instanceof FileUpload) {
+                            fileAttachments.add((FileUpload) arg);
+                        } else if (arg instanceof Collection) {
+                            // Use type-safe helper method instead of unchecked cast
+                            addFileUploadsFromCollection((Collection<?>) arg, fileAttachments);
+                        }
+                    }
+                    return actionHolder[0];
+                }
+
+                // Chaining methods return the action itself
+                if (methodName.equals("setFiles") ||
+                    methodName.equals("addActionRow") ||
+                    methodName.equals("addComponents")) {
+                    return actionHolder[0];
+                }
+
+                // complete() or queue() finalizes the message with attachments
+                if (methodName.equals("complete") || methodName.equals("queue")) {
+                    MockMessageState message = new MockMessageState(messageId, threadState.getThreadId(), 0L, currentContent[0], fileAttachments);
+                    threadState.addMessage(message);
+                    return null;
+                }
+
+                return null;
+            });
+            actionHolder[0] = action;
             return action;
         });
 
