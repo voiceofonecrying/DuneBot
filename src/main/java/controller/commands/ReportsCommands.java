@@ -765,6 +765,9 @@ public class ReportsCommands {
         allFactionPerformance.add(factionPerformance(gameResults, "ix", Emojis.IX));
         allFactionPerformance.add(factionPerformance(gameResults, "moritani", Emojis.MORITANI));
         allFactionPerformance.add(factionPerformance(gameResults, "richese", Emojis.RICHESE));
+        allFactionPerformance.add(factionPerformance(gameResults, "mikarrol", ":mikarrol:"));
+        allFactionPerformance.add(factionPerformance(gameResults, "wydras", ":wydras:"));
+//        allFactionPerformance.add(factionPerformance(gameResults, "spinnette", "Spinnette"));
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         return allFactionPerformance;
     }
