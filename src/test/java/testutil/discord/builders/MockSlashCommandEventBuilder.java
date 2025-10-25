@@ -119,6 +119,18 @@ public class MockSlashCommandEventBuilder {
     }
 
     /**
+     * Adds an integer option to the command.
+     *
+     * @param name The option name
+     * @param value The integer value
+     * @return This builder for chaining
+     */
+    public MockSlashCommandEventBuilder addIntegerOption(String name, int value) {
+        options.put(name, value);
+        return this;
+    }
+
+    /**
      * Adds a role option to the command.
      *
      * @param name The option name
@@ -218,6 +230,8 @@ public class MockSlashCommandEventBuilder {
 
             if (optionValue instanceof String) {
                 when(mockOption.getAsString()).thenReturn((String) optionValue);
+            } else if (optionValue instanceof Integer) {
+                when(mockOption.getAsInt()).thenReturn((Integer) optionValue);
             } else if (optionValue instanceof Role) {
                 when(mockOption.getAsRole()).thenReturn((Role) optionValue);
             } else if (optionValue instanceof UserOption) {
