@@ -962,7 +962,7 @@ public class ReportsCommands {
         int maxTurnWins = 0;
         for (int i = 1; i <= 10; i++) {
             int finalI = i;
-            int turnWins = gameResults.gameResults.stream().filter(gr -> gr.getTurn() == finalI).toList().size();
+            int turnWins = gameResults.gameResults.stream().filter(gr -> gr.getTurn() == finalI).toList().size() / 2;
             if (turnWins > maxTurnWins)
                 maxTurnWins = turnWins;
         }
@@ -971,7 +971,7 @@ public class ReportsCommands {
             StringBuilder responseRow = new StringBuilder(" ");
             for (int i = 1; i <= 10; i++) {
                 int finalI = i;
-                responseRow.append(gameResults.gameResults.stream().filter(gr -> gr.getTurn() == finalI).toList().size() >= j ? "║  " : "   ");
+                responseRow.append(gameResults.gameResults.stream().filter(gr -> gr.getTurn() == finalI).toList().size() / 2 >= j ? "║  " : "   ");
             }
             response.append(responseRow).append("\n");
         }
