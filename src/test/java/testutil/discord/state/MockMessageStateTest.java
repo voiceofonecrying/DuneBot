@@ -42,8 +42,11 @@ class MockMessageStateTest {
     @Test
     void constructor_withAttachments_setsAllFields() {
         List<FileUpload> attachments = new ArrayList<>();
-        attachments.add(mock(FileUpload.class));
-        attachments.add(mock(FileUpload.class));
+        // Create real FileUpload instances instead of mocking (Java 23 compatibility)
+        byte[] testData1 = "test attachment 1".getBytes();
+        byte[] testData2 = "test attachment 2".getBytes();
+        attachments.add(FileUpload.fromData(new java.io.ByteArrayInputStream(testData1), "test1.txt"));
+        attachments.add(FileUpload.fromData(new java.io.ByteArrayInputStream(testData2), "test2.txt"));
 
         MockMessageState message = new MockMessageState(1000001L, 2001L, 100L, "Test message", attachments);
 
@@ -87,7 +90,9 @@ class MockMessageStateTest {
     @Test
     void getAttachments_returnsNewListEachTime() {
         List<FileUpload> attachments = new ArrayList<>();
-        attachments.add(mock(FileUpload.class));
+        // Create a real FileUpload instead of mocking (Java 23 compatibility)
+        byte[] testData = "test attachment".getBytes();
+        attachments.add(FileUpload.fromData(new java.io.ByteArrayInputStream(testData), "test.txt"));
 
         MockMessageState message = new MockMessageState(1000001L, 2001L, 100L, "Test", attachments);
 
@@ -100,12 +105,16 @@ class MockMessageStateTest {
     @Test
     void getAttachments_modifyingReturnedListDoesNotAffectState() {
         List<FileUpload> attachments = new ArrayList<>();
-        attachments.add(mock(FileUpload.class));
+        // Create a real FileUpload instead of mocking (Java 23 compatibility)
+        byte[] testData = "test attachment".getBytes();
+        attachments.add(FileUpload.fromData(new java.io.ByteArrayInputStream(testData), "test.txt"));
 
         MockMessageState message = new MockMessageState(1000001L, 2001L, 100L, "Test", attachments);
 
         List<FileUpload> retrievedAttachments = message.getAttachments();
-        retrievedAttachments.add(mock(FileUpload.class));
+        // Create another real FileUpload for the modification test
+        byte[] testData2 = "test attachment 2".getBytes();
+        retrievedAttachments.add(FileUpload.fromData(new java.io.ByteArrayInputStream(testData2), "test2.txt"));
 
         assertThat(message.getAttachments()).hasSize(1);
     }
@@ -113,7 +122,9 @@ class MockMessageStateTest {
     @Test
     void hasAttachments_returnsTrueWhenAttachmentsExist() {
         List<FileUpload> attachments = new ArrayList<>();
-        attachments.add(mock(FileUpload.class));
+        // Create a real FileUpload instead of mocking (Java 23 compatibility)
+        byte[] testData = "test attachment".getBytes();
+        attachments.add(FileUpload.fromData(new java.io.ByteArrayInputStream(testData), "test.txt"));
 
         MockMessageState message = new MockMessageState(1000001L, 2001L, 100L, "Test", attachments);
 
