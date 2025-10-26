@@ -74,6 +74,10 @@ public class PlayerCommands {
             throw new InvalidGameStateException("There is no current battle.");
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         String leaderName = discordGame.required(combatLeader).getAsString();
+        // Truncate out the leader value if it was included in the leader name
+        int cutPoint = leaderName.indexOf(" (");
+        if (cutPoint != -1)
+            leaderName = leaderName.substring(0, cutPoint);
         String dial = discordGame.required(combatDial).getAsString();
         int spice = Integer.parseInt(discordGame.required(combatSpice).getAsString());
         String weaponName = discordGame.required(weapon).getAsString();
