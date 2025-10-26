@@ -1,5 +1,12 @@
 # DuneBot
 
+## Requirements
+
+- **Java 25 LTS** (Eclipse Temurin recommended)
+- Maven 3.x (for building from source)
+
+The project uses Java 25 with Eclipse Temurin for optimal cross-platform compatibility and performance.
+
 ## Docker Build
 To Build the docker image run the following command in the project directory: `docker build -t dunebot --progress=plain .`.
 
