@@ -223,8 +223,10 @@ public class ShowCommands {
         List<Leader> unplacedLeaders = new ArrayList<>();
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage;
-            if (faction instanceof HomebrewFaction) {
-                String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, faction.getName().toLowerCase(), "leaders", leader.getName());
+            List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+            if (!allFactionNames.contains(leader.getOriginalFactionName())) {
+                String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
                 if (imageUrl != null) {
                     try {
                         InputStream is = new URI(imageUrl).toURL().openStream();
@@ -420,11 +422,11 @@ public class ShowCommands {
         discordGame.queueMessage(infoChannelName, "Faction Info", boardFileUpload);
         if (!nexusCard.isEmpty())
             discordGame.queueMessage(infoChannelName, "__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name());
-        if (faction instanceof HomebrewFaction) {
-            List<Leader> leadersToWriteAsText = faction.getLeaders().stream().filter(unplacedLeaders::contains).toList();
-            if (!leadersToWriteAsText.isEmpty())
-                discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", leadersToWriteAsText.stream().map(Leader::getEmoiNameAndValueString).toList()));
-        }
+
+        List<Leader> leadersToWriteAsText = faction.getLeaders().stream().filter(unplacedLeaders::contains).toList();
+        if (!leadersToWriteAsText.isEmpty())
+            discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", leadersToWriteAsText.stream().map(Leader::getEmoiNameAndValueString).toList()));
+
         if (!homebrewTraitors.isEmpty())
             discordGame.queueMessage(infoChannelName, "__Traitors:__\n" + String.join("\n", homebrewTraitors));
         if (!leadersInTerritories.isEmpty())
