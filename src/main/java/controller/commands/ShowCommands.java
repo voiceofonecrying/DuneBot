@@ -1272,7 +1272,11 @@ public class ShowCommands {
                         traitorString);
         StringBuilder leadersInTerritories = new StringBuilder();
         for (Leader leader : faction.getLeaders()) {
-            if (!(faction instanceof HomebrewFaction))
+            List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+            if (!allFactionNames.contains(leader.getOriginalFactionName()))
+                discordGame.queueMessage(infoChannelName, "__Leader:__\n" + leader.getEmoiNameAndValueString());
+            else if (!(faction instanceof HomebrewFaction))
                 builder = builder.addFiles(getResourceFile(leader.getName()));
             if (leader.getBattleTerritoryName() != null)
                 leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
