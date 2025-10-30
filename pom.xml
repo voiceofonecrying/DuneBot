@@ -26,7 +26,7 @@
         <dependency>
             <groupId>net.dv8tion</groupId>
             <artifactId>JDA</artifactId>
-            <version>5.5.0</version>
+            <version>6.1.0</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-csv -->
         <dependency>
@@ -153,6 +153,24 @@
                         </configuration>
                     </execution>
                 </executions>
+            </plugin>
+            <!-- OpenRewrite Maven Plugin for JDA 6 Migration -->
+            <plugin>
+                <groupId>org.openrewrite.maven</groupId>
+                <artifactId>rewrite-maven-plugin</artifactId>
+                <version>5.46.2</version>
+                <configuration>
+                    <activeRecipes>
+                        <recipe>net.dv8tion.MigrateComponentsV2</recipe>
+                    </activeRecipes>
+                </configuration>
+                <dependencies>
+                    <dependency>
+                        <groupId>net.dv8tion</groupId>
+                        <artifactId>JDA</artifactId>
+                        <version>6.1.0</version>
+                    </dependency>
+                </dependencies>
             </plugin>
         </plugins>
     </build>

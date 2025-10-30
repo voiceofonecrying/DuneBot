@@ -7,7 +7,8 @@ import controller.DiscordGame;
 import model.*;
 import model.factions.IxFaction;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
@@ -104,8 +105,8 @@ public class IxButtons implements Pressable {
 
         discordGame.queueMessage(new MessageCreateBuilder()
                 .setContent("Which sector of " + territoryName + "?")
-                .addActionRow(buttons)
-                .addActionRow(Button.secondary(backButtonId, "Start Over"))
+                .addComponents(ActionRow.of(buttons))
+                .addComponents(ActionRow.of(Button.secondary(backButtonId, "Start Over")))
         );
     }
 

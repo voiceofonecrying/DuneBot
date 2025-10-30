@@ -4,13 +4,14 @@ import controller.DiscordGame;
 import enums.MoveType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import helpers.MessageHelper;
 import model.Game;
 import model.Territory;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.Button;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -157,9 +158,9 @@ public class MovementButtonActions {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
         List<Message> messagesToDelete = new ArrayList<>();
         for (Message message : messages) {
-            List<Button> buttons = message.getButtons();
+            List<Button> buttons = MessageHelper.getButtons(message);
             for (Button button : buttons) {
-                String id = button.getId();
+                String id = button.getCustomId();
                 if (id != null && (id.startsWith(choicePrefix))) {
                     messagesToDelete.add(message);
                     break;

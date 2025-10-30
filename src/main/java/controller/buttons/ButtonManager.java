@@ -6,6 +6,7 @@ import controller.commands.ShowCommands;
 import exceptions.InvalidGameStateException;
 import controller.DiscordGame;
 import helpers.ExceptionHandler;
+import helpers.MessageHelper;
 import model.Game;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
@@ -66,7 +67,7 @@ public class ButtonManager extends ListenerAdapter {
     public static void deleteAllButtonsInChannel(MessageChannel channel) {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
         for (Message message : messages) {
-            if (!message.getButtons().isEmpty()) {
+            if (!MessageHelper.getButtons(message).isEmpty()) {
                 try {
                     message.delete().complete();
                 } catch (Exception ignore) {}
