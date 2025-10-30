@@ -15,7 +15,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.lang3.StringUtils;
@@ -154,7 +155,7 @@ public class EventListener extends ListenerAdapter {
                             buttons.add(Button.primary("faction-whisper-" + recipientLowerCase + "-no", "No"));
                             MessageCreateBuilder response = new MessageCreateBuilder()
                                     .setContent("Would you like to send this message as a whisper to " + emoji + "?\n" + event.getMessage().getContentRaw())
-                                    .addActionRow(buttons);
+                                    .addComponents(ActionRow.of(buttons));
                             event.getChannel().sendMessage(response.build()).queue();
                         }
                     });

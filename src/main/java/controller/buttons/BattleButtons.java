@@ -5,12 +5,13 @@ import controller.DiscordGame;
 import controller.commands.BattleCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import helpers.MessageHelper;
 import model.*;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.ActionComponent;
+import net.dv8tion.jda.api.components.ActionComponent;
 
 import java.text.MessageFormat;
 import java.util.List;
@@ -302,7 +303,7 @@ public class BattleButtons implements Pressable {
 
     public static void deletePublishResolutionButtonsInChannel(MessageChannel channel) {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
-        List<Message> messagesToDelete = messages.stream().filter(message -> message.getButtons().stream().map(ActionComponent::getId).anyMatch(id -> id != null && id.startsWith("battle-publish-resolution"))).toList();
+        List<Message> messagesToDelete = messages.stream().filter(message -> MessageHelper.getButtons(message).stream().map(ActionComponent::getCustomId).anyMatch(id -> id != null && id.startsWith("battle-publish-resolution"))).toList();
         messagesToDelete.forEach(message -> message.delete().complete());
     }
 

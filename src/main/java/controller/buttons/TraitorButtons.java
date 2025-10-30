@@ -4,13 +4,14 @@ import controller.DiscordGame;
 import controller.commands.SetupCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import helpers.MessageHelper;
 import model.Battle;
 import model.Game;
 import model.factions.*;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.ActionComponent;
+import net.dv8tion.jda.api.components.ActionComponent;
 
 import java.io.IOException;
 import java.util.List;
@@ -72,7 +73,7 @@ public class TraitorButtons implements Pressable {
 
     public static void deleteTraitorCallButtonsInChannel(MessageChannel channel) {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
-        List<Message> messagesToDelete = messages.stream().filter(message -> message.getButtons().stream().map(ActionComponent::getId).anyMatch(id -> id != null && id.startsWith("traitor-call"))).toList();
+        List<Message> messagesToDelete = messages.stream().filter(message -> MessageHelper.getButtons(message).stream().map(ActionComponent::getCustomId).anyMatch(id -> id != null && id.startsWith("traitor-call"))).toList();
         messagesToDelete.forEach(message -> message.delete().complete());
     }
 

@@ -4,12 +4,13 @@ import controller.commands.BTCommands;
 import controller.commands.RunCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import helpers.MessageHelper;
 import controller.DiscordGame;
 import model.Game;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.Button;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -44,9 +45,9 @@ public class BTButtons implements Pressable {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 50).complete().getRetrievedHistory();
         List<Message> messagesToDelete = new ArrayList<>();
         for (Message message : messages) {
-            List<Button> buttons = message.getButtons();
+            List<Button> buttons = MessageHelper.getButtons(message);
             for (Button button : buttons) {
-                String id = button.getId();
+                String id = button.getCustomId();
                 if (id != null && id.startsWith("bt-revival-rate")) {
                     messagesToDelete.add(message);
                     break;

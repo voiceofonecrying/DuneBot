@@ -9,7 +9,8 @@ import model.topics.DuneTopic;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
@@ -123,11 +124,11 @@ public class DiscordChannel implements DuneTopic {
         MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder().addContent(message);
         int i = 0;
         while (i + 5 < buttons.size()) {
-            messageCreateBuilder.addActionRow(buttons.subList(i, i + 5));
+            messageCreateBuilder.addComponents(ActionRow.of(buttons.subList(i, i + 5)));
             i += 5;
         }
         if (i < buttons.size())
-            messageCreateBuilder.addActionRow(buttons.subList(i, buttons.size()));
+            messageCreateBuilder.addComponents(ActionRow.of(buttons.subList(i, buttons.size())));
         return messageCreateBuilder;
     }
 }

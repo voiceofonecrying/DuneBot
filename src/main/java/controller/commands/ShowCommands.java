@@ -20,8 +20,9 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
 import net.dv8tion.jda.api.interactions.commands.build.Commands;
 import net.dv8tion.jda.api.interactions.commands.build.SubcommandData;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
-import net.dv8tion.jda.api.interactions.components.selections.StringSelectMenu;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 import org.apache.commons.csv.CSVFormat;
@@ -444,9 +445,9 @@ public class ShowCommands {
     public static void sendInfoButtons(Game game, DiscordGame discordGame, Faction faction) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         if (faction.isGraphicDisplay())
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("text", "Try Text mode. It's easier to read!")).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addComponents(ActionRow.of(Button.secondary("text", "Try Text mode. It's easier to read!"))).build());
         else
-            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(Button.secondary("graphic", "Try Graphic mode. It's cool and beautiful!")).build());
+            discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addComponents(ActionRow.of(Button.secondary("graphic", "Try Graphic mode. It's cool and beautiful!"))).build());
 
         sendCharityAction(discordGame, faction, false);
         if (faction instanceof RicheseFaction) {
@@ -457,7 +458,7 @@ public class ShowCommands {
                 int noField = territory.getRicheseNoField();
                 Button button = Button.success("richese-reveal-no-field", "Reveal " + noField + " No-Field in " + territory.getTerritoryName());
                 button = button.withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.NO_FIELD)));
-                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addActionRow(List.of(button)).build());
+                discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addComponents(ActionRow.of(List.of(button))).build());
             }
         }
 
@@ -504,13 +505,13 @@ public class ShowCommands {
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         if (faction.getSpice() < 2 && !(faction instanceof BGFaction) && !(faction instanceof ChoamFaction)) {
             if (faction.isDecliningCharity()) {
-                builder = builder.addActionRow(Button.success("faction-charity-accept", "Accept CHOAM charity"));
+                builder = builder.addComponents(ActionRow.of(Button.success("faction-charity-accept", "Accept CHOAM charity")));
                 if (isReply)
                     discordGame.queueMessage(builder);
                 else
                     discordGame.queueMessage(infoChannelName, builder.build());
             } else {
-                builder = builder.addActionRow(Button.danger("faction-charity-decline", "Decline CHOAM charity"));
+                builder = builder.addComponents(ActionRow.of(Button.danger("faction-charity-decline", "Decline CHOAM charity")));
                 if (isReply)
                     discordGame.queueMessage(builder);
                 else
@@ -568,7 +569,7 @@ public class ShowCommands {
                 descriptionMessages.add(discordGame.tagEmojis(message));
                 embedBuilder.appendDescription(String.join("\n", descriptionMessages));
                 builder.addEmbeds(embedBuilder.build());
-                builder.addActionRow(buttons);
+                builder.addComponents(ActionRow.of(buttons));
                 if (isReply)
                     discordGame.queueMessage(builder);
                 else
@@ -600,14 +601,14 @@ public class ShowCommands {
                         buttons.add(Button.success("atreides-ally-battle-prescience-yes", "Grant Battle Prescience"));
                     else
                         buttons.add(Button.danger("atreides-ally-battle-prescience-no", "Deny Battle Prescience"));
-                    builder.addActionRow(buttons);
+                    builder.addComponents(ActionRow.of(buttons));
                 }
                 case BGFaction bg -> {
                     descriptionMessages.add("You are currently " + (bg.isDenyingAllyVoice() ? "denying " : "granting ") + "The Voice to " + allyEmoji);
                     if (bg.isDenyingAllyVoice())
-                        builder.addActionRow(List.of(Button.success("bg-ally-voice-yes", "Grant The Voice")));
+                        builder.addComponents(ActionRow.of(List.of(Button.success("bg-ally-voice-yes", "Grant The Voice"))));
                     else
-                        builder.addActionRow(List.of(Button.danger("bg-ally-voice-no", "Deny The Voice")));
+                        builder.addComponents(ActionRow.of(List.of(Button.danger("bg-ally-voice-no", "Deny The Voice"))));
                 }
                 default -> {
                 }
@@ -650,7 +651,7 @@ public class ShowCommands {
             }
             menu.addOption(optionString, String.valueOf(i));
         }
-        builder.addActionRow(menu.build());
+        builder.addComponents(ActionRow.of(menu.build()));
 
         List<Button> buttons = new ArrayList<>();
         buttons.add(Button.primary("bidding-pass", "Pass One Time"));
@@ -666,7 +667,7 @@ public class ShowCommands {
             buttons.add(Button.success("bidding-toggle-outbid-ally", "Don't Outbid Ally"));
         else
             buttons.add(Button.danger("bidding-toggle-outbid-ally", "Allow Outbidding Ally"));
-        builder.addActionRow(buttons);
+        builder.addComponents(ActionRow.of(buttons));
 
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         if (isReply)
@@ -696,7 +697,7 @@ public class ShowCommands {
             embedBuilder.appendDescription("You may play a Treachery Card for a bot-supported action.");
             builder.addEmbeds(embedBuilder.build());
             String infoChannelName = faction.getInfoChannelPrefix() + "-info";
-            builder.addActionRow(playCardMenu.build());
+            builder.addComponents(ActionRow.of(playCardMenu.build()));
             discordGame.queueMessage(infoChannelName, builder.build());
         }
     }

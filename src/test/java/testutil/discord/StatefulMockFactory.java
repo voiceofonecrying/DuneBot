@@ -749,7 +749,7 @@ public class StatefulMockFactory {
         lenient().when(jda.getSelfUser()).thenReturn(selfUser);
 
         // Create a self member with full permissions
-        Member selfMember = mock(Member.class, RETURNS_DEEP_STUBS);
+        SelfMember selfMember = mock(SelfMember.class, RETURNS_DEEP_STUBS);
         lenient().when(selfMember.getIdLong()).thenReturn(1L);
         lenient().when(selfMember.getId()).thenReturn("1");
         lenient().when(selfMember.getUser()).thenReturn(selfUser);

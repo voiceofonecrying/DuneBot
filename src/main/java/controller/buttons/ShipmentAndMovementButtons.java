@@ -9,6 +9,7 @@ import enums.MoveType;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import helpers.MessageHelper;
 import controller.DiscordGame;
 import model.*;
 import model.factions.*;
@@ -16,7 +17,8 @@ import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
-import net.dv8tion.jda.api.interactions.components.buttons.Button;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
 
 import java.io.IOException;
@@ -103,9 +105,9 @@ public class ShipmentAndMovementButtons implements Pressable {
         for (Message message : messages) {
             if (message.getContentRaw().contains("Where would you like to place "))
                 continue;
-            List<Button> buttons = message.getButtons();
+            List<Button> buttons = MessageHelper.getButtons(message);
             for (Button button : buttons) {
-                String id = button.getId();
+                String id = button.getCustomId();
                 if (id != null && (id.startsWith("pass-shipment") ||
                         id.startsWith("reset-shipment") ||
                         id.startsWith("reset-shipping-forces") ||
@@ -535,10 +537,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             faction.getShipment().setForce(bt.getNumFreeRevivals());
             MessageCreateBuilder messageCreateBuilder = new MessageCreateBuilder()
                     .addContent("Currently sending your free revivals to " + territory.getTerritoryName() + "."
-                    ).addActionRow(
+                    ).addComponents(ActionRow.of(
                             Button.success("execute-shipment-bt-ht", "Confirm"),
                             Button.danger("reset-shipment-bt-ht", "Start over")
-                    );
+                    ));
             discordGame.queueMessage(messageCreateBuilder);
             discordGame.pushGame();
             return;
@@ -577,11 +579,11 @@ public class ShipmentAndMovementButtons implements Pressable {
                 .addContent(
                         "\nCurrently shipping:\n" + event.getComponentId().replace(componentId, "") + " " + Emojis.NO_FIELD + " to " +
                                 faction.getShipment().getTerritoryName() + " for " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend."
-                ).addActionRow(
+                ).addComponents(ActionRow.of(
                         Button.success("execute-shipment", "Confirm Shipment"),
                         Button.danger("reset-shipping-forces", "Reset forces"),
                         Button.danger("reset-shipment", "Start over")
-                );
+                ));
 
         faction.getShipment().setNoField(Integer.parseInt(event.getComponentId().replace(componentId, "")));
         if (game.hasGameOption(GameOption.HOMEWORLDS) && !isAlly && faction.isHighThreshold())
@@ -886,8 +888,8 @@ public class ShipmentAndMovementButtons implements Pressable {
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage(new MessageCreateBuilder()
                 .setContent("Which sector of " + aggregateTerritoryName + "?")
-                .addActionRow(buttons)
-                .addActionRow(Button.secondary(backButtonId + buttonSuffix, "Start over"))
+                .addComponents(ActionRow.of(buttons))
+                .addComponents(ActionRow.of(Button.secondary(backButtonId + buttonSuffix, "Start over")))
         );
     }
 
@@ -1128,7 +1130,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             for (int i = 0; i < 5; i++) {
                 if (!buttons.isEmpty()) actionRow.add(buttons.pollFirst());
             }
-            messageCreateBuilder.addActionRow(actionRow);
+            messageCreateBuilder.addComponents(ActionRow.of(actionRow));
             count++;
             if (count == 5 || buttons.isEmpty()) {
                 messagesToQueue.add(messageCreateBuilder);
