@@ -43,11 +43,6 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
         String secondFactionBefore = factionsBefore.get(1).getName();
         String thirdFactionBefore = factionsBefore.get(2).getName();
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: Move the third faction (position 3) to position 1
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -55,7 +50,7 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction-board-position")
                 .addStringOption("factionname", thirdFactionBefore)
                 .addIntegerOption("dot-position", 1)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -86,11 +81,6 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
         String firstFaction = gameBefore.getFactions().get(0).getName();
         String secondFaction = gameBefore.getFactions().get(1).getName();
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: Swap the first faction to position 2
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -98,7 +88,7 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction-board-position")
                 .addStringOption("factionname", firstFaction)
                 .addIntegerOption("dot-position", 2)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -119,11 +109,6 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
         Game gameBefore = parseGameFromBotData();
         String secondFaction = gameBefore.getFactions().get(1).getName();
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: Set the second faction to position 2 (its current position)
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -131,7 +116,7 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction-board-position")
                 .addStringOption("factionname", secondFaction)
                 .addIntegerOption("dot-position", 2)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -158,11 +143,6 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
 
         String lastFaction = gameBefore.getFactions().get(5).getName();
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: Move the last faction (position 6) to position 1
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -170,7 +150,7 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction-board-position")
                 .addStringOption("factionname", lastFaction)
                 .addIntegerOption("dot-position", 1)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -178,28 +158,5 @@ class SetupBoardPositionE2ETest extends SetupCommandsE2ETestBase {
         Game gameAfter = parseGameFromBotData();
         assertThat(gameAfter.getFactions().get(0).getName()).isEqualTo(lastFaction);
         assertThat(gameAfter.getFactions()).hasSize(6);
-    }
-
-    /**
-     * Helper method to add a faction to the game.
-     */
-    private void addFaction(String factionName) throws Exception {
-        MockUserState playerUser = guildState.createUser(factionName + "Player");
-        MockMemberState playerMember = guildState.createMember(playerUser.getUserId());
-
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
-        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
-                .setMember(moderatorMember)
-                .setCommandName("setup")
-                .setSubcommandName("faction")
-                .addStringOption("faction", factionName)
-                .addUserOption("player", playerUser)
-                .setChannel(gameActionsChannel)
-                .build();
-        commandManager.onSlashCommandInteraction(event);
     }
 }

@@ -217,4 +217,77 @@ abstract class SetupCommandsE2ETestBase {
         // Set the emojis in EmojiCache so DiscordGame can find them
         EmojiCache.setEmojis(String.valueOf(guildState.getGuildId()), mockEmojis);
     }
+
+    // ========== Helper Methods for Tests ==========
+
+    /**
+     * Gets the game-actions channel from the current game.
+     *
+     * @return The game-actions channel state
+     */
+    protected MockChannelState getGameActionsChannel() {
+        return guildState.getChannels().stream()
+                .filter(ch -> ch.getChannelName().equals("game-actions"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("game-actions channel not found"));
+    }
+
+    /**
+     * Gets the mod-info channel from the current game.
+     *
+     * @return The mod-info channel state
+     */
+    protected MockChannelState getModInfoChannel() {
+        return guildState.getChannels().stream()
+                .filter(ch -> ch.getChannelName().equals("mod-info"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("mod-info channel not found"));
+    }
+
+    /**
+     * Adds a faction to the game.
+     *
+     * <p>Creates a player user, member, and executes the /setup faction command
+     * to add the specified faction to the game.
+     *
+     * @param factionName The name of the faction to add (e.g., "Atreides", "Harkonnen")
+     * @throws Exception if the command fails
+     */
+    protected void addFaction(String factionName) throws Exception {
+        MockUserState playerUser = guildState.createUser(factionName + "Player");
+        guildState.createMember(playerUser.getUserId());
+
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setMember(moderatorMember)
+                .setCommandName("setup")
+                .setSubcommandName("faction")
+                .addStringOption("faction", factionName)
+                .addUserOption("player", playerUser)
+                .setChannel(getGameActionsChannel())
+                .build();
+
+        commandManager.onSlashCommandInteraction(event);
+    }
+
+    /**
+     * Adds multiple factions to the game.
+     *
+     * @param factionNames The names of the factions to add
+     * @throws Exception if any command fails
+     */
+    protected void addFactions(String... factionNames) throws Exception {
+        for (String factionName : factionNames) {
+            addFaction(factionName);
+        }
+    }
+
+    /**
+     * Adds six base factions to the game for testing setup advance.
+     * Uses: Atreides, Harkonnen, Emperor, Fremen, Guild, BG
+     *
+     * @throws Exception if any command fails
+     */
+    protected void addSixBaseFactions() throws Exception {
+        addFactions("Atreides", "Harkonnen", "Emperor", "Fremen", "Guild", "BG");
+    }
 }
