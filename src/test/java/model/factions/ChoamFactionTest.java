@@ -31,7 +31,7 @@ class ChoamFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 2);
+        assertEquals(2, faction.getSpice());
     }
 
     @Nested
@@ -193,7 +193,7 @@ class ChoamFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.CHOAM);
+        assertEquals(Emojis.CHOAM, faction.getEmoji());
     }
 
     @Test
@@ -203,7 +203,7 @@ class ChoamFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 5);
+        assertEquals(5, faction.getHandLimit());
     }
 
     @Test
@@ -263,7 +263,7 @@ class ChoamFactionTest extends FactionTestTemplate {
         game.setTurn(round);
         faction.setFirstInflation(ChoamInflationType.DOUBLE);
         assertEquals(faction.getFirstInflationRound(), round);
-        assertEquals(faction.getFirstInflationType(), ChoamInflationType.DOUBLE);
+        assertEquals(ChoamInflationType.DOUBLE, faction.getFirstInflationType());
     }
 
     @RepeatedTest(9)
@@ -271,8 +271,8 @@ class ChoamFactionTest extends FactionTestTemplate {
         int round = repetitionInfo.getCurrentRepetition() + 1;
         game.setTurn(round);
         faction.setFirstInflation(ChoamInflationType.CANCEL);
-        assertEquals(faction.getFirstInflationRound(), round);
-        assertEquals(faction.getFirstInflationType(), ChoamInflationType.CANCEL);
+        assertEquals(round, faction.getFirstInflationRound());
+        assertEquals(ChoamInflationType.CANCEL, faction.getFirstInflationType());
     }
 
     @Test
@@ -285,7 +285,7 @@ class ChoamFactionTest extends FactionTestTemplate {
         int round = repetitionInfo.getCurrentRepetition();
         game.setTurn(round);
         assertNull(faction.getInflationType(round));
-        assertEquals(faction.getChoamMultiplier(round), 1);
+        assertEquals(1, faction.getChoamMultiplier(round));
     }
 
     @RepeatedTest(4)
@@ -294,7 +294,7 @@ class ChoamFactionTest extends FactionTestTemplate {
         game.setTurn(5);
         faction.setFirstInflation(ChoamInflationType.DOUBLE);
         assertNull(faction.getInflationType(round));
-        assertEquals(faction.getChoamMultiplier(round), 1);
+        assertEquals(1, faction.getChoamMultiplier(round));
     }
 
     @RepeatedTest(4)
@@ -303,7 +303,7 @@ class ChoamFactionTest extends FactionTestTemplate {
         game.setTurn(5);
         faction.setFirstInflation(ChoamInflationType.DOUBLE);
         assertNull(faction.getInflationType(round));
-        assertEquals(faction.getChoamMultiplier(round), 1);
+        assertEquals(1, faction.getChoamMultiplier(round));
     }
 
     @Test
@@ -312,11 +312,11 @@ class ChoamFactionTest extends FactionTestTemplate {
         game.setTurn(round);
         faction.setFirstInflation(ChoamInflationType.DOUBLE);
 
-        assertEquals(faction.getInflationType(round), ChoamInflationType.DOUBLE);
-        assertEquals(faction.getChoamMultiplier(round), 2);
+        assertEquals(ChoamInflationType.DOUBLE, faction.getInflationType(round));
+        assertEquals(2, faction.getChoamMultiplier(round));
 
-        assertEquals(faction.getInflationType(round + 1), ChoamInflationType.CANCEL);
-        assertEquals(faction.getChoamMultiplier(round + 1), 0);
+        assertEquals(ChoamInflationType.CANCEL, faction.getInflationType(round + 1));
+        assertEquals(0, faction.getChoamMultiplier(round + 1));
     }
 
     @Test
@@ -325,10 +325,10 @@ class ChoamFactionTest extends FactionTestTemplate {
         game.setTurn(round);
         faction.setFirstInflation(ChoamInflationType.CANCEL);
 
-        assertEquals(faction.getInflationType(round), ChoamInflationType.CANCEL);
+        assertEquals(ChoamInflationType.CANCEL, faction.getInflationType(round));
         assertEquals(0, faction.getChoamMultiplier(round));
 
-        assertEquals(faction.getInflationType(round + 1), ChoamInflationType.DOUBLE);
+        assertEquals(ChoamInflationType.DOUBLE, faction.getInflationType(round + 1));
         assertEquals(2, faction.getChoamMultiplier(round + 1));
     }
 

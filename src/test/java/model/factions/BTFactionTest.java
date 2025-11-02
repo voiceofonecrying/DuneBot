@@ -30,7 +30,7 @@ class BTFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 5);
+        assertEquals(5, faction.getSpice());
     }
 
     @Nested
@@ -377,7 +377,7 @@ class BTFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.BT);
+        assertEquals(Emojis.BT, faction.getEmoji());
     }
 
     @Test
@@ -387,7 +387,7 @@ class BTFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 4);
+        assertEquals(4, faction.getHandLimit());
     }
 
     @Nested
@@ -405,7 +405,7 @@ class BTFactionTest extends FactionTestTemplate {
 
         @Test
         public void testInitialRevealedFaceDancers() {
-            assertEquals(faction.getRevealedFaceDancers().size(), 0);
+            assertEquals(0, faction.getRevealedFaceDancers().size());
         }
 
         @Test

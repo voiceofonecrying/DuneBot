@@ -33,7 +33,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 10);
+        assertEquals(10, faction.getSpice());
     }
 
     @Nested
@@ -610,7 +610,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.EMPEROR);
+        assertEquals(Emojis.EMPEROR, faction.getEmoji());
     }
 
     @Test
@@ -626,7 +626,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 4);
+        assertEquals(4, faction.getHandLimit());
     }
 
     @Test

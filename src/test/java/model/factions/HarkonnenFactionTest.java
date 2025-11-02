@@ -32,7 +32,7 @@ class HarkonnenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 10);
+        assertEquals(10, faction.getSpice());
     }
 
     @Test
@@ -136,7 +136,7 @@ class HarkonnenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.HARKONNEN);
+        assertEquals(Emojis.HARKONNEN, faction.getEmoji());
     }
 
     @Test
@@ -146,7 +146,7 @@ class HarkonnenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 8);
+        assertEquals(8, faction.getHandLimit());
     }
 
     @Nested

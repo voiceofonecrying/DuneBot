@@ -31,7 +31,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 10);
+        assertEquals(10, faction.getSpice());
     }
 
     @Test
@@ -135,7 +135,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.ATREIDES);
+        assertEquals(Emojis.ATREIDES, faction.getEmoji());
     }
 
     @Test
@@ -145,12 +145,12 @@ class AtreidesFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 4);
+        assertEquals(4, faction.getHandLimit());
     }
 
     @Test
     public void testInitialForcesLost() {
-        assertEquals(faction.getForcesLost(), 0);
+        assertEquals(0, faction.getForcesLost());
     }
 
     @Test
@@ -173,7 +173,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
     public void testAddForcesLostNoKH() {
         faction.setForcesLost(2);
         faction.addForceLost(3);
-        assertEquals(faction.getForcesLost(), 5);
+        assertEquals(5, faction.getForcesLost());
         assertFalse(faction.isHasKH());
     }
 
@@ -181,7 +181,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
     public void testAddForcesLostKH() {
         faction.setForcesLost(4);
         faction.addForceLost(3);
-        assertEquals(faction.getForcesLost(), 7);
+        assertEquals(7, faction.getForcesLost());
         assertTrue(faction.isHasKH());
     }
 }

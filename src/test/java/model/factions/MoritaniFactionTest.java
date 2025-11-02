@@ -140,7 +140,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.MORITANI);
+        assertEquals(Emojis.MORITANI, faction.getEmoji());
     }
 
     @Test
@@ -150,7 +150,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 4);
+        assertEquals(4, faction.getHandLimit());
     }
 
     @Nested
@@ -318,7 +318,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertEquals(atreidesStartingSpice - 6, atreides.getSpice());
             assertEquals(moritaniStartingSpice + 6, faction.getSpice());
             assertEquals(Emojis.MORITANI + " stole 6 " + Emojis.SPICE + " from " + Emojis.ATREIDES + " with Robbery" , turnSummary.getMessages().getFirst());
-            assertEquals(ledger.getMessages().getFirst(), "+6 " + Emojis.SPICE + " stolen from " + Emojis.ATREIDES + " with Robbery = 18 " + Emojis.SPICE);
+            assertEquals("+6 " + Emojis.SPICE + " stolen from " + Emojis.ATREIDES + " with Robbery = 18 " + Emojis.SPICE, ledger.getMessages().getFirst());
         }
 
         @Test
@@ -333,7 +333,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
             assertEquals(atreidesStartingSpice, atreides.getSpice());
             assertEquals(moritaniStartingSpice, faction.getSpice());
             assertEquals(Emojis.MORITANI + " stole 0 " + Emojis.SPICE + " from " + Emojis.ATREIDES + " with Robbery" , turnSummary.getMessages().getFirst());
-            assertEquals(ledger.getMessages().getFirst(),  Emojis.ATREIDES + " had no " + Emojis.SPICE + " to steal");
+            assertEquals(Emojis.ATREIDES + " had no " + Emojis.SPICE + " to steal", ledger.getMessages().getFirst());
         }
 
         @Test
