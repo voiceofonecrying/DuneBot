@@ -140,6 +140,11 @@ class HarkonnenFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testForceEmoji() {
+        assertEquals(Emojis.HARKONNEN_TROOP, faction.getForceEmoji());
+    }
+
+    @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 8);
     }

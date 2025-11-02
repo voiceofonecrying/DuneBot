@@ -24,6 +24,7 @@ public class BTFaction extends Faction {
         this.freeRevival = 2;
         this.maxRevival = 20;
         this.emoji = Emojis.BT;
+        this.forceEmoji = Emojis.BT_TROOP;
         this.factionsNeedingRevivalLimit = new ArrayList<>();
         this.highThreshold = 9;
         this.lowThreshold = 8;

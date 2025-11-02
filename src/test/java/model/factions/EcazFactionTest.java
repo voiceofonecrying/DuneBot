@@ -146,6 +146,11 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testForceEmoji() {
+        assertEquals(Emojis.ECAZ_TROOP, faction.getForceEmoji());
+    }
+
+    @Test
     public void testHandLimit() {
         assertEquals(4, faction.getHandLimit());
     }

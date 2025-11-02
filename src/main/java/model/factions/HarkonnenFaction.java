@@ -25,6 +25,7 @@ public class HarkonnenFaction extends Faction {
         this.freeRevival = 2;
         this.hasMiningEquipment = true;
         this.emoji = Emojis.HARKONNEN;
+        this.forceEmoji = Emojis.HARKONNEN_TROOP;
         this.highThreshold = 7;
         this.lowThreshold = 6;
         this.occupiedIncome = 2;

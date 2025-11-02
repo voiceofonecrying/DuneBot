@@ -27,6 +27,8 @@ public class EmperorFaction extends Faction {
         this.spice = 10;
         this.freeRevival = 1;
         this.emoji = Emojis.EMPEROR;
+        this.forceEmoji = Emojis.EMPEROR_TROOP;
+        this.specialForceEmoji = Emojis.EMPEROR_SARDAUKAR;
         this.highThreshold = 5;
         this.lowThreshold = 4;
         this.homeworld = "Kaitain";

@@ -16,6 +16,7 @@ public class GuildFaction extends Faction {
         this.spice = 5;
         this.freeRevival = 1;
         this.emoji = Emojis.GUILD;
+        this.forceEmoji = Emojis.GUILD_TROOP;
         this.highThreshold = 5;
         this.lowThreshold = 4;
         this.occupiedIncome = 2;

@@ -20,6 +20,8 @@ public class IxFaction extends Faction {
         this.spice = 10;
         this.freeRevival = 1;
         this.emoji = Emojis.IX;
+        this.forceEmoji = Emojis.IX_SUBOID;
+        this.specialForceEmoji = Emojis.IX_CYBORG;
         this.highThreshold = 5;
         this.lowThreshold = 4;
         this.occupiedIncome = 2;

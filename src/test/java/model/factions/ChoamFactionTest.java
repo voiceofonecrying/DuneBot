@@ -197,6 +197,11 @@ class ChoamFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testForceEmoji() {
+        assertEquals(Emojis.CHOAM_TROOP, faction.getForceEmoji());
+    }
+
+    @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 5);
     }

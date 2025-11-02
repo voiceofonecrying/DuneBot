@@ -282,6 +282,17 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testForceEmoji() {
+        assertEquals(Emojis.FREMEN_TROOP, faction.getForceEmoji());
+    }
+
+    @Test
+    @Override
+    public void testSpecialForceEmoji() {
+        assertEquals(Emojis.FREMEN_FEDAYKIN, faction.getSpecialForceEmoji());
+    }
+
+    @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
     }

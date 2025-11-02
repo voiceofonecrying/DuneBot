@@ -25,6 +25,7 @@ public class ChoamFaction extends Faction {
         this.freeRevival = 0;
         this.maxRevival = 20;
         this.emoji = Emojis.CHOAM;
+        this.forceEmoji = Emojis.CHOAM_TROOP;
         this.highThreshold = 11;
         this.lowThreshold = 10;
         this.homeworld = "Tupile";

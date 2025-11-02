@@ -614,6 +614,17 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testForceEmoji() {
+        assertEquals(Emojis.EMPEROR_TROOP, faction.getForceEmoji());
+    }
+
+    @Test
+    @Override
+    public void testSpecialForceEmoji() {
+        assertEquals(Emojis.EMPEROR_SARDAUKAR, faction.getSpecialForceEmoji());
+    }
+
+    @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
     }

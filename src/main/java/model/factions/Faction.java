@@ -35,6 +35,8 @@ public class Faction {
     private StrongholdCard hmsStrongholdProxy;
     protected final List<Leader> leaders;
     protected String emoji;
+    protected String forceEmoji;
+    protected String specialForceEmoji;
     protected int handLimit;
     protected int spice;
     protected int freeRevival;
@@ -83,7 +85,6 @@ public class Faction {
     protected DuneTopic chat;
     @Exclude
     protected DuneTopic allianceThread;
-    public boolean refreshedForAllActionsUX;
 
     public Faction(String name, String player, String userName) throws IOException {
         this.handLimit = 4;
@@ -174,6 +175,25 @@ public class Faction {
     public String getEmoji() {
         return emoji;
     }
+
+    public String getForceEmoji() {
+        return forceEmoji;
+    }
+
+    // Temporary for migration in DiscordGame
+    public void setForceEmoji(String forceEmoji) {
+        this.forceEmoji = forceEmoji;
+    }
+
+    public String getSpecialForceEmoji() {
+        return specialForceEmoji;
+    }
+
+    // Temporary for migration in DiscordGame
+    public void setSpecialForceEmoji(String specialForceEmoji) {
+        this.specialForceEmoji = specialForceEmoji;
+    }
+
     public Color getColor() {
         return Colors.getFactionColor(getName());
     }

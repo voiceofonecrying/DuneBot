@@ -4,16 +4,14 @@ import caches.EmojiCache;
 import caches.GameCache;
 import caches.LeaderSkillCardsCache;
 import com.google.gson.*;
+import constants.Emojis;
 import controller.channels.*;
-import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
 import helpers.Exclude;
 import io.gsonfire.GsonFireBuilder;
 import model.*;
-import model.factions.AtreidesFaction;
-import model.factions.Faction;
-import model.factions.FactionTypeSelector;
+import model.factions.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
@@ -372,24 +370,6 @@ public class DiscordGame {
         Game game = gson.fromJson(gameJson, Game.class);
         addGameReferenceToFactions(game);
 
-        List<String> territoriesInFremenRange = List.of(
-                "Bight Of The Cliff (North Sector)", "Bight Of The Cliff (South Sector)",
-                "Broken Land (East Sector)", "Broken Land (West Sector)",
-                "Cielago West (North Sector)", "Cielago West (South Sector)",
-                "False Wall West (Middle Sector)", "False Wall West (North Sector)", "False Wall West (South Sector)",
-                "Funeral Plain",
-                "Habbanya Erg (East Sector)", "Habbanya Erg (West Sector)",
-                "Hagga Basin (East Sector)", "Hagga Basin (West Sector)",
-                "Plastic Basin (Middle Sector)", "Plastic Basin (North Sector)", "Plastic Basin (South Sector)",
-                "Polar Sink",
-                "Rock Outcroppings (North Sector)", "Rock Outcroppings (South Sector)",
-                "Sietch Tabr",
-                "The Great Flat",
-                "The Greater Flat",
-                "Tsimpo (East Sector)", "Tsimpo (Middle Sector)", "Tsimpo (West Sector)",
-                "Wind Pass (Far North Sector)", "Wind Pass (Far South Sector)",
-                "Wind Pass (North Sector)", "Wind Pass (South Sector)", "Wind Pass North (North Sector)", "Wind Pass North (South Sector)"
-        );
         for (Territory territory : game.getTerritories().values()) {
             if (territory.hasForce("Hidden Mobile Stronghold")) {
                 Territory hms = game.getTerritory("Hidden Mobile Stronghold");
@@ -399,34 +379,21 @@ public class DiscordGame {
                 Territory revealedTerritory = game.getTerritory(territory.getDiscoveryToken());
                 game.putTerritoryInAnotherTerritory(revealedTerritory, territory);
             }
-            // Temporary migration until all game have refreshed their JSON
-            if (territoriesInFremenRange.contains(territory.getTerritoryName()))
-                territory.setInFremenRange(true);
         }
 
         for (Faction f : game.getFactions()) {
-            // Temporary "migration" to ensure all -info channels get refreshed before presenting new bidding button layout.
-            if (!f.refreshedForAllActionsUX) {
-                f.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
-                f.refreshedForAllActionsUX = true;
-            }
+            // Temporary migration to set force emojis
+            if (f instanceof HomebrewFaction hf)
+                hf.setForceEmoji(Emojis.getForceEmoji(hf.getFactionProxy()));
+            else
+                f.setForceEmoji(Emojis.getForceEmoji(f.getName()));
+            if (f instanceof EmperorFaction || f instanceof FremenFaction || f instanceof IxFaction)
+                f.setSpecialForceEmoji(Emojis.getForceEmoji(f.getName() + "*"));
             // End Temporary
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
             if (f instanceof AtreidesFaction atreides && atreides.hasAlly() && atreides.isGrantingAllyTreacheryPrescience())
                 f.setAllianceThread(getAllianceThread(f, f.getAlly()));
-        }
-
-        //Temporary migration to remove HMS from games that do not have Ix
-        if (!game.hasIxFaction()) {
-            for (Territory territory : game.getTerritories().values()) {
-                if (territory.hasForce("Hidden Mobile Stronghold")) {
-                    Territory hms = game.getTerritory("Hidden Mobile Stronghold");
-                    game.removeTerritoryFromAnotherTerritory(hms, territory);
-                    territory.getForces().removeIf(force -> force.getName().equals("Hidden Mobile Stronghold"));
-                }
-            }
-            game.getTerritories().remove("Hidden Mobile Stronghold");
         }
 
         game.setTurnSummary(getTurnSummary(game));

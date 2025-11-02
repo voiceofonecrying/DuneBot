@@ -26,6 +26,7 @@ public class EcazFaction extends Faction {
         this.spice = 12;
         this.freeRevival = 2;
         this.emoji = Emojis.ECAZ;
+        this.forceEmoji = Emojis.ECAZ_TROOP;
         this.highThreshold = 7;
         this.lowThreshold = 6;
         this.homeworld = "Ecaz";

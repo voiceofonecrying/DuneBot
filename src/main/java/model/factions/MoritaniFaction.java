@@ -24,6 +24,7 @@ public class MoritaniFaction extends Faction {
         this.spice = 12;
         this.freeRevival = 2;
         this.emoji = Emojis.MORITANI;
+        this.forceEmoji = Emojis.MORITANI_TROOP;
         this.highThreshold = 8;
         this.lowThreshold = 7;
         this.occupiedIncome = 2;
