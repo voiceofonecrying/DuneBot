@@ -1,6 +1,5 @@
 package model;
 
-import constants.Emojis;
 import enums.MoveType;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
@@ -278,9 +277,9 @@ public class Movement {
 
         for (int i = 0; i < Math.max(buttonLimitForces, buttonLimitSpecialForces); i++) {
             if (i < buttonLimitForces)
-                choices.add(new DuneChoice("primary", getChoicePrefix() + "add-force-" + (i + 1), "+" + (i + 1), Emojis.getForceEmoji(faction.getName()), false));
+                choices.add(new DuneChoice("primary", getChoicePrefix() + "add-force-" + (i + 1), "+" + (i + 1), faction.getForceEmoji(), false));
             if (i < buttonLimitSpecialForces)
-                choices.add(new DuneChoice("primary", getChoicePrefix() + "add-special-force-" + (i + 1), "+" + (i + 1) + " *", Emojis.getForceEmoji(faction.getName() + "*"), false));
+                choices.add(new DuneChoice("primary", getChoicePrefix() + "add-special-force-" + (i + 1), "+" + (i + 1) + " *", faction.getSpecialForceEmoji(), false));
         }
 
         String message = "Use buttons below to add forces to your ";

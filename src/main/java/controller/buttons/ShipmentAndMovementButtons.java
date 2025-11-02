@@ -642,13 +642,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             buttonSuffix = "-starting-forces";
         shipOrMove += buttonSuffix + "-";
         for (int i = 0; i < buttonLimitForces; i++) {
-            if (faction instanceof HomebrewFaction hbf)
-                forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "+" + (i + 1)).withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.getForceEmoji(hbf.getFactionProxy())))));
-            else
-                forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "+" + (i + 1)).withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.getForceEmoji(faction.getName())))));
+            forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "+" + (i + 1)).withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(faction.getForceEmoji()))));
         }
         for (int i = 0; i < buttonLimitSpecialForces; i++) {
-            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + (i + 1), "+" + (i + 1) + " *").withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.getForceEmoji(faction.getName() + "*")))));
+            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + (i + 1), "+" + (i + 1) + " *").withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(faction.getSpecialForceEmoji()))));
         }
 
         if (isShipment) {
