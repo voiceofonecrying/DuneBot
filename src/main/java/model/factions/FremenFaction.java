@@ -28,6 +28,8 @@ public class FremenFaction extends Faction {
         this.spice = 3;
         this.freeRevival = 3;
         this.emoji = Emojis.FREMEN;
+        this.forceEmoji = Emojis.FREMEN_TROOP;
+        this.specialForceEmoji = Emojis.FREMEN_FEDAYKIN;
         this.highThreshold = 3;
         this.lowThreshold = 2;
         this.occupiedIncome = 0;

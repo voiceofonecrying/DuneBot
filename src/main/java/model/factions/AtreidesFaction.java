@@ -23,6 +23,7 @@ public class AtreidesFaction extends Faction {
         this.freeRevival = 2;
         this.hasMiningEquipment = true;
         this.emoji = Emojis.ATREIDES;
+        this.forceEmoji = Emojis.ATREIDES_TROOP;
         this.highThreshold = 6;
         this.lowThreshold = 5;
         this.occupiedIncome = 2;

@@ -101,6 +101,7 @@ public class HomebrewFaction extends Faction{
         homeworldName.put("Richese", "Richese");
         this.factionProxy = factionProxy;
         emoji = Emojis.getFactionEmoji(factionProxy);
+        forceEmoji = Emojis.getForceEmoji(factionProxy);
         homeworldProxy = homeworldName.get(factionProxy);
         game.getTraitorDeck().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
         for (Faction f : game.getFactions())

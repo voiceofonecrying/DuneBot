@@ -162,6 +162,11 @@ class GuildFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testForceEmoji() {
+        assertEquals(Emojis.GUILD_TROOP, faction.getForceEmoji());
+    }
+
+    @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
     }

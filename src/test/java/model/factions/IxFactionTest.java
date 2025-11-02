@@ -544,6 +544,17 @@ class IxFactionTest extends FactionTestTemplate {
     }
 
     @Test
+    public void testForceEmoji() {
+        assertEquals(Emojis.IX_SUBOID, faction.getForceEmoji());
+    }
+
+    @Test
+    @Override
+    public void testSpecialForceEmoji() {
+        assertEquals(Emojis.IX_CYBORG, faction.getSpecialForceEmoji());
+    }
+
+    @Test
     public void testHandLimit() {
         assertEquals(faction.getHandLimit(), 4);
     }

@@ -22,6 +22,7 @@ public class RicheseFaction extends Faction {
         this.spice = 5;
         this.freeRevival = 2;
         this.emoji = Emojis.RICHESE;
+        this.forceEmoji = Emojis.RICHESE_TROOP;
         this.highThreshold = 10;
         this.lowThreshold = 9;
         this.occupiedIncome = 1;

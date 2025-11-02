@@ -30,6 +30,7 @@ public class BGFaction extends Faction {
         this.spice = 5;
         this.freeRevival = 1;
         this.emoji = Emojis.BG;
+        this.forceEmoji = Emojis.BG_FIGHTER;
         this.highThreshold = 11;
         this.lowThreshold = 10;
         this.occupiedIncome = 1;

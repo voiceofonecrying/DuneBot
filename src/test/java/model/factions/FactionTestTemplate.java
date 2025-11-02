@@ -47,6 +47,11 @@ abstract class FactionTestTemplate {
         throw new RuntimeException("\n- " + String.join("\n- ", topic.getMessages()));
     }
 
+    @Test
+    void testSpecialForceEmoji() {
+        assertNull(faction.getSpecialForceEmoji());
+    }
+
     @Nested
     @DisplayName("#getInfoChannelPrefix")
     class GetInfoChannelPrefix {
