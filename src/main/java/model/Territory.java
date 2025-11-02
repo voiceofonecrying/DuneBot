@@ -14,7 +14,7 @@ public class Territory {
     protected final String territoryName;
     private final int sector;
     private boolean isStronghold;
-    private boolean inFremenRange;
+    private final boolean inFremenRange;
     private final boolean isDiscoveryToken;
     private boolean justDiscovered;
     private final boolean isNearShieldWall;
@@ -71,10 +71,6 @@ public class Territory {
 
     public boolean isInFremenRange() {
         return inFremenRange;
-    }
-
-    public void setInFremenRange(boolean inFremenRange) {
-        this.inFremenRange = inFremenRange;
     }
 
     public boolean isDiscoveryToken() {
