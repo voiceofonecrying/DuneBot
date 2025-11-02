@@ -33,7 +33,7 @@ class FremenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 3);
+        assertEquals(3, faction.getSpice());
     }
 
     @Nested
@@ -278,7 +278,7 @@ class FremenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.FREMEN);
+        assertEquals(Emojis.FREMEN, faction.getEmoji());
     }
 
     @Test
@@ -294,7 +294,7 @@ class FremenFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 4);
+        assertEquals(4, faction.getHandLimit());
     }
 
     @Nested

@@ -32,7 +32,7 @@ class GuildFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 5);
+        assertEquals(5, faction.getSpice());
     }
 
     @Test
@@ -158,7 +158,7 @@ class GuildFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.GUILD);
+        assertEquals(Emojis.GUILD, faction.getEmoji());
     }
 
     @Test
@@ -168,7 +168,7 @@ class GuildFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 4);
+        assertEquals(4, faction.getHandLimit());
     }
 
     @Test

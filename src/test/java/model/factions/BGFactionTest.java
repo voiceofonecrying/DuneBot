@@ -29,7 +29,7 @@ class BGFactionTest extends FactionTestTemplate {
 
     @Test
     public void testInitialSpice() {
-        assertEquals(faction.getSpice(), 5);
+        assertEquals(5, faction.getSpice());
     }
 
     @Test
@@ -162,7 +162,7 @@ class BGFactionTest extends FactionTestTemplate {
 
     @Test
     public void testEmoji() {
-        assertEquals(faction.getEmoji(), Emojis.BG);
+        assertEquals(Emojis.BG, faction.getEmoji());
     }
 
     @Test
@@ -172,7 +172,7 @@ class BGFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(faction.getHandLimit(), 4);
+        assertEquals(4, faction.getHandLimit());
     }
 
     @Nested
@@ -200,7 +200,7 @@ class BGFactionTest extends FactionTestTemplate {
         @Test
         public void testSetPredictionFactionName() {
             faction.setPredictionFactionName("Atreides");
-            assertEquals(faction.getPredictionFactionName(), "Atreides");
+            assertEquals("Atreides", faction.getPredictionFactionName());
             assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
         }
     }
@@ -210,7 +210,7 @@ class BGFactionTest extends FactionTestTemplate {
     class PredictedTurn {
         @Test
         public void testInitialPredictionRound() {
-            assertEquals(faction.getPredictionRound(), 0);
+            assertEquals(0, faction.getPredictionRound());
         }
 
         @Test
@@ -232,7 +232,7 @@ class BGFactionTest extends FactionTestTemplate {
         public void testSetPredictionRound() throws InvalidGameStateException {
             faction.setPredictionFactionName("Atreides");
             faction.setPredictionRound(1);
-            assertEquals(faction.getPredictionRound(), 1);
+            assertEquals(1, faction.getPredictionRound());
             assertTrue(faction.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
             assertEquals("You predict " + Emojis.ATREIDES + " to win on turn 1.", chat.getMessages().getLast());
         }
