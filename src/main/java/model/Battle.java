@@ -298,7 +298,7 @@ public class Battle {
             defenderBattlePlan = null;
             battlePlanRemoved = true;
         }
-        String message = "Your " + Emojis.getForceEmoji(targetFactionName + "*") + " advantage has been negated by Karama.";
+        String message = "Your " + targetFaction.getSpecialForceEmoji() + " advantage has been negated by Karama.";
         if (battlePlanRemoved)
             message += "\nYou must submit a new battle plan.";
         targetFaction.getChat().publish(message + " " + targetFaction.getPlayer());
