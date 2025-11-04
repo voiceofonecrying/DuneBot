@@ -792,10 +792,10 @@ public class Battle {
                         if (executeResolution) {
                             if (savedSpecialForces > 0) {
                                 savedSpecialForces--;
-                                savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
+                                savedForceEmoji = troopFaction.getSpecialForceEmoji();
                             } else {
                                 savedRegularForces--;
-                                savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
+                                savedForceEmoji = troopFaction.getForceEmoji();
                             }
                             turnSummary.publish(faction.getEmoji() + " leaves 1 " + savedForceEmoji + " in " + wholeTerritoryName + ", may return it to reserves.");
                             faction.withdrawForces(savedRegularForces, savedSpecialForces, getTerritorySectors(game), "Suk Graduate");
@@ -804,11 +804,11 @@ public class Battle {
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
                     boolean savedForceIsStarred = false;
                     if (specialForcesDialed > 0) {
-                        savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
+                        savedForceEmoji = troopFaction.getSpecialForceEmoji();
                         specialForcesDialed--;
                         savedForceIsStarred = true;
                     } else {
-                        savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
+                        savedForceEmoji = troopFaction.getForceEmoji();
                         regularForcesDialed--;
                     }
                     if (!savedForceEmoji.isEmpty()) {
