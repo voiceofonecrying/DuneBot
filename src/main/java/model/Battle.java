@@ -1237,9 +1237,9 @@ public class Battle {
             int opponentSpecialNotDialed = opponentBattlePlan.getSpecialNotDialed();
             String forcesString = "";
             if (opponentRegularNotDialed > 0)
-                forcesString += " " + opponentRegularNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName());
+                forcesString += " " + opponentRegularNotDialed + " " + opponentFaction.getForceEmoji();
             if (opponentSpecialNotDialed > 0)
-                forcesString += " " + opponentSpecialNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName() + "*");
+                forcesString += " " + opponentSpecialNotDialed + " " + opponentFaction.getSpecialForceEmoji();
             int ecazForcesNotDialed = Math.floorDiv(opponentBattlePlan.getEcazTroopsForAlly(), 2);
             if (ecazForcesNotDialed > 0)
                 forcesString += " " + ecazForcesNotDialed + " " + Emojis.ECAZ_TROOP;
