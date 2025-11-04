@@ -958,12 +958,12 @@ public class CommandManager extends ListenerAdapter {
         return message;
     }
 
-    private void publishTerritoriesDisplayString(DiscordGame discordGame, List<Territory> territories) throws ChannelNotFoundException {
+    private void publishTerritoriesDisplayString(DiscordGame discordGame, Game game, List<Territory> territories) throws ChannelNotFoundException {
         for (Territory territory : territories) {
             if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty())
                 continue;
             String spiceString = territory.getSpice() == 0 ? "" : " " + territory.getSpice() + " " + Emojis.SPICE;
-            String forcesString = " " + String.join(" ", territory.getForces().stream().map(f -> f.getStrength() + " " + Emojis.getForceEmoji(f.getName())).toList());
+            String forcesString = " " + String.join(" ", territory.getForces().stream().map(f -> f.getStrength() + " " + game.getForceEmoji(f.getName())).toList());
             if (territory.hasRicheseNoField())
                 forcesString += " " + territory.getRicheseNoField() + " " + Emojis.NO_FIELD;
             discordGame.getModInfo().queueMessage(territory.getTerritoryName() + ": " +
@@ -976,17 +976,17 @@ public class CommandManager extends ListenerAdapter {
             case "territories" -> {
                 Collection<Territory> territories = game.getTerritories().values();
                 discordGame.getModInfo().queueMessage("**Strongholds**");
-                publishTerritoriesDisplayString(discordGame, territories.stream().filter(Territory::isStronghold).toList());
+                publishTerritoriesDisplayString(discordGame, game, territories.stream().filter(Territory::isStronghold).toList());
                 if (game.hasGameOption(GameOption.HOMEWORLDS))
                     discordGame.getModInfo().queueMessage("**Homeworlds**");
                 else
                     discordGame.getModInfo().queueMessage("**Reserves**");
-                publishTerritoriesDisplayString(discordGame, territories.stream().filter(t -> t instanceof HomeworldTerritory).toList());
+                publishTerritoriesDisplayString(discordGame, game, territories.stream().filter(t -> t instanceof HomeworldTerritory).toList());
                 discordGame.getModInfo().queueMessage("**Other territories**");
-                publishTerritoriesDisplayString(discordGame, territories.stream().filter(t -> !t.isStronghold() && !(t instanceof HomeworldTerritory)).toList());
+                publishTerritoriesDisplayString(discordGame, game, territories.stream().filter(t -> !t.isStronghold() && !(t instanceof HomeworldTerritory)).toList());
                 discordGame.getModInfo().queueMessage("**Bene Tleilaxu Tanks**");
                 if (!game.getTleilaxuTanks().getForces().isEmpty())
-                    discordGame.getModInfo().queueMessage(String.join(" ", game.getTleilaxuTanks().getForces().stream().map(f -> f.getStrength() + " " + Emojis.getForceEmoji(f.getName())).toList()));
+                    discordGame.getModInfo().queueMessage(String.join(" ", game.getTleilaxuTanks().getForces().stream().map(f -> f.getStrength() + " " + game.getForceEmoji(f.getName())).toList()));
                 if (!game.getLeaderTanks().isEmpty())
                     discordGame.getModInfo().queueMessage(String.join(", ", game.getLeaderTanks().stream().map(Leader::getEmoiNameAndValueString).toList()));
             }
