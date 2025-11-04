@@ -253,7 +253,7 @@ public class Territory {
     public boolean hasTerrorToken(String name) {
         return getTerrorTokens().stream()
                 .filter(t -> t.equals(name))
-                .map(t -> true)
+                .map(_ -> true)
                 .findFirst().orElse(false);
     }
 
@@ -300,15 +300,16 @@ public class Territory {
         StringBuilder message = new StringBuilder();
 
         for (Force force : new ArrayList<>(forces)) {
-            String name = force.getFactionName();
+            String factionName = force.getFactionName();
+            String forceName = force.getName();
             int strength = force.getStrength();
-            removeForces(game, name, strength);
-            game.getTleilaxuTanks().addForces(name, strength);
+            removeForces(game, forceName, strength);
+            game.getTleilaxuTanks().addForces(factionName, strength);
 
             message.append(MessageFormat.format(
                     "{0} lose {1} {2} to the atomic explosion.\n",
                     Emojis.getFactionEmoji(force.getFactionName()),
-                    strength, Emojis.getForceEmoji(name)
+                    strength, game.getForceEmoji(forceName)
             ));
         }
 
@@ -342,7 +343,7 @@ public class Territory {
         game.getTurnSummary().publish(MessageFormat.format(
                 "{0} lose {1} {2} to the storm in {3}.",
                 Emojis.getFactionEmoji(factionName),
-                strength, Emojis.getForceEmoji(forceName),
+                strength, game.getForceEmoji(forceName),
                 territoryName
         ));
     }
@@ -403,7 +404,7 @@ public class Territory {
                 if (force.getName().contains("Fremen") || fremen != null && fremen.hasAlly() && force.getName().contains(fremen.getAlly()))
                     continue;
                 message.append(MessageFormat.format("{0} {1} devoured by {2}\n",
-                        force.getStrength(), Emojis.getForceEmoji(force.getName()), wormName
+                        force.getStrength(), game.getForceEmoji(force.getName()), wormName
                 ));
                 forcesToRemove.add(force);
             }
