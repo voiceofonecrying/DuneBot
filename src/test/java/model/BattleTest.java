@@ -568,13 +568,13 @@ class BattleTest extends DuneTest {
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             assertDoesNotThrow(() -> battle.setBattlePlan(game, ecaz, sanyaEcaz, null, false, 5, false, 4, null, null));
             BattlePlan bp = battle.getDefenderBattlePlan();
-            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString(game));
             assertEquals(3, bp.getRegularDialed());
             assertEquals(1, bp.getSpecialDialed());
             String updateMessage = battle.updateTroopsDialed(game, "Ecaz", 5, 0);
             assertEquals(5, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
-            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString(game));
             assertEquals("Battle plan updated to dial 5 " + Emojis.EMPEROR_TROOP + " 0 " + Emojis.EMPEROR_SARDAUKAR + "\nThis will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Gara Kulon if you win.", updateMessage);
         }
     }

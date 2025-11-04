@@ -1329,7 +1329,7 @@ public class BattlePlanTest extends DuneTest {
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 0, false, 0);
-            assertEquals("This will leave 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString(game));
         }
 
         @Test
@@ -1345,7 +1345,7 @@ public class BattlePlanTest extends DuneTest {
             assertEquals(ecaz, battle.getDefender(game));
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 4);
-            assertEquals("This will leave no " + Emojis.EMPEROR + " forces 0 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave no " + Emojis.EMPEROR + " forces 0 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString(game));
         }
 
         @Test
@@ -1364,7 +1364,7 @@ public class BattlePlanTest extends DuneTest {
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 5);
             assertFalse(ecazChat.getMessages().getFirst().contains("How would you like to take troop losses?"));
-            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString(game));
             assertEquals(5, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
             assertEquals(1, bp.getSpecialNotDialed());
@@ -1386,14 +1386,14 @@ public class BattlePlanTest extends DuneTest {
             Leader sanyaEcaz = ecaz.getLeader("Sanya Ecaz").orElseThrow();
             BattlePlan bp = new BattlePlan(game, battle, ecaz, false, sanyaEcaz, null, false, null, null, 5, false, 4);
             assertTrue(ecazChat.getMessages().getFirst().contains("How would you like to take troop losses?"));
-            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 3 " + Emojis.EMPEROR_TROOP + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString(game));
             assertEquals(3, bp.getRegularDialed());
             assertEquals(1, bp.getSpecialDialed());
             bp.setForcesDialed(6, 0);
             assertEquals(6, bp.getRegularDialed());
             assertEquals(0, bp.getSpecialDialed());
             assertEquals(1, bp.getSpecialNotDialed());
-            assertEquals("This will leave 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 1 " + Emojis.EMPEROR_SARDAUKAR + " 3 " + Emojis.ECAZ_TROOP + " in Red Chasm if you win.", bp.getForcesRemainingString(game));
         }
     }
 
@@ -1633,7 +1633,7 @@ public class BattlePlanTest extends DuneTest {
             assertEquals(4, bp.getRegularDialed());
             assertEquals(1, bp.getRegularNotDialed());
             assertEquals(1, bp.getNumForcesNotDialed());
-            assertEquals("This will leave 1 " + Emojis.RICHESE_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString());
+            assertEquals("This will leave 1 " + Emojis.RICHESE_TROOP + " in Gara Kulon if you win.", bp.getForcesRemainingString(game));
         }
 
         @Test

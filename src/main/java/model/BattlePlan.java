@@ -92,7 +92,7 @@ public class BattlePlan {
 
         game.getModInfo().publish(faction.getEmoji() + " battle plan for " + wholeTerritoryName + ":\n" + getPlanMessage(false));
         faction.getChat().publish("Your battle plan for " + wholeTerritoryName + " has been submitted:\n" + getPlanMessage(false));
-        faction.getChat().publish(getForcesRemainingString());
+        faction.getChat().publish(getForcesRemainingString(game));
         Faction opponent = aggressor ? battle.getDefender(game) : battle.getAggressor(game);
         this.canCallTraitor = false;
         this.declinedTraitor = false;
@@ -418,11 +418,8 @@ public class BattlePlan {
         this.spice = spiceUsed;
     }
 
-    public String getForcesRemainingString() {
-        String forcesRemaining = "";
-        if (regularNotDialed > 0) forcesRemaining += regularNotDialed + " " + Emojis.getForceEmoji(dialFactionName) + " ";
-        if (specialNotDialed > 0) forcesRemaining += specialNotDialed + " " + Emojis.getForceEmoji(dialFactionName + "*") + " ";
-        if (forcesRemaining.isEmpty()) forcesRemaining = "no " + Emojis.getFactionEmoji(dialFactionName) + " forces ";
+    public String getForcesRemainingString(Game game) {
+        String forcesRemaining = game.getFaction(dialFactionName).forcesString(regularNotDialed, specialNotDialed) + " ";
         if (hasEcazAndAlly)
             forcesRemaining += Math.floorDiv(ecazTroopsForAlly, 2) + " " + Emojis.ECAZ_TROOP + " ";
         if (weapon != null && weapon.name().equals("Lasgun") && defense != null && defense.name().equals("Shield"))
