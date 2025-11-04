@@ -241,6 +241,24 @@ public class TerritoryTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#shieldWallRemoveTroops")
+    class ShieldWallRemoveTroops {
+        @Test
+        void testRemoveTroops() {
+            game.addFaction(emperor);
+            Territory shieldWallNorth = game.getTerritory("Shield Wall (North Sector)");
+            shieldWallNorth.addForces("Emperor", 1);
+            String message = shieldWallNorth.shieldWallRemoveTroops(game);
+            assertEquals(Emojis.EMPEROR + " lose 1 " + Emojis.EMPEROR_TROOP + " to the atomic explosion.\n", message);
+
+            Territory shieldWallSouth = game.getTerritory("Shield Wall (South Sector)");
+            shieldWallSouth.addForces("Emperor*", 2);
+            message = shieldWallSouth.shieldWallRemoveTroops(game);
+            assertEquals(Emojis.EMPEROR + " lose 2 " + Emojis.EMPEROR_SARDAUKAR + " to the atomic explosion.\n", message);
+        }
+    }
+
+    @Nested
     @DisplayName("#shaiHuludAppears")
     class ShaiHuludAppears {
         @BeforeEach
