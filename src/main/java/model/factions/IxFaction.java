@@ -42,7 +42,7 @@ public class IxFaction extends Faction {
 
     @Override
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
-        return numForces + " " + Emojis.getForceEmoji(name) + " " + numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
+        return numForces + " " + forceEmoji + " " + numSpecialForces + " " + specialForceEmoji;
     }
 
     public Territory getTerritoryWithHMS() {
@@ -151,7 +151,7 @@ public class IxFaction extends Faction {
 
     public void presentStartingCardsListAndChoices() throws InvalidGameStateException {
         setHandLimit(13); // Only needs 7 with Harkonnen in a 6p game, but allowing here for a 12p game with Hark.
-        game.getFactions().forEach(f -> game.drawTreacheryCard(name, false, false));
+        game.getFactions().forEach(_ -> game.drawTreacheryCard(name, false, false));
         if (game.hasHarkonnenFaction() && !game.hasGameOption(GameOption.IX_ONLY_1_CARD_PER_FACTION))
             game.drawTreacheryCard(name, false, false);
         game.getModInfo().publish(Emojis.IX + " has received " + Emojis.TREACHERY + " cards.\nIx player can use buttons or mod can use /setup ix-hand-selection to select theirs.");

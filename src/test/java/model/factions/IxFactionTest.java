@@ -286,7 +286,7 @@ class IxFactionTest extends FactionTestTemplate {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.removeForces(faction.getHomeworld(), 2, true, true);
             game.reviveForces(faction, false, 2, 1);
-            assertEquals(faction.getEmoji() + " revives 2 " + Emojis.getForceEmoji(faction.getName()) + " 1 " + Emojis.getForceEmoji("Ix*") + " for free.", turnSummary.getMessages().getLast());
+            assertEquals(faction.getEmoji() + " revives 2 " + Emojis.IX_SUBOID + " 1 " + Emojis.IX_CYBORG + " for free.", turnSummary.getMessages().getLast());
         }
 
         @Test

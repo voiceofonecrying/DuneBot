@@ -205,7 +205,7 @@ abstract class FactionTestTemplate {
         public void testPaidRevival() {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             game.reviveForces(faction, false, 3, 0);
-            assertEquals(faction.getEmoji() + " revives 3 " + Emojis.getForceEmoji(faction.getName()) + " for free.", turnSummary.getMessages().getLast());
+            assertEquals(faction.getEmoji() + " revives 3 " + faction.getForceEmoji() + " for free.", turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -802,13 +802,13 @@ abstract class FactionTestTemplate {
         @Test
         void testForcesStringInTurnSummaryMessage() throws InvalidGameStateException {
             faction.placeForces(territory, 3, 0, false, false, false, false, false);
-            assertEquals(faction.getEmoji() + ": 3 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat", turnSummary.getMessages().getFirst());
+            assertEquals(faction.getEmoji() + ": 3 " + faction.getForceEmoji() + " placed on The Great Flat", turnSummary.getMessages().getFirst());
         }
 
         @Test
         void testSpiceCostInTurnSummaryMessage() throws InvalidGameStateException {
             faction.placeForces(territory, 1, 0, true, true, true, false, false);
-            assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            assertEquals(faction.getEmoji() + ": 1 " + faction.getForceEmoji() + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
         }
 
         @Test
@@ -817,7 +817,7 @@ abstract class FactionTestTemplate {
             faction.addTechToken("Heighliners");
             faction.addTechToken("Axlotl Tanks");
             faction.placeForces(territory, 1, 0, true, true, true, false, false);
-            assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji(faction.getName()) + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            assertEquals(faction.getEmoji() + ": 1 " + faction.getForceEmoji() + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
             assertEquals("2 " + Emojis.SPICE + " is placed on " + Emojis.HEIGHLINERS, turnSummary.getMessages().getLast());
         }
 
@@ -1143,7 +1143,7 @@ abstract class FactionTestTemplate {
         @Test
         void testOneForceReturnedToReserves() {
             assertFalse(falseWallEast_southSector.hasActiveFaction(faction) && falseWallEast_middleSector.hasActiveFaction(faction));
-            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + Emojis.getForceEmoji(faction.getName()) + " returned to reserves with Harass and Withdraw.")));
+            assertTrue(turnSummary.getMessages().stream().anyMatch(m -> m.equals("1 " + faction.getForceEmoji() + " returned to reserves with Harass and Withdraw.")));
         }
 
         @Test

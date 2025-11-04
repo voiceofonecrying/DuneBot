@@ -423,9 +423,9 @@ public class Faction {
     public String forcesString(int numForces, int numSpecialForces) {
         String forcesString = "";
         if (numForces > 0)
-            forcesString += numForces + " " + Emojis.getForceEmoji(name) + " ";
+            forcesString += numForces + " " + forceEmoji + " ";
         if (numSpecialForces > 0)
-            forcesString += numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
+            forcesString += numSpecialForces + " " + specialForceEmoji;
         forcesString = forcesString.trim();
         if (forcesString.isEmpty())
             forcesString = "no " + emoji + " forces";
@@ -433,7 +433,7 @@ public class Faction {
     }
 
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
-        return numForces + " " + Emojis.getForceEmoji(name) + " ";
+        return numForces + " " + forceEmoji + " ";
     }
 
     public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, boolean karama, boolean crossShip) throws InvalidGameStateException {
@@ -498,7 +498,7 @@ public class Faction {
             removeSpecialReserves(amount);
         else
             removeReserves(amount);
-        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(forceName)));
+        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, forceEmoji));
         territory.addForces(forceName, amount);
         game.setUpdated(UpdateType.MAP);
     }
@@ -1502,7 +1502,7 @@ public class Faction {
             game.removeForces(territoryName, this, force, specialForce, false);
             int spice = Math.ceilDiv(force, 2);
             subtractSpice(spice, "shipment from " + territoryName + " back to reserves");
-            game.getTurnSummary().publish(Emojis.GUILD + " ship " + force + " " + Emojis.getForceEmoji("Guild") + " from " + territoryName + " to reserves for " + spice + " " + Emojis.SPICE + " paid to the bank.");
+            game.getTurnSummary().publish(Emojis.GUILD + " ship " + force + " " + Emojis.GUILD_TROOP + " from " + territoryName + " to reserves for " + spice + " " + Emojis.SPICE + " paid to the bank.");
         } else {
             if (territory.factionMustMoveOut(game, this))
                 movement.setMustMoveOutOf(territoryName);

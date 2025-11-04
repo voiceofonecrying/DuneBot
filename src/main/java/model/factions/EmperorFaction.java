@@ -58,7 +58,7 @@ public class EmperorFaction extends Faction {
 
     @Override
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
-        return numForces + " " + Emojis.getForceEmoji(name) + " " + numSpecialForces + " " + Emojis.getForceEmoji(name + "*");
+        return numForces + " " + forceEmoji + " " + numSpecialForces + " " + specialForceEmoji;
     }
 
     /**

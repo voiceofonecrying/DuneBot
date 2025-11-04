@@ -81,7 +81,7 @@ class EmperorFactionTest extends FactionTestTemplate {
             EmperorFaction emperor = (EmperorFaction) faction;
             faction.removeForces(emperor.getSecondHomeworld(), 2, true, true);
             game.reviveForces(faction, false, 2, 1);
-            assertEquals(faction.getEmoji() + " revives 2 " + Emojis.getForceEmoji(faction.getName()) + " 1 " + Emojis.getForceEmoji("Emperor*") + " for free.", turnSummary.getMessages().getLast());
+            assertEquals(faction.getEmoji() + " revives 2 " + Emojis.EMPEROR_TROOP + " 1 " + Emojis.EMPEROR_SARDAUKAR + " for free.", turnSummary.getMessages().getLast());
         }
 
         @Test
