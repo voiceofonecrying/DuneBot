@@ -161,7 +161,7 @@ class FremenFactionTest extends FactionTestTemplate {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.removeForces(faction.getHomeworld(), 2, true, true);
             game.reviveForces(faction, false, 2, 1);
-            assertEquals(faction.getEmoji() + " revives 2 " + Emojis.getForceEmoji(faction.getName()) + " 1 " + Emojis.getForceEmoji("Fremen*") + " for free.", turnSummary.getMessages().getLast());
+            assertEquals(faction.getEmoji() + " revives 2 " + Emojis.FREMEN_TROOP + " 1 " + Emojis.FREMEN_FEDAYKIN + " for free.", turnSummary.getMessages().getLast());
         }
 
         @Test

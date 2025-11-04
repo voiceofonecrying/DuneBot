@@ -182,10 +182,9 @@ public class BGFaction extends Faction {
      * @param amount    The number of forces to place.
      */
     public void placeAdvisorsFromReserves(Game game, Territory territory, int amount) {
-        String forceName = "Advisor";
         removeReserves(amount);
-        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.getForceEmoji(forceName)));
-        territory.addForces(forceName, amount);
+        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, Emojis.BG_ADVISOR));
+        territory.addForces("Advisor", amount);
         checkForLowThreshold();
         game.setUpdated(UpdateType.MAP);
     }

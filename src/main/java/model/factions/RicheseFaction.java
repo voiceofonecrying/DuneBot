@@ -165,7 +165,7 @@ public class RicheseFaction extends Faction {
             String message = "The " + noField + " " + Emojis.NO_FIELD + " in " + territory.getTerritoryName() + " reveals " + forcesString;
             int starReplacements = Math.min(numForces, factionShippedWithNoField.getSpecialReservesStrength());
             if (starReplacements > 0)
-                message += "\n" + factionShippedWithNoField.getEmoji() + " may replace up to " + starReplacements + " " + Emojis.getForceEmoji(factionShippedWithNoField.getName()) + " with " + Emojis.getForceEmoji(factionShippedWithNoField.getName() + "*");
+                message += "\n" + factionShippedWithNoField.getEmoji() + " may replace up to " + starReplacements + " " + factionShippedWithNoField.getForceEmoji() + " with " + factionShippedWithNoField.getSpecialForceEmoji();
 
             game.getTurnSummary().publish(message);
             territory.setRicheseNoField(null);

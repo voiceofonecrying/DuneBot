@@ -194,7 +194,7 @@ public class BTFaction extends Faction {
     }
 
     public void presentHTChoices() {
-        game.getTurnSummary().publish(emoji + " may place " + numFreeRevivals + " free revived " + Emojis.getForceEmoji(name) + " in any territory or homeworld.");
+        game.getTurnSummary().publish(emoji + " may place " + numFreeRevivals + " free revived " + forceEmoji + " in any territory or homeworld.");
         String buttonSuffix = "-bt-ht";
         List<DuneChoice> choices = new LinkedList<>();
         choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
@@ -206,7 +206,7 @@ public class BTFaction extends Faction {
             choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
         choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
         choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "Leave them on Tleilaxu"));
-        chat.publish("Where would you like to place your " + numFreeRevivals + " " + Emojis.getForceEmoji(name) + " free revivals? " + player, choices);
+        chat.publish("Where would you like to place your " + numFreeRevivals + " " + forceEmoji + " free revivals? " + player, choices);
         btHTActive = true;
     }
 
