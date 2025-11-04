@@ -1829,7 +1829,7 @@ public class Battle {
 
     private String nonCombatantForcesInSectorString(Game game, Territory t) {
         List<Force> nonCombatantForces = nonCombatantForcesInSector(game, t);
-        return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + Emojis.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
+        return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + game.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
     }
 
     private List<Force> nonCombatantForcesInSector(Game game, Territory t) {
