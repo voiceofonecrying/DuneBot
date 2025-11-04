@@ -389,7 +389,7 @@ public class Battle {
         if (faction instanceof AtreidesFaction atreides) {
             if (kwisatzHaderach && atreides.getForcesLost() < 7) {
                 kwisatzHaderach = false;
-                returnString += "Only " + atreides.getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. KH has been omitted from the battle plan.\n";
+                returnString += "Only " + atreides.getForcesLost() + " " + atreides.getForceEmoji() + " killed in battle. KH has been omitted from the battle plan.\n";
             } else if (kwisatzHaderach && leader == null && cheapHero == null) {
                 kwisatzHaderach = false;
                 returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";

@@ -816,6 +816,13 @@ class BattleTest extends DuneTest {
         }
 
         @Test
+        void testKHWithout7Killed() throws InvalidGameStateException {
+            atreides.addTreacheryCard(lasgun);
+            String message = battle1.setBattlePlan(game, atreides, "Duncan Idaho", true, "0", 0, "Lasgun", "None");
+            assertEquals("Only 0 " + Emojis.ATREIDES_TROOP + " killed in battle. KH has been omitted from the battle plan.\n", message);
+        }
+
+        @Test
         void testFirstSubmissionPublishesToGameActionsSecondDoesNot() throws InvalidGameStateException {
             battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
             assertEquals(Emojis.ATREIDES + " battle plan submitted.", gameActions.getMessages().getLast());
