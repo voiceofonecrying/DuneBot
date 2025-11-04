@@ -298,7 +298,7 @@ public class Battle {
             defenderBattlePlan = null;
             battlePlanRemoved = true;
         }
-        String message = "Your " + Emojis.getForceEmoji(targetFactionName + "*") + " advantage has been negated by Karama.";
+        String message = "Your " + targetFaction.getSpecialForceEmoji() + " advantage has been negated by Karama.";
         if (battlePlanRemoved)
             message += "\nYou must submit a new battle plan.";
         targetFaction.getChat().publish(message + " " + targetFaction.getPlayer());
@@ -389,7 +389,7 @@ public class Battle {
         if (faction instanceof AtreidesFaction atreides) {
             if (kwisatzHaderach && atreides.getForcesLost() < 7) {
                 kwisatzHaderach = false;
-                returnString += "Only " + atreides.getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. KH has been omitted from the battle plan.\n";
+                returnString += "Only " + atreides.getForcesLost() + " " + atreides.getForceEmoji() + " killed in battle. KH has been omitted from the battle plan.\n";
             } else if (kwisatzHaderach && leader == null && cheapHero == null) {
                 kwisatzHaderach = false;
                 returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
@@ -792,10 +792,10 @@ public class Battle {
                         if (executeResolution) {
                             if (savedSpecialForces > 0) {
                                 savedSpecialForces--;
-                                savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
+                                savedForceEmoji = troopFaction.getSpecialForceEmoji();
                             } else {
                                 savedRegularForces--;
-                                savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
+                                savedForceEmoji = troopFaction.getForceEmoji();
                             }
                             turnSummary.publish(faction.getEmoji() + " leaves 1 " + savedForceEmoji + " in " + wholeTerritoryName + ", may return it to reserves.");
                             faction.withdrawForces(savedRegularForces, savedSpecialForces, getTerritorySectors(game), "Suk Graduate");
@@ -804,11 +804,11 @@ public class Battle {
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
                     boolean savedForceIsStarred = false;
                     if (specialForcesDialed > 0) {
-                        savedForceEmoji = Emojis.getForceEmoji(troopFactionName + "*");
+                        savedForceEmoji = troopFaction.getSpecialForceEmoji();
                         specialForcesDialed--;
                         savedForceIsStarred = true;
                     } else {
-                        savedForceEmoji = Emojis.getForceEmoji(troopFactionName);
+                        savedForceEmoji = troopFaction.getForceEmoji();
                         regularForcesDialed--;
                     }
                     if (!savedForceEmoji.isEmpty()) {
@@ -1237,9 +1237,9 @@ public class Battle {
             int opponentSpecialNotDialed = opponentBattlePlan.getSpecialNotDialed();
             String forcesString = "";
             if (opponentRegularNotDialed > 0)
-                forcesString += " " + opponentRegularNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName());
+                forcesString += " " + opponentRegularNotDialed + " " + opponentFaction.getForceEmoji();
             if (opponentSpecialNotDialed > 0)
-                forcesString += " " + opponentSpecialNotDialed + " " + Emojis.getForceEmoji(opponentFaction.getName() + "*");
+                forcesString += " " + opponentSpecialNotDialed + " " + opponentFaction.getSpecialForceEmoji();
             int ecazForcesNotDialed = Math.floorDiv(opponentBattlePlan.getEcazTroopsForAlly(), 2);
             if (ecazForcesNotDialed > 0)
                 forcesString += " " + ecazForcesNotDialed + " " + Emojis.ECAZ_TROOP;
@@ -1829,7 +1829,7 @@ public class Battle {
 
     private String nonCombatantForcesInSectorString(Game game, Territory t) {
         List<Force> nonCombatantForces = nonCombatantForcesInSector(game, t);
-        return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + Emojis.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
+        return String.join("", nonCombatantForces.stream().map(f -> Emojis.getFactionEmoji(f.getFactionName()) + " loses " + f.getStrength() + " " + game.getForceEmoji(f.getName()) + " in " + t.getTerritoryName() + " to the tanks\n").toList());
     }
 
     private List<Force> nonCombatantForcesInSector(Game game, Territory t) {

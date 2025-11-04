@@ -171,7 +171,6 @@ public class BattlePlanTest extends DuneTest {
 
     @Test
     void testBattlePlanEmperorSupportsAlly() {
-        game.addFaction(emperor);
         assertThrows(InvalidGameStateException.class, () -> new BattlePlan(game, battle, atreides, true, duncanIdaho, null, false, null, null, 11, false, 11));
         game.addFaction(atreides);
         game.createAlliance(emperor, atreides);
@@ -1320,7 +1319,6 @@ public class BattlePlanTest extends DuneTest {
         @BeforeEach
         void setUp() throws IOException {
             game.addFaction(ecaz);
-            game.addFaction(emperor);
         }
 
         @Test
@@ -1405,8 +1403,8 @@ public class BattlePlanTest extends DuneTest {
         @BeforeEach
         void setUp() throws IOException {
             game.addFaction(fremen);
+            game.addFaction(ix);
             game.addFaction(ecaz);
-            fremen.setChat(new TestTopic());
         }
 
         @Nested
@@ -1531,6 +1529,7 @@ public class BattlePlanTest extends DuneTest {
             carthag.addForces("Emperor*", 3);
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             battle.negateSpecialForces(game, emperor);
+            assertEquals("Your " + Emojis.EMPEROR_SARDAUKAR + " advantage has been negated by Karama. em", emperorChat.getMessages().getLast());
             BattlePlan bp = new BattlePlan(game, battle, emperor, true, burseg, null, false, null, null, 2, false, 1);
             assertEquals(1, bp.getRegularDialed());
             assertEquals(2, bp.getSpecialDialed());
@@ -1543,6 +1542,7 @@ public class BattlePlanTest extends DuneTest {
             carthag.addForces("Fremen*", 3);
             Battle battle = new Battle(game, List.of(carthag), List.of(fremen, harkonnen));
             battle.negateSpecialForces(game, fremen);
+            assertEquals("Your " + Emojis.FREMEN_FEDAYKIN + " advantage has been negated by Karama. fr", fremenChat.getMessages().getLast());
             BattlePlan bp = new BattlePlan(game, battle, fremen, true, fremen.getLeader("Chani").orElseThrow(), null, false, null, null, 3, false, 0);
             assertEquals(1, bp.getRegularDialed());
             assertEquals(2, bp.getSpecialDialed());
@@ -1556,6 +1556,7 @@ public class BattlePlanTest extends DuneTest {
             carthag.addForces("Ix*", 3);
             Battle battle = new Battle(game, List.of(carthag), List.of(ix, harkonnen));
             battle.negateSpecialForces(game, ix);
+            assertEquals("Your " + Emojis.IX_CYBORG + " advantage has been negated by Karama. ix", ixChat.getMessages().getLast());
             BattlePlan bp = new BattlePlan(game, battle, ix, true, ix.getLeader("Tessia Vernius").orElseThrow(), null, false, null, null, 2, false, 1);
             assertEquals(0, bp.getRegularDialed());
             assertEquals(3, bp.getSpecialDialed());
@@ -1750,7 +1751,6 @@ public class BattlePlanTest extends DuneTest {
 
         @Test
         void testEmperorCanChangeForcesLost() throws InvalidGameStateException {
-            game.addFaction(emperor);
             game.addFaction(harkonnen);
             carthag.addForces("Emperor", 4);
             carthag.addForces("Emperor*", 2);
@@ -1908,7 +1908,6 @@ public class BattlePlanTest extends DuneTest {
         void setUp() {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
-            game.addFaction(emperor);
             caladan = game.getTerritory("Caladan");
             caladan.addForces("Emperor", 1);
             battle = new Battle(game, List.of(caladan), List.of(atreides, emperor));

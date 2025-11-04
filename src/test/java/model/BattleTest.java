@@ -439,7 +439,7 @@ class BattleTest extends DuneTest {
         @Test
         void testNonNativeNoAdvantageOnOtherHomeworlds() {
             game.addGameOption(GameOption.HOMEWORLDS);
-            game.getHomeworlds().forEach((fn, h) -> game.getFactions().stream().filter(f -> !f.getHomeworld().equals(h) && !(f instanceof EmperorFaction e && e.getSecondHomeworld().equals(h)))
+            game.getHomeworlds().forEach((_, h) -> game.getFactions().stream().filter(f -> !f.getHomeworld().equals(h) && !(f instanceof EmperorFaction e && e.getSecondHomeworld().equals(h)))
                     .forEach(f -> assertEquals(0, f.homeworldDialAdvantage(game, game.getTerritory(h)))));
         }
     }
@@ -813,6 +813,13 @@ class BattleTest extends DuneTest {
             battle3 = new Battle(game, List.of(habbanyaSietch), List.of(bt, emperor));
 
             duncanIdaho = atreides.getLeader("Duncan Idaho").orElseThrow();
+        }
+
+        @Test
+        void testKHWithout7Killed() throws InvalidGameStateException {
+            atreides.addTreacheryCard(lasgun);
+            String message = battle1.setBattlePlan(game, atreides, "Duncan Idaho", true, "0", 0, "Lasgun", "None");
+            assertEquals("Only 0 " + Emojis.ATREIDES_TROOP + " killed in battle. KH has been omitted from the battle plan.\n", message);
         }
 
         @Test
@@ -1394,6 +1401,7 @@ class BattleTest extends DuneTest {
             game.addFaction(atreides);
             game.addFaction(harkonnen);
             game.addFaction(ecaz);
+            game.addFaction(emperor);
             atreides.setForcesLost(7);
             atreides.addTreacheryCard(lasgun);
             harkonnen.addTreacheryCard(cheapHero);
