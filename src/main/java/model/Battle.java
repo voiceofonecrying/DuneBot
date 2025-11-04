@@ -232,19 +232,24 @@ public class Battle {
         return message.toString().trim();
     }
 
-    private String getFactionForceMessage(String factionName) {
-        String message = "";
+    private int getForceStrength(String forceName) {
         Optional<Force> optForce;
-        optForce = forces.stream().filter(faction -> faction.getName().equals(factionName)).findFirst();
-        int regularForces = 0;
-        if (optForce.isPresent()) regularForces = optForce.get().getStrength();
-        optForce = forces.stream().filter(faction -> faction.getName().equals(factionName + "*")).findFirst();
-        int specialForces = 0;
-        if (optForce.isPresent()) specialForces = optForce.get().getStrength();
-        boolean hasNoField = factionName.equals("Richese") && forces.stream().anyMatch(force -> force.getName().equals("NoField"));
-        if (hasNoField) message += "1 " + Emojis.NO_FIELD + " ";
-        if (regularForces > 0) message += regularForces + " " + Emojis.getForceEmoji(factionName) + " ";
-        if (specialForces > 0) message += specialForces + " " + Emojis.getForceEmoji(factionName + "*") + " ";
+        optForce = forces.stream().filter(f -> f.getName().equals(forceName)).findFirst();
+        int numForces = 0;
+        if (optForce.isPresent())
+            numForces = optForce.get().getStrength();
+        return numForces;
+    }
+
+    private String getFactionForceMessage(Faction faction) {
+        String factionName = faction.getName();
+        String message = "";
+        if (faction instanceof RicheseFaction && forces.stream().anyMatch(force -> force.getName().equals("NoField")))
+            message += "1 " + Emojis.NO_FIELD + " ";
+        int regularForces = getForceStrength(factionName);
+        int specialForces = getForceStrength(factionName + "*");
+        if (regularForces > 0 || specialForces > 0)
+            message += faction.forcesString(regularForces, specialForces) + " ";
         return message;
     }
 
@@ -255,12 +260,12 @@ public class Battle {
         List<String> factionForceStrings = new ArrayList<>();
         for (Faction f : getFactions(game)) {
             if (ecazAllyComplete && (f.getName().equals("Ecaz") || f.getAlly().equals("Ecaz"))) continue;
-            String factionForceString = getFactionForceMessage(f.getName());
+            String factionForceString = getFactionForceMessage(f);
             if (ecazAllyInBattle && !ecazAllyComplete && f.getName().equals("Ecaz") && f.hasAlly()) {
-                factionForceString += getFactionForceMessage(f.getAlly());
+                factionForceString += getFactionForceMessage(game.getFaction(f.getAlly()));
                 ecazAllyComplete = true;
             } else if (ecazInBattle && !ecazAllyComplete && f.getAlly().equals("Ecaz")) {
-                factionForceString += getFactionForceMessage("Ecaz");
+                factionForceString += getFactionForceMessage(game.getEcazFaction());
                 ecazAllyComplete = true;
             }
             factionForceStrings.add(factionForceString);
@@ -381,10 +386,10 @@ public class Battle {
         }
 
         String returnString = "";
-        if (faction instanceof AtreidesFaction atreidesFaction) {
-            if (kwisatzHaderach && atreidesFaction.getForcesLost() < 7) {
+        if (faction instanceof AtreidesFaction atreides) {
+            if (kwisatzHaderach && atreides.getForcesLost() < 7) {
                 kwisatzHaderach = false;
-                returnString += "Only " + ((AtreidesFaction) faction).getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. KH has been omitted from the battle plan.\n";
+                returnString += "Only " + atreides.getForcesLost() + " " + Emojis.getForceEmoji("Atreides") + " killed in battle. KH has been omitted from the battle plan.\n";
             } else if (kwisatzHaderach && leader == null && cheapHero == null) {
                 kwisatzHaderach = false;
                 returnString += "You must play a leader or a Cheap Hero to use Kwisatz Haderach. KH has been omitted from the battle plan.\n";
