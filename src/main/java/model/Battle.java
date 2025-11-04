@@ -552,7 +552,7 @@ public class Battle {
         String emojiFactionName = factionName.equals("Ecaz") ? ecazAllyName : factionName;
         Faction emojiFaction = game.getFaction(emojiFactionName);
         String planUpdatedString = "Battle plan updated to dial " + emojiFaction.forcesStringWithZeroes(regularDialed, specialDialed);
-        String forcesRemainingString = battlePlan.getForcesRemainingString();
+        String forcesRemainingString = battlePlan.getForcesRemainingString(game);
         return planUpdatedString + "\n" + forcesRemainingString;
     }
 
