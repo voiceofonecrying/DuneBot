@@ -381,6 +381,7 @@ public class DiscordGame {
             }
         }
 
+        boolean needToSetUpGameForceEmojis = game.missingForceEmojis();
         for (Faction f : game.getFactions()) {
             // Temporary migration to set force emojis
             if (f instanceof HomebrewFaction hf)
@@ -389,6 +390,8 @@ public class DiscordGame {
                 f.setForceEmoji(Emojis.getForceEmoji(f.getName()));
             if (f instanceof EmperorFaction || f instanceof FremenFaction || f instanceof IxFaction)
                 f.setSpecialForceEmoji(Emojis.getForceEmoji(f.getName() + "*"));
+            if (needToSetUpGameForceEmojis)
+                game.setUpForceEmojis(f);
             // End Temporary
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
