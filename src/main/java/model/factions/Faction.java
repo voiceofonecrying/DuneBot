@@ -180,18 +180,8 @@ public class Faction {
         return forceEmoji;
     }
 
-    // Temporary for migration in DiscordGame
-    public void setForceEmoji(String forceEmoji) {
-        this.forceEmoji = forceEmoji;
-    }
-
     public String getSpecialForceEmoji() {
         return specialForceEmoji;
-    }
-
-    // Temporary for migration in DiscordGame
-    public void setSpecialForceEmoji(String specialForceEmoji) {
-        this.specialForceEmoji = specialForceEmoji;
     }
 
     public Color getColor() {
