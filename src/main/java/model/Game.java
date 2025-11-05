@@ -41,7 +41,7 @@ public class Game {
     private List<String> bribesThisTurn;
     private final Deque<String> turnOrder;
     private final List<Faction> factions;
-    private HashMap<String, String> forceEmojis;
+    private final HashMap<String, String> forceEmojis;
     private final Territories territories;
     private final LinkedList<SpiceCard> spiceDeck;
     private final LinkedList<SpiceCard> spiceDiscardA;
@@ -168,7 +168,7 @@ public class Game {
 
         csvParser = getCSVFile("quotes.csv");
         for (CSVRecord csvRecord : csvParser) {
-            quotes.computeIfAbsent(Integer.valueOf(csvRecord.get(0)), k -> new LinkedList<>());
+            quotes.computeIfAbsent(Integer.valueOf(csvRecord.get(0)), _ -> new LinkedList<>());
             quotes.get(Integer.valueOf(csvRecord.get(0))).add(csvRecord.get(1));
         }
 
@@ -816,24 +816,9 @@ public class Game {
             throw new IllegalArgumentException("Cannot add a null faction");
         faction.joinGame(this);
         factions.add(faction);
-//        forceEmojis.put(faction.getName(), faction.getForceEmoji());
-//        if (faction.getSpecialForceEmoji() != null)
-//            forceEmojis.put(faction.getName() + "*", faction.getSpecialForceEmoji());
-        setUpForceEmojis(faction);
-    }
-
-    public void setUpForceEmojis(Faction faction) {
-        if (forceEmojis == null)
-            forceEmojis = new HashMap<>();
-        // This can be moved into addFaction when migration is complete.
         forceEmojis.put(faction.getName(), faction.getForceEmoji());
         if (faction.getSpecialForceEmoji() != null)
             forceEmojis.put(faction.getName() + "*", faction.getSpecialForceEmoji());
-    }
-
-    public boolean missingForceEmojis() {
-        // This method can be removed when migration is complete.
-        return forceEmojis == null || forceEmojis.isEmpty();
     }
 
     public String getForceEmoji(String forceName) {
@@ -1157,7 +1142,7 @@ public class Game {
             this.quotes = new HashMap<>();
             CSVParser csvParser = getCSVFile("quotes.csv");
             for (CSVRecord csvRecord : csvParser) {
-                quotes.computeIfAbsent(Integer.valueOf(csvRecord.get(0)), k -> new LinkedList<>());
+                quotes.computeIfAbsent(Integer.valueOf(csvRecord.get(0)), _ -> new LinkedList<>());
                 quotes.get(Integer.valueOf(csvRecord.get(0))).add(csvRecord.get(1));
             }
         }

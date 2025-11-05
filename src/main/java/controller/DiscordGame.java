@@ -4,7 +4,6 @@ import caches.EmojiCache;
 import caches.GameCache;
 import caches.LeaderSkillCardsCache;
 import com.google.gson.*;
-import constants.Emojis;
 import controller.channels.*;
 import exceptions.ChannelNotFoundException;
 import helpers.DiscordRequest;
@@ -155,15 +154,15 @@ public class DiscordGame {
         GsonFireBuilder builder = new GsonFireBuilder()
                 .registerTypeSelector(Faction.class, new FactionTypeSelector())
                 .registerTypeSelector(Territory.class, new TerritoryTypeSelector())
-                .registerPreProcessor(TreacheryCard.class, (clazz, src, gson) -> {
+                .registerPreProcessor(TreacheryCard.class, (_, src, _) -> {
                     JsonObject jsonObject = src.getAsJsonObject();
                     jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
                 })
-                .registerPreProcessor(LeaderSkillCard.class, (clazz, src, gson) -> {
+                .registerPreProcessor(LeaderSkillCard.class, (_, src, _) -> {
                     JsonObject jsonObject = src.getAsJsonObject();
                     jsonObject.addProperty("name", LeaderSkillCardsCache.getCardInfo(jsonObject.get("name").getAsString()).get("Name"));
                 })
-                .registerPreProcessor(Game.class, (clazz, src, gson) -> {
+                .registerPreProcessor(Game.class, (_, src, _) -> {
                     JsonObject jsonObject = src.getAsJsonObject();
                     JsonArray jsonArray = jsonObject.get("gameOptions").getAsJsonArray();
                     jsonArray.remove(new JsonPrimitive("MAP_IN_FRONT_OF_SHIELD"));
@@ -256,10 +255,6 @@ public class DiscordGame {
 
     public TurnSummary getTurnSummary(Game game) throws ChannelNotFoundException {
         return new TurnSummary(this, game);
-    }
-
-    public Whispers getWhispers() throws ChannelNotFoundException {
-        return getWhispers(this.game);
     }
 
     public Whispers getWhispers(Game game) throws ChannelNotFoundException {
@@ -381,17 +376,8 @@ public class DiscordGame {
             }
         }
 
-        boolean needToSetUpGameForceEmojis = game.missingForceEmojis();
         for (Faction f : game.getFactions()) {
-            // Temporary migration to set force emojis
-            if (f instanceof HomebrewFaction hf)
-                hf.setForceEmoji(Emojis.getForceEmoji(hf.getFactionProxy()));
-            else
-                f.setForceEmoji(Emojis.getForceEmoji(f.getName()));
-            if (f instanceof EmperorFaction || f instanceof FremenFaction || f instanceof IxFaction)
-                f.setSpecialForceEmoji(Emojis.getForceEmoji(f.getName() + "*"));
-            if (needToSetUpGameForceEmojis)
-                game.setUpForceEmojis(f);
+            // Temporary migrations when adding new Faction member variables can be placed here to add them to active games.
             // End Temporary
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
@@ -662,14 +648,12 @@ public class DiscordGame {
      * @return InteractionHook from the current event
      */
     private InteractionHook getHook() {
-        if (event instanceof SlashCommandInteractionEvent)
-            return ((SlashCommandInteractionEvent) event).getHook();
-        else if (event instanceof ButtonInteractionEvent)
-            return ((ButtonInteractionEvent) event).getHook();
-        else if (event instanceof StringSelectInteractionEvent)
-            return ((StringSelectInteractionEvent) event).getHook();
-        else
-            throw new IllegalArgumentException("Unknown event type");
+        return switch (event) {
+            case SlashCommandInteractionEvent slashCommandInteractionEvent -> slashCommandInteractionEvent.getHook();
+            case ButtonInteractionEvent buttonInteractionEvent -> buttonInteractionEvent.getHook();
+            case StringSelectInteractionEvent stringSelectInteractionEvent -> stringSelectInteractionEvent.getHook();
+            case null, default -> throw new IllegalArgumentException("Unknown event type");
+        };
     }
 
     /**
