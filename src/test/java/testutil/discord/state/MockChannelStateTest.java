@@ -189,4 +189,90 @@ class MockChannelStateTest {
 
         assertThat(channel.getMessages()).containsExactly(message2);
     }
+
+    @Test
+    void getLatestMessageId_returnsZeroWhenChannelIsEmpty() {
+        assertThat(channel.getLatestMessageId()).isEqualTo(0L);
+    }
+
+    @Test
+    void getLatestMessageId_returnsIdOfMostRecentMessage() {
+        MockMessageState message1 = new MockMessageState(1000001L, 2001L, 100L, "First");
+        MockMessageState message2 = new MockMessageState(1000002L, 2001L, 100L, "Second");
+        MockMessageState message3 = new MockMessageState(1000003L, 2001L, 100L, "Third");
+
+        channel.addMessage(message1);
+        channel.addMessage(message2);
+        channel.addMessage(message3);
+
+        assertThat(channel.getLatestMessageId()).isEqualTo(1000003L);
+    }
+
+    @Test
+    void getLatestMessageId_returnsIdOfOnlyMessage() {
+        MockMessageState message = new MockMessageState(1000001L, 2001L, 100L, "Only message");
+        channel.addMessage(message);
+
+        assertThat(channel.getLatestMessageId()).isEqualTo(1000001L);
+    }
+
+    @Test
+    void removeMessage_removesMessageById() {
+        MockMessageState message1 = new MockMessageState(1000001L, 2001L, 100L, "First");
+        MockMessageState message2 = new MockMessageState(1000002L, 2001L, 100L, "Second");
+        MockMessageState message3 = new MockMessageState(1000003L, 2001L, 100L, "Third");
+
+        channel.addMessage(message1);
+        channel.addMessage(message2);
+        channel.addMessage(message3);
+
+        boolean removed = channel.removeMessage(1000002L);
+
+        assertThat(removed).isTrue();
+        assertThat(channel.getMessages()).containsExactly(message1, message3);
+    }
+
+    @Test
+    void removeMessage_returnsFalseWhenMessageNotFound() {
+        MockMessageState message = new MockMessageState(1000001L, 2001L, 100L, "Test");
+        channel.addMessage(message);
+
+        boolean removed = channel.removeMessage(9999L);
+
+        assertThat(removed).isFalse();
+        assertThat(channel.getMessages()).containsExactly(message);
+    }
+
+    @Test
+    void removeMessage_returnsFalseOnEmptyChannel() {
+        boolean removed = channel.removeMessage(1000001L);
+
+        assertThat(removed).isFalse();
+    }
+
+    @Test
+    void removeMessage_updatesLatestMessageId() {
+        MockMessageState message1 = new MockMessageState(1000001L, 2001L, 100L, "First");
+        MockMessageState message2 = new MockMessageState(1000002L, 2001L, 100L, "Second");
+
+        channel.addMessage(message1);
+        channel.addMessage(message2);
+
+        assertThat(channel.getLatestMessageId()).isEqualTo(1000002L);
+
+        channel.removeMessage(1000002L);
+
+        assertThat(channel.getLatestMessageId()).isEqualTo(1000001L);
+    }
+
+    @Test
+    void removeMessage_resultsInZeroIdWhenLastMessageRemoved() {
+        MockMessageState message = new MockMessageState(1000001L, 2001L, 100L, "Only message");
+        channel.addMessage(message);
+
+        channel.removeMessage(1000001L);
+
+        assertThat(channel.getLatestMessageId()).isEqualTo(0L);
+        assertThat(channel.getMessages()).isEmpty();
+    }
 }

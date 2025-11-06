@@ -1,6 +1,7 @@
 package e2e;
 
 import caches.EmojiCache;
+import controller.buttons.ButtonManager;
 import controller.commands.CommandManager;
 import model.Game;
 import net.dv8tion.jda.api.entities.Guild;
@@ -14,7 +15,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import testutil.discord.StatefulMockFactory;
 import testutil.discord.builders.MockSlashCommandEventBuilder;
-import testutil.discord.state.*;
+import testutil.discord.state.MockChannelState;
+import testutil.discord.state.MockCategoryState;
+import testutil.discord.state.MockDiscordServer;
+import testutil.discord.state.MockGuildState;
+import testutil.discord.state.MockMemberState;
+import testutil.discord.state.MockMessageState;
+import testutil.discord.state.MockRoleState;
+import testutil.discord.state.MockThreadChannelState;
+import testutil.discord.state.MockUserState;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -48,6 +57,7 @@ abstract class SetupCommandsE2ETestBase {
     protected MockGuildState guildState;
     protected Guild guild;
     protected CommandManager commandManager;
+    protected ButtonManager buttonManager;
     protected MockRoleState modRole;
     protected MockRoleState gameRole;
     protected MockRoleState observerRole;
@@ -62,6 +72,7 @@ abstract class SetupCommandsE2ETestBase {
     void setUp() throws Exception {
         // Enable synchronous command execution for tests
         CommandManager.setRunSynchronously(true);
+        ButtonManager.setRunSynchronously(true);
 
         // Mock MessageHistory.getHistoryFromBeginning() to avoid ClassCastException
         messageHistoryMock = mockStatic(MessageHistory.class);
@@ -89,6 +100,9 @@ abstract class SetupCommandsE2ETestBase {
         // Create waiting-list channel (guild-level channel, not in any category)
         guildState.createTextChannel("waiting-list", 0L);
 
+        // Create Game Resources category (needed for card images when drawing the board)
+        MockCategoryState gameResourcesCategory = guildState.createCategory("Game Resources");
+
         // Create required roles
         modRole = guildState.createRole("Moderators");
         gameRole = guildState.createRole("Game #1");
@@ -105,6 +119,10 @@ abstract class SetupCommandsE2ETestBase {
 
         // Create CommandManager instance
         commandManager = new CommandManager();
+
+        // Create ButtonManager instance and enable mod button press for tests
+        buttonManager = new ButtonManager();
+        ButtonManager.setAllowModButtonPress();
 
         // Create a game with the new-game command first
         SlashCommandInteractionEvent newGameEvent = new MockSlashCommandEventBuilder(guildState)
@@ -133,8 +151,13 @@ abstract class SetupCommandsE2ETestBase {
                 .findFirst()
                 .orElseThrow();
 
-        // Note: For now, we don't track the turn-summary thread state separately
-        // as it's created by the newGame command. Future tests could verify thread creation.
+        // Create turn-summary thread in game-actions channel
+        // This thread is used during the START_GAME step to post game beginning messages
+        MockChannelState gameActionsChannel = guildState.getChannels().stream()
+                .filter(ch -> ch.getChannelName().equals("game-actions"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("game-actions channel not found"));
+        guildState.createThread("turn-summary", gameActionsChannel.getChannelId());
 
         // Parse the game state from bot-data channel
         try {
@@ -149,6 +172,7 @@ abstract class SetupCommandsE2ETestBase {
     void tearDown() {
         // Reset synchronous mode
         CommandManager.setRunSynchronously(false);
+        ButtonManager.setRunSynchronously(false);
 
         // Close the static mock to avoid memory leaks and interference with other tests
         if (messageHistoryMock != null) {
@@ -163,27 +187,50 @@ abstract class SetupCommandsE2ETestBase {
      * @throws IOException if parsing fails or no game data is found
      */
     protected Game parseGameFromBotData() throws IOException {
+        // Refresh bot-data channel to get latest messages (channel references can become stale)
+        MockChannelState freshBotData = guildState.getChannels().stream()
+                .filter(ch -> ch.getChannelName().equals("bot-data"))
+                .findFirst()
+                .orElse(botDataChannel); // Fallback to original if not found
+
         // Parse the actual game JSON from bot-data channel
-        List<MockMessageState> messages = botDataChannel.getMessages();
+        List<MockMessageState> messages = freshBotData.getMessages();
         if (messages.isEmpty()) {
             throw new IllegalStateException("No messages in bot-data channel");
         }
 
-        MockMessageState latestMessage = messages.get(messages.size() - 1);
-        if (latestMessage.getAttachments().isEmpty()) {
-            throw new IllegalStateException("No attachments in bot-data message");
+        // Find the most recent message with a valid game JSON attachment
+        // Button press logs have attachments but with empty/invalid data in the mock environment
+        // We try parsing from the most recent message backwards until we find valid JSON
+        for (int i = messages.size() - 1; i >= 0; i--) {
+            MockMessageState msg = messages.get(i);
+            if (msg.getAttachments().isEmpty()) {
+                continue;
+            }
+
+            try {
+                byte[] jsonData = msg.getAttachments().get(0).getData().readAllBytes();
+                if (jsonData.length == 0) {
+                    continue; // Skip empty attachments (button press logs)
+                }
+
+                String gameJson = new String(jsonData, StandardCharsets.UTF_8);
+
+                // Use DiscordGame's deserializer
+                com.google.gson.Gson gson = controller.DiscordGame.createGsonDeserializer();
+                Game game = gson.fromJson(gameJson, Game.class);
+
+                if (game != null) {
+                    return game; // Successfully parsed
+                }
+                // If gson returned null, try next message
+            } catch (Exception e) {
+                // Failed to parse this message, try next
+                continue;
+            }
         }
 
-        try {
-            byte[] jsonData = latestMessage.getAttachments().get(0).getData().readAllBytes();
-            String gameJson = new String(jsonData, StandardCharsets.UTF_8);
-
-            // Use DiscordGame's deserializer
-            com.google.gson.Gson gson = controller.DiscordGame.createGsonDeserializer();
-            return gson.fromJson(gameJson, Game.class);
-        } catch (Exception e) {
-            throw new IOException("Failed to parse game JSON", e);
-        }
+        throw new IllegalStateException("No messages with valid game JSON found in bot-data channel");
     }
 
     /**
@@ -289,5 +336,393 @@ abstract class SetupCommandsE2ETestBase {
      */
     protected void addSixBaseFactions() throws Exception {
         addFactions("Atreides", "Harkonnen", "Emperor", "Fremen", "Guild", "BG");
+    }
+
+    /**
+     * Executes the /setup advance command to progress through setup steps.
+     *
+     * @throws Exception if the command fails
+     */
+    protected void executeSetupAdvance() throws Exception {
+        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
+                .setMember(moderatorMember)
+                .setCommandName("setup")
+                .setSubcommandName("advance")
+                .setChannel(getGameActionsChannel())
+                .build();
+
+        commandManager.onSlashCommandInteraction(event);
+    }
+
+    /**
+     * Gets the turn-summary thread from the game-actions channel.
+     * Note: The turn-summary thread is created under game-actions, not a separate channel.
+     *
+     * @return The turn-summary thread state, or null if not found
+     */
+    protected MockThreadChannelState getTurnSummaryThread() {
+        // Find the front-of-shield channel (where turn summary threads are created)
+        MockChannelState frontOfShieldChannel = guildState.getChannels().stream()
+                .filter(ch -> ch.getChannelName().equals("front-of-shield"))
+                .findFirst()
+                .orElse(null);
+
+        if (frontOfShieldChannel == null) {
+            return null;
+        }
+
+        // Get the turn-0-summary thread from this channel (setup happens at turn 0)
+        return guildState.getThreadsInChannel(frontOfShieldChannel.getChannelId()).stream()
+                .filter(thread -> thread.getThreadName().equals("turn-0-summary"))
+                .findFirst()
+                .orElse(null);
+    }
+
+    // ========== Button Interaction Helpers ==========
+
+    /**
+     * Finds a button in a thread's messages by matching button ID pattern.
+     *
+     * @param thread The thread to search
+     * @param buttonIdPattern The button ID to search for (exact match or contains)
+     * @return The button state, or null if not found
+     */
+    protected testutil.discord.state.MockButtonState findButtonInThread(MockThreadChannelState thread, String buttonIdPattern) {
+        return thread.getMessages().stream()
+                .filter(testutil.discord.state.MockMessageState::hasButtons)
+                .flatMap(msg -> msg.getButtons().stream())
+                .filter(btn -> btn.getComponentId().contains(buttonIdPattern))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Finds a message with buttons in a thread by matching content pattern.
+     *
+     * @param thread The thread to search
+     * @param contentPattern The text pattern to search for in message content
+     * @return The message state, or null if not found
+     */
+    protected testutil.discord.state.MockMessageState findMessageWithButtons(MockThreadChannelState thread, String contentPattern) {
+        return thread.getMessages().stream()
+                .filter(testutil.discord.state.MockMessageState::hasButtons)
+                .filter(msg -> msg.getContent() != null && msg.getContent().contains(contentPattern))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Simulates clicking a button in a thread.
+     *
+     * @param buttonId The button component ID to click
+     * @param thread The thread containing the button
+     * @param member The member clicking the button
+     * @throws Exception if button interaction fails
+     */
+    protected void clickButton(String buttonId, MockThreadChannelState thread, testutil.discord.state.MockMemberState member) throws Exception {
+        // Refresh the thread state to get latest messages
+        // The thread parameter might be stale if messages were added since it was retrieved
+        MockThreadChannelState freshThread = guildState.getThreadsInChannel(thread.getParentChannelId()).stream()
+                .filter(t -> t.getThreadId() == thread.getThreadId())
+                .findFirst()
+                .orElse(thread); // Fallback to original if not found
+
+        // Find the message containing this button
+        testutil.discord.state.MockMessageState message = freshThread.getMessages().stream()
+                .filter(testutil.discord.state.MockMessageState::hasButtons)
+                .filter(msg -> msg.getButtons().stream()
+                        .anyMatch(btn -> btn.getComponentId().equals(buttonId)))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("Button not found: " + buttonId + " in thread " + freshThread.getThreadName()));
+
+        // Create button event
+        net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent buttonEvent =
+                new testutil.discord.builders.MockButtonEventBuilder(guildState)
+                        .setMember(member)
+                        .setButtonId(buttonId)
+                        .setChannel(freshThread)
+                        .setMessage(message)
+                        .build();
+
+        // Execute button interaction
+        buttonManager.onButtonInteraction(buttonEvent);
+    }
+
+    /**
+     * Gets a faction's chat thread.
+     *
+     * @param factionName The faction name (e.g., "Fremen", "BG")
+     * @return The faction's chat thread
+     */
+    protected MockThreadChannelState getFactionChatThread(String factionName) {
+        String factionPrefix = factionName.toLowerCase();
+        MockChannelState factionChannel = guildState.getChannels().stream()
+                .filter(ch -> ch.getChannelName().equals(factionPrefix + "-info"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(factionName + " info channel not found"));
+
+        return guildState.getThreadsInChannel(factionChannel.getChannelId()).stream()
+                .filter(thread -> thread.getThreadName().equals("chat"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(factionName + " chat thread not found"));
+    }
+
+    /**
+     * Gets the member state for a faction's player.
+     *
+     * @param factionName The faction name
+     * @return The member state for the faction's player
+     */
+    protected testutil.discord.state.MockMemberState getFactionMember(String factionName) {
+        testutil.discord.state.MockUserState user = guildState.getUsers().stream()
+                .filter(u -> u.getUsername().equals(factionName + "Player"))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException(factionName + " player not found"));
+
+        return guildState.getMember(user.getUserId());
+    }
+
+    /**
+     * Places Fremen forces in a single territory (part of multi-step placement).
+     * This simulates one placement iteration - Fremen can place multiple times until reaching 10 total.
+     *
+     * @param territory The territory to place in (e.g., "Sietch Tabr", "False Wall South")
+     * @param regularForces Number of regular Fremen troops (0-10)
+     * @param fedaykin Number of Fremen Fedaykin (0-10)
+     * @throws Exception if placement fails
+     */
+    protected void placeFremenForces(String territory, int regularForces, int fedaykin) throws Exception {
+        MockThreadChannelState fremenChat = getFactionChatThread("Fremen");
+        testutil.discord.state.MockMemberState fremenMember = getFactionMember("Fremen");
+
+        // Step 1: Click territory button (e.g., "ship-starting-forces-Sietch Tabr")
+        String territoryButtonId = "ship-starting-forces-" + territory;
+        int messagesBefore = fremenChat.getMessages().size();
+        clickButton(territoryButtonId, fremenChat, fremenMember);
+        int messagesAfter = fremenChat.getMessages().size();
+
+
+        // Step 2: Add regular forces
+        if (regularForces > 0) {
+            String addForcesButtonId = "add-force-shipment-starting-forces-" + regularForces;
+            clickButton(addForcesButtonId, fremenChat, fremenMember);
+        }
+
+        // Step 3: Add fedaykin
+        if (fedaykin > 0) {
+            String addFedaykinButtonId = "add-special-force-shipment-starting-forces-" + fedaykin;
+            clickButton(addFedaykinButtonId, fremenChat, fremenMember);
+        }
+
+        // Step 4: Execute placement
+        clickButton("execute-shipment-starting-forces", fremenChat, fremenMember);
+
+        // Note: If total placed < 10, Fremen will get new territory buttons for next placement
+        // If total = 10, step completes and setup advances
+    }
+
+    /**
+     * Completes Fremen starting forces placement by placing in 2 territories.
+     * Places 7 forces in Sietch Tabr and 3 forces in False Wall South.
+     *
+     * @throws Exception if placement fails
+     */
+    protected void completeFremenForcePlacement() throws Exception {
+        placeFremenForces("Sietch Tabr", 9, 1);      // 10 total (all in one territory)
+    }
+
+    /**
+     * Places Fremen forces in a multi-sector territory.
+     *
+     * @param territory The base territory name (e.g., "False Wall South")
+     * @param sector The sector name (e.g., "East Sector")
+     * @param regularForces Number of regular forces
+     * @param fedaykin Number of fedaykin
+     * @throws Exception if placement fails
+     */
+    protected void placeFremenForcesWithSector(String territory, String sector, int regularForces, int fedaykin) throws Exception {
+        MockThreadChannelState fremenChat = getFactionChatThread("Fremen");
+        testutil.discord.state.MockMemberState fremenMember = getFactionMember("Fremen");
+
+        // Step 1: Click territory button (triggers sector selection)
+        String territoryButtonId = "ship-starting-forces-" + territory;
+        clickButton(territoryButtonId, fremenChat, fremenMember);
+
+        // Step 2: Click sector button
+        String sectorButtonId = "ship-starting-forces-" + territory + " (" + sector + ")";
+        clickButton(sectorButtonId, fremenChat, fremenMember);
+
+        // Step 3: Add regular forces
+        if (regularForces > 0) {
+            String addForcesButtonId = "add-force-shipment-starting-forces-" + regularForces;
+            clickButton(addForcesButtonId, fremenChat, fremenMember);
+        }
+
+        // Step 4: Add fedaykin
+        if (fedaykin > 0) {
+            String addFedaykinButtonId = "add-special-force-shipment-starting-forces-" + fedaykin;
+            clickButton(addFedaykinButtonId, fremenChat, fremenMember);
+        }
+
+        // Step 5: Execute placement
+        clickButton("execute-shipment-starting-forces", fremenChat, fremenMember);
+    }
+
+    /**
+     * Completes BG starting advisor/fighter placement.
+     * BG follows a category-based selection flow:
+     * 1. Select category (stronghold, spice-blow, rock, or other)
+     * 2. Select specific territory from that category
+     * 3. Execute placement (BG auto-sets force count to 1)
+     *
+     * Note: Polar Sink is in the "other" category since it's not a stronghold, spice blow territory, or rock territory.
+     *
+     * @param category The category button to click (e.g., "stronghold", "spice-blow", "rock", "other")
+     * @param territory The specific territory to place in (e.g., "Polar Sink")
+     * @throws Exception if placement fails
+     */
+    protected void completeBGForcePlacement(String category, String territory) throws Exception {
+        MockThreadChannelState bgChat = getFactionChatThread("BG");
+        testutil.discord.state.MockMemberState bgMember = getFactionMember("BG");
+
+        // Step 1: Click category button (e.g., stronghold-starting-forces)
+        String categoryButtonId = category + "-starting-forces";
+        clickButton(categoryButtonId, bgChat, bgMember);
+
+        // Step 2: Click specific territory button
+        String territoryButtonId = "ship-starting-forces-" + territory;
+        clickButton(territoryButtonId, bgChat, bgMember);
+
+        // Step 3: Execute placement (BG auto-sets force count to 1)
+        clickButton("execute-shipment-starting-forces", bgChat, bgMember);
+    }
+
+    /**
+     * Completes Moritani starting forces placement.
+     * Moritani places exactly 6 troops in a single territory.
+     *
+     * @param territory The territory to place in
+     * @throws Exception if placement fails
+     */
+    protected void completeMoritaniForcePlacement(String territory) throws Exception {
+        MockThreadChannelState moritaniChat = getFactionChatThread("Moritani");
+        testutil.discord.state.MockMemberState moritaniMember = getFactionMember("Moritani");
+
+        // Step 1: Click territory button
+        String territoryButtonId = "ship-starting-forces-" + territory;
+        clickButton(territoryButtonId, moritaniChat, moritaniMember);
+
+        // Step 2: Execute placement (Moritani auto-sets force count to 6)
+        clickButton("execute-shipment-starting-forces", moritaniChat, moritaniMember);
+    }
+
+    /**
+     * Asserts that at least one message in the channel contains the specified text.
+     * Useful for verifying that expected messages were sent during setup.
+     *
+     * @param channel The channel to search for messages
+     * @param expectedText The text that should appear in at least one message
+     */
+    protected void assertMessageContains(MockChannelState channel, String expectedText) {
+        boolean found = channel.getMessages().stream()
+                .anyMatch(msg -> msg.getContent().toLowerCase().contains(expectedText.toLowerCase()));
+
+        if (!found) {
+            // Build helpful error message showing what messages were actually sent
+            String messageList = channel.getMessages().stream()
+                    .map(msg -> "  - " + msg.getContent().substring(0, Math.min(200, msg.getContent().length())))
+                    .collect(java.util.stream.Collectors.joining("\n"));
+
+            org.assertj.core.api.Assertions.fail(
+                "Expected to find message containing '%s' in channel '%s', but it was not found.\nMessages in channel:\n%s",
+                expectedText, channel.getChannelName(), messageList
+            );
+        }
+    }
+
+    /**
+     * Asserts that at least one message in the thread contains the specified text.
+     * Useful for verifying that expected messages were sent to faction threads during setup.
+     *
+     * @param thread The thread to search for messages
+     * @param expectedText The text that should appear in at least one message
+     */
+    protected void assertMessageContains(MockThreadChannelState thread, String expectedText) {
+        boolean found = thread.getMessages().stream()
+                .anyMatch(msg -> msg.getContent().toLowerCase().contains(expectedText.toLowerCase()));
+
+        if (!found) {
+            // Build helpful error message showing what messages were actually sent
+            String messageList = thread.getMessages().stream()
+                    .map(msg -> "  - " + msg.getContent().substring(0, Math.min(100, msg.getContent().length())))
+                    .collect(java.util.stream.Collectors.joining("\n"));
+
+            org.assertj.core.api.Assertions.fail(
+                "Expected to find message containing '%s' in thread '%s', but it was not found.\nMessages in thread:\n%s",
+                expectedText, thread.getThreadName(), messageList
+            );
+        }
+    }
+
+    /**
+     * Asserts that a faction info channel contains a message with the correct spice value in text mode.
+     * This verifies:
+     * 1. The channel is using text mode (contains "__Spice:__ " format, not emoji/graphic mode)
+     * 2. The numeric spice value matches the expected value
+     *
+     * @param channel The faction info channel to check
+     * @param factionName The faction name (for error messages)
+     * @param expectedSpice The expected spice value
+     */
+    protected void assertMessageContainsSpiceValue(MockChannelState channel, String factionName, int expectedSpice) {
+        // Find a message containing "__Spice:__ " (text mode format)
+        java.util.Optional<MockMessageState> spiceMessage = channel.getMessages().stream()
+                .filter(msg -> msg.getContent().contains("__Spice:__ "))
+                .findFirst();
+
+        if (spiceMessage.isEmpty()) {
+            // Build helpful error message showing what messages were actually sent
+            String messageList = channel.getMessages().stream()
+                    .map(msg -> "  - " + msg.getContent().substring(0, Math.min(200, msg.getContent().length())))
+                    .collect(java.util.stream.Collectors.joining("\n"));
+
+            org.assertj.core.api.Assertions.fail(
+                "Expected to find text mode spice message (containing '__Spice:__ ') in %s-info channel, but it was not found.\n" +
+                "This indicates the channel may be in graphic mode instead of text mode.\nMessages in channel:\n%s",
+                factionName, messageList
+            );
+        }
+
+        // Extract the spice value from the message
+        // Format is: "__Spice:__ <number>" possibly followed by more text
+        String content = spiceMessage.get().getContent();
+        int spiceIndex = content.indexOf("__Spice:__ ");
+        if (spiceIndex == -1) {
+            org.assertj.core.api.Assertions.fail("Found message but couldn't locate '__Spice:__ ' marker");
+        }
+
+        // Extract the substring starting after "__Spice:__ "
+        String afterSpiceMarker = content.substring(spiceIndex + "__Spice:__ ".length());
+
+        // Find the first non-digit character to determine where the number ends
+        int endIndex = 0;
+        while (endIndex < afterSpiceMarker.length() && Character.isDigit(afterSpiceMarker.charAt(endIndex))) {
+            endIndex++;
+        }
+
+        if (endIndex == 0) {
+            org.assertj.core.api.Assertions.fail(
+                "Could not parse spice value from message in %s-info channel.\nMessage content: %s",
+                factionName, content
+            );
+        }
+
+        String spiceValueStr = afterSpiceMarker.substring(0, endIndex);
+        int actualSpice = Integer.parseInt(spiceValueStr);
+
+        // Verify the actual spice matches expected
+        org.assertj.core.api.Assertions.assertThat(actualSpice)
+                .as("Spice value for %s in text mode", factionName)
+                .isEqualTo(expectedSpice);
     }
 }

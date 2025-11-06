@@ -377,10 +377,12 @@ public class ShipmentAndMovementButtons implements Pressable {
         boolean startingForces = event.getComponentId().contains("-starting-forces");
         boolean hmsPlacement = event.getComponentId().contains("-hms-placement");
         if (startingForces) {
-            if (faction.placeChosenStartingForces())
-                SetupCommands.advance(event.getGuild(), discordGame, game);
-            else
+            if (faction.placeChosenStartingForces()) {
                 discordGame.pushGame();
+                SetupCommands.advance(event.getGuild(), discordGame, game);
+            } else {
+                discordGame.pushGame();
+            }
         } else if (hmsPlacement) {
             ((IxFaction) faction).placeHMS();
             SetupCommands.advance(event.getGuild(), discordGame, game);

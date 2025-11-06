@@ -33,6 +33,11 @@ public class ButtonManager extends ListenerAdapter {
 
     static boolean allowModButtonPress = false;
     static Set<Long> buttonMessageIds = new HashSet<>();
+    private static boolean runSynchronously = false;
+
+    public static void setRunSynchronously(boolean synchronous) {
+        runSynchronously = synchronous;
+    }
 
     public static void setAllowModButtonPress() {
         allowModButtonPress = true;
@@ -85,12 +90,24 @@ public class ButtonManager extends ListenerAdapter {
         buttonMessageIds.add(messageId);
         CommandCompletionGuard.incrementCommandCount();
         event.deferReply().queue();
-        String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
-        CompletableFuture<Void> future = Queue.getFuture(categoryName);
-        Queue.putFuture(categoryName, future
-                .thenRunAsync(() -> runButtonCommand(event))
-                .thenRunAsync(() -> buttonMessageIds.remove(messageId))
-                .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
+
+        if (runSynchronously) {
+            // Run synchronously for tests
+            try {
+                runButtonCommand(event);
+            } finally {
+                buttonMessageIds.remove(messageId);
+                CommandCompletionGuard.decrementCommandCount();
+            }
+        } else {
+            // Run asynchronously in production
+            String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
+            CompletableFuture<Void> future = Queue.getFuture(categoryName);
+            Queue.putFuture(categoryName, future
+                    .thenRunAsync(() -> runButtonCommand(event))
+                    .thenRunAsync(() -> buttonMessageIds.remove(messageId))
+                    .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
+        }
     }
 
     private void runButtonCommand(@NotNull ButtonInteractionEvent event) {

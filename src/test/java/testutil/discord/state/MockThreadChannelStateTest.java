@@ -265,4 +265,90 @@ class MockThreadChannelStateTest {
         assertThat(thread.getMemberIds()).containsExactly(100L);
         assertThat(thread.getMemberIds()).doesNotContain(9999L);
     }
+
+    @Test
+    void getLatestMessageId_returnsZeroWhenThreadIsEmpty() {
+        assertThat(thread.getLatestMessageId()).isEqualTo(0L);
+    }
+
+    @Test
+    void getLatestMessageId_returnsIdOfMostRecentMessage() {
+        MockMessageState message1 = new MockMessageState(1000001L, thread.getThreadId(), 100L, "First");
+        MockMessageState message2 = new MockMessageState(1000002L, thread.getThreadId(), 100L, "Second");
+        MockMessageState message3 = new MockMessageState(1000003L, thread.getThreadId(), 100L, "Third");
+
+        thread.addMessage(message1);
+        thread.addMessage(message2);
+        thread.addMessage(message3);
+
+        assertThat(thread.getLatestMessageId()).isEqualTo(1000003L);
+    }
+
+    @Test
+    void getLatestMessageId_returnsIdOfOnlyMessage() {
+        MockMessageState message = new MockMessageState(1000001L, thread.getThreadId(), 100L, "Only message");
+        thread.addMessage(message);
+
+        assertThat(thread.getLatestMessageId()).isEqualTo(1000001L);
+    }
+
+    @Test
+    void removeMessage_removesMessageById() {
+        MockMessageState message1 = new MockMessageState(1000001L, thread.getThreadId(), 100L, "First");
+        MockMessageState message2 = new MockMessageState(1000002L, thread.getThreadId(), 100L, "Second");
+        MockMessageState message3 = new MockMessageState(1000003L, thread.getThreadId(), 100L, "Third");
+
+        thread.addMessage(message1);
+        thread.addMessage(message2);
+        thread.addMessage(message3);
+
+        boolean removed = thread.removeMessage(1000002L);
+
+        assertThat(removed).isTrue();
+        assertThat(thread.getMessages()).containsExactly(message1, message3);
+    }
+
+    @Test
+    void removeMessage_returnsFalseWhenMessageNotFound() {
+        MockMessageState message = new MockMessageState(1000001L, thread.getThreadId(), 100L, "Test");
+        thread.addMessage(message);
+
+        boolean removed = thread.removeMessage(9999L);
+
+        assertThat(removed).isFalse();
+        assertThat(thread.getMessages()).containsExactly(message);
+    }
+
+    @Test
+    void removeMessage_returnsFalseOnEmptyThread() {
+        boolean removed = thread.removeMessage(1000001L);
+
+        assertThat(removed).isFalse();
+    }
+
+    @Test
+    void removeMessage_updatesLatestMessageId() {
+        MockMessageState message1 = new MockMessageState(1000001L, thread.getThreadId(), 100L, "First");
+        MockMessageState message2 = new MockMessageState(1000002L, thread.getThreadId(), 100L, "Second");
+
+        thread.addMessage(message1);
+        thread.addMessage(message2);
+
+        assertThat(thread.getLatestMessageId()).isEqualTo(1000002L);
+
+        thread.removeMessage(1000002L);
+
+        assertThat(thread.getLatestMessageId()).isEqualTo(1000001L);
+    }
+
+    @Test
+    void removeMessage_resultsInZeroIdWhenLastMessageRemoved() {
+        MockMessageState message = new MockMessageState(1000001L, thread.getThreadId(), 100L, "Only message");
+        thread.addMessage(message);
+
+        thread.removeMessage(1000001L);
+
+        assertThat(thread.getLatestMessageId()).isEqualTo(0L);
+        assertThat(thread.getMessages()).isEmpty();
+    }
 }
