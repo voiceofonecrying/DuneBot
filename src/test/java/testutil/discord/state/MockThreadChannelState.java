@@ -224,4 +224,31 @@ public class MockThreadChannelState {
     public boolean hasMember(long userId) {
         return memberIds.contains(userId);
     }
+
+    /**
+     * Gets the ID of the latest (most recent) message in this thread.
+     *
+     * <p>This is used by Discord API methods like {@code channel.getLatestMessageId()}.
+     *
+     * @return The ID of the latest message, or 0 if the thread is empty
+     */
+    public long getLatestMessageId() {
+        if (messages.isEmpty()) {
+            return 0L;
+        }
+        return messages.get(messages.size() - 1).getMessageId();
+    }
+
+    /**
+     * Removes a specific message from this thread by its ID.
+     *
+     * <p>This is called when {@code message.delete()} is invoked on a message
+     * to simulate Discord's message deletion behavior.
+     *
+     * @param messageId The ID of the message to remove
+     * @return true if a message was removed, false if no message with that ID was found
+     */
+    public boolean removeMessage(long messageId) {
+        return messages.removeIf(msg -> msg.getMessageId() == messageId);
+    }
 }

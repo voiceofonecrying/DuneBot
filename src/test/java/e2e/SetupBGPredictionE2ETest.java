@@ -43,11 +43,6 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .as("BG should not have a prediction round initially")
                 .isEqualTo(0);
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: Setting BG prediction for Atreides to win on turn 5
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -55,7 +50,7 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("bg-prediction")
                 .addStringOption("factionname", "Atreides")
                 .addIntegerOption("turn", 5)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -79,11 +74,6 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
         addFaction("Harkonnen");
         addFaction("Emperor");
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // Set initial prediction for Harkonnen on turn 3
         SlashCommandInteractionEvent initialEvent = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -91,7 +81,7 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("bg-prediction")
                 .addStringOption("factionname", "Harkonnen")
                 .addIntegerOption("turn", 3)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(initialEvent);
 
@@ -106,7 +96,7 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("bg-prediction")
                 .addStringOption("factionname", "Emperor")
                 .addIntegerOption("turn", 8)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(updateEvent);
 
@@ -129,11 +119,6 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
         addFaction("BG");
         addFaction("Fremen");
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: Setting prediction for turn 1 (minimum valid turn)
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -141,7 +126,7 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("bg-prediction")
                 .addStringOption("factionname", "Fremen")
                 .addIntegerOption("turn", 1)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -157,11 +142,6 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
         addFaction("BG");
         addFaction("Guild");
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: Setting prediction for turn 10 (maximum valid turn)
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -169,7 +149,7 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("bg-prediction")
                 .addStringOption("factionname", "Guild")
                 .addIntegerOption("turn", 10)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -185,11 +165,6 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
         addFaction("BG");
         addFaction("Emperor");
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // When: BG predicts themselves to win
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
@@ -197,7 +172,7 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("bg-prediction")
                 .addStringOption("factionname", "BG")
                 .addIntegerOption("turn", 6)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -209,28 +184,5 @@ class SetupBGPredictionE2ETest extends SetupCommandsE2ETestBase {
                 .as("BG should be able to predict themselves")
                 .isEqualTo("BG");
         assertThat(bgAfter.getPredictionRound()).isEqualTo(6);
-    }
-
-    /**
-     * Helper method to add a faction to the game.
-     */
-    private void addFaction(String factionName) throws Exception {
-        MockUserState playerUser = guildState.createUser(factionName + "Player");
-        guildState.createMember(playerUser.getUserId());
-
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
-        SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
-                .setMember(moderatorMember)
-                .setCommandName("setup")
-                .setSubcommandName("faction")
-                .addStringOption("faction", factionName)
-                .addUserOption("player", playerUser)
-                .setChannel(gameActionsChannel)
-                .build();
-        commandManager.onSlashCommandInteraction(event);
     }
 }

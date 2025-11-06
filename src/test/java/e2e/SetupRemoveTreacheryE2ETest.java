@@ -30,12 +30,7 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
     @DisplayName("Should successfully call remove-double-powered-treachery command and advance setup")
     void shouldRemoveDoublePoweredTreacheryCards() throws Exception {
         // Given: A game with 6 factions and advance has been called once
-        addAllSixFactions();
-
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
+        addSixBaseFactions();
 
         // Add expansion treachery cards option
         SlashCommandInteractionEvent addOptionEvent = new MockSlashCommandEventBuilder(guildState)
@@ -43,7 +38,7 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("add-game-option")
                 .addStringOption("add-game-option", "EXPANSION_TREACHERY_CARDS")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(addOptionEvent);
 
@@ -52,7 +47,7 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("advance")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(advanceEvent);
 
@@ -75,7 +70,7 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("remove-double-powered-treachery")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(removeEvent);
 
@@ -104,19 +99,14 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
     @DisplayName("Should verify other expansion cards remain in deck after removal")
     void shouldKeepOtherExpansionCardsInDeck() throws Exception {
         // Given: A game with expansion treachery cards
-        addAllSixFactions();
-
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
+        addSixBaseFactions();
 
         SlashCommandInteractionEvent addOptionEvent = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("add-game-option")
                 .addStringOption("add-game-option", "EXPANSION_TREACHERY_CARDS")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(addOptionEvent);
 
@@ -124,7 +114,7 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("advance")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(advanceEvent);
 
@@ -142,7 +132,7 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("remove-double-powered-treachery")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(removeEvent);
 
@@ -161,33 +151,5 @@ class SetupRemoveTreacheryE2ETest extends SetupCommandsE2ETestBase {
         assertThat(artilleryStrikeCountAfter)
                 .as("Artillery Strike should still be in the deck")
                 .isEqualTo(artilleryStrikeCountBefore);
-    }
-
-    /**
-     * Helper method to add all six factions needed for game setup.
-     * The advance command requires exactly 6 factions.
-     */
-    private void addAllSixFactions() throws Exception {
-        // Use 6 factions (excluding BG to simplify test setup)
-        String[] factions = {"Atreides", "Harkonnen", "Emperor", "Fremen", "Guild", "BT"};
-        for (String factionName : factions) {
-            MockUserState playerUser = guildState.createUser(factionName + "Player");
-            guildState.createMember(playerUser.getUserId());
-
-            MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                    .filter(ch -> ch.getChannelName().equals("game-actions"))
-                    .findFirst()
-                    .orElseThrow();
-
-            SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
-                    .setMember(moderatorMember)
-                    .setCommandName("setup")
-                    .setSubcommandName("faction")
-                    .addStringOption("faction", factionName)
-                    .addUserOption("player", playerUser)
-                    .setChannel(gameActionsChannel)
-                    .build();
-            commandManager.onSlashCommandInteraction(event);
-        }
     }
 }

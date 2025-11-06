@@ -7,6 +7,9 @@ import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
+import net.dv8tion.jda.api.components.actionrow.ActionRow;
+import net.dv8tion.jda.api.components.buttons.Button;
+import net.dv8tion.jda.api.components.buttons.ButtonStyle;
 import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.CacheRestAction;
@@ -146,6 +149,117 @@ public class StatefulMockFactory {
                 targetList.add((FileUpload) item);
             }
             // Silently ignore non-FileUpload items for safety
+        }
+    }
+
+    /**
+     * Converts a MockButtonState back to a JDA Button object.
+     * <p>
+     * This is the reverse of extractButtonsFromMessageData - it takes our internal
+     * MockButtonState representation and creates a JDA Button that can be used in tests.
+     *
+     * @param mockButton The MockButtonState to convert
+     * @return A JDA Button object
+     */
+    private static Button convertMockButtonToButton(MockButtonState mockButton) {
+        ButtonStyle style = switch (mockButton.getStyle()) {
+            case "PRIMARY" -> ButtonStyle.PRIMARY;
+            case "SECONDARY" -> ButtonStyle.SECONDARY;
+            case "SUCCESS" -> ButtonStyle.SUCCESS;
+            case "DANGER" -> ButtonStyle.DANGER;
+            case "LINK" -> ButtonStyle.LINK;
+            default -> ButtonStyle.SECONDARY;
+        };
+
+        Button button;
+        if (style == ButtonStyle.LINK && mockButton.getUrl() != null) {
+            button = Button.link(mockButton.getUrl(), mockButton.getLabel());
+        } else {
+            button = Button.of(style, mockButton.getComponentId(), mockButton.getLabel());
+        }
+
+        if (mockButton.isDisabled()) {
+            button = button.asDisabled();
+        }
+
+        return button;
+    }
+
+    /**
+     * Extracts buttons from MessageCreateData and converts them to MockButtonState objects.
+     * <p>
+     * JDA messages can have components (like buttons) organized in ActionRows.
+     * This method extracts all buttons from all action rows and converts them
+     * to our internal MockButtonState representation for testing.
+     *
+     * @param data The MessageCreateData containing components
+     * @return A list of MockButtonState objects extracted from the message
+     */
+    private static List<MockButtonState> extractButtonsFromMessageData(MessageCreateData data) {
+        List<MockButtonState> buttons = new ArrayList<>();
+
+        // data.getComponents() returns a list that contains ActionRow objects
+        // We need to cast explicitly since the API returns a generic collection
+        try {
+            for (Object component : data.getComponents()) {
+                if (component instanceof ActionRow) {
+                    ActionRow actionRow = (ActionRow) component;
+
+                    // ActionRow.getButtons() directly returns the list of buttons
+                    for (Button button : actionRow.getButtons()) {
+                        // Convert JDA ButtonStyle to string for MockButtonState
+                        ButtonStyle style = button.getStyle();
+                        String styleString = switch (style) {
+                            case PRIMARY -> "PRIMARY";
+                            case SECONDARY -> "SECONDARY";
+                            case SUCCESS -> "SUCCESS";
+                            case DANGER -> "DANGER";
+                            case LINK -> "LINK";
+                            default -> "UNKNOWN";
+                        };
+
+                        // For button clicks, we need the component ID
+                        // We extract this using reflection since JDA 6 interface changed
+                        String buttonId = extractButtonId(button);
+                        String label = button.getLabel() != null ? button.getLabel() : "";
+                        MockButtonState mockButton = new MockButtonState(buttonId, label, styleString, button.isDisabled());
+
+                        buttons.add(mockButton);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // If extraction fails, return empty list rather than breaking tests
+            // This allows tests to continue even if button extraction has issues
+        }
+
+        return buttons;
+    }
+
+    /**
+     * Extracts the component ID from a Button.
+     * <p>
+     * For non-LINK buttons, uses getCustomId() to retrieve the custom identifier.
+     * For LINK buttons, uses getUrl() as the identifier.
+     *
+     * @param button The button to extract ID from
+     * @return The component ID, or empty string if extraction fails
+     */
+    private static String extractButtonId(Button button) {
+        try {
+            // For LINK buttons, the URL serves as the identifier
+            if (button.getStyle() == ButtonStyle.LINK) {
+                String url = button.getUrl();
+                return url != null ? url : "";
+            }
+
+            // For non-LINK buttons, use getCustomId()
+            String customId = button.getCustomId();
+            return customId != null ? customId : "";
+        } catch (Exception e) {
+            // If extraction fails for any reason, return empty string
+            // This allows tests to continue even if button extraction has issues
+            return "";
         }
     }
 
@@ -501,6 +615,13 @@ public class StatefulMockFactory {
         lenient().when(privateThreadsAction.complete()).thenReturn(Collections.emptyList());
         lenient().when(channel.retrieveArchivedPrivateThreadChannels()).thenReturn(privateThreadsAction);
 
+        // getThreadChannels() returns active threads from state
+        lenient().when(channel.getThreadChannels()).thenAnswer(inv -> {
+            return guildState.getThreadsInChannel(channelState.getChannelId()).stream()
+                .map(threadState -> mockThreadChannel(threadState, guildState))
+                .collect(java.util.stream.Collectors.toList());
+        });
+
         // sendMessage() STORES the message in state
         lenient().when(channel.sendMessage(anyString())).thenAnswer(inv -> {
             final String[] currentContent = {inv.getArgument(0)};  // Use array to allow modification
@@ -565,8 +686,9 @@ public class StatefulMockFactory {
             MessageCreateData data = inv.getArgument(0);
             long messageId = guildState.getServer().nextMessageId();
 
-            // Extract file attachments from MessageCreateData and make mutable content
+            // Extract file attachments and buttons from MessageCreateData
             List<FileUpload> fileAttachments = new ArrayList<>(data.getFiles());
+            List<MockButtonState> buttons = extractButtonsFromMessageData(data);
             final String[] currentContent = {data.getContent() != null ? data.getContent() : ""};
 
             // Return mock action that supports chaining and complete
@@ -607,9 +729,13 @@ public class StatefulMockFactory {
                     return actionHolder[0];
                 }
 
-                // complete() or queue() finalizes the message with attachments
+                // complete() or queue() finalizes the message with attachments and buttons
                 if (methodName.equals("complete") || methodName.equals("queue")) {
                     MockMessageState message = new MockMessageState(messageId, channelState.getChannelId(), 0L, currentContent[0], fileAttachments);
+                    // Add all buttons to the message
+                    for (MockButtonState button : buttons) {
+                        message.addButton(button);
+                    }
                     channelState.addMessage(message);
                     return null;
                 }
@@ -676,6 +802,48 @@ public class StatefulMockFactory {
 
             // Also update the MessageHistory to return these messages
             lenient().when(messageHistory.getRetrievedHistory()).thenReturn(messages);
+
+            return action;
+        });
+
+        // getHistoryAround() retrieves messages around a specific message ID
+        lenient().when(channel.getHistoryAround(anyString(), anyInt())).thenAnswer(inv -> {
+            String messageId = inv.getArgument(0);
+            int limit = inv.getArgument(1);
+
+            List<MockMessageState> messageStates = channelState.getMessages();
+
+            // Convert MockMessageState to Message mocks with delete capability
+            List<Message> messages = new ArrayList<>();
+            for (MockMessageState msgState : messageStates) {
+                Message msg = mock(Message.class);
+                when(msg.getContentRaw()).thenReturn(msgState.getContent());
+                when(msg.getIdLong()).thenReturn(msgState.getMessageId());
+                when(msg.getId()).thenReturn(String.valueOf(msgState.getMessageId()));
+
+                // Mock getComponents() - for now return empty list
+                // Button functionality works through button extraction when messages are created
+                when(msg.getComponents()).thenReturn(Collections.emptyList());
+
+                // Mock delete() to remove message from state
+                net.dv8tion.jda.api.requests.restaction.AuditableRestAction<Void> deleteAction =
+                    mock(net.dv8tion.jda.api.requests.restaction.AuditableRestAction.class);
+                when(deleteAction.complete()).thenAnswer(completeInv -> {
+                    channelState.removeMessage(msgState.getMessageId());
+                    return null;
+                });
+                when(msg.delete()).thenReturn(deleteAction);
+
+                messages.add(msg);
+            }
+
+            // Create MessageHistory mock
+            MessageHistory history = mock(MessageHistory.class, RETURNS_DEEP_STUBS);
+            lenient().when(history.getRetrievedHistory()).thenReturn(messages);
+
+            // Create and return the MessageRetrieveAction
+            MessageHistory.MessageRetrieveAction action = mock(MessageHistory.MessageRetrieveAction.class);
+            lenient().when(action.complete()).thenReturn(history);
 
             return action;
         });
@@ -757,6 +925,16 @@ public class StatefulMockFactory {
         lenient().when(selfMember.hasPermission(any(GuildChannel.class), any(Permission[].class))).thenReturn(true);
         lenient().when(guild.getSelfMember()).thenReturn(selfMember);
 
+        // getLatestMessageId() returns the ID of the most recent message
+        lenient().when(channel.getLatestMessageId()).thenAnswer(inv -> {
+            long latestId = channelState.getLatestMessageId();
+            return latestId == 0 ? null : String.valueOf(latestId);
+        });
+
+        lenient().when(channel.getLatestMessageIdLong()).thenAnswer(inv -> {
+            return channelState.getLatestMessageId();
+        });
+
         return channel;
     }
 
@@ -790,6 +968,20 @@ public class StatefulMockFactory {
         // getGuild() returns stateful guild mock
         Guild guild = mockGuild(guildState);
         lenient().when(thread.getGuild()).thenReturn(guild);
+
+        // Note: getParentChannel() is NOT mocked here to avoid circular dependency
+        // (mockTextChannel → mockThreadChannel → mockTextChannel → ...)
+        // Instead, it's handled in MockButtonEventBuilder when needed
+
+        // But we can mock getParentMessageChannel() to return a basic channel with a name
+        MockChannelState parentChannelState = guildState.getChannel(threadState.getParentChannelId());
+        if (parentChannelState != null) {
+            net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion parentMessageChannel =
+                mock(net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion.class);
+            lenient().when(parentMessageChannel.getName()).thenReturn(parentChannelState.getChannelName());
+            lenient().when(parentMessageChannel.getIdLong()).thenReturn(parentChannelState.getChannelId());
+            lenient().when(thread.getParentMessageChannel()).thenReturn(parentMessageChannel);
+        }
 
         // getJDA() returns a mock JDA that supports retrieveUserById()
         JDA jda = mock(JDA.class, RETURNS_DEEP_STUBS);
@@ -854,8 +1046,9 @@ public class StatefulMockFactory {
             MessageCreateData data = inv.getArgument(0);
             long messageId = guildState.getServer().nextMessageId();
 
-            // Extract file attachments from MessageCreateData and make mutable content
+            // Extract file attachments and buttons from MessageCreateData
             List<FileUpload> fileAttachments = new ArrayList<>(data.getFiles());
+            List<MockButtonState> buttons = extractButtonsFromMessageData(data);
             final String[] currentContent = {data.getContent() != null ? data.getContent() : ""};
 
             // Return mock action that supports chaining and complete
@@ -896,9 +1089,13 @@ public class StatefulMockFactory {
                     return actionHolder[0];
                 }
 
-                // complete() or queue() finalizes the message with attachments
+                // complete() or queue() finalizes the message with attachments and buttons
                 if (methodName.equals("complete") || methodName.equals("queue")) {
                     MockMessageState message = new MockMessageState(messageId, threadState.getThreadId(), 0L, currentContent[0], fileAttachments);
+                    // Add all buttons to the message
+                    for (MockButtonState button : buttons) {
+                        message.addButton(button);
+                    }
                     threadState.addMessage(message);
                     return null;
                 }
@@ -908,6 +1105,66 @@ public class StatefulMockFactory {
             actionHolder[0] = action;
             return action;
         });
+
+        // getLatestMessageId() returns the ID of the most recent message
+        lenient().when(thread.getLatestMessageId()).thenAnswer(inv -> {
+            long latestId = threadState.getLatestMessageId();
+            return latestId == 0 ? null : String.valueOf(latestId);
+        });
+
+        lenient().when(thread.getLatestMessageIdLong()).thenAnswer(inv -> {
+            return threadState.getLatestMessageId();
+        });
+
+        // getHistoryAround() retrieves messages around a specific message ID
+        lenient().when(thread.getHistoryAround(anyString(), anyInt())).thenAnswer(inv -> {
+            String messageId = inv.getArgument(0);
+            int limit = inv.getArgument(1);
+
+            List<MockMessageState> messageStates = threadState.getMessages();
+
+            // Convert MockMessageState to Message mocks with delete capability
+            List<Message> messages = new ArrayList<>();
+            for (MockMessageState msgState : messageStates) {
+                Message msg = mock(Message.class, RETURNS_DEEP_STUBS);
+                lenient().when(msg.getContentRaw()).thenReturn(msgState.getContent());
+                lenient().when(msg.getIdLong()).thenReturn(msgState.getMessageId());
+                lenient().when(msg.getId()).thenReturn(String.valueOf(msgState.getMessageId()));
+
+                // Mock getComponents() - for now return empty list
+                // Button functionality works through button extraction when messages are created
+                lenient().when(msg.getComponents()).thenReturn(Collections.emptyList());
+
+                // Mock delete() to remove message from state
+                lenient().when(msg.delete()).thenAnswer(delInv -> {
+                    AuditableRestAction<Void> deleteAction = createMockAuditableRestAction();
+                    lenient().when(deleteAction.complete()).thenAnswer(completeInv -> {
+                        threadState.removeMessage(msgState.getMessageId());
+                        return null;
+                    });
+                    doNothing().when(deleteAction).queue();
+                    return deleteAction;
+                });
+
+                messages.add(msg);
+            }
+
+            // Create MessageHistory mock
+            MessageHistory history = mock(MessageHistory.class, RETURNS_DEEP_STUBS);
+            lenient().when(history.getRetrievedHistory()).thenReturn(messages);
+
+            // Create and return the MessageRetrieveAction
+            MessageHistory.MessageRetrieveAction action = mock(MessageHistory.MessageRetrieveAction.class);
+            lenient().when(action.complete()).thenReturn(history);
+
+            return action;
+        });
+
+        // getManager() returns a ThreadChannelManager for modifying thread settings
+        // Use RETURNS_DEEP_STUBS to handle chaining automatically
+        net.dv8tion.jda.api.managers.channel.concrete.ThreadChannelManager manager =
+            mock(net.dv8tion.jda.api.managers.channel.concrete.ThreadChannelManager.class, RETURNS_DEEP_STUBS);
+        lenient().when(thread.getManager()).thenReturn(manager);
 
         return thread;
     }

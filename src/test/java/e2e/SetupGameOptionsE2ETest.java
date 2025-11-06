@@ -31,15 +31,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
     @DisplayName("Should add, remove, and show game options")
     void shouldTestGameOptionsLifecycle() throws Exception {
         // Given: Get references to game channels
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
-        MockChannelState modInfoChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("mod-info"))
-                .findFirst()
-                .orElseThrow();
+        MockChannelState modInfoChannel = getModInfoChannel();
 
         // ========== STEP 1: Verify initial state - no game options ==========
         assertThat(game)
@@ -61,7 +53,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("show-game-options")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(showInitial);
 
@@ -74,7 +66,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("add-game-option")
                 .addStringOption("add-game-option", "LEADER_SKILLS")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(addLeaderSkills);
 
@@ -89,7 +81,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("add-game-option")
                 .addStringOption("add-game-option", "HOMEWORLDS")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(addHomeworlds);
 
@@ -99,7 +91,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("add-game-option")
                 .addStringOption("add-game-option", "TECH_TOKENS")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(addTechTokens);
 
@@ -108,7 +100,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("show-game-options")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(showAllOptions);
 
@@ -136,7 +128,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("remove-game-option")
                 .addStringOption("remove-game-option", "HOMEWORLDS")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(removeHomeworlds);
 
@@ -155,7 +147,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("show-game-options")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(showAfterRemove);
 
@@ -184,7 +176,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("add-game-option")
                 .addStringOption("add-game-option", "DISCOVERY_TOKENS")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(addDiscovery);
 
@@ -193,7 +185,7 @@ class SetupGameOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("show-game-options")
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(showFinal);
 

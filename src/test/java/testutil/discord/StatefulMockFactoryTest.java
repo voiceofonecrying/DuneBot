@@ -357,6 +357,21 @@ class StatefulMockFactoryTest {
     }
 
     @Test
+    @DisplayName("mockTextChannel() getThreadChannels() should return threads from state")
+    void mockTextChannel_getThreadChannels_shouldReturnThreadsFromState() {
+        MockChannelState channelState = guildState.createTextChannel("test-channel", 0L);
+        guildState.createThread("chat", channelState.getChannelId());
+        guildState.createThread("notes", channelState.getChannelId());
+
+        TextChannel channel = StatefulMockFactory.mockTextChannel(channelState, guildState);
+        List<ThreadChannel> threads = channel.getThreadChannels();
+
+        assertThat(threads).hasSize(2);
+        assertThat(threads).extracting(ThreadChannel::getName)
+                .containsExactlyInAnyOrder("chat", "notes");
+    }
+
+    @Test
     @DisplayName("mockTextChannel() should have JDA with SelfUser")
     void mockTextChannel_shouldHaveJDAWithSelfUser() {
         MockChannelState channelState = guildState.createTextChannel("test-channel", 0L);
@@ -776,5 +791,87 @@ class StatefulMockFactoryTest {
         Member member2 = StatefulMockFactory.mockMember(memberState, guildState);
         assertThat(member2.getRoles()).hasSize(1);
         assertThat(member2.getRoles().get(0).getName()).isEqualTo("Moderator");
+    }
+
+    @Test
+    @DisplayName("TextChannel getHistoryAround() returns messages from state")
+    void textChannel_getHistoryAround_returnsMessagesFromState() {
+        MockCategoryState categoryState = guildState.createCategory("test-category");
+        MockChannelState channelState = guildState.createTextChannel("test-channel", categoryState.getCategoryId());
+
+        // Add messages to state
+        channelState.addMessage(new MockMessageState(1001L, channelState.getChannelId(), 100L, "Message 1"));
+        channelState.addMessage(new MockMessageState(1002L, channelState.getChannelId(), 100L, "Message 2"));
+        channelState.addMessage(new MockMessageState(1003L, channelState.getChannelId(), 100L, "Message 3"));
+
+        net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel =
+            StatefulMockFactory.mockTextChannel(channelState, guildState);
+
+        // Get message history
+        net.dv8tion.jda.api.entities.MessageHistory history =
+            channel.getHistoryAround(channel.getLatestMessageId(), 100).complete();
+
+        assertThat(history.getRetrievedHistory()).hasSize(3);
+        assertThat(history.getRetrievedHistory().get(0).getContentRaw()).isEqualTo("Message 1");
+        assertThat(history.getRetrievedHistory().get(1).getContentRaw()).isEqualTo("Message 2");
+        assertThat(history.getRetrievedHistory().get(2).getContentRaw()).isEqualTo("Message 3");
+    }
+
+    @Test
+    @DisplayName("ThreadChannel getHistoryAround() returns messages from state")
+    void threadChannel_getHistoryAround_returnsMessagesFromState() {
+        MockCategoryState categoryState = guildState.createCategory("test-category");
+        MockChannelState channelState = guildState.createTextChannel("test-channel", categoryState.getCategoryId());
+        MockThreadChannelState threadState = guildState.createThread("test-thread", channelState.getChannelId());
+
+        // Add messages to state
+        threadState.addMessage(new MockMessageState(1001L, threadState.getThreadId(), 100L, "Thread Message 1"));
+        threadState.addMessage(new MockMessageState(1002L, threadState.getThreadId(), 100L, "Thread Message 2"));
+
+        net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel thread =
+            StatefulMockFactory.mockThreadChannel(threadState, guildState);
+
+        // Get message history
+        net.dv8tion.jda.api.entities.MessageHistory history =
+            thread.getHistoryAround(thread.getLatestMessageId(), 100).complete();
+
+        assertThat(history.getRetrievedHistory()).hasSize(2);
+        assertThat(history.getRetrievedHistory().get(0).getContentRaw()).isEqualTo("Thread Message 1");
+        assertThat(history.getRetrievedHistory().get(1).getContentRaw()).isEqualTo("Thread Message 2");
+    }
+
+    // Note: Message deletion testing is verified in E2E tests
+    // Unit testing message.delete() has complex Mockito/JDA type casting issues
+    // that don't affect the actual E2E functionality
+
+    @Test
+    @DisplayName("TextChannel getLatestMessageIdLong() returns correct ID from state")
+    void textChannel_getLatestMessageIdLong_returnsCorrectId() {
+        MockCategoryState categoryState = guildState.createCategory("test-category");
+        MockChannelState channelState = guildState.createTextChannel("test-channel", categoryState.getCategoryId());
+
+        channelState.addMessage(new MockMessageState(1001L, channelState.getChannelId(), 100L, "Message 1"));
+        channelState.addMessage(new MockMessageState(1002L, channelState.getChannelId(), 100L, "Message 2"));
+
+        net.dv8tion.jda.api.entities.channel.concrete.TextChannel channel =
+            StatefulMockFactory.mockTextChannel(channelState, guildState);
+
+        assertThat(channel.getLatestMessageIdLong()).isEqualTo(1002L);
+    }
+
+    @Test
+    @DisplayName("ThreadChannel getLatestMessageIdLong() returns correct ID from state")
+    void threadChannel_getLatestMessageIdLong_returnsCorrectId() {
+        MockCategoryState categoryState = guildState.createCategory("test-category");
+        MockChannelState channelState = guildState.createTextChannel("test-channel", categoryState.getCategoryId());
+        MockThreadChannelState threadState = guildState.createThread("test-thread", channelState.getChannelId());
+
+        threadState.addMessage(new MockMessageState(1001L, threadState.getThreadId(), 100L, "Thread Message 1"));
+        threadState.addMessage(new MockMessageState(1002L, threadState.getThreadId(), 100L, "Thread Message 2"));
+
+        net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel thread =
+            StatefulMockFactory.mockThreadChannel(threadState, guildState);
+
+        assertThat(thread.getLatestMessageIdLong()).isEqualTo(1002L);
     }
 }
