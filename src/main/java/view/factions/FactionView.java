@@ -293,7 +293,9 @@ public class FactionView {
                         leaderSkillCard.inBattleDescription(),
                         false
                 );
-        if (!(faction instanceof HomebrewFaction))
+        List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
+                "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+        if (!(faction instanceof HomebrewFaction) && allFactionNames.contains(leader.getOriginalFactionName()))
             eb = eb.setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.getName()));
         return eb.build();
     }
