@@ -279,7 +279,7 @@ public class FactionView {
                         discordGame.tagEmojis(
                                 MessageFormat.format(
                                         "{0} {1} is a {2} {0}",
-                                        Emojis.LEADER, (faction instanceof HomebrewFaction) ? leader.getNameAndValueString() : leader.getName(), leaderSkillCard.name()
+                                        Emojis.LEADER, leader.getName(), leaderSkillCard.name()
                                 )))
                 .setColor(faction.getColor())
                 .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
@@ -297,6 +297,8 @@ public class FactionView {
                 "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
         if (!(faction instanceof HomebrewFaction) && allFactionNames.contains(leader.getOriginalFactionName()))
             eb = eb.setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.getName()));
+        else
+            eb = eb.setThumbnail(ShowCommands.getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName()));
         return eb.build();
     }
 
