@@ -1921,12 +1921,18 @@ public class Game {
     }
 
     public void assignTechToken(String tt, Faction recipient) throws InvalidGameStateException {
-        Faction possessor = factions.stream().filter(f -> f.hasTechToken(tt)).findAny().orElseThrow();
-        possessor.removeTechToken(tt);
-        possessor.getLedger().publish(tt + " was sent to " + recipient.getEmoji());
-        recipient.addTechToken(tt);
-        recipient.getLedger().publish(tt + " transferred to you.");
-        turnSummary.publish(Emojis.getTechTokenEmoji(tt) + " has been transferred to " + recipient.getEmoji());
+        Faction possessor = factions.stream().filter(f -> f.hasTechToken(tt)).findAny().orElse(null);
+        if (possessor != null) {
+            possessor.removeTechToken(tt);
+            possessor.getLedger().publish(tt + " was sent to " + recipient.getEmoji());
+            recipient.addTechToken(tt);
+            recipient.getLedger().publish(tt + " transferred to you.");
+            turnSummary.publish(Emojis.getTechTokenEmoji(tt) + " has been transferred to " + recipient.getEmoji());
+        } else {
+            recipient.addTechToken(tt);
+            recipient.getLedger().publish(tt + " assigned to you.");
+            turnSummary.publish(Emojis.getTechTokenEmoji(tt) + " has been assigned to " + recipient.getEmoji());
+        }
         setUpdated(UpdateType.MAP);
     }
 
