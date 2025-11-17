@@ -2087,13 +2087,13 @@ public class Battle {
         if (aggressorBattlePlan.getLeader() != null || aggressorBattlePlan.getCheapHero() != null && aggressorBattlePlan.hasKwisatzHaderach()) {
             if (aggressorBattlePlan.isLeaderAlive() && !wasAggressorLeaderAlive)
                 changes += "\n" + getAggressor(game).getEmoji() + " " + aggressorBattlePlan.getLeaderString(false) + " survives.";
-            else if (announceStillDead)
+            else if (!aggressorBattlePlan.isLeaderAlive() && announceStillDead)
                 changes += "\n" + getAggressor(game).getEmoji() + " " + aggressorBattlePlan.getLeaderString(false) + " still dies.";
         }
         if (defenderBattlePlan.getLeader() != null || defenderBattlePlan.getCheapHero() != null && defenderBattlePlan.hasKwisatzHaderach()) {
             if (defenderBattlePlan.isLeaderAlive() && !wasDefenderLeaderAlive)
                 changes += "\n" + getDefender(game).getEmoji() + " " + defenderBattlePlan.getLeaderString(false) + " survives.";
-            else if (announceStillDead)
+            else if (!defenderBattlePlan.isLeaderAlive() && announceStillDead)
                 changes += "\n" + getDefender(game).getEmoji() + " " + defenderBattlePlan.getLeaderString(false) + " still dies.";
         }
         int combatWaterNow = aggressorBattlePlan.combatWater() + defenderBattlePlan.combatWater();
