@@ -678,7 +678,7 @@ public class BattlePlan {
         } else if (stoneBurnerKills()) {
             return false;
         } else if (artilleryStrike()) {
-            return defense != null && defense.servesAsShield() && !opponentWeapon.servesAsPoisonWeapon();
+            return defense != null && defense.servesAsShield() && (opponentWeapon == null || !opponentWeapon.servesAsPoisonWeapon());
         } else if (poisonTooth()) {
             return defense != null && defense.name().equals("Chemistry");
         } else if (opponentWeapon != null && !opponentWeapon.type().equals("Worthless Card") && !opponentWeapon.name().equals("Stone Burner")) {
