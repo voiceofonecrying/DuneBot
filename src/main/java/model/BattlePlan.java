@@ -678,7 +678,7 @@ public class BattlePlan {
         } else if (stoneBurnerKills()) {
             return false;
         } else if (artilleryStrike()) {
-            return defense != null && defense.servesAsShield();
+            return defense != null && defense.servesAsShield() && !opponentWeapon.servesAsPoisonWeapon();
         } else if (poisonTooth()) {
             return defense != null && defense.name().equals("Chemistry");
         } else if (opponentWeapon != null && !opponentWeapon.type().equals("Worthless Card") && !opponentWeapon.name().equals("Stone Burner")) {
@@ -687,7 +687,7 @@ public class BattlePlan {
             else if (opponentWeapon.name().equals("Poison Blade")
                     && !(defense.name().equals("Shield Snooper") || carthagStrongholdPoisonDefense()))
                 return false;
-            else if ((opponentWeapon.type().equals("Weapon - Poison") || opponentWeapon.name().equals("Chemistry"))
+            else if ((opponentWeapon.isStoppedBySnooper())
                     && !(defense.servesAsSnooper() || defense.name().equals("Chemistry") || carthagStrongholdPoisonDefense()))
                 return false;
             else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
