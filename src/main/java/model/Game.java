@@ -2177,7 +2177,9 @@ public class Game {
 
         if (bribesThisTurn != null) {
             modInfo.publish("Check if any bribes need to be paid before Mentat Pause. " + getModOrRoleMention());
-            modInfo.publish("The following bribes were made this turn:\n" + String.join("\n", bribesThisTurn));
+            modInfo.publish("The following bribes were made this turn:");
+            for (String b : bribesThisTurn)
+                modInfo.publish(b);
         }
 
         setUpdated(UpdateType.MAP);
