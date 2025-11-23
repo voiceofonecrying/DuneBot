@@ -60,7 +60,6 @@ public class PlayerCommands {
             case "whisper" -> responseMessage = whisper(event, discordGame, game);
             case "hold-game" -> responseMessage = holdGame(event, discordGame, game);
         }
-        discordGame.pushGame();
         return responseMessage;
     }
 
@@ -82,7 +81,10 @@ public class PlayerCommands {
         int spice = Integer.parseInt(discordGame.required(combatSpice).getAsString());
         String weaponName = discordGame.required(weapon).getAsString();
         String defenseName = discordGame.required(defense).getAsString();
-        return currentBattle.setBattlePlan(game, faction, leaderName, kwisatzHaderach, dial, spice, weaponName, defenseName);
+        String response = currentBattle.setBattlePlan(game, faction, leaderName, kwisatzHaderach, dial, spice, weaponName, defenseName);
+        discordGame.pushGame();
+        return response;
+
     }
 
     private static String cancelBattlePlan(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
@@ -91,6 +93,7 @@ public class PlayerCommands {
             throw new InvalidGameStateException("There is no current battle.");
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         currentBattle.removeBattlePlan(faction);
+        discordGame.pushGame();
         return "You have canceled your battle plan.";
     }
 
@@ -98,6 +101,7 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         String response = game.getBidding().pass(game, faction);
         ShowCommands.updateBiddingActions(discordGame, game, faction);
+        discordGame.pushGame();
         return response;
     }
 
@@ -106,6 +110,7 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         String response = game.getBidding().setAutoPass(game, faction, enabled);
         ShowCommands.updateBiddingActions(discordGame, game, faction);
+        discordGame.pushGame();
         return response;
     }
 
@@ -114,6 +119,7 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         String response = game.getBidding().setAutoPassEntireTurn(game, faction, enabled);
         ShowCommands.updateBiddingActions(discordGame, game, faction);
+        discordGame.pushGame();
         return response;
     }
 
@@ -129,6 +135,7 @@ public class PlayerCommands {
             enableAutoPass = discordGame.optional(autoPassAfterMax).getAsBoolean();
         String response = game.getBidding().bid(game, faction, useExact, bidAmount, newOutbidAllySetting, enableAutoPass);
         ShowCommands.updateBiddingActions(discordGame, game, faction);
+        discordGame.pushGame();
         return response;
     }
 
@@ -174,6 +181,7 @@ public class PlayerCommands {
         Faction faction = discordGame.getFactionByPlayer(event.getUser().toString());
         discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " put the game on hold. Please wait for the mod to resolve the issue.");
         discordGame.getModInfo().queueMessage(game.getModOrRoleMention() + " " + faction.getEmoji() + " put the game on hold because: " + reason);
+        discordGame.pushGame();
         return "";
     }
 }
