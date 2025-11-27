@@ -172,6 +172,7 @@ public class PlayerCommands {
         FactionWhispers recipientWhispers = discordGame.getFactionWhispers(recipient, sender);
 
         sender.sendWhisper(recipient, whisperedMessage, senderWhispers, recipientWhispers);
+        discordGame.pushGame();
         return "";
     }
 
