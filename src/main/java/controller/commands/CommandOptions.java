@@ -588,7 +588,7 @@ public class CommandOptions {
         );
         choices.addAll(faction.getTreacheryHand().stream()
                 .map(TreacheryCard::name)
-                .filter(card -> card.startsWith("Cheap Hero"))
+                .filter(card -> card.startsWith("Cheap"))
                 .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(card -> new Command.Choice(card + " (0)", card))
                 .toList()
@@ -627,7 +627,7 @@ public class CommandOptions {
         );
         if (faction.hasSkill("Planetologist")) {
             choices.addAll(faction.getTreacheryHand().stream()
-                    .filter(c -> c.type().startsWith("Special") && !c.name().startsWith("Cheap Hero") || c.type().equals("Spice Blow - Special"))
+                    .filter(c -> c.type().startsWith("Special") && !c.name().startsWith("Cheap") || c.type().equals("Spice Blow - Special"))
                     .map(TreacheryCard::name)
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(card -> new Command.Choice(card, card))
