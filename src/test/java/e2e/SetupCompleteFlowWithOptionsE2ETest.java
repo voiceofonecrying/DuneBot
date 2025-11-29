@@ -12,6 +12,7 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testutil.discord.builders.MockSlashCommandEventBuilder;
+import testutil.discord.state.MockButtonState;
 import testutil.discord.state.MockMemberState;
 import testutil.discord.state.MockMessageState;
 import testutil.discord.state.MockThreadChannelState;
@@ -296,7 +297,7 @@ class SetupCompleteFlowWithOptionsE2ETest extends SetupCommandsE2ETestBase {
                 .filter(btn -> btn.getComponentId().startsWith("ix-confirm-start-") &&
                                !btn.getComponentId().contains("reset"))
                 .findFirst()
-                .map(btn -> btn.getComponentId())
+                .map(MockButtonState::getComponentId)
                 .orElseThrow(() -> new IllegalStateException("No confirm button found"));
         clickButton(confirmButton, ixChat, ixMember);
     }
@@ -323,7 +324,7 @@ class SetupCompleteFlowWithOptionsE2ETest extends SetupCommandsE2ETestBase {
             String sectorButton = sectorMessage.getButtons().stream()
                     .filter(btn -> btn.getComponentId().startsWith("ship-sector-hms-placement-"))
                     .findFirst()
-                    .map(btn -> btn.getComponentId())
+                    .map(MockButtonState::getComponentId)
                     .orElseThrow(() -> new IllegalStateException("No sector button found"));
             clickButton(sectorButton, ixChat, ixMember);
         }

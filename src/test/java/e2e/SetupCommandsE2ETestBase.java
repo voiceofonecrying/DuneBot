@@ -5,7 +5,6 @@ import controller.buttons.ButtonManager;
 import controller.commands.CommandManager;
 import model.Game;
 import utils.CardImages;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.MessageHistory;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
@@ -62,12 +61,10 @@ abstract class SetupCommandsE2ETestBase {
 
     protected MockDiscordServer server;
     protected MockGuildState guildState;
-    protected Guild guild;
     protected CommandManager commandManager;
     protected ButtonManager buttonManager;
     protected MockRoleState modRole;
     protected MockRoleState gameRole;
-    protected MockRoleState observerRole;
     protected MockUserState moderatorUser;
     protected MockMemberState moderatorMember;
     protected MockCategoryState gameCategory;
@@ -179,7 +176,7 @@ abstract class SetupCommandsE2ETestBase {
         // Create mock Discord server and guild
         server = MockDiscordServer.create();
         guildState = server.createGuild(123456789L, "Test Server");
-        guild = StatefulMockFactory.mockGuild(guildState);
+        StatefulMockFactory.mockGuild(guildState);
 
         // Create waiting-list channel (guild-level channel, not in any category)
         guildState.createTextChannel("waiting-list", 0L);
@@ -190,7 +187,7 @@ abstract class SetupCommandsE2ETestBase {
         // Create required roles
         modRole = guildState.createRole("Moderators");
         gameRole = guildState.createRole("Game #1");
-        observerRole = guildState.createRole("Observer");
+        guildState.createRole("Observer");
         guildState.createRole("EasyPoll");
 
         // Create a moderator user and member
@@ -319,7 +316,6 @@ abstract class SetupCommandsE2ETestBase {
                 // If gson returned null, try next message
             } catch (Exception e) {
                 // Failed to parse this message, try next
-                continue;
             }
         }
 
@@ -474,37 +470,6 @@ abstract class SetupCommandsE2ETestBase {
     // ========== Button Interaction Helpers ==========
 
     /**
-     * Finds a button in a thread's messages by matching button ID pattern.
-     *
-     * @param thread The thread to search
-     * @param buttonIdPattern The button ID to search for (exact match or contains)
-     * @return The button state, or null if not found
-     */
-    protected testutil.discord.state.MockButtonState findButtonInThread(MockThreadChannelState thread, String buttonIdPattern) {
-        return thread.getMessages().stream()
-                .filter(testutil.discord.state.MockMessageState::hasButtons)
-                .flatMap(msg -> msg.getButtons().stream())
-                .filter(btn -> btn.getComponentId().contains(buttonIdPattern))
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
-     * Finds a message with buttons in a thread by matching content pattern.
-     *
-     * @param thread The thread to search
-     * @param contentPattern The text pattern to search for in message content
-     * @return The message state, or null if not found
-     */
-    protected testutil.discord.state.MockMessageState findMessageWithButtons(MockThreadChannelState thread, String contentPattern) {
-        return thread.getMessages().stream()
-                .filter(testutil.discord.state.MockMessageState::hasButtons)
-                .filter(msg -> msg.getContent() != null && msg.getContent().contains(contentPattern))
-                .findFirst()
-                .orElse(null);
-    }
-
-    /**
      * Simulates clicking a button in a thread.
      *
      * @param buttonId The button component ID to click
@@ -592,10 +557,7 @@ abstract class SetupCommandsE2ETestBase {
 
         // Step 1: Click territory button (e.g., "ship-starting-forces-Sietch Tabr")
         String territoryButtonId = "ship-starting-forces-" + territory;
-        int messagesBefore = fremenChat.getMessages().size();
         clickButton(territoryButtonId, fremenChat, fremenMember);
-        int messagesAfter = fremenChat.getMessages().size();
-
 
         // Step 2: Add regular forces
         if (regularForces > 0) {
@@ -627,49 +589,11 @@ abstract class SetupCommandsE2ETestBase {
     }
 
     /**
-     * Places Fremen forces in a multi-sector territory.
-     *
-     * @param territory The base territory name (e.g., "False Wall South")
-     * @param sector The sector name (e.g., "East Sector")
-     * @param regularForces Number of regular forces
-     * @param fedaykin Number of fedaykin
-     * @throws Exception if placement fails
-     */
-    protected void placeFremenForcesWithSector(String territory, String sector, int regularForces, int fedaykin) throws Exception {
-        MockThreadChannelState fremenChat = getFactionChatThread("Fremen");
-        testutil.discord.state.MockMemberState fremenMember = getFactionMember("Fremen");
-
-        // Step 1: Click territory button (triggers sector selection)
-        String territoryButtonId = "ship-starting-forces-" + territory;
-        clickButton(territoryButtonId, fremenChat, fremenMember);
-
-        // Step 2: Click sector button
-        String sectorButtonId = "ship-starting-forces-" + territory + " (" + sector + ")";
-        clickButton(sectorButtonId, fremenChat, fremenMember);
-
-        // Step 3: Add regular forces
-        if (regularForces > 0) {
-            String addForcesButtonId = "add-force-shipment-starting-forces-" + regularForces;
-            clickButton(addForcesButtonId, fremenChat, fremenMember);
-        }
-
-        // Step 4: Add fedaykin
-        if (fedaykin > 0) {
-            String addFedaykinButtonId = "add-special-force-shipment-starting-forces-" + fedaykin;
-            clickButton(addFedaykinButtonId, fremenChat, fremenMember);
-        }
-
-        // Step 5: Execute placement
-        clickButton("execute-shipment-starting-forces", fremenChat, fremenMember);
-    }
-
-    /**
      * Completes BG starting advisor/fighter placement.
      * BG follows a category-based selection flow:
      * 1. Select category (stronghold, spice-blow, rock, or other)
      * 2. Select specific territory from that category
      * 3. Execute placement (BG auto-sets force count to 1)
-     *
      * Note: Polar Sink is in the "other" category since it's not a stronghold, spice blow territory, or rock territory.
      *
      * @param category The category button to click (e.g., "stronghold", "spice-blow", "rock", "other")
@@ -690,25 +614,6 @@ abstract class SetupCommandsE2ETestBase {
 
         // Step 3: Execute placement (BG auto-sets force count to 1)
         clickButton("execute-shipment-starting-forces", bgChat, bgMember);
-    }
-
-    /**
-     * Completes Moritani starting forces placement.
-     * Moritani places exactly 6 troops in a single territory.
-     *
-     * @param territory The territory to place in
-     * @throws Exception if placement fails
-     */
-    protected void completeMoritaniForcePlacement(String territory) throws Exception {
-        MockThreadChannelState moritaniChat = getFactionChatThread("Moritani");
-        testutil.discord.state.MockMemberState moritaniMember = getFactionMember("Moritani");
-
-        // Step 1: Click territory button
-        String territoryButtonId = "ship-starting-forces-" + territory;
-        clickButton(territoryButtonId, moritaniChat, moritaniMember);
-
-        // Step 2: Execute placement (Moritani auto-sets force count to 6)
-        clickButton("execute-shipment-starting-forces", moritaniChat, moritaniMember);
     }
 
     /**
@@ -790,7 +695,7 @@ abstract class SetupCommandsE2ETestBase {
 
         // Extract the spice value from the message
         // Format is: "__Spice:__ <number>" possibly followed by more text
-        String content = spiceMessage.get().getContent();
+        String content = spiceMessage.orElseThrow().getContent();
         int spiceIndex = content.indexOf("__Spice:__ ");
         if (spiceIndex == -1) {
             org.assertj.core.api.Assertions.fail("Found message but couldn't locate '__Spice:__ ' marker");
@@ -843,8 +748,8 @@ abstract class SetupCommandsE2ETestBase {
                 .orElseThrow(() -> new IllegalStateException("No message asking for faction prediction"));
 
         String factionButtonId = factionMessage.getButtons().stream()
-                .filter(btn -> btn.getComponentId().endsWith("-" + targetFaction))
                 .map(testutil.discord.state.MockButtonState::getComponentId)
+                .filter(id -> id.endsWith("-" + targetFaction))
                 .findFirst()
                 .orElseThrow(() -> new IllegalStateException("Button for faction " + targetFaction + " not found"));
 
