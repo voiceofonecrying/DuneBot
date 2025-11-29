@@ -5,8 +5,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testutil.discord.builders.MockSlashCommandEventBuilder;
-import testutil.discord.state.MockChannelState;
-import testutil.discord.state.MockUserState;
 
 import static org.assertj.core.api.Assertions.assertThat;
 

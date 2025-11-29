@@ -2,7 +2,6 @@ package e2e;
 
 import caches.EmojiCache;
 import controller.commands.CommandManager;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -33,9 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 @DisplayName("New Game Command E2E Test")
 class NewGameCommandE2ETest {
 
-    private MockDiscordServer server;
     private MockGuildState guildState;
-    private Guild guild;
     private CommandManager commandManager;
     private MockRoleState modRole;
     private MockRoleState gameRole;
@@ -44,9 +41,9 @@ class NewGameCommandE2ETest {
     @BeforeEach
     void setUp() {
         // Create mock Discord server and guild
-        server = MockDiscordServer.create();
+        MockDiscordServer server = MockDiscordServer.create();
         guildState = server.createGuild(123456789L, "Test Server");
-        guild = StatefulMockFactory.mockGuild(guildState);
+        StatefulMockFactory.mockGuild(guildState);
 
         // Create required roles
         modRole = guildState.createRole("Moderators");

@@ -356,11 +356,23 @@ public class StatefulMockFactory {
             return action;
         });
 
-        // getCategoryById() looks up category from state
+        // getCategoryById(long) looks up category from state
         lenient().when(guild.getCategoryById(anyLong())).thenAnswer(inv -> {
             long categoryId = inv.getArgument(0);
             MockCategoryState categoryState = guildState.getCategory(categoryId);
             return categoryState != null ? mockCategory(categoryState, guildState) : null;
+        });
+
+        // getCategoryById(String) looks up category from state by string ID
+        lenient().when(guild.getCategoryById(anyString())).thenAnswer(inv -> {
+            String categoryIdStr = inv.getArgument(0);
+            try {
+                long categoryId = Long.parseLong(categoryIdStr);
+                MockCategoryState categoryState = guildState.getCategory(categoryId);
+                return categoryState != null ? mockCategory(categoryState, guildState) : null;
+            } catch (NumberFormatException e) {
+                return null;
+            }
         });
 
         // getCategoriesByName() searches for categories by name
@@ -774,15 +786,25 @@ public class StatefulMockFactory {
                     Message.Attachment attachment =
                         mock(Message.Attachment.class, RETURNS_DEEP_STUBS);
 
-                    // Store the file data
+                    // Store the file data and filename
                     byte[] fileData = null;
+                    String fileName = "mock-attachment.png";
                     try {
                         fileData = fileUpload.getData().readAllBytes();
+                        fileName = fileUpload.getName();
                     } catch (Exception e) {
                         fileData = new byte[0];
                     }
 
                     final byte[] finalFileData = fileData;
+                    final String finalFileName = fileName;
+
+                    // Mock getUrl() to return a valid mock URL
+                    lenient().when(attachment.getUrl()).thenReturn("https://mock-discord-attachment.local/" + finalFileName);
+
+                    // Mock getFileName()
+                    lenient().when(attachment.getFileName()).thenReturn(finalFileName);
+
                     lenient().when(attachment.getProxy().download()).thenAnswer(inv2 -> {
                         return java.util.concurrent.CompletableFuture.completedFuture(
                             new java.io.ByteArrayInputStream(finalFileData)
@@ -973,13 +995,26 @@ public class StatefulMockFactory {
         // (mockTextChannel → mockThreadChannel → mockTextChannel → ...)
         // Instead, it's handled in MockButtonEventBuilder when needed
 
-        // But we can mock getParentMessageChannel() to return a basic channel with a name
+        // Mock getParentMessageChannel() to return a channel with TextChannel interface
+        // This is needed for DiscordGame.categoryFromEvent() to work correctly
         MockChannelState parentChannelState = guildState.getChannel(threadState.getParentChannelId());
         if (parentChannelState != null) {
+            // IMPORTANT: Include TextChannel interface so instanceof check works in categoryFromEvent()
             net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion parentMessageChannel =
-                mock(net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion.class);
+                mock(net.dv8tion.jda.api.entities.channel.unions.GuildMessageChannelUnion.class,
+                        withSettings().extraInterfaces(TextChannel.class));
             lenient().when(parentMessageChannel.getName()).thenReturn(parentChannelState.getChannelName());
             lenient().when(parentMessageChannel.getIdLong()).thenReturn(parentChannelState.getChannelId());
+
+            // Set up getParentCategory() for the TextChannel interface - needed by DiscordGame.categoryFromEvent()
+            long categoryId = parentChannelState.getCategoryId();
+            MockCategoryState categoryState = guildState.getCategory(categoryId);
+            if (categoryState != null) {
+                Category category = mockCategory(categoryState, guildState);
+                TextChannel asTextChannel = (TextChannel) parentMessageChannel;
+                lenient().when(asTextChannel.getParentCategory()).thenReturn(category);
+            }
+
             lenient().when(thread.getParentMessageChannel()).thenReturn(parentMessageChannel);
         }
 

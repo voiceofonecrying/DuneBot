@@ -1,12 +1,9 @@
 package e2e;
 
 import model.Game;
-import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import testutil.discord.builders.MockSlashCommandEventBuilder;
 import testutil.discord.state.MockChannelState;
-import testutil.discord.state.MockMemberState;
 import testutil.discord.state.MockThreadChannelState;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -102,18 +99,7 @@ class SetupCompleteFlowE2ETest extends SetupCommandsE2ETestBase {
 
         // Select traitors for each faction (except Harkonnen who keeps all 4)
         for (String factionName : new String[]{"Atreides", "Emperor", "Fremen", "Guild", "BG"}) {
-            MockThreadChannelState factionChat = getFactionChatThread(factionName);
-            MockMemberState factionMember = getFactionMember(factionName);
-
-            // Find the first traitor selection button and click it
-            testutil.discord.state.MockMessageState traitorMessage = factionChat.getMessages().stream()
-                    .filter(testutil.discord.state.MockMessageState::hasButtons)
-                    .filter(msg -> msg.getContent().toLowerCase().contains("please select your traitor"))
-                    .findFirst()
-                    .orElseThrow(() -> new IllegalStateException(factionName + " has no traitor selection message"));
-
-            String firstButtonId = traitorMessage.getButtons().get(0).getComponentId();
-            clickButton(firstButtonId, factionChat, factionMember);
+            selectTraitorForFaction(factionName);
         }
 
         // Verify traitor selections
@@ -216,8 +202,8 @@ class SetupCompleteFlowE2ETest extends SetupCommandsE2ETestBase {
         assertMessageContains(lastFactionChat, "Please submit your dial for initial storm position");
 
         // Submit storm dials for both factions
-        executeStormDialSubmission(firstFactionName, 10);
-        executeStormDialSubmission(lastFactionName, 15);
+        submitStormDial(firstFactionName, 10);
+        submitStormDial(lastFactionName, 15);
 
         // Verify storm position and movement are set
         Game gameAfterStorm = parseGameFromBotData();
@@ -300,66 +286,4 @@ class SetupCompleteFlowE2ETest extends SetupCommandsE2ETestBase {
                 .isBetween(1, 6);
     }
 
-    private void executeBGPrediction(String targetFaction, int turn) throws Exception {
-        // BG predictions are done via button interactions in the faction chat thread
-        MockThreadChannelState bgChat = getFactionChatThread("BG");
-        MockMemberState bgMember = getFactionMember("BG");
-
-        // Step 1: Find and click the faction prediction button
-        // Faction buttons have empty labels (they show emojis), so we match by button ID pattern
-        testutil.discord.state.MockMessageState factionMessage = bgChat.getMessages().stream()
-                .filter(testutil.discord.state.MockMessageState::hasButtons)
-                .filter(msg -> msg.getContent().contains("Which faction do you predict to win"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No message asking for faction prediction"));
-
-        String factionButtonId = factionMessage.getButtons().stream()
-                .filter(btn -> btn.getComponentId().endsWith("-" + targetFaction))
-                .map(testutil.discord.state.MockButtonState::getComponentId)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Button for faction " + targetFaction + " not found"));
-
-        clickButton(factionButtonId, bgChat, bgMember);
-
-        // Step 2: Find and click the turn prediction button by its label
-        // Refresh thread to get the new message with turn buttons
-        bgChat = getFactionChatThread("BG");
-
-        String turnLabel = String.valueOf(turn);
-        testutil.discord.state.MockMessageState turnMessage = bgChat.getMessages().stream()
-                .filter(testutil.discord.state.MockMessageState::hasButtons)
-                .filter(msg -> msg.getContent().contains("Which turn do you predict"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No message asking for turn prediction"));
-
-        String turnButtonId = turnMessage.getButtons().stream()
-                .filter(btn -> btn.getLabel().equals(turnLabel))
-                .map(testutil.discord.state.MockButtonState::getComponentId)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Button with label " + turnLabel + " not found"));
-
-        clickButton(turnButtonId, bgChat, bgMember);
-    }
-
-    private void executeStormDialSubmission(String factionName, int dialValue) throws Exception {
-        MockThreadChannelState factionChat = getFactionChatThread(factionName);
-        MockMemberState factionMember = getFactionMember(factionName);
-
-        // Find the storm dial message
-        testutil.discord.state.MockMessageState stormMessage = factionChat.getMessages().stream()
-                .filter(testutil.discord.state.MockMessageState::hasButtons)
-                .filter(msg -> msg.getContent().contains("Please submit your dial for initial storm position"))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No storm dial message found for " + factionName));
-
-        // Find the button with the matching dial value label
-        String dialLabel = String.valueOf(dialValue);
-        String buttonId = stormMessage.getButtons().stream()
-                .filter(btn -> btn.getLabel().equals(dialLabel))
-                .map(testutil.discord.state.MockButtonState::getComponentId)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Button with label " + dialLabel + " not found"));
-
-        clickButton(buttonId, factionChat, factionMember);
-    }
 }

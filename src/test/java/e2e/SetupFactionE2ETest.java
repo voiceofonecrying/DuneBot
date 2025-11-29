@@ -1,12 +1,12 @@
 package e2e;
 
 import model.Game;
+import model.factions.Faction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testutil.discord.builders.MockSlashCommandEventBuilder;
 import testutil.discord.state.MockChannelState;
-import testutil.discord.state.MockMemberState;
 import testutil.discord.state.MockThreadChannelState;
 import testutil.discord.state.MockUserState;
 
@@ -33,21 +33,16 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
     void shouldAddAtreidesFactionToGame() throws Exception {
         // Given: A player user and member
         MockUserState playerUser = guildState.createUser("AtreidesPlayer");
-        MockMemberState playerMember = guildState.createMember(playerUser.getUserId());
+        guildState.createMember(playerUser.getUserId());
 
         // And: A setup faction command event in the game-actions channel
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         SlashCommandInteractionEvent event = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("faction")
                 .addStringOption("faction", "Atreides")
                 .addUserOption("player", playerUser)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
 
         // When: The setup faction command is executed
@@ -74,18 +69,13 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
     void shouldAddMultipleFactions() throws Exception {
         // Given: Multiple player users
         MockUserState atreidesPlayer = guildState.createUser("AtreidesPlayer");
-        MockMemberState atreidesMember = guildState.createMember(atreidesPlayer.getUserId());
+        guildState.createMember(atreidesPlayer.getUserId());
 
         MockUserState harkonnenPlayer = guildState.createUser("HarkonnenPlayer");
-        MockMemberState harkonnenMember = guildState.createMember(harkonnenPlayer.getUserId());
+        guildState.createMember(harkonnenPlayer.getUserId());
 
         MockUserState emperorPlayer = guildState.createUser("EmperorPlayer");
-        MockMemberState emperorMember = guildState.createMember(emperorPlayer.getUserId());
-
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
+        guildState.createMember(emperorPlayer.getUserId());
 
         // When: Multiple factions are added
         SlashCommandInteractionEvent atreidesEvent = new MockSlashCommandEventBuilder(guildState)
@@ -94,7 +84,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction")
                 .addStringOption("faction", "Atreides")
                 .addUserOption("player", atreidesPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(atreidesEvent);
 
@@ -104,7 +94,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction")
                 .addStringOption("faction", "Harkonnen")
                 .addUserOption("player", harkonnenPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(harkonnenEvent);
 
@@ -114,7 +104,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction")
                 .addStringOption("faction", "Emperor")
                 .addUserOption("player", emperorPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(emperorEvent);
 
@@ -136,24 +126,19 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
         MockUserState firstPlayer = guildState.createUser("FirstAtreidesPlayer");
         guildState.createMember(firstPlayer.getUserId());
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         SlashCommandInteractionEvent firstEvent = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("faction")
                 .addStringOption("faction", "Atreides")
                 .addUserOption("player", firstPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
 
         commandManager.onSlashCommandInteraction(firstEvent);
 
         // Verify first faction was added successfully
-        MockChannelState atreidesChannel = guildState.getChannels().stream()
+        guildState.getChannels().stream()
                 .filter(ch -> ch.getChannelName().equals("atreides-info"))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("First Atreides faction should be added successfully"));
@@ -168,7 +153,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction")
                 .addStringOption("faction", "Atreides")
                 .addUserOption("player", secondPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
 
         // Record the number of channels before attempting duplicate
@@ -214,24 +199,19 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
         MockUserState firstPlayer = guildState.createUser("FirstHarkonnenPlayer");
         guildState.createMember(firstPlayer.getUserId());
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         SlashCommandInteractionEvent firstEvent = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("faction")
                 .addStringOption("faction", "harkonnen")  // lowercase
                 .addUserOption("player", firstPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
 
         commandManager.onSlashCommandInteraction(firstEvent);
 
         // Verify first faction was added successfully
-        MockChannelState harkonnenChannel = guildState.getChannels().stream()
+        guildState.getChannels().stream()
                 .filter(ch -> ch.getChannelName().equals("harkonnen-info"))
                 .findFirst()
                 .orElseThrow(() -> new AssertionError("First Harkonnen faction should be added successfully"));
@@ -246,7 +226,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                 .setSubcommandName("faction")
                 .addStringOption("faction", "HARKONNEN")  // uppercase
                 .addUserOption("player", secondPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
 
         int harkonnenInfoCountBefore = (int) guildState.getChannels().stream()
@@ -273,11 +253,6 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
         // Test adding all the major factions
         List<String> factions = List.of("Atreides", "Harkonnen", "Emperor", "Fremen", "Guild", "BG");
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         for (String faction : factions) {
             MockUserState player = guildState.createUser(faction + "Player");
             guildState.createMember(player.getUserId());
@@ -288,7 +263,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                     .setSubcommandName("faction")
                     .addStringOption("faction", faction)
                     .addUserOption("player", player)
-                    .setChannel(gameActionsChannel)
+                    .setChannel(getGameActionsChannel())
                     .build();
 
             commandManager.onSlashCommandInteraction(event);
@@ -309,14 +284,6 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
         // Test adding all the expansion factions
         List<String> expansionFactions = List.of("Ix", "BT", "CHOAM", "Richese", "Moritani", "Ecaz");
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
-        // Get initial channel count to compare later
-        int initialChannelCount = guildState.getChannelsInCategory(gameCategory.getCategoryId()).size();
-
         for (String faction : expansionFactions) {
             MockUserState player = guildState.createUser(faction + "Player");
             guildState.createMember(player.getUserId());
@@ -327,7 +294,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                     .setSubcommandName("faction")
                     .addStringOption("faction", faction)
                     .addUserOption("player", player)
-                    .setChannel(gameActionsChannel)
+                    .setChannel(getGameActionsChannel())
                     .build();
 
             commandManager.onSlashCommandInteraction(event);
@@ -377,7 +344,7 @@ class SetupFactionE2ETest extends SetupCommandsE2ETestBase {
                 .hasSize(6);
 
         // Verify each expansion faction type is present
-        assertThat(updatedGame.getFactions().stream().map(f -> f.getName()))
+        assertThat(updatedGame.getFactions().stream().map(Faction::getName))
                 .as("Should have all expansion faction types")
                 .containsExactlyInAnyOrder("Ix", "BT", "CHOAM", "Richese", "Moritani", "Ecaz");
     }
