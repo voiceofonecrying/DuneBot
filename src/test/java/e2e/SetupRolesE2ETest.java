@@ -4,7 +4,6 @@ import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEve
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import testutil.discord.builders.MockSlashCommandEventBuilder;
-import testutil.discord.state.MockChannelState;
 import testutil.discord.state.MockMemberState;
 import testutil.discord.state.MockUserState;
 
@@ -26,15 +25,10 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
 
     @Test
     @DisplayName("Should add player to game role")
-    void shouldAddPlayerToGameRole() throws Exception {
+    void shouldAddPlayerToGameRole() {
         // Given: A new player user
         MockUserState newPlayer = guildState.createUser("NewPlayer");
         MockMemberState newMember = guildState.createMember(newPlayer.getUserId());
-
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
 
         // Verify the member doesn't have the game role initially
         assertThat(newMember.getRoleIds())
@@ -47,7 +41,7 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("add-player-to-game-role")
                 .addUserOption("player", newPlayer)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -69,11 +63,6 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
         MockUserState newMod = guildState.createUser("NewModerator");
         MockMemberState newModMember = guildState.createMember(newMod.getUserId());
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // Verify the member doesn't have the mod role initially
         assertThat(newModMember.getRoleIds())
                 .as("New member should not have any roles initially")
@@ -85,7 +74,7 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("add-mod")
                 .addUserOption("player", newMod)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(event);
 
@@ -107,18 +96,13 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
         MockUserState secondaryMod = guildState.createUser("SecondaryMod");
         MockMemberState secondaryModMember = guildState.createMember(secondaryMod.getUserId());
 
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // First add the secondary mod to the mod role
         SlashCommandInteractionEvent addEvent = new MockSlashCommandEventBuilder(guildState)
                 .setMember(moderatorMember)
                 .setCommandName("setup")
                 .setSubcommandName("add-mod")
                 .addUserOption("player", secondaryMod)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(addEvent);
 
@@ -133,7 +117,7 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("remove-mod")
                 .addUserOption("player", secondaryMod)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
         commandManager.onSlashCommandInteraction(removeEvent);
 
@@ -152,11 +136,6 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
     @DisplayName("Should not allow removing the primary moderator")
     void shouldNotAllowRemovingPrimaryModerator() throws Exception {
         // Given: The primary moderator (who created the game)
-        MockChannelState gameActionsChannel = guildState.getChannels().stream()
-                .filter(ch -> ch.getChannelName().equals("game-actions"))
-                .findFirst()
-                .orElseThrow();
-
         // The primary mod should already have the mod role from game creation
         assertThat(moderatorMember.getRoleIds())
                 .as("Primary moderator should have the mod role")
@@ -168,7 +147,7 @@ class SetupRolesE2ETest extends SetupCommandsE2ETestBase {
                 .setCommandName("setup")
                 .setSubcommandName("remove-mod")
                 .addUserOption("player", moderatorUser)
-                .setChannel(gameActionsChannel)
+                .setChannel(getGameActionsChannel())
                 .build();
 
         // Execute the command (it will fail internally but won't throw to us due to async handling)
