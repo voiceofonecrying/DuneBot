@@ -151,7 +151,7 @@ public class BattlePlan {
         String leaderNameForTraitor = "";
         if (getLeader() != null)
             leaderNameForTraitor = getLeader().getName();
-        else if (getCheapHero() != null)
+        else if (getCheapHero() != null && !cheapHero.name().contains("Decoy"))
             leaderNameForTraitor = "Cheap Hero";
         return leaderNameForTraitor;
     }
