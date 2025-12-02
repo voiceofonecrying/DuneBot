@@ -441,9 +441,10 @@ public class ShipmentAndMovementButtons implements Pressable {
                 } else if (btHTPlacement) {
                     discordGame.queueMessage("Starting over");
                     ((BTFaction) faction).presentHTChoices();
-                } else
+                } else {
                     discordGame.queueMessage("Starting over");
                     queueShippingButtons(event, game, discordGame);
+                }
             }
         } else {
             faction.getMovement().clear();
