@@ -40,8 +40,6 @@ import templates.ChannelPermissions;
 
 import java.awt.*;
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.charset.StandardCharsets;
 import java.text.MessageFormat;
 import java.util.*;
 import java.util.List;
@@ -296,6 +294,8 @@ public class CommandManager extends ListenerAdapter {
                 case "discard-traitor" -> discardTraitor(discordGame, game);
                 case "transfer-card" -> transferCard(discordGame, game);
                 case "transfer-card-from-discard" -> transferCardFromDiscard(discordGame, game);
+                case "create-card-in-hand" -> createCardInHand(discordGame, game);
+                case "delete-card-from-hand" -> deleteCardFromHand(discordGame, game);
                 case "set-hand-limit" -> setHandLimit(discordGame, game);
                 case "place-forces" -> placeForcesEventHandler(discordGame, game);
                 case "move-forces" -> moveForcesEventHandler(discordGame, game);
@@ -350,13 +350,6 @@ public class CommandManager extends ListenerAdapter {
         }
     }
 
-    private List<String> getQuotesFromBook(String bookName) throws IOException {
-        try (InputStream stream = getClass().getClassLoader().getResourceAsStream(bookName)) {
-            byte[] allBytes = Objects.requireNonNull(stream).readAllBytes();
-            return new ArrayList<>(Arrays.stream(new String(allBytes, StandardCharsets.UTF_8).split("((?<=[.?!]))")).toList());
-        }
-    }
-
     @Override
     public void onCommandAutoCompleteInteraction(@NotNull CommandAutoCompleteInteractionEvent event) {
         CompletableFuture.runAsync(() -> runCommandAutoCompleteInteraction(event));
@@ -385,6 +378,8 @@ public class CommandManager extends ListenerAdapter {
         commandData.add(Commands.slash("discard-traitor", "Move a card from a player to the Traitor pile and shuffle the pile.").addOptions(faction, traitor));
         commandData.add(Commands.slash("transfer-card", "Move a card from one faction's hand to another").addOptions(faction, card, recipient));
         commandData.add(Commands.slash("transfer-card-from-discard", "Move a card from the discard to a faction's hand").addOptions(faction, discardCard));
+        commandData.add(Commands.slash("create-card-in-hand", "Special command for Lindaren homebrew faction").addOptions(faction, cardToCreate));
+        commandData.add(Commands.slash("delete-card-from-hand", "Special command for Lindaren homebrew faction").addOptions(faction, card));
         commandData.add(Commands.slash("set-hand-limit", "Change the hand limit for a faction.").addOptions(faction, amount));
         commandData.add(Commands.slash("place-forces", "Place forces from reserves onto the surface").addOptions(faction, amount, starredAmount, isShipment, canTrigger, territory));
         commandData.add(Commands.slash("move-forces", "Move forces from one territory to another").addOptions(faction, fromTerritory, toTerritory, amount, starredAmount));
@@ -765,6 +760,20 @@ public class CommandManager extends ListenerAdapter {
                 discordGame.required(recipient).getAsString(),
                 discordGame.required(card).getAsString()
         );
+        discordGame.pushGame();
+    }
+
+    public void createCardInHand(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction receiver = game.getFaction(discordGame.required(faction).getAsString());
+        String cardName = discordGame.required(cardToCreate).getAsString();
+        receiver.addTreacheryCard(new TreacheryCard(cardName));
+        discordGame.pushGame();
+    }
+
+    public void deleteCardFromHand(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction cardHolder = game.getFaction(discordGame.required(faction).getAsString());
+        String cardName = discordGame.required(card).getAsString();
+        cardHolder.removeTreacheryCardWithoutDiscard(cardName);
         discordGame.pushGame();
     }
 

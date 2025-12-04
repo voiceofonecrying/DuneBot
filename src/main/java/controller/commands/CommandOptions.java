@@ -71,7 +71,7 @@ public class CommandOptions {
     public static final OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
     public static final OptionData allyCard = new OptionData(OptionType.STRING, "ally-card", "The ally's card to swap for.", true).setAutoComplete(true);
     public static final OptionData discardCard = new OptionData(OptionType.STRING, "card-discard", "The card.", true).setAutoComplete(true);
-
+    public static final OptionData cardToCreate = new OptionData(OptionType.STRING, "card-to-create", "The name of the card.", true);
     public static final OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
     public static final OptionData putBackCard = new OptionData(OptionType.STRING, "putbackcard", "The card.", true).setAutoComplete(true);
     public static final OptionData topOrBottom = new OptionData(OptionType.STRING, "top-or-bottom", "Top or Bottom of treachery deck", true)
