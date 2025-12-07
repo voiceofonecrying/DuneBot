@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -194,29 +195,42 @@ public class BTFaction extends Faction {
     }
 
     public void presentHTChoices() {
+        movement.setMoveType(MoveType.BT_HT);
+        movement.setMovingFrom("Tleilax");
+        movement.setForce(numFreeRevivals);
         game.getTurnSummary().publish(emoji + " may place " + numFreeRevivals + " free revived " + forceEmoji + " in any territory or homeworld.");
-        String buttonSuffix = "-bt-ht";
+        String buttonPrefix = movement.getChoicePrefix();
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
-        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
-        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
-        choices.add(new DuneChoice("homeworlds" + buttonSuffix, "Homeworlds"));
+        choices.add(new DuneChoice(buttonPrefix + "stronghold", "Stronghold"));
+        choices.add(new DuneChoice(buttonPrefix + "spice-blow", "Spice Blow Territories"));
+        choices.add(new DuneChoice(buttonPrefix + "rock", "Rock Territories"));
+        choices.add(new DuneChoice(buttonPrefix + "homeworlds", "Homeworlds"));
         boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
         if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-            choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
-        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
-        choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, "Leave them on Tleilaxu"));
-        chat.publish("Where would you like to place your " + numFreeRevivals + " " + forceEmoji + " free revivals? " + player, choices);
+            choices.add(new DuneChoice(buttonPrefix + "discovery-tokens", "Discovery Tokens"));
+        choices.add(new DuneChoice(buttonPrefix + "other", "Somewhere else"));
+        choices.add(new DuneChoice("danger", buttonPrefix + "pass", "Leave them on Tleilaxu"));
+        chat.reply("Where would you like to place your " + numFreeRevivals + " " + forceEmoji + " free revivals? " + player, choices);
         btHTActive = true;
     }
 
     public void presentHTExecutionChoices() {
-        shipment.setForce(numFreeRevivals);
+        movement.setForce(numFreeRevivals);
+        String buttonPrefix = movement.getChoicePrefix();
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("execute-shipment-bt-ht", "Confirm placement"));
-        choices.add(new DuneChoice("secondary", "reset-shipment-bt-ht", "Start over"));
-        choices.add(new DuneChoice("danger", "pass-shipment-bt-ht", "Leave them on Tleilaxu"));
-        chat.reply("Sending **" + forcesString(numFreeRevivals, 0) + "** free revivals to " + shipment.getTerritoryName(), choices);
+        choices.add(new DuneChoice(buttonPrefix + "execute", "Confirm placement"));
+        choices.add(new DuneChoice("secondary", buttonPrefix + "start-over", "Start over"));
+        choices.add(new DuneChoice("danger", buttonPrefix + "pass", "Leave them on Tleilax"));
+        chat.reply("Sending **" + forcesString(numFreeRevivals, 0) + "** free revivals to " + movement.getMovingTo(), choices);
+    }
+
+    public void executeHTPlacement() throws InvalidGameStateException {
+        Territory territory = game.getTerritory(movement.getMovingTo());
+        placeForces(territory, movement.getForce(), 0, false, true, true, false, false);
+        game.setUpdated(UpdateType.MAP);
+        movement.clear();
+        chat.reply("Placement of " + numFreeRevivals + " free revivals complete.");
+        btHTActive = false;
     }
 
     public boolean isBtHTActive() {

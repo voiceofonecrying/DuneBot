@@ -1,8 +1,10 @@
 package model;
 
+import constants.Emojis;
 import enums.MoveType;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
+import model.factions.BTFaction;
 import model.factions.EcazFaction;
 import model.factions.Faction;
 import model.factions.FremenFaction;
@@ -62,6 +64,8 @@ public class Movement {
             return "ambassador-guild-";
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
             return "ambassador-fremen-";
+        else if (moveType == MoveType.BT_HT)
+            return "bt-ht-";
         return "";
     }
 
@@ -161,6 +165,10 @@ public class Movement {
         } else if (moveType == MoveType.GUILD_AMBASSADOR) {
             faction.getChat().reply("You will not ship with the Guild Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ship with the Guild Ambassador.");
+        } else if (moveType == MoveType.BT_HT) {
+            faction.getChat().reply("You will leave your free revivals on Tleilax.");
+            game.getTurnSummary().publish(Emojis.BT + " leaves their free revivals on Tleilax.");
+            ((BTFaction) faction).setBtHTActive(false);
         }
         clear();
         moveType = MoveType.TBD;
@@ -179,6 +187,8 @@ public class Movement {
             ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
         else if (moveType == MoveType.GUILD_AMBASSADOR)
             ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
+        else if (moveType == MoveType.BT_HT)
+            ((BTFaction) faction).presentHTChoices();
     }
 
     public void presentStrongholdChoices() {
@@ -326,6 +336,8 @@ public class Movement {
             faction.getChat().reply("Ride with Fremen Ambassador complete.");
         } else if (moveType == MoveType.GUILD_AMBASSADOR)
             executeGuildAmbassador();
+        else if (moveType == MoveType.BT_HT)
+            ((BTFaction) faction).executeHTPlacement();
         clear();
         moveType = MoveType.TBD;
     }

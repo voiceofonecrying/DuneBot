@@ -12,9 +12,32 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class MovementTest extends DuneTest {
+    List<String> strongholds;
+    List<String> strongholdsWithHMS;
+    List<String> spiceBlowTerritories;
+    List<String> rockTerritories;
+    List<String> nonSpiceNonRockTerritories;
+    List<String> discoveryTokenTerritories;
+    Territory meridianWestSector;
+    Territory pastyMesaNorthSector;
+
     @BeforeEach
     void setUp() throws InvalidGameStateException, IOException {
         super.setUp();
+        game.addFaction(ix);
+        strongholds = List.of("Arrakeen", "Carthag", "Sietch Tabr", "Habbanya Sietch", "Tuek's Sietch");
+        strongholdsWithHMS = new ArrayList<>(strongholds);
+        strongholdsWithHMS.add("Hidden Mobile Stronghold");
+        spiceBlowTerritories = game.getTerritories().getSpiceBlowTerritoryNames();
+        rockTerritories = game.getTerritories().getRockTerritoryNames();
+        nonSpiceNonRockTerritories = game.getTerritories().getNonSpiceNonRockTerritoryNames();
+        meridianWestSector = game.getTerritory("Meridian (West Sector)");
+        meridianWestSector.setDiscoveryToken("Ecological Testing Station");
+        meridianWestSector.setDiscovered(true);
+        pastyMesaNorthSector = game.getTerritory("Pasty Mesa (North Sector)");
+        pastyMesaNorthSector.setDiscoveryToken("Orgiz Processing Station");
+        pastyMesaNorthSector.setDiscovered(true);
+        discoveryTokenTerritories = List.of("Ecological Testing Station", "Orgiz Processing Station");
     }
 
     @Nested
@@ -26,7 +49,6 @@ public class MovementTest extends DuneTest {
         void setUp() {
             game.addFaction(fremen);
             game.addFaction(ecaz);
-            game.addFaction(ix);
             game.createAlliance(ecaz, ix);
         }
 
@@ -235,9 +257,6 @@ public class MovementTest extends DuneTest {
     @Nested
     @DisplayName("#presentStrongholdChoices")
     class PresentStrongholdChoices {
-        List<String> strongholds;
-        List<String> strongholdsWithHMS;
-
         @BeforeEach
         void setUp() {
             game.addFaction(fremen);
@@ -245,9 +264,6 @@ public class MovementTest extends DuneTest {
             game.addFaction(ix);
             ecaz.setChat(ecazChat);
             ix.setChat(ixChat);
-            strongholds = List.of("Arrakeen", "Carthag", "Sietch Tabr", "Habbanya Sietch", "Tuek's Sietch");
-            strongholdsWithHMS = new ArrayList<>(strongholds);
-            strongholdsWithHMS.add("Hidden Mobile Stronghold");
         }
 
         @Test
@@ -261,6 +277,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 6)) {
                 assertTrue(c.getId().startsWith("fremen-ride-"));
+                assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
                 String action = c.getId().replace("fremen-ride-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(strongholdsWithHMS.contains(c.getLabel()));
@@ -281,6 +298,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 6)) {
                 assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
                 String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(strongholdsWithHMS.contains(c.getLabel()));
@@ -322,6 +340,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 6)) {
                 assertTrue(c.getId().startsWith("ambassador-guild-"));
+                assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
                 String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(strongholdsWithHMS.contains(c.getLabel()));
@@ -335,7 +354,6 @@ public class MovementTest extends DuneTest {
     @Nested
     @DisplayName("#presentSpiceBlowChoices")
     class PresentSpiceBlowChoices {
-        List<String> spiceBlowTerritories;
 
         @BeforeEach
         void setUp() {
@@ -344,7 +362,6 @@ public class MovementTest extends DuneTest {
             game.addFaction(ix);
             ecaz.setChat(ecazChat);
             ix.setChat(ixChat);
-            spiceBlowTerritories = game.getTerritories().getSpiceBlowTerritoryNames();
         }
 
         @Test
@@ -449,7 +466,6 @@ public class MovementTest extends DuneTest {
     @Nested
     @DisplayName("#presentRockChoices")
     class PresentRockChoices {
-        List<String> rockTerritories;
 
         @BeforeEach
         void setUp() {
@@ -458,7 +474,6 @@ public class MovementTest extends DuneTest {
             game.addFaction(ix);
             ecaz.setChat(ecazChat);
             ix.setChat(ixChat);
-            rockTerritories = game.getTerritories().getRockTerritoryNames();
         }
 
         @Test
@@ -522,9 +537,6 @@ public class MovementTest extends DuneTest {
     @Nested
     @DisplayName("#presentDiscoveryTokenChoices")
     class PresentDiscoveryTokenChoices {
-        List<String> discoveryTokenTerritories;
-        Territory meridianWestSector;
-        Territory pastyMesaNorthSector;
 
         @BeforeEach
         void setUp() {
@@ -532,13 +544,6 @@ public class MovementTest extends DuneTest {
             game.addFaction(ix);
             ecaz.setChat(ecazChat);
             ix.setChat(ixChat);
-            meridianWestSector = game.getTerritory("Meridian (West Sector)");
-            meridianWestSector.setDiscoveryToken("Ecological Testing Station");
-            meridianWestSector.setDiscovered(true);
-            pastyMesaNorthSector = game.getTerritory("Pasty Mesa (North Sector)");
-            pastyMesaNorthSector.setDiscoveryToken("Orgiz Processing Station");
-            pastyMesaNorthSector.setDiscovered(true);
-            discoveryTokenTerritories = List.of("Ecological Testing Station", "Orgiz Processing Station");
         }
 
         @Test
@@ -602,7 +607,6 @@ public class MovementTest extends DuneTest {
     @Nested
     @DisplayName("#presentNonSpiceNonRockChoices")
     class PresentNonSpiceNonRockChoices {
-        List<String> nonSpiceNonRockTerritories;
 
         @BeforeEach
         void setUp() {
@@ -611,7 +615,6 @@ public class MovementTest extends DuneTest {
             game.addFaction(ix);
             ecaz.setChat(ecazChat);
             ix.setChat(ixChat);
-            nonSpiceNonRockTerritories = game.getTerritories().getNonSpiceNonRockTerritoryNames();
         }
 
         @Test
@@ -1166,6 +1169,173 @@ public class MovementTest extends DuneTest {
             assertEquals(2, ixHomeworld.getForceStrength("Ix*"));
             assertEquals("Shipment with Guild Ambassador complete.", ixChat.getMessages().getLast());
             assertEquals(Emojis.IX + ": 1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " placed on Carthag", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+        }
+    }
+
+    @Nested
+    @DisplayName("#btHighThreshold")
+    class BTHighThreshold {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(bt);
+            bt.removeForces("Tleilax", 2, false, true);
+            game.startRevival();
+            if (game.getRevival().performPreSteps(game)) {
+                game.getRevival().startRevivingForces(game);
+            }
+            bt.presentHTChoices();
+            btChat.clear();
+            turnSummary.clear();
+            movement = bt.getMovement();
+        }
+
+        @Test
+        void testPass() {
+            movement.pass();
+            assertEquals("You will leave your free revivals on Tleilax.", btChat.getMessages().getLast());
+            assertEquals(Emojis.BT + " leaves their free revivals on Tleilax.", turnSummary.getMessages().getLast());
+            assertFalse(bt.isBtHTActive());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+            assertTrue(movement.getMovingFrom().isEmpty());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testStartOver() {
+            movement.setMovingTo("Carthag");
+            movement.startOver();
+            assertEquals("Where would you like to place your 2 " + Emojis.BT_TROOP + " free revivals? bt", btChat.getMessages().getLast());
+            assertEquals(Emojis.BT + " may place 2 free revived " + Emojis.BT_TROOP + " in any territory or homeworld.", turnSummary.getMessages().getLast());
+//            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+            assertEquals("Tleilax", movement.getMovingFrom());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(2, movement.getForce());
+        }
+
+        @Test
+        void testStrongholdChoices() {
+            movement.presentStrongholdChoices();
+            assertEquals("Which Stronghold?", btChat.getMessages().getLast());
+            assertEquals(7, btChat.getChoices().getLast().size());
+            assertTrue(btChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : btChat.getChoices().getLast().subList(0, 6)) {
+                assertTrue(c.getId().startsWith("bt-ht-"));
+                assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
+                String action = c.getId().replace("bt-ht-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(strongholdsWithHMS.contains(c.getLabel()));
+            }
+            for (String s : strongholdsWithHMS)
+                assertTrue(btChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
+        void testSpiceBlowChoices() {
+            movement.presentSpiceBlowChoices();
+            assertEquals("Which Spice Blow Territory?", btChat.getMessages().getLast());
+            assertEquals(16, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : btChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("bt-ht-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("bt-ht-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(btChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
+        void testRockChoices() {
+            movement.presentRockChoices();
+            assertEquals("Which Rock Territory?", btChat.getMessages().getLast());
+            assertEquals(8, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : btChat.getChoices().getLast().subList(0, 7)) {
+                assertTrue(c.getId().startsWith("bt-ht-"));
+                String action = c.getId().replace("bt-ht-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(rockTerritories.contains(c.getLabel()));
+            }
+            for (String s : rockTerritories)
+                assertTrue(btChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
+        void testDiscoveryTokenChoices() {
+            movement.presentDiscoveryTokenChoices();
+            assertEquals("Which Discovery Token?", btChat.getMessages().getLast());
+            assertEquals(3, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : btChat.getChoices().getLast().subList(0, 2)) {
+                assertTrue(c.getId().startsWith("bt-ht-"));
+                String action = c.getId().replace("bt-ht-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
+            }
+            for (String s : discoveryTokenTerritories)
+                assertTrue(btChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
+        void testNonSpiceNonRockChoices() {
+            movement.presentNonSpiceNonRockChoices();
+            assertEquals("Which Territory?", btChat.getMessages().getLast());
+            assertEquals(16, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : btChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("bt-ht-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("bt-ht-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(btChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
+        void testSectorChoices() {
+            game.getTerritory("Cielago South (West Sector)").setSpice(12);
+            List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Cielago South");
+            movement.presentSectorChoices("Cielago South", sectors);
+            assertEquals("Which sector of Cielago South?", btChat.getMessages().getLast());
+            assertEquals(3, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-sector-Cielago South (West Sector)", btChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector (12 spice)", btChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("bt-ht-sector-Cielago South (East Sector)", btChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", btChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
+        }
+
+        @Test
+        void testExecute() throws InvalidGameStateException {
+            movement.setMovingTo("Carthag");
+            movement.setForce(2);
+            movement.execute();
+            assertFalse(bt.isBtHTActive());
+            assertEquals(2, carthag.getForceStrength("BT"));
+            assertEquals(18, game.getTerritory("Tleilax").getForceStrength("BT"));
+            assertEquals("Placement of 2 free revivals complete.", btChat.getMessages().getLast());
+            assertEquals(Emojis.BT + ": 2 " + Emojis.BT_TROOP + " placed on Carthag", turnSummary.getMessages().getLast());
             assertEquals(MoveType.TBD, movement.getMoveType());
         }
     }

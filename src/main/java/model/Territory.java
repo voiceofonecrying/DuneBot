@@ -2,6 +2,7 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
@@ -461,7 +462,7 @@ public class Territory {
             return faction instanceof MoritaniFaction && !forces.isEmpty();
         } else if (isShipment) {
             if (territoryName.equals("Hidden Mobile Stronghold") && !(faction instanceof IxFaction))
-                return true;
+                return !(faction.getMovement().getMoveType() == MoveType.BT_HT);
             if (aftermathToken)
                 return true;
             if (faction instanceof FremenFaction && !inFremenRange && !faction.getAlly().equals("Guild"))
