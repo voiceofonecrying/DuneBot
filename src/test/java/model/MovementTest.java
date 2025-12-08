@@ -1332,7 +1332,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testProcessTerritory_MultiSectorTerritory() {
-            boolean stateChanged = movement.processTerritory("Cielago South (West Sector)");
+            boolean stateChanged = movement.processTerritory("Cielago South");
             assertFalse(stateChanged);
             assertEquals("Which sector of Cielago South?", btChat.getMessages().getLast());
             assertEquals(3, btChat.getChoices().getLast().size());
