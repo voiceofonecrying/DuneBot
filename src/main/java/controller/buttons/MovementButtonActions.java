@@ -6,7 +6,6 @@ import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.MessageHelper;
 import model.Game;
-import model.Territory;
 import model.factions.Faction;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
@@ -83,24 +82,8 @@ public class MovementButtonActions {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String choicePrefix = faction.getMovement().getChoicePrefix();
         String aggregateTerritoryName = event.getComponentId().replace("territory-", "").replace(choicePrefix, "");
-        List<Territory> territorySectors = game.getTerritories().getTerritorySectorsInStormOrder(aggregateTerritoryName);
-
-        if (territorySectors.size() == 1) {
-            Territory territory = territorySectors.getFirst();
-            MoveType moveType = faction.getMovement().getMoveType();
-            if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
-                game.getFremenFaction().placeWorm(territory);
-            } else if (moveType == MoveType.BT_HT) {
-                faction.getMovement().setMovingTo(territory.getTerritoryName());
-                game.getBTFaction().presentHTExecutionChoices();
-            } else {
-                faction.getMovement().setMovingTo(territory.getTerritoryName());
-                presentForcesChoices(event, faction);
-            }
+        if (faction.getMovement().processTerritory(aggregateTerritoryName))
             discordGame.pushGame();
-        } else {
-            faction.getMovement().presentSectorChoices(aggregateTerritoryName, territorySectors);
-        }
         deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
     }
 
@@ -117,7 +100,8 @@ public class MovementButtonActions {
             game.getBTFaction().presentHTExecutionChoices();
         } else {
             faction.getMovement().setMovingTo(territoryName);
-            presentForcesChoices(event, faction);
+            faction.getMovement().presentForcesChoices();
+            deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
         }
         discordGame.pushGame();
     }
@@ -127,7 +111,7 @@ public class MovementButtonActions {
         String choicePrefix = faction.getMovement().getChoicePrefix();
         int addedForces = Integer.parseInt(event.getComponentId().replace("add-force-", "").replace(choicePrefix, ""));
         faction.getMovement().addRegularForces(addedForces);
-        presentForcesChoices(event, faction);
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
         discordGame.pushGame();
     }
 
@@ -136,21 +120,16 @@ public class MovementButtonActions {
         String choicePrefix = faction.getMovement().getChoicePrefix();
         int addedForces = Integer.parseInt(event.getComponentId().replace("add-special-force-", "").replace(choicePrefix, ""));
         faction.getMovement().addSpecialForces(addedForces);
-        presentForcesChoices(event, faction);
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
         discordGame.pushGame();
     }
 
     protected static void resetForces(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
-        faction.getMovement().resetForces();
-        presentForcesChoices(event, faction);
-        discordGame.pushGame();
-    }
-
-    protected static void presentForcesChoices(ButtonInteractionEvent event, Faction faction) {
         String choicePrefix = faction.getMovement().getChoicePrefix();
+        faction.getMovement().resetForces();
         deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
-        faction.getMovement().presentForcesChoices();
+        discordGame.pushGame();
     }
 
     protected static void execute(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {

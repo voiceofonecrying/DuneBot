@@ -254,6 +254,34 @@ public class Movement {
         return choice;
     }
 
+    /**
+     * If the territory has only one sector, process for that sector.
+     * If it has more than one sector, present sector choices so player can pick a single sector to process.
+     *
+     * @param aggregateTerritoryName  The number revived for free.
+     * @return true if game state has changed, false if only new choices were presented to player
+     */
+    public boolean processTerritory(String aggregateTerritoryName) {
+        Game game = faction.getGame();
+        List<Territory> territorySectors = game.getTerritories().getTerritorySectorsInStormOrder(aggregateTerritoryName);
+        if (territorySectors.size() == 1) {
+            Territory territory = territorySectors.getFirst();
+            if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
+                game.getFremenFaction().placeWorm(territory);
+            } else if (moveType == MoveType.BT_HT) {
+                setMovingTo(territory.getTerritoryName());
+                game.getBTFaction().presentHTExecutionChoices();
+            } else {
+                setMovingTo(territory.getTerritoryName());
+                presentForcesChoices();
+            }
+            return true;
+        } else {
+            presentSectorChoices(aggregateTerritoryName, territorySectors);
+            return false;
+        }
+    }
+
     public void presentSectorChoices(String aggregateTerritoryName, List<Territory> territorySectors) {
         List<DuneChoice> choices = new ArrayList<>();
         for (Territory sector : territorySectors) {
@@ -313,10 +341,12 @@ public class Movement {
 
     public void addRegularForces(int numForces) {
         force += numForces;
+        presentForcesChoices();
     }
 
     public void addSpecialForces(int numForces) {
         specialForce += numForces;
+        presentForcesChoices();
     }
 
     public void resetForces() {
@@ -324,6 +354,7 @@ public class Movement {
         specialForce = 0;
         secondForce = 0;
         secondSpecialForce = 0;
+        presentForcesChoices();
     }
 
     public void execute() throws InvalidGameStateException {
