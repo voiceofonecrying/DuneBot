@@ -935,6 +935,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() {
+            game.addFaction(fremen);
             movement = fremen.getMovement();
             movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
             movement.setMovingTo("Carthag");
@@ -987,6 +988,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() {
+            game.addFaction(fremen);
             movement = fremen.getMovement();
             movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
             movement.setMovingTo("Carthag");
@@ -1308,6 +1310,38 @@ public class MovementTest extends DuneTest {
             }
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(btChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_OneSectorTerritory() {
+            boolean stateChanged = movement.processTerritory("Carthag");
+            assertTrue(stateChanged);
+            assertEquals("Carthag", movement.getMovingTo());
+            assertEquals(2, movement.getForce());
+            assertEquals("Sending **2 " + Emojis.BT_TROOP + "** free revivals to Carthag", btChat.getMessages().getLast());
+            assertEquals(3, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-execute", btChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Confirm placement", btChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().get(1).getId());
+            assertEquals("Start over", btChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("bt-ht-pass", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Leave them on Tleilax", btChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_MultiSectorTerritory() {
+            boolean stateChanged = movement.processTerritory("Cielago South");
+            assertFalse(stateChanged);
+            assertEquals("Which sector of Cielago South?", btChat.getMessages().getLast());
+            assertEquals(3, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-sector-Cielago South (West Sector)", btChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector", btChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("bt-ht-sector-Cielago South (East Sector)", btChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", btChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
             assertEquals(MoveType.BT_HT, movement.getMoveType());
         }
 
