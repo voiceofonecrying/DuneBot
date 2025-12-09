@@ -108,7 +108,7 @@ public class EcazFaction extends Faction {
             if (territory.getEcazAmbassador() == null) continue;
             if (territory.getEcazAmbassador().equals(ambassador)) territory.setEcazAmbassador(null);
         }
-        if (!ambassador.equals("BG")) {
+        if (!ambassador.equals("BG") && !ambassador.equals("Ecaz")) {
             triggeredAmbassadors.add(ambassador);
         }
 
