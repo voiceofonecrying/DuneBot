@@ -2242,6 +2242,9 @@ public class Game {
      * @param faction2 The second faction.
      */
     public void createAlliance(Faction faction1, Faction faction2) {
+        if (faction1.getAlly().equals(faction2.getName()))
+            return;
+
         if (faction1.getNexusCard() != null)
             discardNexusCard(faction1);
         if (faction2.getNexusCard() != null)
