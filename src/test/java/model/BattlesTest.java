@@ -640,4 +640,56 @@ public class BattlesTest extends DuneTest {
             }
         }
     }
+
+    @Nested
+    @DisplayName("#presentSkilledLeaderChoices")
+    class PresentSkilledLeaderChoices {
+        Battles battles;
+
+        @BeforeEach
+        void setUp() {
+            game.addFaction(harkonnen);
+            game.addFaction(atreides);
+            battles = game.startBattlePhase();
+        }
+
+        @Test
+        void testNoSkilledLeader() {
+            battles.presentSkilledLeaderChoices(harkonnen);
+            assertTrue(harkonnenChat.getMessages().isEmpty());
+            assertTrue(harkonnenChat.getChoices().isEmpty());
+        }
+
+        @Test
+        void testOwnSkilledLeader() throws InvalidGameStateException {
+            feydRautha.setSkillCard(new LeaderSkillCard("Mentat"));
+            battles.presentSkilledLeaderChoices(harkonnen);
+            assertEquals("Will you pull Mentat Feyd Rautha behind your shield? ha", harkonnenChat.getMessages().getFirst());
+            assertEquals(1, harkonnenChat.getChoices().size());
+        }
+
+        @Test
+        void testCapturedLeadersOnly() throws InvalidGameStateException {
+            ladyJessica.setSkillCard(new LeaderSkillCard("Planetologist"));
+            harkonnen.keepCapturedLeader("Atreides", "Lady Jessica");
+            harkonnenChat.clear();
+            battles.presentSkilledLeaderChoices(harkonnen);
+            assertTrue(harkonnenChat.getChoices().isEmpty());
+            assertEquals("Planetologist Lady Jessica is behind your shield. ha", harkonnenChat.getMessages().getFirst());
+            assertTrue(ladyJessica.isPulledBehindShield());
+        }
+
+        @Test
+        void testOwnAndCaptureLeaders() throws InvalidGameStateException {
+            feydRautha.setSkillCard(new LeaderSkillCard("Mentat"));
+            ladyJessica.setSkillCard(new LeaderSkillCard("Planetologist"));
+            harkonnen.keepCapturedLeader("Atreides", "Lady Jessica");
+            harkonnenChat.clear();
+            battles.presentSkilledLeaderChoices(harkonnen);
+            assertEquals("Will you pull Mentat Feyd Rautha behind your shield? ha", harkonnenChat.getMessages().getFirst());
+            assertEquals(1, harkonnenChat.getChoices().size());
+            assertEquals("Planetologist Lady Jessica is behind your shield. ha", harkonnenChat.getMessages().getLast());
+            assertTrue(ladyJessica.isPulledBehindShield());
+        }
+    }
 }
