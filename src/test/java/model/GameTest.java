@@ -853,7 +853,7 @@ class GameTest extends DuneTest {
     class GetTerritory {
         @Test
         void exists() {
-            assertEquals(game.getTerritory("Arrakeen").getTerritoryName(), "Arrakeen");
+            assertEquals("Arrakeen", game.getTerritory("Arrakeen").getTerritoryName());
         }
 
         @Test
@@ -2354,6 +2354,18 @@ class GameTest extends DuneTest {
 
             assertEquals("You are now allies with " + Emojis.BT + "!", fremenLedger.getMessages().get(1));
             assertEquals("You are now allies with " + Emojis.FREMEN + "!", btLedger.getMessages().getFirst());
+        }
+
+        @Test
+        void alreadyAllied() {
+            game.createAlliance(fremen, guild);
+            turnSummary.clear();
+            fremenLedger.clear();
+            guildLedger.clear();
+            game.getUpdateTypes().clear();
+
+            game.createAlliance(fremen, guild);
+            assertTrue(turnSummary.getMessages().isEmpty());
         }
 
         @Test
