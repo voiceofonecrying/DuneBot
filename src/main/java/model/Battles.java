@@ -238,15 +238,20 @@ public class Battles {
 //        currentBattle = battleTerritories.
     }
 
-    private void presentSkilledLeaderChoices(Faction faction) {
+    protected void presentSkilledLeaderChoices(Faction faction) {
         for (Leader leader : faction.getSkilledLeaders()) {
-            List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-yes", "Yes, pull behind"));
-            choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-no", "No, leave out front"));
-            faction.getChat().publish(
-                    "Will you pull " + leader.getSkillCard().name() + " " + leader.getName() + " behind your shield? " + faction.getPlayer(),
-                    choices
-            );
+            if (leader.getOriginalFactionName().equals(faction.getName())) {
+                List<DuneChoice> choices = new ArrayList<>();
+                choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-yes", "Yes, pull behind"));
+                choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-no", "No, leave out front"));
+                faction.getChat().publish(
+                        "Will you pull " + leader.getSkillCard().name() + " " + leader.getName() + " behind your shield? " + faction.getPlayer(),
+                        choices
+                );
+            } else {
+                faction.getChat().publish(leader.getSkillCard().name() + " " + leader.getName() + " is behind your shield. " + faction.getPlayer());
+                leader.setPulledBehindShield(true);
+            }
         }
     }
 
