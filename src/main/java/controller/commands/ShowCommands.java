@@ -222,6 +222,7 @@ public class ShowCommands {
         int numLeaders = faction.getLeaders().size();
         offset = (numLeaders - 1) * 450;
         List<Leader> unplacedLeaders = new ArrayList<>();
+        List<Leader> capturedSkilledLeaders = new ArrayList<>();
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage;
             List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
@@ -247,6 +248,8 @@ public class ShowCommands {
             Point leaderPoint = new Point(300, 750 + offset);
             table = overlay(table, leaderImage, leaderPoint, 1);
             offset -= 450;
+            if (!leader.getOriginalFactionName().equals(faction.getName()) && leader.getSkillCard() != null)
+                capturedSkilledLeaders.add(leader);
             if (leader.getBattleTerritoryName() != null)
                 leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
         }
@@ -427,6 +430,14 @@ public class ShowCommands {
         List<Leader> leadersToWriteAsText = faction.getLeaders().stream().filter(unplacedLeaders::contains).toList();
         if (!leadersToWriteAsText.isEmpty())
             discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", leadersToWriteAsText.stream().map(Leader::getEmoiNameAndValueString).toList()));
+        MessageCreateBuilder builder = new MessageCreateBuilder();
+        if (!capturedSkilledLeaders.isEmpty()) {
+            for (Leader leader : capturedSkilledLeaders) {
+                FactionView fv = new FactionView(discordGame, discordGame.getGame().getFaction(leader.getOriginalFactionName()));
+                builder.addEmbeds(fv.getLeaderSkillEmbed(leader));
+            }
+            discordGame.queueMessage(infoChannelName, builder.build());
+        }
 
         if (!homebrewTraitors.isEmpty())
             discordGame.queueMessage(infoChannelName, "__Traitors:__\n" + String.join("\n", homebrewTraitors));
@@ -1274,6 +1285,7 @@ public class ShowCommands {
                         factionSpecificString +
                         traitorString);
         StringBuilder leadersInTerritories = new StringBuilder();
+        List<Leader> capturedSkilledLeaders = new ArrayList<>();
         for (Leader leader : faction.getLeaders()) {
             List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
                     "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
@@ -1281,10 +1293,20 @@ public class ShowCommands {
                 discordGame.queueMessage(infoChannelName, "__Leader:__\n" + leader.getEmoiNameAndValueString());
             else if (!(faction instanceof HomebrewFaction))
                 builder = builder.addFiles(getResourceFile(leader.getName()));
+            if (!leader.getOriginalFactionName().equals(faction.getName()) && leader.getSkillCard() != null)
+                capturedSkilledLeaders.add(leader);
             if (leader.getBattleTerritoryName() != null)
                 leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
         }
         discordGame.queueMessage(infoChannelName, builder.build());
+        builder = new MessageCreateBuilder();
+        if (!capturedSkilledLeaders.isEmpty()) {
+            for (Leader leader : capturedSkilledLeaders) {
+                FactionView fv = new FactionView(discordGame, discordGame.getGame().getFaction(leader.getOriginalFactionName()));
+                builder.addEmbeds(fv.getLeaderSkillEmbed(leader));
+            }
+            discordGame.queueMessage(infoChannelName, builder.build());
+        }
         if (faction instanceof HomebrewFaction && !faction.getLeaders().isEmpty())
             discordGame.queueMessage(infoChannelName, "__Leaders:__\n" + String.join("\n", faction.getLeaders().stream().map(Leader::getEmoiNameAndValueString).toList()));
 
