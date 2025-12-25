@@ -267,11 +267,12 @@ public class FactionView {
         List<Leader> skilledLeaders = faction.getSkilledLeaders();
 
         return skilledLeaders.stream()
+                .filter(l -> l.getOriginalFactionName().equals(faction.getName()))
                 .map(this::getLeaderSkillEmbed)
                 .toList();
     }
 
-    private MessageEmbed getLeaderSkillEmbed(Leader leader) {
+    public MessageEmbed getLeaderSkillEmbed(Leader leader) {
         LeaderSkillCard leaderSkillCard = leader.getSkillCard();
 
         EmbedBuilder eb = new EmbedBuilder()
