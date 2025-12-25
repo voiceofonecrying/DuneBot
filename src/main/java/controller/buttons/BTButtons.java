@@ -59,7 +59,7 @@ public class BTButtons implements Pressable {
         }
     }
 
-    private static void handleBTHighThresholdButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void handleBTHighThresholdButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("bt-ht-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }

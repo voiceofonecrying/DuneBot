@@ -4,10 +4,7 @@ import constants.Emojis;
 import enums.MoveType;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
-import model.factions.BTFaction;
-import model.factions.EcazFaction;
-import model.factions.Faction;
-import model.factions.FremenFaction;
+import model.factions.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -66,6 +63,8 @@ public class Movement {
             return "ambassador-fremen-";
         else if (moveType == MoveType.BT_HT)
             return "bt-ht-";
+        else if (moveType == MoveType.HMS_PLACEMENT)
+            return "ix-hms-placement-";
         return "";
     }
 
@@ -149,7 +148,7 @@ public class Movement {
         this.faction = faction;
     }
 
-    public void pass() {
+    public void pass() throws InvalidGameStateException {
         Game game = faction.getGame();
         if (moveType == MoveType.FREMEN_RIDE) {
             faction.getChat().reply("You will not ride the worm.");
@@ -169,6 +168,8 @@ public class Movement {
             faction.getChat().reply("You will leave your free revivals on Tleilax.");
             game.getTurnSummary().publish(Emojis.BT + " leaves their free revivals on Tleilax.");
             ((BTFaction) faction).setBtHTActive(false);
+        } else if (moveType == MoveType.HMS_PLACEMENT) {
+            throw new InvalidGameStateException("Ix must place the HMS.");
         }
         clear();
         moveType = MoveType.TBD;
@@ -189,9 +190,13 @@ public class Movement {
             ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
         else if (moveType == MoveType.BT_HT)
             ((BTFaction) faction).presentHTChoices();
+        else if (moveType == MoveType.HMS_PLACEMENT)
+            ((IxFaction) faction).presentHMSPlacementChoices();
     }
 
-    public void presentStrongholdChoices() {
+    public void presentStrongholdChoices() throws InvalidGameStateException {
+        if (moveType == MoveType.HMS_PLACEMENT)
+            throw new InvalidGameStateException("The HMS cannot be placed in a Stronghold.");
         Game game = faction.getGame();
         boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
         boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
@@ -226,7 +231,9 @@ public class Movement {
         faction.getChat().reply("Which Rock Territory?", choices);
     }
 
-    public void presentDiscoveryTokenChoices() {
+    public void presentDiscoveryTokenChoices() throws InvalidGameStateException {
+        if (moveType == MoveType.HMS_PLACEMENT)
+            throw new InvalidGameStateException("There are no Discovery Tokens on the board at game start.");
         Game game = faction.getGame();
         List<DuneChoice> choices = game.getTerritories().values().stream().filter(Territory::isDiscovered)
                 .map(territory -> faction.getMovement().shipToTerritoryChoice(territory.getDiscoveryToken(), false)).collect(Collectors.toList());
@@ -271,6 +278,9 @@ public class Movement {
             } else if (moveType == MoveType.BT_HT) {
                 setMovingTo(territory.getTerritoryName());
                 game.getBTFaction().presentHTExecutionChoices();
+            } else if (moveType == MoveType.HMS_PLACEMENT) {
+                setMovingTo(territory.getTerritoryName());
+                game.getIxFaction().presentHMSPlacementExecutionChoices();
             } else {
                 setMovingTo(territory.getTerritoryName());
                 presentForcesChoices();
@@ -357,7 +367,8 @@ public class Movement {
         presentForcesChoices();
     }
 
-    public void execute() throws InvalidGameStateException {
+    public boolean execute() throws InvalidGameStateException {
+        boolean advanceGame = false;
         if (moveType == MoveType.FREMEN_RIDE) {
             executeMovement();
             ((FremenFaction) faction).setWormRideActive(false);
@@ -369,8 +380,13 @@ public class Movement {
             executeGuildAmbassador();
         else if (moveType == MoveType.BT_HT)
             ((BTFaction) faction).executeHTPlacement();
+        else if (moveType == MoveType.HMS_PLACEMENT) {
+            ((IxFaction) faction).placeHMS();
+            advanceGame = true;
+        }
         clear();
         moveType = MoveType.TBD;
+        return advanceGame;
     }
 
     public void executeGuildAmbassador() throws InvalidGameStateException {

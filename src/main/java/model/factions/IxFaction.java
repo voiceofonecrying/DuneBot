@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -91,7 +92,7 @@ public class IxFaction extends Faction {
                 int spiceCollected = Math.min(spiceInTerritory, 2 * numForcesInHMS);
                 game.getTurnSummary().publish(Emojis.IX + " collects " + spiceCollected + " " + Emojis.SPICE + " from " + territoryName + ".");
                 territory.setSpice(spiceInTerritory - spiceCollected);
-                addSpice(spiceCollected, "HMS collection in " + territoryName);
+                addSpice(spiceCollected, "HMS collection in " + territoryName + ".");
             }
         }
         game.getTurnSummary().publish(Emojis.IX + " HMS movement complete.");
@@ -101,25 +102,26 @@ public class IxFaction extends Faction {
     }
 
     public void presentHMSPlacementChoices() {
-        shipment.clear();
-        String buttonSuffix = "-hms-placement";
+        movement.setMoveType(MoveType.HMS_PLACEMENT);
+        movement.clear();
+        String buttonPrefix = movement.getChoicePrefix();
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
-        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
-        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        choices.add(new DuneChoice(buttonPrefix + "spice-blow", "Spice Blow Territories"));
+        choices.add(new DuneChoice(buttonPrefix + "rock", "Rock Territories"));
+        choices.add(new DuneChoice(buttonPrefix + "other", "Somewhere else"));
         chat.reply("Where would you like to place the HMS? " + player, choices);
     }
 
     public void presentHMSPlacementExecutionChoices() {
-        String buttonSuffix = "-hms-placement";
+        String buttonPrefix = movement.getChoicePrefix();
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("execute-shipment" + buttonSuffix, "Confirm placement"));
-        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
-        chat.reply("Placing the HMS in " + shipment.getTerritoryName(), choices);
+        choices.add(new DuneChoice(buttonPrefix + "execute", "Confirm placement"));
+        choices.add(new DuneChoice("secondary", buttonPrefix + "start-over", "Start over"));
+        chat.reply("Placing the HMS in " + movement.getMovingTo(), choices);
     }
 
     public void placeHMS() {
-        placeHMS(shipment.getTerritoryName());
+        placeHMS(movement.getMovingTo());
     }
 
     public void placeHMS(String territoryName) {
@@ -137,14 +139,14 @@ public class IxFaction extends Faction {
         game.putTerritoryInAnotherTerritory(game.getTerritory("Hidden Mobile Stronghold"), targetTerritory);
         game.setIxHMSActionRequired(false);
         if (territoryWithHMS == null) {
-            chat.reply("You placed the HMS in " + territoryName);
-            game.getTurnSummary().publish(Emojis.IX + " placed the HMS in " + territoryName);
+            chat.reply("You placed the HMS in " + territoryName + ".");
+            game.getTurnSummary().publish(Emojis.IX + " placed the HMS in " + territoryName + ".");
         } else if (territoryWithHMS == targetTerritory) {
-            chat.reply("You left the HMS in " + territoryName);
-            game.getTurnSummary().publish(Emojis.IX + " left the HMS in " + territoryName);
+            chat.reply("You left the HMS in " + territoryName + ".");
+            game.getTurnSummary().publish(Emojis.IX + " left the HMS in " + territoryName + ".");
         } else {
-            chat.reply("You moved the HMS to " + territoryName);
-            game.getTurnSummary().publish(Emojis.IX + " moved the HMS to " + territoryName);
+            chat.reply("You moved the HMS to " + territoryName + ".");
+            game.getTurnSummary().publish(Emojis.IX + " moved the HMS to " + territoryName + ".");
         }
         game.setUpdated(UpdateType.MAP);
     }

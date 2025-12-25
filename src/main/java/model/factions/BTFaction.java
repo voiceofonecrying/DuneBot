@@ -209,7 +209,7 @@ public class BTFaction extends Faction {
         if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
             choices.add(new DuneChoice(buttonPrefix + "discovery-tokens", "Discovery Tokens"));
         choices.add(new DuneChoice(buttonPrefix + "other", "Somewhere else"));
-        choices.add(new DuneChoice("danger", buttonPrefix + "pass", "Leave them on Tleilaxu"));
+        choices.add(new DuneChoice("danger", buttonPrefix + "pass", "Leave them on Tleilax"));
         chat.reply("Where would you like to place your " + numFreeRevivals + " " + forceEmoji + " free revivals? " + player, choices);
         btHTActive = true;
     }

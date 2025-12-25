@@ -281,7 +281,7 @@ class SetupCompleteFlowWithOptionsE2ETest extends SetupCommandsE2ETestBase {
         if (cardMessage == null) {
             throw new IllegalStateException("No Ix card selection message found");
         }
-        String firstCardButton = cardMessage.getButtons().get(0).getComponentId();
+        String firstCardButton = cardMessage.getButtons().getFirst().getComponentId();
         clickButton(firstCardButton, ixChat, ixMember);
 
         // Step 2: Find and click the confirmation button
@@ -307,22 +307,22 @@ class SetupCompleteFlowWithOptionsE2ETest extends SetupCommandsE2ETestBase {
         MockMemberState ixMember = getFactionMember("Ix");
 
         // Step 1: Click category button (spice-blow or other)
-        String categoryButtonId = category + "-hms-placement";
+        String categoryButtonId = "ix-hms-placement-" + category;
         clickButton(categoryButtonId, ixChat, ixMember);
 
         // Step 2: Click territory button
         // Button ID pattern is: ship-hms-placement-{territory}
         ixChat = getFactionChatThread("Ix"); // Refresh after category click
-        String territoryButtonId = "ship-hms-placement-" + territory;
+        String territoryButtonId = "ix-hms-placement-territory-" + territory;
         clickButton(territoryButtonId, ixChat, ixMember);
 
         // Step 3: If territory has multiple sectors, select a sector
         ixChat = getFactionChatThread("Ix"); // Refresh after territory click
-        MockMessageState sectorMessage = findMessageWithButtonPattern(ixChat, "ship-sector-hms-placement-");
+        MockMessageState sectorMessage = findMessageWithButtonPattern(ixChat, "ix-hms-placement-sector-");
         if (sectorMessage != null) {
             // Click the first sector button (not the reset button)
             String sectorButton = sectorMessage.getButtons().stream()
-                    .filter(btn -> btn.getComponentId().startsWith("ship-sector-hms-placement-"))
+                    .filter(btn -> btn.getComponentId().startsWith("ix-hms-placement-sector-"))
                     .findFirst()
                     .map(MockButtonState::getComponentId)
                     .orElseThrow(() -> new IllegalStateException("No sector button found"));
@@ -331,6 +331,6 @@ class SetupCompleteFlowWithOptionsE2ETest extends SetupCommandsE2ETestBase {
 
         // Step 4: Execute placement
         ixChat = getFactionChatThread("Ix"); // Refresh after sector click
-        clickButton("execute-shipment-hms-placement", ixChat, ixMember);
+        clickButton("ix-hms-placement-execute", ixChat, ixMember);
     }
 }

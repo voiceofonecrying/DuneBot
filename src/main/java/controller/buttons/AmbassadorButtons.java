@@ -15,12 +15,12 @@ public class AmbassadorButtons {
         else if (event.getComponentId().startsWith("ambassador-guild-")) handleGuildAmbassadorButtons(event, discordGame);
     }
 
-    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("ambassador-fremen-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 
-    private static void handleGuildAmbassadorButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void handleGuildAmbassadorButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("ambassador-guild-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
