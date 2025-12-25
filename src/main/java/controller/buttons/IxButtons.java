@@ -33,6 +33,7 @@ public class IxButtons implements Pressable {
         else if (event.getComponentId().startsWith("ix-request-technology-")) requestTechnology(event, discordGame, game);
         else if (event.getComponentId().startsWith("ix-hms-move-sector-")) hmsFilterBySector(event, game, discordGame);
         else if (event.getComponentId().startsWith("ix-hms-move-")) queueSectorButtons(event, game, discordGame);
+        else if (event.getComponentId().startsWith("ix-hms-placement-")) handleIxHMSPlacementButtons(event, discordGame);
         switch (event.getComponentId()) {
             case "ix-hms-pass-movement" -> hmsPassMovement(event, game, discordGame);
             case "ix-hms-reset-movement" -> hmsResetShipmentMovement(game, discordGame);
@@ -131,6 +132,11 @@ public class IxButtons implements Pressable {
         else
             faction.endHMSMovement();
         discordGame.pushGame();
+    }
+
+    private static void handleIxHMSPlacementButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        String action = event.getComponentId().replace("ix-hms-placement-", "");
+        MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 
     private static void startingCardSelected(ButtonInteractionEvent event, DiscordGame discordGame, Game game) throws InvalidGameStateException {

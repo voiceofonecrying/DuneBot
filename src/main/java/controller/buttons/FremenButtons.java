@@ -7,8 +7,10 @@ import exceptions.InvalidGameStateException;
 import model.Game;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
 
+import java.io.IOException;
+
 public class FremenButtons implements Pressable {
-    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         // Buttons handled by this class must begin with "fremen"
         // And any button that begins with "fremen" must be handled by this class
         if (event.getComponentId().startsWith("fremen-ht-")) triggerHT(event, game, discordGame);
@@ -29,17 +31,17 @@ public class FremenButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static void handleFremenRideButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void handleFremenRideButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("fremen-ride-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 
-    private static void handlePlaceShaiHuludButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void handlePlaceShaiHuludButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("fremen-place-shai-hulud-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 
-    private static void handlePlaceGreatMakerButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+    private static void handlePlaceGreatMakerButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("fremen-place-great-maker-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }

@@ -64,7 +64,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testFremenRide() {
+        void testFremenRide() throws InvalidGameStateException {
             fremen.setWormRideActive(true);
             movement = fremen.getMovement();
             movement.setMoveType(MoveType.FREMEN_RIDE);
@@ -80,7 +80,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testShaiHuludPlacement() {
+        void testShaiHuludPlacement() throws InvalidGameStateException {
             fremen.addWormToPlace("Funeral Plain", "Shai-Hulud");
             assertEquals(1, fremen.getWormsToPlace());
             movement = fremen.getMovement();
@@ -95,7 +95,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testGreatMakerPlacement() {
+        void testGreatMakerPlacement() throws InvalidGameStateException {
             fremen.addWormToPlace("Funeral Plain", "Great Maker");
             assertEquals(1, fremen.getWormsToPlace());
             movement = fremen.getMovement();
@@ -110,7 +110,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testFremenAmbassador() {
+        void testFremenAmbassador() throws InvalidGameStateException {
             movement = ix.getMovement();
             movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
             movement.setForce(1);
@@ -124,7 +124,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testGuildAmbassador() {
+        void testGuildAmbassador() throws InvalidGameStateException {
             movement = ix.getMovement();
             movement.setMoveType(MoveType.GUILD_AMBASSADOR);
             movement.setForce(1);
@@ -267,7 +267,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testFremenRide() {
+        void testFremenRide() throws InvalidGameStateException {
             fremen.getMovement().setMoveType(MoveType.FREMEN_RIDE);
             fremen.getMovement().presentStrongholdChoices();
             assertEquals("Which Stronghold?", fremenChat.getMessages().getLast());
@@ -288,7 +288,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testFremenAmbassador() {
+        void testFremenAmbassador() throws InvalidGameStateException {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
             ecaz.getMovement().presentStrongholdChoices();
             assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
@@ -309,7 +309,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testGuildAmbassador() {
+        void testGuildAmbassador() throws InvalidGameStateException {
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
             ecaz.getMovement().presentStrongholdChoices();
             assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
@@ -329,7 +329,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testGuildAmbassadorByIxAlly() {
+        void testGuildAmbassadorByIxAlly() throws InvalidGameStateException {
             game.createAlliance(ecaz, ix);
             ix.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
             ix.getMovement().presentStrongholdChoices();
@@ -547,7 +547,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testFremenRide() {
+        void testFremenRide() throws InvalidGameStateException {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_RIDE);
             ecaz.getMovement().presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
@@ -566,7 +566,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testFremenAmbassador() {
+        void testFremenAmbassador() throws InvalidGameStateException {
             ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
             ecaz.getMovement().presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
@@ -585,7 +585,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testGuildAmbassador() {
+        void testGuildAmbassador() throws InvalidGameStateException {
             ecaz.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
             ecaz.getMovement().presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
@@ -1195,7 +1195,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testPass() {
+        void testPass() throws InvalidGameStateException {
             movement.pass();
             assertEquals("You will leave your free revivals on Tleilax.", btChat.getMessages().getLast());
             assertEquals(Emojis.BT + " leaves their free revivals on Tleilax.", turnSummary.getMessages().getLast());
@@ -1213,6 +1213,19 @@ public class MovementTest extends DuneTest {
             assertEquals("Where would you like to place your 2 " + Emojis.BT_TROOP + " free revivals? bt", btChat.getMessages().getLast());
             assertEquals(Emojis.BT + " may place 2 free revived " + Emojis.BT_TROOP + " in any territory or homeworld.", turnSummary.getMessages().getLast());
 //            assertTrue(turnSummary.getMessages().isEmpty());
+//            assertEquals(6, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-stronghold", btChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Stronghold", btChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("bt-ht-spice-blow", btChat.getChoices().getLast().get(1).getId());
+            assertEquals("Spice Blow Territories", btChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("bt-ht-rock", btChat.getChoices().getLast().get(2).getId());
+            assertEquals("Rock Territories", btChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("bt-ht-homeworlds", btChat.getChoices().getLast().get(3).getId());
+            assertEquals("Homeworlds", btChat.getChoices().getLast().get(3).getLabel());
+            assertEquals("bt-ht-other", btChat.getChoices().getLast().get(4).getId());
+            assertEquals("Somewhere else", btChat.getChoices().getLast().get(4).getLabel());
+            assertEquals("bt-ht-pass", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Leave them on Tleilax", btChat.getChoices().getLast().getLast().getLabel());
             assertEquals(MoveType.BT_HT, movement.getMoveType());
             assertEquals("Tleilax", movement.getMovingFrom());
             assertTrue(movement.getMovingTo().isEmpty());
@@ -1220,7 +1233,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testStrongholdChoices() {
+        void testStrongholdChoices() throws InvalidGameStateException {
             movement.presentStrongholdChoices();
             assertEquals("Which Stronghold?", btChat.getMessages().getLast());
             assertEquals(7, btChat.getChoices().getLast().size());
@@ -1277,7 +1290,7 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
-        void testDiscoveryTokenChoices() {
+        void testDiscoveryTokenChoices() throws InvalidGameStateException {
             movement.presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", btChat.getMessages().getLast());
             assertEquals(3, btChat.getChoices().getLast().size());
@@ -1358,18 +1371,183 @@ public class MovementTest extends DuneTest {
             assertEquals("2 - East Sector", btChat.getChoices().getLast().get(1).getLabel());
             assertEquals("bt-ht-start-over", btChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", btChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
         }
 
         @Test
         void testExecute() throws InvalidGameStateException {
             movement.setMovingTo("Carthag");
             movement.setForce(2);
-            movement.execute();
+            boolean advanceGame = movement.execute();
+            assertFalse(advanceGame);
             assertFalse(bt.isBtHTActive());
             assertEquals(2, carthag.getForceStrength("BT"));
             assertEquals(18, game.getTerritory("Tleilax").getForceStrength("BT"));
             assertEquals("Placement of 2 free revivals complete.", btChat.getMessages().getLast());
             assertEquals(Emojis.BT + ": 2 " + Emojis.BT_TROOP + " placed on Carthag", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+        }
+    }
+
+    @Nested
+    @DisplayName("#hmsPlacement")
+    class HMSPlacement {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() {
+            movement = ix.getMovement();
+            ix.presentHMSPlacementChoices();
+            ixChat.clear();
+        }
+
+        @Test
+        void testPass() {
+            assertThrows(InvalidGameStateException.class, () -> movement.pass());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testStartOver() {
+            movement.setMovingTo("Polar Sink");
+            movement.startOver();
+            assertEquals("Where would you like to place the HMS? ix", ixChat.getMessages().getLast());
+            assertEquals(3, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-spice-blow", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Spice Blow Territories", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ix-hms-placement-rock", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("Rock Territories", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ix-hms-placement-other", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Somewhere else", ixChat.getChoices().getLast().getLast().getLabel());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+            assertTrue(movement.getMovingFrom().isEmpty());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testStrongholdChoices() {
+            assertThrows(InvalidGameStateException.class, () -> movement.presentStrongholdChoices());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testSpiceBlowChoices() {
+            movement.presentSpiceBlowChoices();
+            assertEquals("Which Spice Blow Territory?", ixChat.getMessages().getLast());
+            assertEquals(16, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ix-hms-placement-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("ix-hms-placement-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testRockChoices() {
+            movement.presentRockChoices();
+            assertEquals("Which Rock Territory?", ixChat.getMessages().getLast());
+            assertEquals(8, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 7)) {
+                assertTrue(c.getId().startsWith("ix-hms-placement-"));
+                String action = c.getId().replace("ix-hms-placement-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(rockTerritories.contains(c.getLabel()));
+            }
+            for (String s : rockTerritories)
+                assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testDiscoveryTokenChoices() {
+            assertThrows(InvalidGameStateException.class, () ->movement.presentDiscoveryTokenChoices());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testNonSpiceNonRockChoices() {
+            movement.presentNonSpiceNonRockChoices();
+            assertEquals("Which Territory?", ixChat.getMessages().getLast());
+            assertEquals(16, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ix-hms-placement-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("ix-hms-placement-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_OneSectorTerritory() {
+            boolean stateChanged = movement.processTerritory("Funeral Plain");
+            assertTrue(stateChanged);
+            assertEquals("Funeral Plain", movement.getMovingTo());
+            assertEquals(0, movement.getForce());
+            assertEquals("Placing the HMS in Funeral Plain", ixChat.getMessages().getLast());
+            assertEquals(2, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-execute", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Confirm placement", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_MultiSectorTerritory() {
+            boolean stateChanged = movement.processTerritory("Cielago South");
+            assertFalse(stateChanged);
+            assertEquals("Which sector of Cielago South?", ixChat.getMessages().getLast());
+            assertEquals(3, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ix-hms-placement-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testSectorChoices() {
+            game.getTerritory("Cielago South (West Sector)").setSpice(12);
+            List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Cielago South");
+            movement.presentSectorChoices("Cielago South", sectors);
+            assertEquals("Which sector of Cielago South?", ixChat.getMessages().getLast());
+            assertEquals(3, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector (12 spice)", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ix-hms-placement-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testExecute() throws InvalidGameStateException {
+            movement.setMovingTo("Funeral Plain");
+            boolean advanceGame = movement.execute();
+            assertTrue(advanceGame);
+            assertEquals(funeralPlain, ix.getTerritoryWithHMS());
+            assertEquals("You placed the HMS in Funeral Plain.", ixChat.getMessages().getLast());
+            assertEquals(Emojis.IX + " placed the HMS in Funeral Plain.", turnSummary.getMessages().getLast());
             assertEquals(MoveType.TBD, movement.getMoveType());
         }
     }
