@@ -265,26 +265,14 @@ public class Movement {
      * If the territory has only one sector, process for that sector.
      * If it has more than one sector, present sector choices so player can pick a single sector to process.
      *
-     * @param aggregateTerritoryName  The number revived for free.
+     * @param aggregateTerritoryName  The name of the entire territory.
      * @return true if game state has changed, false if only new choices were presented to player
      */
     public boolean processTerritory(String aggregateTerritoryName) {
         Game game = faction.getGame();
         List<Territory> territorySectors = game.getTerritories().getTerritorySectorsInStormOrder(aggregateTerritoryName);
         if (territorySectors.size() == 1) {
-            Territory territory = territorySectors.getFirst();
-            if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
-                game.getFremenFaction().placeWorm(territory);
-            } else if (moveType == MoveType.BT_HT) {
-                setMovingTo(territory.getTerritoryName());
-                game.getBTFaction().presentHTExecutionChoices();
-            } else if (moveType == MoveType.HMS_PLACEMENT) {
-                setMovingTo(territory.getTerritoryName());
-                game.getIxFaction().presentHMSPlacementExecutionChoices();
-            } else {
-                setMovingTo(territory.getTerritoryName());
-                presentForcesChoices();
-            }
+            processSector(territorySectors.getFirst().getTerritoryName());
             return true;
         } else {
             presentSectorChoices(aggregateTerritoryName, territorySectors);
@@ -304,6 +292,28 @@ public class Movement {
         }
         choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
         faction.getChat().reply("Which sector of " + aggregateTerritoryName + "?", choices);
+    }
+
+    /**
+     * Process the movement to the sector based on move type.
+     *
+     * @param territoryName  The name of the territory sector.
+     */
+    public void processSector(String territoryName) {
+        Game game = faction.getGame();
+        if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
+            Territory territory = game.getTerritory(territoryName);
+            game.getFremenFaction().placeWorm(territory);
+        } else if (moveType == MoveType.BT_HT) {
+            setMovingTo(territoryName);
+            game.getBTFaction().presentHTExecutionChoices();
+        } else if (moveType == MoveType.HMS_PLACEMENT) {
+            setMovingTo(territoryName);
+            game.getIxFaction().presentHMSPlacementExecutionChoices();
+        } else {
+            setMovingTo(territoryName);
+            presentForcesChoices();
+        }
     }
 
     public void presentForcesChoices() {

@@ -1375,6 +1375,22 @@ public class MovementTest extends DuneTest {
         }
 
         @Test
+        void testProcessSector() {
+            movement.processSector("Cielago South (West Sector)");
+            assertEquals("Cielago South (West Sector)", movement.getMovingTo());
+            assertEquals(2, movement.getForce());
+            assertEquals("Sending **2 " + Emojis.BT_TROOP + "** free revivals to Cielago South (West Sector)", btChat.getMessages().getLast());
+            assertEquals(3, btChat.getChoices().getLast().size());
+            assertEquals("bt-ht-execute", btChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Confirm placement", btChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("bt-ht-start-over", btChat.getChoices().getLast().get(1).getId());
+            assertEquals("Start over", btChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("bt-ht-pass", btChat.getChoices().getLast().getLast().getId());
+            assertEquals("Leave them on Tleilax", btChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.BT_HT, movement.getMoveType());
+        }
+
+        @Test
         void testExecute() throws InvalidGameStateException {
             movement.setMovingTo("Carthag");
             movement.setForce(2);
@@ -1537,6 +1553,20 @@ public class MovementTest extends DuneTest {
             assertEquals("2 - East Sector", ixChat.getChoices().getLast().get(1).getLabel());
             assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessSector() {
+            movement.processSector("Cielago South (West Sector)");
+            assertEquals("Cielago South (West Sector)", movement.getMovingTo());
+            assertEquals(0, movement.getForce());
+            assertEquals("Placing the HMS in Cielago South (West Sector)", ixChat.getMessages().getLast());
+            assertEquals(2, ixChat.getChoices().getLast().size());
+            assertEquals("ix-hms-placement-execute", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Confirm placement", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ix-hms-placement-start-over", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("Start over", ixChat.getChoices().getLast().get(1).getLabel());
             assertEquals(MoveType.HMS_PLACEMENT, movement.getMoveType());
         }
 
