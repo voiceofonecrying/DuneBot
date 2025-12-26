@@ -2,7 +2,6 @@ package controller.buttons;
 
 import controller.DiscordGame;
 import controller.commands.SetupCommands;
-import enums.MoveType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.MessageHelper;
@@ -90,25 +89,12 @@ public class MovementButtonActions {
     }
 
     protected static void filterBySector(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
-        Game game = discordGame.getGame();
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         String choicePrefix = faction.getMovement().getChoicePrefix();
         String territoryName = event.getComponentId().replace("sector-", "").replace(choicePrefix, "");
-        MoveType moveType = faction.getMovement().getMoveType();
-        if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
-            game.getFremenFaction().placeWorm(game.getTerritory(territoryName));
-        } else if (moveType == MoveType.BT_HT) {
-            faction.getMovement().setMovingTo(territoryName);
-            game.getBTFaction().presentHTExecutionChoices();
-        } else if (moveType == MoveType.HMS_PLACEMENT) {
-            faction.getMovement().setMovingTo(territoryName);
-            game.getIxFaction().presentHMSPlacementExecutionChoices();
-        } else {
-            faction.getMovement().setMovingTo(territoryName);
-            faction.getMovement().presentForcesChoices();
-            deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
-        }
+        faction.getMovement().processSector(territoryName);
         discordGame.pushGame();
+        deleteButtonsInChannelWithPrefix(event.getMessageChannel(), choicePrefix);
     }
 
     protected static void addRegularForces(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
