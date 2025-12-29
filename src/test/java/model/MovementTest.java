@@ -1176,6 +1176,306 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#guildAmbassador")
+    class GuildAmbassador {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(ecaz);
+            game.addFaction(harkonnen);
+            carthag.setEcazAmbassador("Guild");
+            ecaz.triggerAmbassador(harkonnen, "Guild");
+            ecazChat.clear();
+            turnSummary.clear();
+            movement = ecaz.getMovement();
+        }
+
+        @Test
+        void testPass() throws InvalidGameStateException {
+            movement.pass();
+            assertEquals("You will not ship with the Guild Ambassador.", ecazChat.getMessages().getLast());
+            assertEquals(Emojis.ECAZ + " does not ship with the Guild Ambassador.", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+            assertTrue(movement.getMovingFrom().isEmpty());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testStartOver() {
+            movement.setForce(4);
+            movement.setMovingTo("Carthag");
+            movement.startOver();
+            assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", ecazChat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(5, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-stronghold", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Stronghold", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-guild-spice-blow", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("Spice Blow Territories", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-guild-rock", ecazChat.getChoices().getLast().get(2).getId());
+            assertEquals("Rock Territories", ecazChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-guild-other", ecazChat.getChoices().getLast().get(3).getId());
+            assertEquals("Somewhere else", ecazChat.getChoices().getLast().get(3).getLabel());
+            assertEquals("ambassador-guild-pass", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Pass shipment", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testStrongholdChoices() throws InvalidGameStateException {
+            movement.presentStrongholdChoices();
+            assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
+            assertEquals(6, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 5)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(strongholds.contains(c.getLabel()));
+            }
+            for (String s : strongholds)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testSpiceBlowChoices() {
+            movement.presentSpiceBlowChoices();
+            assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testRockChoices() {
+            movement.presentRockChoices();
+            assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
+            assertEquals(8, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(rockTerritories.contains(c.getLabel()));
+            }
+            for (String s : rockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testDiscoveryTokenChoices() throws InvalidGameStateException {
+            movement.presentDiscoveryTokenChoices();
+            assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
+            }
+            for (String s : discoveryTokenTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testNonSpiceNonRockChoices() {
+            movement.presentNonSpiceNonRockChoices();
+            assertEquals("Which Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_OneSectorTerritory() {
+            boolean stateChanged = movement.processTerritory("Carthag");
+            assertTrue(stateChanged);
+            assertEquals("Carthag", movement.getMovingTo());
+            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.ECAZ_TROOP + " ** to Carthag", ecazChat.getMessages().getLast());
+            assertEquals(5, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-add-force-1", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("+1", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().getFirst().getEmoji());
+            assertEquals("ambassador-guild-add-force-2", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("+2", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(1).getEmoji());
+            assertEquals("ambassador-guild-add-force-3", ecazChat.getChoices().getLast().get(2).getId());
+            assertEquals("+3", ecazChat.getChoices().getLast().get(2).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(2).getEmoji());
+            assertEquals("ambassador-guild-add-force-4", ecazChat.getChoices().getLast().get(3).getId());
+            assertEquals("+4", ecazChat.getChoices().getLast().get(3).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(3).getEmoji());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_MultiSectorTerritory() {
+            boolean stateChanged = movement.processTerritory("Cielago South");
+            assertFalse(stateChanged);
+            assertEquals("Which sector of Cielago South?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-sector-Cielago South (West Sector)", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-guild-sector-Cielago South (East Sector)", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testSectorChoices() {
+            game.getTerritory("Cielago South (West Sector)").setSpice(12);
+            List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Cielago South");
+            movement.presentSectorChoices("Cielago South", sectors);
+            assertEquals("Which sector of Cielago South?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-sector-Cielago South (West Sector)", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector (12 spice)", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-guild-sector-Cielago South (East Sector)", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessSector() {
+            movement.processSector("Cielago South (West Sector)");
+            assertEquals("Cielago South (West Sector)", movement.getMovingTo());
+            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.ECAZ_TROOP + " ** to Cielago South (West Sector)", ecazChat.getMessages().getLast());
+            assertEquals(5, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-add-force-1", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("+1", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().getFirst().getEmoji());
+            assertEquals("ambassador-guild-add-force-2", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("+2", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(1).getEmoji());
+            assertEquals("ambassador-guild-add-force-3", ecazChat.getChoices().getLast().get(2).getId());
+            assertEquals("+3", ecazChat.getChoices().getLast().get(2).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(2).getEmoji());
+            assertEquals("ambassador-guild-add-force-4", ecazChat.getChoices().getLast().get(3).getId());
+            assertEquals("+4", ecazChat.getChoices().getLast().get(3).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(3).getEmoji());
+            assertEquals("ambassador-guild-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testPresentForcesChoices_OneForceAlreadySelected() {
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.setSpecialForce(0);
+            movement.presentForcesChoices();
+            // TODO: Fix the extra space at end of forcesStringWithZeroes
+            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**1 " + Emojis.ECAZ_TROOP + " ** to Carthag", ecazChat.getMessages().getLast());
+            assertEquals(6, ecazChat.getChoices().getLast().size());
+            DuneChoice choice = ecazChat.getChoices().getLast().getFirst();
+            assertEquals("ambassador-guild-add-force-1", choice.getId());
+            assertEquals("+1", choice.getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            choice = ecazChat.getChoices().getLast().get(1);
+            assertEquals("ambassador-guild-add-force-2", choice.getId());
+            assertEquals("+2", choice.getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            choice = ecazChat.getChoices().getLast().get(2);
+            assertEquals("ambassador-guild-add-force-3", choice.getId());
+            assertEquals("+3", choice.getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            choice = ecazChat.getChoices().getLast().get(3);
+            assertEquals("ambassador-guild-execute", choice.getId());
+            assertEquals("Confirm Shipment", choice.getLabel());
+            choice = ecazChat.getChoices().getLast().get(4);
+            assertEquals("ambassador-guild-reset-forces", choice.getId());
+            assertEquals("Reset forces", choice.getLabel());
+            choice = ecazChat.getChoices().getLast().getLast();
+            assertEquals("ambassador-guild-start-over", choice.getId());
+            assertEquals("Start over", choice.getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testAddRegularForces() {
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.addRegularForces(1);
+            assertEquals(2, movement.getForce());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testAddSpecialForces() {
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.setSpecialForce(2);
+            movement.addSpecialForces(1);
+            // TODO: Should throw since Ecaz does not have special forces
+//            assertThrows(InvalidGameStateException.class, () -> movement.addSpecialForces(1));
+            assertEquals(3, movement.getSpecialForce());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testResetForces() {
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.resetForces();
+            assertEquals("Carthag", movement.getMovingTo());
+            assertEquals(0, movement.getForce());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testExecute() throws InvalidGameStateException {
+            movement.setMovingTo("Carthag");
+            movement.setForce(4);
+            boolean advanceGame = movement.execute();
+            assertFalse(advanceGame);
+            assertFalse(bt.isBtHTActive());
+            assertEquals(4, carthag.getForceStrength("Ecaz"));
+            assertEquals(10, game.getTerritory("Ecaz").getForceStrength("Ecaz"));
+            assertEquals("Shipment with Guild Ambassador complete.", ecazChat.getMessages().getLast());
+            assertEquals(Emojis.ECAZ + ": 4 " + Emojis.ECAZ_TROOP + " placed on Carthag", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+        }
+    }
+
+    @Nested
     @DisplayName("#btHighThreshold")
     class BTHighThreshold {
         Movement movement;
@@ -1213,7 +1513,7 @@ public class MovementTest extends DuneTest {
             assertEquals("Where would you like to place your 2 " + Emojis.BT_TROOP + " free revivals? bt", btChat.getMessages().getLast());
             assertEquals(Emojis.BT + " may place 2 free revived " + Emojis.BT_TROOP + " in any territory or homeworld.", turnSummary.getMessages().getLast());
 //            assertTrue(turnSummary.getMessages().isEmpty());
-//            assertEquals(6, btChat.getChoices().getLast().size());
+            assertEquals(6, btChat.getChoices().getLast().size());
             assertEquals("bt-ht-stronghold", btChat.getChoices().getLast().getFirst().getId());
             assertEquals("Stronghold", btChat.getChoices().getLast().getFirst().getLabel());
             assertEquals("bt-ht-spice-blow", btChat.getChoices().getLast().get(1).getId());
