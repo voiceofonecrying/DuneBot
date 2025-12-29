@@ -317,7 +317,8 @@ public class SetupCommands {
         if (rolesWithName.size() > 1)
             throw new IllegalArgumentException(rolesWithName.size() + " Roles with name " + gameRoleName);
         Role gameRole = rolesWithName.getFirst();
-        event.getGuild().removeRoleFromMember(Objects.requireNonNull(player), gameRole).complete();
+        if (player.getRoles().contains(gameRole))
+            event.getGuild().removeRoleFromMember(Objects.requireNonNull(player), gameRole).queue();
     }
 
     public static void addUserToModRole(SlashCommandInteractionEvent event, DiscordGame discordGame, Game game) {
@@ -743,7 +744,7 @@ public class SetupCommands {
 
     public static StepStatus harkonnenTraitorsStep(Game game) {
         Faction faction = game.getHarkonnenFaction();
-        IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", faction.getName()));
+        IntStream.range(0, 4).forEach(_ -> game.drawCard("traitor deck", faction.getName()));
         long numHarkonnenTraitors = faction.getTraitorHand().stream().filter(TraitorCard::isHarkonnenTraitor).count();
         if (numHarkonnenTraitors > 1) {
             // Harkonnen can mulligan their hand
@@ -777,7 +778,7 @@ public class SetupCommands {
     public static StepStatus traitorSelectionStep(Game game) {
         for (Faction faction : game.getFactions()) {
             if (!(faction instanceof BTFaction) && faction.getTraitorHand().isEmpty()) {
-                IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", faction.getName()));
+                IntStream.range(0, 4).forEach(_ -> game.drawCard("traitor deck", faction.getName()));
                 if (!(faction instanceof HarkonnenFaction))
                     faction.presentTraitorSelection();
             }
