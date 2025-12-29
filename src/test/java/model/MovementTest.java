@@ -1176,6 +1176,328 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#fremenAmbassador")
+    class FremenAmbassador {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(ecaz);
+            game.addFaction(harkonnen);
+            carthag.setEcazAmbassador("Fremen");
+            ecaz.triggerAmbassador(harkonnen, "Fremen");
+            ecazChat.clear();
+            turnSummary.clear();
+            movement = ecaz.getMovement();
+        }
+
+        @Test
+        void testPass() throws InvalidGameStateException {
+            movement.pass();
+            assertEquals("You will not ride the worm with the Fremen Ambassador.", ecazChat.getMessages().getLast());
+            assertEquals(Emojis.ECAZ + " does not ride the worm with the Fremen Ambassador.", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+            assertTrue(movement.getMovingFrom().isEmpty());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testStartOver() {
+            movement.setForce(4);
+            movement.setMovingTo("Carthag");
+            movement.startOver();
+            assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", ecazChat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(2, ecazChat.getChoices().getLast().size());
+            assertEquals("ecaz-fremen-move-from-Imperial Basin (Center Sector)", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Imperial Basin (Center Sector)", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-fremen-pass", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Decline ride", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+            assertTrue(movement.getMovingFrom().isEmpty());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testStrongholdChoices() throws InvalidGameStateException {
+            movement.presentStrongholdChoices();
+            assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
+            assertEquals(7, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 5)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(strongholdsWithHMS.contains(c.getLabel()));
+            }
+            for (String s : strongholdsWithHMS)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testSpiceBlowChoices() {
+            movement.presentSpiceBlowChoices();
+            assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
+            }
+            for (String s : spiceBlowTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testRockChoices() {
+            movement.presentRockChoices();
+            assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
+            assertEquals(8, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(rockTerritories.contains(c.getLabel()));
+            }
+            for (String s : rockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testDiscoveryTokenChoices() throws InvalidGameStateException {
+            movement.presentDiscoveryTokenChoices();
+            assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
+            }
+            for (String s : discoveryTokenTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testNonSpiceNonRockChoices() {
+            movement.presentNonSpiceNonRockChoices();
+            assertEquals("Which Territory?", ecazChat.getMessages().getLast());
+            assertEquals(16, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                assertFalse(c.isDisabled());
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
+                assertEquals("territory-", action);
+                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+            }
+            for (String s : nonSpiceNonRockTerritories)
+                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_OneSectorTerritory() {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            boolean stateChanged = movement.processTerritory("Carthag");
+            assertTrue(stateChanged);
+            assertEquals("Carthag", movement.getMovingTo());
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.ECAZ_TROOP + " ** to Carthag", ecazChat.getMessages().getLast());
+            assertEquals(7, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-add-force-1", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("+1", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().getFirst().getEmoji());
+            assertEquals("ambassador-fremen-add-force-2", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("+2", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(1).getEmoji());
+            assertEquals("ambassador-fremen-add-force-3", ecazChat.getChoices().getLast().get(2).getId());
+            assertEquals("+3", ecazChat.getChoices().getLast().get(2).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(2).getEmoji());
+            assertEquals("ambassador-fremen-add-force-4", ecazChat.getChoices().getLast().get(3).getId());
+            assertEquals("+4", ecazChat.getChoices().getLast().get(3).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(3).getEmoji());
+            assertEquals("ambassador-fremen-add-force-5", ecazChat.getChoices().getLast().get(4).getId());
+            assertEquals("+5", ecazChat.getChoices().getLast().get(4).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(4).getEmoji());
+            assertEquals("ambassador-fremen-add-force-6", ecazChat.getChoices().getLast().get(5).getId());
+            assertEquals("+6", ecazChat.getChoices().getLast().get(5).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(5).getEmoji());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessTerritory_MultiSectorTerritory() {
+            boolean stateChanged = movement.processTerritory("Cielago South");
+            assertFalse(stateChanged);
+            assertEquals("Which sector of Cielago South?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-sector-Cielago South (West Sector)", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-fremen-sector-Cielago South (East Sector)", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testSectorChoices() {
+            game.getTerritory("Cielago South (West Sector)").setSpice(12);
+            List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Cielago South");
+            movement.presentSectorChoices("Cielago South", sectors);
+            assertEquals("Which sector of Cielago South?", ecazChat.getMessages().getLast());
+            assertEquals(3, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-sector-Cielago South (West Sector)", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("1 - West Sector (12 spice)", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-fremen-sector-Cielago South (East Sector)", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("2 - East Sector", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testProcessSector() {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            movement.processSector("Cielago South (West Sector)");
+            assertEquals("Cielago South (West Sector)", movement.getMovingTo());
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.ECAZ_TROOP + " ** to Cielago South (West Sector)", ecazChat.getMessages().getLast());
+            assertEquals(7, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-add-force-1", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("+1", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().getFirst().getEmoji());
+            assertEquals("ambassador-fremen-add-force-2", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("+2", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(1).getEmoji());
+            assertEquals("ambassador-fremen-add-force-3", ecazChat.getChoices().getLast().get(2).getId());
+            assertEquals("+3", ecazChat.getChoices().getLast().get(2).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(2).getEmoji());
+            assertEquals("ambassador-fremen-add-force-4", ecazChat.getChoices().getLast().get(3).getId());
+            assertEquals("+4", ecazChat.getChoices().getLast().get(3).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(3).getEmoji());
+            assertEquals("ambassador-fremen-add-force-5", ecazChat.getChoices().getLast().get(4).getId());
+            assertEquals("+5", ecazChat.getChoices().getLast().get(4).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(4).getEmoji());
+            assertEquals("ambassador-fremen-add-force-6", ecazChat.getChoices().getLast().get(5).getId());
+            assertEquals("+6", ecazChat.getChoices().getLast().get(5).getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, ecazChat.getChoices().getLast().get(5).getEmoji());
+            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testPresentForcesChoices_OneForceAlreadySelected() {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.setSpecialForce(0);
+            movement.presentForcesChoices();
+            // TODO: Fix the extra space at end of forcesStringWithZeroes
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**1 " + Emojis.ECAZ_TROOP + " ** to Carthag", ecazChat.getMessages().getLast());
+            assertEquals(8, ecazChat.getChoices().getLast().size());
+            DuneChoice choice = ecazChat.getChoices().getLast().getFirst();
+            assertEquals("ambassador-fremen-add-force-1", choice.getId());
+            assertEquals("+1", choice.getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            choice = ecazChat.getChoices().getLast().get(1);
+            assertEquals("ambassador-fremen-add-force-2", choice.getId());
+            assertEquals("+2", choice.getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            choice = ecazChat.getChoices().getLast().get(2);
+            assertEquals("ambassador-fremen-add-force-3", choice.getId());
+            assertEquals("+3", choice.getLabel());
+            choice = ecazChat.getChoices().getLast().get(3);
+            assertEquals("ambassador-fremen-add-force-4", choice.getId());
+            assertEquals("+4", choice.getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            choice = ecazChat.getChoices().getLast().get(4);
+            assertEquals("ambassador-fremen-add-force-5", choice.getId());
+            assertEquals("+5", choice.getLabel());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            assertEquals(Emojis.ECAZ_TROOP, choice.getEmoji());
+            choice = ecazChat.getChoices().getLast().get(5);
+            assertEquals("ambassador-fremen-execute", choice.getId());
+            assertEquals("Confirm Movement", choice.getLabel());
+            choice = ecazChat.getChoices().getLast().get(6);
+            assertEquals("ambassador-fremen-reset-forces", choice.getId());
+            assertEquals("Reset forces", choice.getLabel());
+            choice = ecazChat.getChoices().getLast().getLast();
+            assertEquals("ambassador-fremen-start-over", choice.getId());
+            assertEquals("Start over", choice.getLabel());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testAddRegularForces() {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.addRegularForces(1);
+            assertEquals(2, movement.getForce());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testAddSpecialForces() {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.setSpecialForce(2);
+            movement.addSpecialForces(1);
+            // TODO: Should throw since Ecaz does not have special forces
+//            assertThrows(InvalidGameStateException.class, () -> movement.addSpecialForces(1));
+            assertEquals(3, movement.getSpecialForce());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testResetForces() {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            movement.setMovingTo("Carthag");
+            movement.setForce(1);
+            movement.resetForces();
+            assertEquals("Carthag", movement.getMovingTo());
+            assertEquals(0, movement.getForce());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
+        }
+
+        @Test
+        void testExecute() throws InvalidGameStateException {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            movement.setMovingTo("Carthag");
+            movement.setForce(4);
+            boolean advanceGame = movement.execute();
+            assertFalse(advanceGame);
+            assertFalse(bt.isBtHTActive());
+            assertEquals(4, carthag.getForceStrength("Ecaz"));
+            assertEquals(2, game.getTerritory("Imperial Basin (Center Sector)").getForceStrength("Ecaz"));
+            assertEquals("Ride with Fremen Ambassador complete.", ecazChat.getMessages().getLast());
+            assertEquals(Emojis.ECAZ + ": 4 " + Emojis.ECAZ_TROOP + " moved from Imperial Basin (Center Sector) to Carthag.", turnSummary.getMessages().getLast());
+            assertEquals(MoveType.TBD, movement.getMoveType());
+        }
+    }
+
+    @Nested
     @DisplayName("#guildAmbassador")
     class GuildAmbassador {
         Movement movement;
