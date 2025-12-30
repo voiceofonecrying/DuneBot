@@ -5,7 +5,6 @@ import controller.channels.TurnSummary;
 import controller.commands.RunCommands;
 import controller.commands.SetupCommands;
 import enums.GameOption;
-import enums.MoveType;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -1052,25 +1051,11 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-    public static void presentShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean fremenRide) {
+    public static void presentShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        boolean fremenAmbassador = faction.getMovement().getMoveType() == MoveType.FREMEN_AMBASSADOR;
-        String choicePrefix = faction.getMovement().getChoicePrefix();
-        boolean wormRide = fremenRide || fremenAmbassador;
-        List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice(choicePrefix + "stronghold", "Stronghold"));
-        choices.add(new DuneChoice(choicePrefix + "spice-blow", "Spice Blow Territories"));
-        choices.add(new DuneChoice(choicePrefix + "rock", "Rock Territories"));
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && !wormRide)
-            choices.add(new DuneChoice("homeworlds", "Homeworlds"));
-        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
-        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-            choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
-        choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
-        choices.add(new DuneChoice("danger", choicePrefix + "pass", wormRide ? "No ride" : "I don't want to ship."));
-        faction.getChat().reply(wormRide ? "Where would you like to ride to from " + faction.getMovement().getMovingFrom() + "?" : "Where would you like to ship to?", choices);
+        faction.getMovement().presentTerritoryTypeChoices();
 
-        choices = new ArrayList<>();
+        List<DuneChoice> choices = new ArrayList<>();
         if (faction instanceof GuildFaction && faction.getShipment().getCrossShipFrom().isEmpty()) {
             choices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
             choices.add(new DuneChoice("guild-ship-to-reserves", "Ship to reserves"));
