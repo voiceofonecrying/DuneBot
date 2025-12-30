@@ -1176,6 +1176,40 @@ public class MovementTest extends DuneTest {
     }
 
     @Nested
+    @DisplayName("#fremenRide")
+    class FremenRide {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() throws InvalidGameStateException {
+            game.addFaction(fremen);
+            fremen.presentWormRideChoices("Southern Hemisphere");
+            fremenChat.clear();
+            turnSummary.clear();
+            movement = fremen.getMovement();
+        }
+
+        @Test
+        void testTerritoryTypeChoices() {
+            movement.presentTerritoryTypeChoices();
+            assertEquals("Where would you like to ride to from Southern Hemisphere? fr", fremenChat.getMessages().getLast());
+            assertEquals(5, fremenChat.getChoices().getLast().size());
+            assertEquals("fremen-ride-stronghold", fremenChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Stronghold", fremenChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("fremen-ride-spice-blow", fremenChat.getChoices().getLast().get(1).getId());
+            assertEquals("Spice Blow Territories", fremenChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("fremen-ride-rock", fremenChat.getChoices().getLast().get(2).getId());
+            assertEquals("Rock Territories", fremenChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("fremen-ride-other", fremenChat.getChoices().getLast().get(3).getId());
+            assertEquals("Somewhere else", fremenChat.getChoices().getLast().get(3).getLabel());
+            assertEquals("fremen-ride-pass", fremenChat.getChoices().getLast().getLast().getId());
+            assertEquals("No ride", fremenChat.getChoices().getLast().getLast().getLabel());
+            assertEquals("danger", fremenChat.getChoices().getLast().getLast().getType());
+            assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
+        }
+    }
+
+    @Nested
     @DisplayName("#fremenAmbassador")
     class FremenAmbassador {
         Movement movement;
@@ -1218,6 +1252,26 @@ public class MovementTest extends DuneTest {
             assertTrue(movement.getMovingFrom().isEmpty());
             assertTrue(movement.getMovingTo().isEmpty());
             assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testTerritoryTypeChoices() {
+            movement.setMovingFrom("Imperial Basin (Center Sector)");
+            movement.presentTerritoryTypeChoices();
+            assertEquals("Where would you like to ride to from Imperial Basin (Center Sector)? ec", ecazChat.getMessages().getLast());
+            assertEquals(5, ecazChat.getChoices().getLast().size());
+            assertEquals("ambassador-fremen-stronghold", ecazChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Stronghold", ecazChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-fremen-spice-blow", ecazChat.getChoices().getLast().get(1).getId());
+            assertEquals("Spice Blow Territories", ecazChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-fremen-rock", ecazChat.getChoices().getLast().get(2).getId());
+            assertEquals("Rock Territories", ecazChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-fremen-other", ecazChat.getChoices().getLast().get(3).getId());
+            assertEquals("Somewhere else", ecazChat.getChoices().getLast().get(3).getLabel());
+            assertEquals("ambassador-fremen-pass", ecazChat.getChoices().getLast().getLast().getId());
+            assertEquals("No ride", ecazChat.getChoices().getLast().getLast().getLabel());
+            assertEquals("danger", ecazChat.getChoices().getLast().getLast().getType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test

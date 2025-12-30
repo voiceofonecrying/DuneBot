@@ -1,6 +1,7 @@
 package model;
 
 import constants.Emojis;
+import enums.GameOption;
 import enums.MoveType;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
@@ -8,6 +9,7 @@ import model.factions.*;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -192,6 +194,29 @@ public class Movement {
             ((BTFaction) faction).presentHTChoices();
         else if (moveType == MoveType.HMS_PLACEMENT)
             ((IxFaction) faction).presentHMSPlacementChoices();
+    }
+
+    public void presentTerritoryTypeChoices() {
+        Game game = faction.getGame();
+        boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
+        boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
+        boolean wormRide = fremenRide || fremenAmbassador;
+        String choicePrefix = getChoicePrefix();
+        List<DuneChoice> choices = new LinkedList<>();
+        choices.add(new DuneChoice(choicePrefix + "stronghold", "Stronghold"));
+        choices.add(new DuneChoice(choicePrefix + "spice-blow", "Spice Blow Territories"));
+        choices.add(new DuneChoice(choicePrefix + "rock", "Rock Territories"));
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && !wormRide)
+            choices.add(new DuneChoice("homeworlds", "Homeworlds"));
+        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
+        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
+            choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
+        choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
+        choices.add(new DuneChoice("danger", choicePrefix + "pass", wormRide ? "No ride" : "I don't want to ship."));
+        if (wormRide)
+            faction.getChat().reply("Where would you like to ride to from " + faction.getMovement().getMovingFrom() + "? " + faction.getPlayer(), choices);
+        else
+            faction.getChat().reply("Where would you like to ship to?", choices);
     }
 
     public void presentStrongholdChoices() throws InvalidGameStateException {

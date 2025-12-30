@@ -129,17 +129,8 @@ public class FremenFaction extends Faction {
         }
         game.getTurnSummary().publish(fremenForces + "may ride " + wormName + " from " + territoryName + "!");
         movement.setMovingFrom(territoryName);
-        List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("fremen-ride-stronghold", "Stronghold"));
-        choices.add(new DuneChoice("fremen-ride-spice-blow", "Spice Blow Territories"));
-        choices.add(new DuneChoice("fremen-ride-rock", "Rock Territories"));
-        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
-        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-            choices.add(new DuneChoice("fremen-ride-discovery-tokens", "Discovery Tokens"));
-        choices.add(new DuneChoice("fremen-ride-other", "Somewhere else"));
-        choices.add(new DuneChoice("danger", "fremen-ride-pass", "No ride"));
-        chat.reply("Where would you like to ride to from " + territoryName + "? " + player, choices);
         movement.setMoveType(MoveType.FREMEN_RIDE);
+        movement.presentTerritoryTypeChoices();
         wormRideActive = true;
     }
 
