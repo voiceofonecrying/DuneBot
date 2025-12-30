@@ -70,7 +70,7 @@ public class EcazFaction extends Faction {
     }
 
     public void triggerAmbassador(Faction triggeringFaction, String ambassador) {
-        game.getTurnSummary().publish("The " + ambassador + " Ambassador has been triggered!");
+        game.getTurnSummary().publish(Emojis.ECAZ + " triggers their " + ambassador + " Ambassador against " + triggeringFaction.getEmoji() + " !");
         switch (ambassador) {
             case "Ecaz" -> {
                 DuneChoice getVidal = new DuneChoice("ecaz-get-vidal", "Get Duke Vidal");
@@ -342,8 +342,8 @@ public class EcazFaction extends Faction {
                 && !targetFaction.getName().equals(targetTerritory.getEcazAmbassador())
                 && !getAlly().equals(targetFaction.getName())) {
             List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("ecaz-trigger-ambassador-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
-            choices.add(new DuneChoice("danger", "ecaz-don't-trigger-ambassador", "Don't Trigger"));
+            choices.add(new DuneChoice("ambassador-trigger-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
+            choices.add(new DuneChoice("danger", "ambassador-dont-trigger-" + ambassador + "-" + targetFaction.getName(), "Don't Trigger"));
             game.getTurnSummary().publish(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " Ambassador.");
             chat.publish("Will you trigger your " + ambassador + " Ambassador in " + targetTerritory.getTerritoryName() + " against " + targetFaction.getEmoji() + "? " + player, choices);
         }
