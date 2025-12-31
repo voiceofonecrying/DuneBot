@@ -331,7 +331,10 @@ public class EcazFactionTest extends FactionTestTemplate {
     class TriggerAmbassador {
         HarkonnenFaction harkonnen;
         BTFaction bt;
+        ChoamFaction choam;
         TestTopic modInfo;
+        TestTopic allyChat;
+        TestTopic allyLedger;
 
         @BeforeEach
         public void setUp() throws IOException {
@@ -343,6 +346,15 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.addFaction(bt);
             bt.setChat(new TestTopic());
             bt.setLedger(new TestTopic());
+            choam = new ChoamFaction("ch", "ch");
+            game.addFaction(choam);
+            allyChat = new TestTopic();
+            choam.setChat(allyChat);
+            allyLedger = new TestTopic();
+            choam.setLedger(allyLedger);
+            game.createAlliance(faction, choam);
+            turnSummary.clear();
+            ledger.clear();
             modInfo = new TestTopic();
             game.setModInfo(modInfo);
             faction.addTreacheryCard(new TreacheryCard("Karama"));
@@ -355,36 +367,80 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerAtreidesRevealsTreacheryHand() {
             harkonnen.addTreacheryCard(new TreacheryCard("Karama"));
             harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
-            faction.triggerAmbassador(harkonnen, "Atreides");
+            faction.triggerAmbassador(harkonnen, "Atreides", false);
+            assertEquals(Emojis.ECAZ + " triggers their Atreides Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals(Emojis.HARKONNEN + " hand is:\n\t" + Emojis.TREACHERY + " **Karama** _Special_\n\t" + Emojis.TREACHERY + " **Shield** _Defense - Projectile_", chat.getMessages().getFirst());
         }
 
         @Test
+        public void testTriggerAtreidesForAlly() {
+            harkonnen.addTreacheryCard(new TreacheryCard("Karama"));
+            harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
+            faction.triggerAmbassador(harkonnen, "Atreides", true);
+            assertEquals(Emojis.ECAZ + " triggers their Atreides Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals(Emojis.HARKONNEN + " hand is:\n\t" + Emojis.TREACHERY + " **Karama** _Special_\n\t" + Emojis.TREACHERY + " **Shield** _Defense - Projectile_", allyChat.getMessages().getFirst());
+        }
+
+        @Test
         public void testTriggerBGGivesChoicesOfNonSupplyAmbassadors() {
-            faction.triggerAmbassador(harkonnen, "BG");
+            faction.triggerAmbassador(harkonnen, "BG", false);
+            assertEquals(Emojis.ECAZ + " triggers their BG Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Which Ambassador effect would you like to trigger?", chat.getMessages().getFirst());
             assertEquals(5, chat.getChoices().getFirst().size());
 //            assertEquals("", String.join(", ",chat.getChoices().getFirst().stream().map(DuneChoice::getLabel).toList()));
         }
 
         @Test
+        public void testTriggerBGForAlly() {
+            faction.triggerAmbassador(harkonnen, "BG", true);
+            assertEquals(Emojis.ECAZ + " triggers their BG Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("Which Ambassador effect would you like to trigger?", allyChat.getMessages().getFirst());
+//            assertEquals(5, allyChat.getChoices().getFirst().size());
+////            assertEquals("", String.join(", ",chat.getChoices().getFirst().stream().map(DuneChoice::getLabel).toList()));
+        }
+
+        @Test
         public void testTriggerCHOAMGivesDiscardButtons() {
-            faction.triggerAmbassador(harkonnen, "CHOAM");
+            faction.triggerAmbassador(harkonnen, "CHOAM", false);
+            assertEquals(Emojis.ECAZ + " triggers their CHOAM Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getFirst());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Done discarding", chat.getChoices().getFirst().getLast().getLabel());
         }
 
         @Test
+        public void testTriggerCHOAMForAlly() {
+            faction.triggerAmbassador(harkonnen, "CHOAM", true);
+            assertEquals(Emojis.ECAZ + " triggers their CHOAM Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", allyChat.getMessages().getFirst());
+//            assertEquals(5, allyChat.getChoices().getFirst().size());
+//            assertEquals("Done discarding", allyChat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
         public void testTriggerEmperorAdds5Spice() {
-            faction.triggerAmbassador(harkonnen, "Emperor");
+            faction.triggerAmbassador(harkonnen, "Emperor", false);
+            assertEquals(Emojis.ECAZ + " triggers their Emperor Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getFirst());
             assertEquals(17, faction.getSpice());
         }
 
         @Test
+        public void testTriggerEmperorForAlly() {
+            faction.triggerAmbassador(harkonnen, "Emperor", true);
+            assertEquals(Emojis.ECAZ + " triggers their Emperor Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 7 " + Emojis.SPICE, allyLedger.getMessages().getFirst());
+//            assertEquals(7, choam.getSpice());
+        }
+
+        @Test
         public void testTriggerFremenPresentsTerritoriesToMoveFrom() {
-            faction.triggerAmbassador(harkonnen, "Fremen");
+            faction.triggerAmbassador(harkonnen, "Fremen", false);
+            assertEquals(Emojis.ECAZ + " triggers their Fremen Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
             assertEquals("Imperial Basin (Center Sector)", chat.getChoices().getFirst().getFirst().getLabel());
@@ -392,9 +448,21 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
+        public void testTriggerFremenForAlly() {
+            faction.triggerAmbassador(harkonnen, "Fremen", true);
+            assertEquals(Emojis.ECAZ + " triggers their Fremen Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", allyChat.getMessages().getFirst());
+//            assertEquals(2, allyChat.getChoices().getFirst().size());
+//            assertEquals("Imperial Basin (Center Sector)", allyChat.getChoices().getFirst().getFirst().getLabel());
+//            assertEquals("Decline ride", allyChat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
         public void testTriggerGuildPresentsDestinationChoices() {
-            faction.triggerAmbassador(harkonnen, "Guild");
+            faction.triggerAmbassador(harkonnen, "Guild", false);
             assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals(Emojis.ECAZ + " triggers their Guild Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", chat.getMessages().getFirst());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Stronghold", chat.getChoices().getFirst().getFirst().getLabel());
@@ -403,10 +471,24 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
+        public void testTriggerGuildForAlly() {
+            faction.triggerAmbassador(harkonnen, "Guild", true);
+            assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals(Emojis.ECAZ + " triggers their Guild Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", chat.getMessages().getFirst());
+//            assertEquals(5, chat.getChoices().getFirst().size());
+//            assertEquals("Stronghold", chat.getChoices().getFirst().getFirst().getLabel());
+//            assertEquals("ambassador-guild-stronghold", chat.getChoices().getFirst().getFirst().getId());
+//            assertEquals("Pass shipment", chat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
         public void testTriggerGuildNoForcesInReserves() {
             game.removeForces(faction.getHomeworld(), faction, 14, 0, true);
-            faction.triggerAmbassador(harkonnen, "Guild");
+            faction.triggerAmbassador(harkonnen, "Guild", false);
             assertTrue(modInfo.getMessages().isEmpty());
+            assertEquals(Emojis.ECAZ + " triggers their Guild Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.", chat.getMessages().getFirst());
         }
 
@@ -417,37 +499,63 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.addFaction(atreides);
             atreides.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
 
-            faction.triggerAmbassador(atreides, "Harkonnen");
+            faction.triggerAmbassador(atreides, "Harkonnen", false);
+            assertEquals(Emojis.ECAZ + " triggers their Harkonnen Ambassador against " + Emojis.ATREIDES + " !", turnSummary.getMessages().getFirst());
             assertTrue(chat.getMessages().getFirst().contains(Emojis.ATREIDES + " has "));
             assertTrue(chat.getMessages().getFirst().contains(" as a Traitor!"));
         }
 
         @Test
-        public void testTriggerHarkonnenShowFaceDancer() throws IOException {
-            BTFaction bt;
-            bt = new BTFaction("p", "u");
-            game.addFaction(bt);
+        public void testTriggerHarkonnenForAlly() throws IOException {
+            AtreidesFaction atreides;
+            atreides = new AtreidesFaction("p", "u");
+            game.addFaction(atreides);
+            atreides.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
+
+            faction.triggerAmbassador(atreides, "Harkonnen", true);
+            assertEquals(Emojis.ECAZ + " triggers their Harkonnen Ambassador against " + Emojis.ATREIDES + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertTrue(allyChat.getMessages().getFirst().contains(Emojis.ATREIDES + " has "));
+//            assertTrue(allyChat.getMessages().getFirst().contains(" as a Traitor!"));
+        }
+
+        @Test
+        public void testTriggerHarkonnenShowFaceDancer() {
             bt.addTraitorCard(new TraitorCard("Duncan Idaho", "Atreides", 2));
             bt.addTraitorCard(new TraitorCard("Feyd Rautha", "Harkonnen", 6));
             bt.addTraitorCard(new TraitorCard("Burseg", "Emperor", 3));
 
-            faction.triggerAmbassador(bt, "Harkonnen");
+            faction.triggerAmbassador(bt, "Harkonnen", false);
+            assertEquals(Emojis.ECAZ + " triggers their Harkonnen Ambassador against " + Emojis.BT + " !", turnSummary.getMessages().getFirst());
             assertTrue(chat.getMessages().getFirst().contains(Emojis.BT + " has "));
             assertTrue(chat.getMessages().getFirst().contains(" as a Face Dancer!"));
         }
 
         @Test
         public void testTriggerIxGivesDiscardButtons() {
-            faction.triggerAmbassador(harkonnen, "Ix");
+            faction.triggerAmbassador(harkonnen, "Ix", false);
+            assertEquals(Emojis.ECAZ + " triggers their Ix Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", chat.getMessages().getFirst());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Don't discard", chat.getChoices().getFirst().getLast().getLabel());
         }
 
         @Test
+        public void testTriggerIxForAlly() {
+            faction.triggerAmbassador(harkonnen, "Ix", true);
+            assertEquals(Emojis.ECAZ + " triggers their Ix Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", allyChat.getMessages().getFirst());
+//            assertEquals(5, allyChat.getChoices().getFirst().size());
+//            assertEquals("Don't discard", allyChat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
         public void testTriggerRicheseGivesButtonsToBuyACard() {
             faction.discard("Cheap Hero");
-            faction.triggerAmbassador(harkonnen, "Richese");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "Richese", false);
+            assertEquals(Emojis.ECAZ + " triggers their Richese Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
             assertEquals("Yes", chat.getChoices().getFirst().getFirst().getLabel());
@@ -455,34 +563,62 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
+        public void testTriggerRicheseForAlly() {
+            faction.discard("Cheap Hero");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "Richese", true);
+            assertEquals(Emojis.ECAZ + " triggers their Richese Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", allyChat.getMessages().getFirst());
+//            assertEquals(2, allyChat.getChoices().getFirst().size());
+//            assertEquals("Yes", allyChat.getChoices().getFirst().getFirst().getLabel());
+//            assertEquals("No", allyChat.getChoices().getFirst().getLast().getLabel());
+        }
+
+        @Test
         public void testTriggerRicheseNotEnoughSpiceToBuyACard() {
             faction.subtractSpice(faction.getSpice(), "Test");
             faction.addSpice(2, "Test");
             faction.discard("Cheap Hero");
-            faction.triggerAmbassador(harkonnen, "Richese");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "Richese", false);
+            assertEquals(Emojis.ECAZ + " triggers their Richese Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
 
         @Test
         public void testRicheseAmbassadorWhenHandIsFull() {
-            faction.triggerAmbassador(harkonnen, "Richese");
+            faction.triggerAmbassador(harkonnen, "Richese", false);
+            assertEquals(Emojis.ECAZ + " triggers their Richese Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
 
         @Test
         public void testBTAmbassadorNoLeadersOrForcesInTanks() {
-            faction.triggerAmbassador(harkonnen, "BT");
+            faction.triggerAmbassador(harkonnen, "BT", false);
+            assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
             assertEquals(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().get(1));
         }
 
         @Test
+        public void testBTAmbassadorForAlly() {
+            faction.triggerAmbassador(harkonnen, "BT", true);
+            assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.", allyChat.getMessages().getFirst());
+//            assertEquals(0, allyChat.getChoices().size());
+//            assertEquals(Emojis.CHOAM + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().get(1));
+        }
+
+        @Test
         public void testBTAmbassadorOnly2ForcesInTanks() {
             faction.removeForces(faction.getHomeworld(), 2, false, true);
-            faction.triggerAmbassador(harkonnen, "BT");
+            faction.triggerAmbassador(harkonnen, "BT", false);
+            assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
@@ -490,7 +626,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         public void testBTAmbassadorOnly5ForcesInTanks() {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
-            faction.triggerAmbassador(harkonnen, "BT");
+            faction.triggerAmbassador(harkonnen, "BT", false);
+            assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
@@ -498,7 +635,9 @@ public class EcazFactionTest extends FactionTestTemplate {
         @Test
         public void testBTAmbassadorOnly1LeaderInTanks() {
             game.killLeader(faction, "Whitmore Bludd");
-            faction.triggerAmbassador(harkonnen, "BT");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "BT", false);
+            assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Whitmore Bludd was revived with your BT Ambassador.", chat.getMessages().getFirst());
             assertEquals(0, chat.getChoices().size());
         }
@@ -507,7 +646,9 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testBTAmbassadorOnly2LeadersInTanks() {
             game.killLeader(faction, "Whitmore Bludd");
             game.killLeader(faction, "Sanya Ecaz");
-            faction.triggerAmbassador(harkonnen, "BT");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "BT", false);
+            assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Which leader would you like to revive?", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
         }
@@ -517,7 +658,9 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             game.killLeader(faction, "Whitmore Bludd");
             game.killLeader(faction, "Sanya Ecaz");
-            faction.triggerAmbassador(harkonnen, "BT");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "BT", false);
+            assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Would you like to revive a leader or 4 " + Emojis.ECAZ_TROOP + "?", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
         }
@@ -528,9 +671,25 @@ public class EcazFactionTest extends FactionTestTemplate {
             harkonnen.keepCapturedLeader(faction.getName(), "Duke Vidal");
             assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
-            faction.triggerAmbassador(harkonnen, "Ecaz");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "Ecaz", false);
+            assertEquals(Emojis.ECAZ + " triggers their Ecaz Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertTrue(chat.getChoices().getFirst().getFirst().isDisabled());
+        }
+
+        @Test
+        public void testHarkonnenForAlly() {
+            game.assignDukeVidalToAFaction(faction.getName());
+            harkonnen.keepCapturedLeader(faction.getName(), "Duke Vidal");
+            assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
+            assertFalse(faction.getLeader("Duke Vidal").isPresent());
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "Ecaz", true);
+            assertEquals(Emojis.ECAZ + " triggers their Ecaz Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
+            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
+//            assertEquals("Get Duke Vidal", allyChat.getChoices().getFirst().getFirst().getLabel());
+//            assertTrue(allyChat.getChoices().getFirst().getFirst().isDisabled());
         }
 
         @Test
@@ -538,7 +697,9 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.assignDukeVidalToAFaction(harkonnen.getName());
             assertTrue(harkonnen.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
-            faction.triggerAmbassador(harkonnen, "Ecaz");
+            turnSummary.clear();
+            faction.triggerAmbassador(harkonnen, "Ecaz", false);
+            assertEquals(Emojis.ECAZ + " triggers their Ecaz Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
         }
@@ -550,7 +711,9 @@ public class EcazFactionTest extends FactionTestTemplate {
             bt.reviveLeader("Duke Vidal", null);
             assertTrue(bt.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
-            faction.triggerAmbassador(bt, "Ecaz");
+            turnSummary.clear();
+            faction.triggerAmbassador(bt, "Ecaz", false);
+            assertEquals(Emojis.ECAZ + " triggers their Ecaz Ambassador against " + Emojis.BT + " !", turnSummary.getMessages().getFirst());
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertTrue(chat.getChoices().getFirst().getFirst().isDisabled());
         }
@@ -560,7 +723,9 @@ public class EcazFactionTest extends FactionTestTemplate {
             game.assignDukeVidalToAFaction(bt.getName());
             assertTrue(bt.getLeader("Duke Vidal").isPresent());
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
-            faction.triggerAmbassador(bt, "Ecaz");
+            turnSummary.clear();
+            faction.triggerAmbassador(bt, "Ecaz", false);
+            assertEquals(Emojis.ECAZ + " triggers their Ecaz Ambassador against " + Emojis.BT + " !", turnSummary.getMessages().getFirst());
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertFalse(chat.getChoices().getFirst().getFirst().isDisabled());
         }
@@ -572,7 +737,9 @@ public class EcazFactionTest extends FactionTestTemplate {
             ecazHomeworld.removeForces(game, "Ecaz", 14);
             bt.placeForcesFromReserves(ecazHomeworld, 2, false);
             assertTrue(faction.isHomeworldOccupied());
-            faction.triggerAmbassador(bt, "Ecaz");
+            turnSummary.clear();
+            faction.triggerAmbassador(bt, "Ecaz", false);
+            assertEquals(Emojis.ECAZ + " triggers their Ecaz Ambassador against " + Emojis.BT + " !", turnSummary.getMessages().getFirst());
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertTrue(chat.getChoices().getFirst().getFirst().isDisabled());
         }

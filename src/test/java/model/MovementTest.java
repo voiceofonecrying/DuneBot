@@ -1219,7 +1219,7 @@ public class MovementTest extends DuneTest {
             game.addFaction(ecaz);
             game.addFaction(harkonnen);
             carthag.setEcazAmbassador("Fremen");
-            ecaz.triggerAmbassador(harkonnen, "Fremen");
+            ecaz.triggerAmbassador(harkonnen, "Fremen", false);
             ecazChat.clear();
             turnSummary.clear();
             movement = ecaz.getMovement();
@@ -1561,7 +1561,7 @@ public class MovementTest extends DuneTest {
             game.addFaction(ecaz);
             game.addFaction(harkonnen);
             carthag.setEcazAmbassador("Guild");
-            ecaz.triggerAmbassador(harkonnen, "Guild");
+            ecaz.triggerAmbassador(harkonnen, "Guild", false);
             ecazChat.clear();
             turnSummary.clear();
             movement = ecaz.getMovement();

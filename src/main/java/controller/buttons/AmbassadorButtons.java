@@ -15,6 +15,7 @@ public class AmbassadorButtons {
         // Buttons handled by this class must begin with "ambassador"
         // And any button that begins with "ambassador" must be handled by this class
         if (event.getComponentId().startsWith("ambassador-trigger-")) triggerAmbassador(event, discordGame);
+        else if (event.getComponentId().startsWith("ambassador-ally-trigger-")) triggerAmbassadorForAlly(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-dont-trigger-")) dontTriggerAmbassador(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-fremen-")) handleFremenAmbassadorButtons(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-guild-")) handleGuildAmbassadorButtons(event, discordGame);
@@ -25,7 +26,16 @@ public class AmbassadorButtons {
         discordGame.queueDeleteMessage();
         String ambassador = event.getComponentId().split("-")[2];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[3]);
-        game.getEcazFaction().triggerAmbassador(triggeringFaction, ambassador);
+        game.getEcazFaction().triggerAmbassador(triggeringFaction, ambassador, false);
+        discordGame.pushGame();
+    }
+
+    private static void triggerAmbassadorForAlly(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+        discordGame.queueDeleteMessage();
+        String ambassador = event.getComponentId().split("-")[3];
+        Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
+        game.getEcazFaction().triggerAmbassador(triggeringFaction, ambassador, true);
         discordGame.pushGame();
     }
 

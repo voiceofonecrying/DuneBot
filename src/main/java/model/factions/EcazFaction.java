@@ -69,39 +69,47 @@ public class EcazFaction extends Faction {
         ambassadorSupply.add("Ecaz");
     }
 
-    public void triggerAmbassador(Faction triggeringFaction, String ambassador) {
-        game.getTurnSummary().publish(Emojis.ECAZ + " triggers their " + ambassador + " Ambassador against " + triggeringFaction.getEmoji() + " !");
-        switch (ambassador) {
-            case "Ecaz" -> {
-                DuneChoice getVidal = new DuneChoice("ecaz-get-vidal", "Get Duke Vidal");
-                DuneChoice offerAlliance = new DuneChoice("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
-                if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))
-                        || (game.hasHarkonnenFaction() && game.getHarkonnenFaction().isDukeVidalCaptured())
-                        || (game.hasBTFaction() && game.getBTFaction().isDukeVidalGhola())
-                        || isHomeworldOccupied())
-                    getVidal.setDisabled(true);
-                if (hasAlly() || triggeringFaction.hasAlly())
-                    offerAlliance.setDisabled(true);
-                List<DuneChoice> choices = new LinkedList<>();
-                choices.add(getVidal);
-                choices.add(offerAlliance);
-                chat.publish("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", choices);
-                ambassadorSupply.add("Ecaz");
+    public void triggerAmbassador(Faction triggeringFaction, String ambassador, boolean forAlly) {
+        String triggerMessage = Emojis.ECAZ + " triggers their " + ambassador + " Ambassador against " + triggeringFaction.getEmoji();
+        if (forAlly)
+            game.getTurnSummary().publish(triggerMessage + " for their ally!");
+        else
+            game.getTurnSummary().publish(triggerMessage + " !");
+        List<String> supportedAmbassadorsForAlly = List.of("None");
+        if (forAlly && !supportedAmbassadorsForAlly.contains(ambassador))
+            game.getTurnSummary().publish(game.getModOrRoleMention() + " please execute the Ambassador for " + game.getFaction(ally).getEmoji());
+        else {
+            switch (ambassador) {
+                case "Ecaz" -> {
+                    DuneChoice getVidal = new DuneChoice("ecaz-get-vidal", "Get Duke Vidal");
+                    DuneChoice offerAlliance = new DuneChoice("ecaz-offer-alliance-" + triggeringFaction.getName(), "Offer Alliance");
+                    if (game.getLeaderTanks().stream().anyMatch(leader -> leader.getName().equals("Duke Vidal"))
+                            || (game.hasHarkonnenFaction() && game.getHarkonnenFaction().isDukeVidalCaptured())
+                            || (game.hasBTFaction() && game.getBTFaction().isDukeVidalGhola())
+                            || isHomeworldOccupied())
+                        getVidal.setDisabled(true);
+                    if (hasAlly() || triggeringFaction.hasAlly())
+                        offerAlliance.setDisabled(true);
+                    List<DuneChoice> choices = new LinkedList<>();
+                    choices.add(getVidal);
+                    choices.add(offerAlliance);
+                    chat.publish("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", choices);
+                    ambassadorSupply.add("Ecaz");
+                }
+                case "Atreides" ->
+                        chat.publish(triggeringFaction.getEmoji() + " hand is:\n\t" + String.join("\n\t", triggeringFaction.getTreacheryHand().stream().map(TreacheryCard::prettyNameAndDescription).toList()));
+                case "BG" -> chat.publish("Which Ambassador effect would you like to trigger?",
+                        ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
+                case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
+                case "Emperor" -> addSpice(5, Emojis.EMPEROR + " Ambassador");
+                case "Fremen" -> presentFremenAmbassadorRideFromChoices();
+                case "Guild" -> presentGuildAmbassadorDestinationChoices();
+                case "Harkonnen" ->
+                        chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
+                case "Ix" -> presentIxAmbassadorDiscardChoices();
+                case "Richese" -> presentRicheseAmbassadorChoices();
+                case "BT" -> presentBTAmbassadorChoices();
             }
-            case "Atreides" ->
-                    chat.publish(triggeringFaction.getEmoji() + " hand is:\n\t" + String.join("\n\t", triggeringFaction.getTreacheryHand().stream().map(TreacheryCard::prettyNameAndDescription).toList()));
-            case "BG" ->
-                    chat.publish("Which Ambassador effect would you like to trigger?",
-                            ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
-            case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
-            case "Emperor" -> addSpice(5, Emojis.EMPEROR + " Ambassador");
-            case "Fremen" -> presentFremenAmbassadorRideFromChoices();
-            case "Guild" -> presentGuildAmbassadorDestinationChoices();
-            case "Harkonnen" ->
-                    chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
-            case "Ix" -> presentIxAmbassadorDiscardChoices();
-            case "Richese" -> presentRicheseAmbassadorChoices();
-            case "BT" -> presentBTAmbassadorChoices();
         }
 
         for (Territory territory : game.getTerritories().values()) {
