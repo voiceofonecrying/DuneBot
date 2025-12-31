@@ -60,7 +60,7 @@ public class EcazButtons implements Pressable {
         discordGame.queueDeleteMessage();
         String ambassador = event.getComponentId().split("-")[3];
         Faction triggeringFaction = game.getFaction(event.getComponentId().split("-")[4]);
-        game.getEcazFaction().triggerAmbassador(triggeringFaction, ambassador);
+        game.getEcazFaction().triggerAmbassador(triggeringFaction, ambassador, false);
         discordGame.pushGame();
     }
 
@@ -83,7 +83,7 @@ public class EcazButtons implements Pressable {
     private static void bgAmbassadorTrigger(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         discordGame.queueMessage("Your Bene Gesserit ambassador will be used for the " + event.getComponentId().split("-")[3] + " effect.");
         discordGame.queueDeleteMessage();
-        game.getEcazFaction().triggerAmbassador(game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3]);
+        game.getEcazFaction().triggerAmbassador(game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3], false);
         discordGame.pushGame();
     }
 
