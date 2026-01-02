@@ -6,6 +6,7 @@ import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
+import model.topics.DuneTopic;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -70,12 +71,14 @@ public class EcazFaction extends Faction {
     }
 
     public void triggerAmbassador(Faction triggeringFaction, String ambassador, boolean forAlly) {
+        chat.reply("You have triggered your " + ambassador + " Ambassador!");
         String triggerMessage = Emojis.ECAZ + " triggers their " + ambassador + " Ambassador against " + triggeringFaction.getEmoji();
-        if (forAlly)
+        if (forAlly) {
+            game.getFaction(ally).getChat().publish(Emojis.ECAZ + " has triggered their " + ambassador + " Ambassador for you!");
             game.getTurnSummary().publish(triggerMessage + " for their ally!");
-        else
+        } else
             game.getTurnSummary().publish(triggerMessage + " !");
-        List<String> supportedAmbassadorsForAlly = List.of("None");
+        List<String> supportedAmbassadorsForAlly = List.of("Emperor", "Fremen", "Guild");
         if (forAlly && !supportedAmbassadorsForAlly.contains(ambassador))
             game.getTurnSummary().publish(game.getModOrRoleMention() + " please execute the Ambassador for " + game.getFaction(ally).getEmoji());
         else {
@@ -101,9 +104,9 @@ public class EcazFaction extends Faction {
                 case "BG" -> chat.publish("Which Ambassador effect would you like to trigger?",
                         ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
                 case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
-                case "Emperor" -> addSpice(5, Emojis.EMPEROR + " Ambassador");
-                case "Fremen" -> presentFremenAmbassadorRideFromChoices();
-                case "Guild" -> presentGuildAmbassadorDestinationChoices();
+                case "Emperor" -> triggerEmperorAmbassador(forAlly);
+                case "Fremen" -> presentFremenAmbassadorRideFromChoices(forAlly);
+                case "Guild" -> presentGuildAmbassadorDestinationChoices(forAlly);
                 case "Harkonnen" ->
                         chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
                 case "Ix" -> presentIxAmbassadorDiscardChoices();
@@ -129,10 +132,13 @@ public class EcazFaction extends Faction {
 
         if (nonEcazAmbassadorsCount == 0)
             drawNewSupply();
-        if (!ambassador.equals("Guild") && !ambassador.equals("Fremen"))
-            chat.reply("You have triggered your " + ambassador + " Ambassador!");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
+    }
+
+    public void triggerEmperorAmbassador(boolean forAlly) {
+        Faction beneficiary = forAlly ? game.getFaction(ally) : this;
+        beneficiary.addSpice(5, Emojis.EMPEROR + " Ambassador");
     }
 
     public void gainDukeVidalWithEcazAmbassador() throws InvalidGameStateException {
@@ -176,28 +182,46 @@ public class EcazFaction extends Faction {
         }
     }
 
-    public void presentFremenAmbassadorRideFromChoices() {
-        List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
-        choices.add(new DuneChoice("danger", "ambassador-fremen-pass", "Decline ride"));
-        chat.reply("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", choices);
-        movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+    public void presentFremenAmbassadorRideFromChoices(boolean forAlly) {
+        Faction faction = this;
+        if (forAlly)
+            faction = game.getFaction(ally);
+        if (forAlly)
+            faction.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR_FOR_ALLY);
+        else
+            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+        faction.getMovement().presentMoveFromChoices();
+//        String choicePrefix = "ambassador-fremen-" + (forAlly ? "ally-" : "");
+//        List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
+//        choices.add(new DuneChoice("danger", choicePrefix + "pass", "Decline ride"));
+//        faction.getChat().reply("Where would you like to ride from?", choices);
     }
 
-    public void presentGuildAmbassadorDestinationChoices() {
+    public void presentGuildAmbassadorDestinationChoices(boolean forAlly) {
+        Faction faction = this;
+        if (forAlly)
+            faction = game.getFaction(ally);
+        String choicePrefix = "ambassador-guild-" + (forAlly ? "ally-" : "");
         if (getReservesStrength() == 0)
-            chat.reply("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
+            faction.getChat().reply("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
         else {
             List<DuneChoice> choices = new LinkedList<>();
-            choices.add(new DuneChoice("ambassador-guild-stronghold", "Stronghold"));
-            choices.add(new DuneChoice("ambassador-guild-spice-blow", "Spice Blow Territories"));
-            choices.add(new DuneChoice("ambassador-guild-rock", "Rock Territories"));
+            choices.add(new DuneChoice(choicePrefix + "stronghold", "Stronghold"));
+            choices.add(new DuneChoice(choicePrefix + "spice-blow", "Spice Blow Territories"));
+            choices.add(new DuneChoice(choicePrefix + "rock", "Rock Territories"));
             boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
             if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-                choices.add(new DuneChoice("ambassador-guild-discovery-tokens", "Discovery Tokens"));
-            choices.add(new DuneChoice("ambassador-guild-other", "Somewhere else"));
-            choices.add(new DuneChoice("danger", "ambassador-guild-pass", "Pass shipment"));
-            chat.reply("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", choices);
-            movement.setMoveType(MoveType.GUILD_AMBASSADOR);
+                choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
+            choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
+            choices.add(new DuneChoice("danger", choicePrefix + "pass", "Pass shipment"));
+            String forceEmojis = Emojis.ECAZ_TROOP;
+            if (forAlly)
+                forceEmojis = faction.getForceEmoji() + " " + faction.getSpecialForceEmoji();
+            faction.getChat().reply("Where would you like to place up to 4 " + forceEmojis + " from reserves?", choices);
+            if (forAlly)
+                faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR_FOR_ALLY);
+            else
+                movement.setMoveType(MoveType.GUILD_AMBASSADOR);
         }
     }
 
@@ -351,6 +375,8 @@ public class EcazFaction extends Faction {
                 && !getAlly().equals(targetFaction.getName())) {
             List<DuneChoice> choices = new ArrayList<>();
             choices.add(new DuneChoice("ambassador-trigger-" + ambassador + "-" + targetFaction.getName(), "Trigger"));
+            if (hasAlly())
+                choices.add(new DuneChoice("ambassador-trigger-ally-" + ambassador + "-" + targetFaction.getName(), "Trigger for ally"));
             choices.add(new DuneChoice("danger", "ambassador-dont-trigger-" + ambassador + "-" + targetFaction.getName(), "Don't Trigger"));
             game.getTurnSummary().publish(Emojis.ECAZ + " has an opportunity to trigger their " + ambassador + " Ambassador.");
             chat.publish("Will you trigger your " + ambassador + " Ambassador in " + targetTerritory.getTerritoryName() + " against " + targetFaction.getEmoji() + "? " + player, choices);

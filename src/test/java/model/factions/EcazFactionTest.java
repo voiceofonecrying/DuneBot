@@ -361,6 +361,10 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.addTreacheryCard(new TreacheryCard("Kulon"));
             faction.addTreacheryCard(new TreacheryCard("Cheap Hero"));
             faction.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            choam.addTreacheryCard(new TreacheryCard("Kull Wahad"));
+            choam.addTreacheryCard(new TreacheryCard("Snooper"));
+            choam.addTreacheryCard(new TreacheryCard("Snooper"));
+            choam.addTreacheryCard(new TreacheryCard("Cheap Hero"));
         }
 
         @Test
@@ -424,7 +428,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerEmperorAdds5Spice() {
             faction.triggerAmbassador(harkonnen, "Emperor", false);
             assertEquals(Emojis.ECAZ + " triggers their Emperor Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getFirst());
+            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getLast());
             assertEquals(17, faction.getSpice());
         }
 
@@ -432,9 +436,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerEmperorForAlly() {
             faction.triggerAmbassador(harkonnen, "Emperor", true);
             assertEquals(Emojis.ECAZ + " triggers their Emperor Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 7 " + Emojis.SPICE, allyLedger.getMessages().getFirst());
-//            assertEquals(7, choam.getSpice());
+            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 7 " + Emojis.SPICE, allyLedger.getMessages().getLast());
+            assertEquals(7, choam.getSpice());
         }
 
         @Test

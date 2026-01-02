@@ -25,6 +25,7 @@ public class MovementButtonActions {
         else if (action.equals("rock")) presentRockShippingChoices(event, discordGame);
         else if (action.equals("discovery-tokens")) presentDiscoveryShippingChoices(event, discordGame);
         else if (action.equals("other")) presentOtherShippingChoices(event, discordGame);
+        else if (action.startsWith("move-from-")) moveFrom(event, discordGame);
         else if (action.startsWith("territory-")) presentSectorChoices(event, discordGame);
         else if (action.startsWith("sector-")) filterBySector(event, discordGame);
         else if (action.startsWith("add-force-")) addRegularForces(event, discordGame);
@@ -76,6 +77,16 @@ public class MovementButtonActions {
         Faction faction = ButtonManager.getButtonPresser(event, discordGame.getGame());
         faction.getMovement().presentNonSpiceNonRockChoices();
         discordGame.queueDeleteMessage();
+    }
+
+    private static void moveFrom(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String choicePrefix = faction.getMovement().getChoicePrefix();
+        String territoryName = event.getComponentId().replace("move-from-", "").replace(choicePrefix, "");
+        faction.getMovement().setMovingFrom(territoryName);
+        faction.getMovement().presentTerritoryTypeChoices();
+        discordGame.pushGame();
     }
 
     protected static void presentSectorChoices(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
