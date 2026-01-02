@@ -61,12 +61,8 @@ public class Movement {
             return "fremen-place-great-maker-";
         else if (moveType == MoveType.GUILD_AMBASSADOR)
             return "ambassador-guild-";
-        else if (moveType == MoveType.GUILD_AMBASSADOR_FOR_ALLY)
-            return "ambassador-guild-ally-";
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
             return "ambassador-fremen-";
-        else if (moveType == MoveType.FREMEN_AMBASSADOR_FOR_ALLY)
-            return "ambassador-fremen-ally-";
         else if (moveType == MoveType.BT_HT)
             return "bt-ht-";
         else if (moveType == MoveType.HMS_PLACEMENT)
@@ -164,10 +160,10 @@ public class Movement {
             ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
         } else if (moveType == MoveType.GREAT_MAKER_PLACEMENT) {
             ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
-        } else if (moveType == MoveType.FREMEN_AMBASSADOR || moveType == MoveType.FREMEN_AMBASSADOR_FOR_ALLY) {
+        } else if (moveType == MoveType.FREMEN_AMBASSADOR) {
             faction.getChat().reply("You will not ride the worm with the Fremen Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm with the Fremen Ambassador.");
-        } else if (moveType == MoveType.GUILD_AMBASSADOR || moveType == MoveType.GUILD_AMBASSADOR_FOR_ALLY) {
+        } else if (moveType == MoveType.GUILD_AMBASSADOR) {
             faction.getChat().reply("You will not ship with the Guild Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ship with the Guild Ambassador.");
         } else if (moveType == MoveType.BT_HT) {
@@ -191,13 +187,9 @@ public class Movement {
         else if (moveType == MoveType.GREAT_MAKER_PLACEMENT)
             ((FremenFaction) faction).presentWormPlacementChoices(saveMovingFrom, "Great Maker");
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
-            ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices(false);
-        else if (moveType == MoveType.FREMEN_AMBASSADOR_FOR_ALLY)
-            faction.getGame().getEcazFaction().presentFremenAmbassadorRideFromChoices(true);
+            faction.getGame().getEcazFaction().presentFremenAmbassadorRideFromChoices(!(faction instanceof EcazFaction));
         else if (moveType == MoveType.GUILD_AMBASSADOR)
-            ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices(false);
-        else if (moveType == MoveType.GUILD_AMBASSADOR_FOR_ALLY)
-            faction.getGame().getEcazFaction().presentGuildAmbassadorDestinationChoices(true);
+            faction.getGame().getEcazFaction().presentGuildAmbassadorDestinationChoices(!(faction instanceof EcazFaction));
         else if (moveType == MoveType.BT_HT)
             ((BTFaction) faction).presentHTChoices();
         else if (moveType == MoveType.HMS_PLACEMENT)
@@ -206,7 +198,7 @@ public class Movement {
 
     public void presentTerritoryTypeChoices() {
         Game game = faction.getGame();
-        boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR || moveType == MoveType.FREMEN_AMBASSADOR_FOR_ALLY;
+        boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
         boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
         boolean wormRide = fremenRide || fremenAmbassador;
         String choicePrefix = getChoicePrefix();
@@ -358,10 +350,10 @@ public class Movement {
 
     public void presentForcesChoices() {
         Game game = faction.getGame();
-        boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR || moveType == MoveType.FREMEN_AMBASSADOR_FOR_ALLY;
+        boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
         boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
         boolean wormRide = fremenRide || fremenAmbassador;
-        boolean guildAmbassador = moveType == MoveType.GUILD_AMBASSADOR || moveType == MoveType.GUILD_AMBASSADOR_FOR_ALLY;
+        boolean guildAmbassador = moveType == MoveType.GUILD_AMBASSADOR;
         List<DuneChoice> choices = new ArrayList<>();
         int buttonLimitForces = guildAmbassador ? faction.getReservesStrength() - force :
                 game.getTerritory(movingFrom).getForceStrength(faction.getName()) - force;
@@ -423,10 +415,10 @@ public class Movement {
             executeMovement();
             ((FremenFaction) faction).setWormRideActive(false);
             faction.getChat().reply("Worm ride complete.");
-        } else if (moveType == MoveType.FREMEN_AMBASSADOR || moveType == MoveType.FREMEN_AMBASSADOR_FOR_ALLY) {
+        } else if (moveType == MoveType.FREMEN_AMBASSADOR) {
             executeMovement();
             faction.getChat().reply("Ride with Fremen Ambassador complete.");
-        } else if (moveType == MoveType.GUILD_AMBASSADOR || moveType == MoveType.GUILD_AMBASSADOR_FOR_ALLY)
+        } else if (moveType == MoveType.GUILD_AMBASSADOR)
             executeGuildAmbassador();
         else if (moveType == MoveType.BT_HT)
             ((BTFaction) faction).executeHTPlacement();

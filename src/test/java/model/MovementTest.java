@@ -108,20 +108,6 @@ public class MovementTest extends DuneTest {
             assertEquals(0, fremen.getWormsToPlace());
             assertEquals(MoveType.TBD, movement.getMoveType());
         }
-
-        @Test
-        void testFremenAmbassador() throws InvalidGameStateException {
-            movement = ix.getMovement();
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.setForce(1);
-            movement.setSpecialForce(2);
-            movement.setMovingTo("Carthag");
-            movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.pass();
-            assertEquals("You will not ride the worm with the Fremen Ambassador.", ixChat.getMessages().getLast());
-            assertEquals(Emojis.IX + " does not ride the worm with the Fremen Ambassador.", turnSummary.getMessages().getLast());
-            assertEquals(MoveType.TBD, movement.getMoveType());
-        }
     }
 
     @Nested
@@ -208,21 +194,6 @@ public class MovementTest extends DuneTest {
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(MoveType.GREAT_MAKER_PLACEMENT, movement.getMoveType());
         }
-
-        @Test
-        void testFremenAmbassador() {
-            // TODO: Change to Ix when ally use of ambassadors is supported
-            movement = ecaz.getMovement();
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.setForce(1);
-            movement.setSpecialForce(2);
-            movement.setMovingTo("Carthag");
-            movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.startOver();
-            assertEquals("Where would you like to ride from? ec", ecazChat.getMessages().getLast());
-            assertTrue(turnSummary.getMessages().isEmpty());
-            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
-        }
     }
 
     @Nested
@@ -256,27 +227,6 @@ public class MovementTest extends DuneTest {
             for (String s : strongholdsWithHMS)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
-        }
-
-        @Test
-        void testFremenAmbassador() throws InvalidGameStateException {
-            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentStrongholdChoices();
-            assertEquals("Which Stronghold?", ecazChat.getMessages().getLast());
-            assertEquals(7, ecazChat.getChoices().getLast().size());
-            assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals("Hidden Mobile Stronghold")));
-            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
-            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 6)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-"));
-                assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
-                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("territory-", action);
-                assertTrue(strongholdsWithHMS.contains(c.getLabel()));
-            }
-            for (String s : strongholdsWithHMS)
-                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -352,25 +302,6 @@ public class MovementTest extends DuneTest {
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.GREAT_MAKER_PLACEMENT, fremen.getMovement().getMoveType());
         }
-
-        @Test
-        void testFremenAmbassador() {
-            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentSpiceBlowChoices();
-            assertEquals("Which Spice Blow Territory?", ecazChat.getMessages().getLast());
-            assertEquals(16, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
-            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-"));
-                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("territory-", action);
-                assertTrue(spiceBlowTerritories.contains(c.getLabel()));
-            }
-            for (String s : spiceBlowTerritories)
-                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
-        }
     }
 
     @Nested
@@ -404,25 +335,6 @@ public class MovementTest extends DuneTest {
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
         }
-
-        @Test
-        void testFremenAmbassador() {
-            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentRockChoices();
-            assertEquals("Which Rock Territory?", ecazChat.getMessages().getLast());
-            assertEquals(8, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
-            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 7)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-"));
-                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("territory-", action);
-                assertTrue(rockTerritories.contains(c.getLabel()));
-            }
-            for (String s : rockTerritories)
-                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
-        }
     }
 
     @Nested
@@ -454,25 +366,6 @@ public class MovementTest extends DuneTest {
             for (String s : discoveryTokenTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.FREMEN_RIDE, ecaz.getMovement().getMoveType());
-        }
-
-        @Test
-        void testFremenAmbassador() throws InvalidGameStateException {
-            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentDiscoveryTokenChoices();
-            assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
-            assertEquals(3, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
-            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 2)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-"));
-                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("territory-", action);
-                assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
-            }
-            for (String s : discoveryTokenTerritories)
-                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -547,25 +440,6 @@ public class MovementTest extends DuneTest {
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.GREAT_MAKER_PLACEMENT, fremen.getMovement().getMoveType());
-        }
-
-        @Test
-        void testFremenAmbassador() {
-            ecaz.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-            ecaz.getMovement().presentNonSpiceNonRockChoices();
-            assertEquals("Which Territory?", ecazChat.getMessages().getLast());
-            assertEquals(16, ecazChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-start-over", ecazChat.getChoices().getLast().getLast().getId());
-            assertEquals("Start over", ecazChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : ecazChat.getChoices().getLast().subList(0, 15)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-"));
-                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
-                assertEquals("territory-", action);
-                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
-            }
-            for (String s : nonSpiceNonRockTerritories)
-                assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -663,49 +537,6 @@ public class MovementTest extends DuneTest {
             assertEquals("Start over", choice.getLabel());
             assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
         }
-
-        @Test
-        void testFremenAmbassador() {
-            movement = ix.getMovement();
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.setMovingTo("Carthag");
-            movement.setForce(0);
-            movement.setSpecialForce(1);
-            movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.presentForcesChoices();
-            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 1 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
-            assertEquals(8, ixChat.getChoices().getLast().size());
-            DuneChoice choice = ixChat.getChoices().getLast().getFirst();
-            assertEquals("ambassador-fremen-add-force-1", choice.getId());
-            assertEquals("+1", choice.getLabel());
-            assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
-            choice = ixChat.getChoices().getLast().get(1);
-            assertEquals("ambassador-fremen-add-special-force-1", choice.getId());
-            assertEquals("+1 *", choice.getLabel());
-            assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
-            choice = ixChat.getChoices().getLast().get(2);
-            assertEquals("ambassador-fremen-add-force-2", choice.getId());
-            assertEquals("+2", choice.getLabel());
-            assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
-            choice = ixChat.getChoices().getLast().get(3);
-            assertEquals("ambassador-fremen-add-special-force-2", choice.getId());
-            assertEquals("+2 *", choice.getLabel());
-            assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
-            choice = ixChat.getChoices().getLast().get(4);
-            assertEquals("ambassador-fremen-add-force-3", choice.getId());
-            assertEquals("+3", choice.getLabel());
-            assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
-            choice = ixChat.getChoices().getLast().get(5);
-            assertEquals("ambassador-fremen-execute", choice.getId());
-            assertEquals("Confirm Movement", choice.getLabel());
-            choice = ixChat.getChoices().getLast().get(6);
-            assertEquals("ambassador-fremen-reset-forces", choice.getId());
-            assertEquals("Reset forces", choice.getLabel());
-            choice = ixChat.getChoices().getLast().getLast();
-            assertEquals("ambassador-fremen-start-over", choice.getId());
-            assertEquals("Start over", choice.getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
-        }
     }
 
     @Nested
@@ -734,19 +565,6 @@ public class MovementTest extends DuneTest {
             assertEquals(2, movement.getForce());
             assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
-
-        @Test
-        void testFremenAmbassador() {
-            movement = ix.getMovement();
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.setMovingTo("Carthag");
-            movement.setForce(1);
-            movement.setSpecialForce(2);
-            movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.addRegularForces(1);
-            assertEquals(2, movement.getForce());
-            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
-        }
     }
 
     @Nested
@@ -771,19 +589,6 @@ public class MovementTest extends DuneTest {
             movement.setForce(1);
             movement.setSpecialForce(2);
             movement.setMovingFrom("Funeral Plain");
-            movement.addSpecialForces(1);
-            assertEquals(3, movement.getSpecialForce());
-            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
-        }
-
-        @Test
-        void testFremenAmbassador() {
-            movement = ix.getMovement();
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.setMovingTo("Carthag");
-            movement.setForce(1);
-            movement.setSpecialForce(2);
-            movement.setMovingFrom("Hidden Mobile Stronghold");
             movement.addSpecialForces(1);
             assertEquals(3, movement.getSpecialForce());
             assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
@@ -824,20 +629,6 @@ public class MovementTest extends DuneTest {
             assertEquals("Funeral Plain", movement.getMovingFrom());
             assertEquals("Carthag", movement.getMovingTo());
             assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
-        }
-
-        @Test
-        void testFremenAmbassador() {
-            movement = ix.getMovement();
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.setMovingTo("Carthag");
-            movement.setForce(1);
-            movement.setSpecialForce(2);
-            movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.resetForces();
-            assertEquals("Hidden Mobile Stronghold", movement.getMovingFrom());
-            assertEquals("Carthag", movement.getMovingTo());
-            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
     }
 
@@ -886,25 +677,6 @@ public class MovementTest extends DuneTest {
             assertEquals(0, funeralPlain.getForceStrength("Fremen*"));
             assertEquals("Worm ride complete.", fremenChat.getMessages().getLast());
             assertEquals(Emojis.FREMEN + ": 1 " + Emojis.FREMEN_TROOP + " 2 " + Emojis.FREMEN_FEDAYKIN + " moved from Funeral Plain to Carthag.", turnSummary.getMessages().getLast());
-            assertEquals(MoveType.TBD, movement.getMoveType());
-        }
-
-        @Test
-        void testFremenAmbassador() throws InvalidGameStateException {
-            movement = ix.getMovement();
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
-            movement.setMovingTo("Carthag");
-            movement.setForce(1);
-            movement.setSpecialForce(2);
-            movement.setMovingFrom("Hidden Mobile Stronghold");
-            movement.execute();
-            assertEquals(1, carthag.getForceStrength("Ix"));
-            assertEquals(2, carthag.getForceStrength("Ix*"));
-            Territory hms = game.getTerritory("Hidden Mobile Stronghold");
-            assertEquals(2, hms.getForceStrength("Ix"));
-            assertEquals(1, hms.getForceStrength("Ix*"));
-            assertEquals("Ride with Fremen Ambassador complete.", ixChat.getMessages().getLast());
-            assertEquals(Emojis.IX + ": 1 " + Emojis.IX_SUBOID + " 2 " + Emojis.IX_CYBORG + " moved from Hidden Mobile Stronghold to Carthag.", turnSummary.getMessages().getLast());
             assertEquals(MoveType.TBD, movement.getMoveType());
         }
     }
@@ -1318,14 +1090,14 @@ public class MovementTest extends DuneTest {
             ecaz.triggerAmbassador(harkonnen, "Fremen", true);
             assertEquals("Where would you like to ride from? ix", ixChat.getMessages().getLast());
             assertEquals(2, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-move-from-Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-move-from-Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-fremen-ally-pass", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-pass", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Decline ride", ixChat.getChoices().getLast().getLast().getLabel());
             ixChat.clear();
             turnSummary.clear();
             movement = ix.getMovement();
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1347,11 +1119,11 @@ public class MovementTest extends DuneTest {
             assertEquals("Where would you like to ride from? ix", ixChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(2, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-move-from-Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-move-from-Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-fremen-ally-pass", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-pass", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Decline ride", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
             assertTrue(movement.getMovingFrom().isEmpty());
             assertTrue(movement.getMovingTo().isEmpty());
             assertEquals(0, movement.getForce());
@@ -1362,11 +1134,11 @@ public class MovementTest extends DuneTest {
             movement.presentMoveFromChoices();
             assertEquals("Where would you like to ride from? ix", ixChat.getMessages().getLast());
             assertEquals(2, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-move-from-Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-move-from-Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-fremen-ally-pass", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-pass", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Decline ride", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1375,18 +1147,18 @@ public class MovementTest extends DuneTest {
             movement.presentTerritoryTypeChoices();
             assertEquals("Where would you like to ride to from Hidden Mobile Stronghold? ix", ixChat.getMessages().getLast());
             assertEquals(5, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-stronghold", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-stronghold", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("Stronghold", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-fremen-ally-spice-blow", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-fremen-spice-blow", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("Spice Blow Territories", ixChat.getChoices().getLast().get(1).getLabel());
-            assertEquals("ambassador-fremen-ally-rock", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("ambassador-fremen-rock", ixChat.getChoices().getLast().get(2).getId());
             assertEquals("Rock Territories", ixChat.getChoices().getLast().get(2).getLabel());
-            assertEquals("ambassador-fremen-ally-other", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("ambassador-fremen-other", ixChat.getChoices().getLast().get(3).getId());
             assertEquals("Somewhere else", ixChat.getChoices().getLast().get(3).getLabel());
-            assertEquals("ambassador-fremen-ally-pass", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-pass", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("No ride", ixChat.getChoices().getLast().getLast().getLabel());
             assertEquals("danger", ixChat.getChoices().getLast().getLast().getType());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1394,18 +1166,18 @@ public class MovementTest extends DuneTest {
             movement.presentStrongholdChoices();
             assertEquals("Which Stronghold?", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 5)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-ally-"));
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
-                String action = c.getId().replace("ambassador-fremen-ally-", "").replace(c.getLabel(), "");
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(strongholdsWithHMS.contains(c.getLabel()));
             }
             for (String s : strongholdsWithHMS)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1413,18 +1185,18 @@ public class MovementTest extends DuneTest {
             movement.presentSpiceBlowChoices();
             assertEquals("Which Spice Blow Territory?", ixChat.getMessages().getLast());
             assertEquals(16, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 15)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-ally-"));
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 assertFalse(c.isDisabled());
-                String action = c.getId().replace("ambassador-fremen-ally-", "").replace(c.getLabel(), "");
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(spiceBlowTerritories.contains(c.getLabel()));
             }
             for (String s : spiceBlowTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1432,17 +1204,17 @@ public class MovementTest extends DuneTest {
             movement.presentRockChoices();
             assertEquals("Which Rock Territory?", ixChat.getMessages().getLast());
             assertEquals(8, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 7)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-ally-"));
-                String action = c.getId().replace("ambassador-fremen-ally-", "").replace(c.getLabel(), "");
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(rockTerritories.contains(c.getLabel()));
             }
             for (String s : rockTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1450,17 +1222,17 @@ public class MovementTest extends DuneTest {
             movement.presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ixChat.getMessages().getLast());
             assertEquals(3, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 2)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-ally-"));
-                String action = c.getId().replace("ambassador-fremen-ally-", "").replace(c.getLabel(), "");
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
             }
             for (String s : discoveryTokenTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1468,18 +1240,18 @@ public class MovementTest extends DuneTest {
             movement.presentNonSpiceNonRockChoices();
             assertEquals("Which Territory?", ixChat.getMessages().getLast());
             assertEquals(16, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 15)) {
-                assertTrue(c.getId().startsWith("ambassador-fremen-ally-"));
+                assertTrue(c.getId().startsWith("ambassador-fremen-"));
                 assertFalse(c.isDisabled());
-                String action = c.getId().replace("ambassador-fremen-ally-", "").replace(c.getLabel(), "");
+                String action = c.getId().replace("ambassador-fremen-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
             }
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1490,27 +1262,27 @@ public class MovementTest extends DuneTest {
             assertEquals("Carthag", movement.getMovingTo());
             assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().getFirst().getEmoji());
-            assertEquals("ambassador-fremen-ally-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-fremen-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("+1 *", ixChat.getChoices().getLast().get(1).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(1).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-force-2", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("ambassador-fremen-add-force-2", ixChat.getChoices().getLast().get(2).getId());
             assertEquals("+2", ixChat.getChoices().getLast().get(2).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(2).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("ambassador-fremen-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
             assertEquals("+2 *", ixChat.getChoices().getLast().get(3).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(3).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-force-3", ixChat.getChoices().getLast().get(4).getId());
+            assertEquals("ambassador-fremen-add-force-3", ixChat.getChoices().getLast().get(4).getId());
             assertEquals("+3", ixChat.getChoices().getLast().get(4).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(4).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
+            assertEquals("ambassador-fremen-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
             assertEquals("+3 *", ixChat.getChoices().getLast().get(5).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(5).getEmoji());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1519,13 +1291,13 @@ public class MovementTest extends DuneTest {
             assertFalse(stateChanged);
             assertEquals("Which sector of Cielago South?", ixChat.getMessages().getLast());
             assertEquals(3, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("1 - West Sector", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-fremen-ally-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-fremen-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("2 - East Sector", ixChat.getChoices().getLast().get(1).getLabel());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1535,13 +1307,13 @@ public class MovementTest extends DuneTest {
             movement.presentSectorChoices("Cielago South", sectors);
             assertEquals("Which sector of Cielago South?", ixChat.getMessages().getLast());
             assertEquals(3, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("1 - West Sector (12 spice)", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-fremen-ally-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-fremen-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("2 - East Sector", ixChat.getChoices().getLast().get(1).getLabel());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1551,27 +1323,27 @@ public class MovementTest extends DuneTest {
             assertEquals("Cielago South (West Sector)", movement.getMovingTo());
             assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Cielago South (West Sector)", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-fremen-ally-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-fremen-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().getFirst().getEmoji());
-            assertEquals("ambassador-fremen-ally-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-fremen-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("+1 *", ixChat.getChoices().getLast().get(1).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(1).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-force-2", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("ambassador-fremen-add-force-2", ixChat.getChoices().getLast().get(2).getId());
             assertEquals("+2", ixChat.getChoices().getLast().get(2).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(2).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("ambassador-fremen-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
             assertEquals("+2 *", ixChat.getChoices().getLast().get(3).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(3).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-force-3", ixChat.getChoices().getLast().get(4).getId());
+            assertEquals("ambassador-fremen-add-force-3", ixChat.getChoices().getLast().get(4).getId());
             assertEquals("+3", ixChat.getChoices().getLast().get(4).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(4).getEmoji());
-            assertEquals("ambassador-fremen-ally-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
+            assertEquals("ambassador-fremen-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
             assertEquals("+3 *", ixChat.getChoices().getLast().get(5).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(5).getEmoji());
-            assertEquals("ambassador-fremen-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-fremen-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1585,35 +1357,35 @@ public class MovementTest extends DuneTest {
             assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**1 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
             assertEquals(8, ixChat.getChoices().getLast().size());
             DuneChoice choice = ixChat.getChoices().getLast().getFirst();
-            assertEquals("ambassador-fremen-ally-add-force-1", choice.getId());
+            assertEquals("ambassador-fremen-add-force-1", choice.getId());
             assertEquals("+1", choice.getLabel());
             assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(1);
-            assertEquals("ambassador-fremen-ally-add-special-force-1", choice.getId());
+            assertEquals("ambassador-fremen-add-special-force-1", choice.getId());
             assertEquals("+1 *", choice.getLabel());
             assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(2);
-            assertEquals("ambassador-fremen-ally-add-force-2", choice.getId());
+            assertEquals("ambassador-fremen-add-force-2", choice.getId());
             assertEquals("+2", choice.getLabel());
             assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(3);
-            assertEquals("ambassador-fremen-ally-add-special-force-2", choice.getId());
+            assertEquals("ambassador-fremen-add-special-force-2", choice.getId());
             assertEquals("+2 *", choice.getLabel());
             assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(4);
-            assertEquals("ambassador-fremen-ally-add-special-force-3", choice.getId());
+            assertEquals("ambassador-fremen-add-special-force-3", choice.getId());
             assertEquals("+3 *", choice.getLabel());
             assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(5);
-            assertEquals("ambassador-fremen-ally-execute", choice.getId());
+            assertEquals("ambassador-fremen-execute", choice.getId());
             assertEquals("Confirm Movement", choice.getLabel());
             choice = ixChat.getChoices().getLast().get(6);
-            assertEquals("ambassador-fremen-ally-reset-forces", choice.getId());
+            assertEquals("ambassador-fremen-reset-forces", choice.getId());
             assertEquals("Reset forces", choice.getLabel());
             choice = ixChat.getChoices().getLast().getLast();
-            assertEquals("ambassador-fremen-ally-start-over", choice.getId());
+            assertEquals("ambassador-fremen-start-over", choice.getId());
             assertEquals("Start over", choice.getLabel());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1623,7 +1395,7 @@ public class MovementTest extends DuneTest {
             movement.setForce(1);
             movement.addRegularForces(1);
             assertEquals(2, movement.getForce());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1636,7 +1408,7 @@ public class MovementTest extends DuneTest {
             // TODO: Should throw since Ecaz does not have special forces
 //            assertThrows(InvalidGameStateException.class, () -> movement.addSpecialForces(1));
             assertEquals(3, movement.getSpecialForce());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -1647,7 +1419,7 @@ public class MovementTest extends DuneTest {
             movement.resetForces();
             assertEquals("Carthag", movement.getMovingTo());
             assertEquals(0, movement.getForce());
-            assertEquals(MoveType.FREMEN_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.FREMEN_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2005,17 +1777,17 @@ public class MovementTest extends DuneTest {
             assertEquals("Where would you like to place up to 4 " + Emojis.IX_SUBOID + " " + Emojis.IX_CYBORG + " from reserves?", ixChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(5, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-stronghold", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-guild-stronghold", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("Stronghold", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-guild-ally-spice-blow", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-guild-spice-blow", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("Spice Blow Territories", ixChat.getChoices().getLast().get(1).getLabel());
-            assertEquals("ambassador-guild-ally-rock", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("ambassador-guild-rock", ixChat.getChoices().getLast().get(2).getId());
             assertEquals("Rock Territories", ixChat.getChoices().getLast().get(2).getLabel());
-            assertEquals("ambassador-guild-ally-other", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("ambassador-guild-other", ixChat.getChoices().getLast().get(3).getId());
             assertEquals("Somewhere else", ixChat.getChoices().getLast().get(3).getLabel());
-            assertEquals("ambassador-guild-ally-pass", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-pass", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Pass shipment", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
             assertTrue(movement.getMovingTo().isEmpty());
             assertEquals(0, movement.getForce());
         }
@@ -2025,18 +1797,18 @@ public class MovementTest extends DuneTest {
             movement.presentStrongholdChoices();
             assertEquals("Which Stronghold?", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 5)) {
-                assertTrue(c.getId().startsWith("ambassador-guild-ally-"));
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
                 assertFalse(c.isDisabled(), () -> c.getLabel() + " button was disabled.");
-                String action = c.getId().replace("ambassador-guild-ally-", "").replace(c.getLabel(), "");
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(strongholdsWithHMS.contains(c.getLabel()));
             }
             for (String s : strongholdsWithHMS)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2044,18 +1816,18 @@ public class MovementTest extends DuneTest {
             movement.presentSpiceBlowChoices();
             assertEquals("Which Spice Blow Territory?", ixChat.getMessages().getLast());
             assertEquals(16, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 15)) {
-                assertTrue(c.getId().startsWith("ambassador-guild-ally-"));
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
                 assertFalse(c.isDisabled());
-                String action = c.getId().replace("ambassador-guild-ally-", "").replace(c.getLabel(), "");
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(spiceBlowTerritories.contains(c.getLabel()));
             }
             for (String s : spiceBlowTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2063,17 +1835,17 @@ public class MovementTest extends DuneTest {
             movement.presentRockChoices();
             assertEquals("Which Rock Territory?", ixChat.getMessages().getLast());
             assertEquals(8, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 7)) {
-                assertTrue(c.getId().startsWith("ambassador-guild-ally-"));
-                String action = c.getId().replace("ambassador-guild-ally-", "").replace(c.getLabel(), "");
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(rockTerritories.contains(c.getLabel()));
             }
             for (String s : rockTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2081,17 +1853,17 @@ public class MovementTest extends DuneTest {
             movement.presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ixChat.getMessages().getLast());
             assertEquals(3, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 2)) {
-                assertTrue(c.getId().startsWith("ambassador-guild-ally-"));
-                String action = c.getId().replace("ambassador-guild-ally-", "").replace(c.getLabel(), "");
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(discoveryTokenTerritories.contains(c.getLabel()));
             }
             for (String s : discoveryTokenTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2099,18 +1871,18 @@ public class MovementTest extends DuneTest {
             movement.presentNonSpiceNonRockChoices();
             assertEquals("Which Territory?", ixChat.getMessages().getLast());
             assertEquals(16, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
             for (DuneChoice c : ixChat.getChoices().getLast().subList(0, 15)) {
-                assertTrue(c.getId().startsWith("ambassador-guild-ally-"));
+                assertTrue(c.getId().startsWith("ambassador-guild-"));
                 assertFalse(c.isDisabled());
-                String action = c.getId().replace("ambassador-guild-ally-", "").replace(c.getLabel(), "");
+                String action = c.getId().replace("ambassador-guild-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
                 assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
             }
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(ixChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2120,33 +1892,33 @@ public class MovementTest extends DuneTest {
             assertEquals("Carthag", movement.getMovingTo());
             assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
             assertEquals(9, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-guild-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().getFirst().getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-guild-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("+1 *", ixChat.getChoices().getLast().get(1).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(1).getEmoji());
-            assertEquals("ambassador-guild-ally-add-force-2", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("ambassador-guild-add-force-2", ixChat.getChoices().getLast().get(2).getId());
             assertEquals("+2", ixChat.getChoices().getLast().get(2).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(2).getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("ambassador-guild-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
             assertEquals("+2 *", ixChat.getChoices().getLast().get(3).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(3).getEmoji());
-            assertEquals("ambassador-guild-ally-add-force-3", ixChat.getChoices().getLast().get(4).getId());
+            assertEquals("ambassador-guild-add-force-3", ixChat.getChoices().getLast().get(4).getId());
             assertEquals("+3", ixChat.getChoices().getLast().get(4).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(4).getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
+            assertEquals("ambassador-guild-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
             assertEquals("+3 *", ixChat.getChoices().getLast().get(5).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(5).getEmoji());
-            assertEquals("ambassador-guild-ally-add-force-4", ixChat.getChoices().getLast().get(6).getId());
+            assertEquals("ambassador-guild-add-force-4", ixChat.getChoices().getLast().get(6).getId());
             assertEquals("+4", ixChat.getChoices().getLast().get(6).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(6).getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-4", ixChat.getChoices().getLast().get(7).getId());
+            assertEquals("ambassador-guild-add-special-force-4", ixChat.getChoices().getLast().get(7).getId());
             assertEquals("+4 *", ixChat.getChoices().getLast().get(7).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(7).getEmoji());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2155,13 +1927,13 @@ public class MovementTest extends DuneTest {
             assertFalse(stateChanged);
             assertEquals("Which sector of Cielago South?", ixChat.getMessages().getLast());
             assertEquals(3, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-guild-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("1 - West Sector", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-guild-ally-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-guild-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("2 - East Sector", ixChat.getChoices().getLast().get(1).getLabel());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2171,13 +1943,13 @@ public class MovementTest extends DuneTest {
             movement.presentSectorChoices("Cielago South", sectors);
             assertEquals("Which sector of Cielago South?", ixChat.getMessages().getLast());
             assertEquals(3, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-guild-sector-Cielago South (West Sector)", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("1 - West Sector (12 spice)", ixChat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-guild-ally-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-guild-sector-Cielago South (East Sector)", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("2 - East Sector", ixChat.getChoices().getLast().get(1).getLabel());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2186,33 +1958,33 @@ public class MovementTest extends DuneTest {
             assertEquals("Cielago South (West Sector)", movement.getMovingTo());
             assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Cielago South (West Sector)", ixChat.getMessages().getLast());
             assertEquals(9, ixChat.getChoices().getLast().size());
-            assertEquals("ambassador-guild-ally-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("ambassador-guild-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().getFirst().getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("ambassador-guild-add-special-force-1", ixChat.getChoices().getLast().get(1).getId());
             assertEquals("+1 *", ixChat.getChoices().getLast().get(1).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(1).getEmoji());
-            assertEquals("ambassador-guild-ally-add-force-2", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("ambassador-guild-add-force-2", ixChat.getChoices().getLast().get(2).getId());
             assertEquals("+2", ixChat.getChoices().getLast().get(2).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(2).getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("ambassador-guild-add-special-force-2", ixChat.getChoices().getLast().get(3).getId());
             assertEquals("+2 *", ixChat.getChoices().getLast().get(3).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(3).getEmoji());
-            assertEquals("ambassador-guild-ally-add-force-3", ixChat.getChoices().getLast().get(4).getId());
+            assertEquals("ambassador-guild-add-force-3", ixChat.getChoices().getLast().get(4).getId());
             assertEquals("+3", ixChat.getChoices().getLast().get(4).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(4).getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
+            assertEquals("ambassador-guild-add-special-force-3", ixChat.getChoices().getLast().get(5).getId());
             assertEquals("+3 *", ixChat.getChoices().getLast().get(5).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(5).getEmoji());
-            assertEquals("ambassador-guild-ally-add-force-4", ixChat.getChoices().getLast().get(6).getId());
+            assertEquals("ambassador-guild-add-force-4", ixChat.getChoices().getLast().get(6).getId());
             assertEquals("+4", ixChat.getChoices().getLast().get(6).getLabel());
             assertEquals(Emojis.IX_SUBOID, ixChat.getChoices().getLast().get(6).getEmoji());
-            assertEquals("ambassador-guild-ally-add-special-force-4", ixChat.getChoices().getLast().get(7).getId());
+            assertEquals("ambassador-guild-add-special-force-4", ixChat.getChoices().getLast().get(7).getId());
             assertEquals("+4 *", ixChat.getChoices().getLast().get(7).getLabel());
             assertEquals(Emojis.IX_CYBORG, ixChat.getChoices().getLast().get(7).getEmoji());
-            assertEquals("ambassador-guild-ally-start-over", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("ambassador-guild-start-over", ixChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", ixChat.getChoices().getLast().getLast().getLabel());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2224,39 +1996,39 @@ public class MovementTest extends DuneTest {
             assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**1 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
             assertEquals(9, ixChat.getChoices().getLast().size());
             DuneChoice choice = ixChat.getChoices().getLast().getFirst();
-            assertEquals("ambassador-guild-ally-add-force-1", choice.getId());
+            assertEquals("ambassador-guild-add-force-1", choice.getId());
             assertEquals("+1", choice.getLabel());
             assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(1);
-            assertEquals("ambassador-guild-ally-add-special-force-1", choice.getId());
+            assertEquals("ambassador-guild-add-special-force-1", choice.getId());
             assertEquals("+1 *", choice.getLabel());
             assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(2);
-            assertEquals("ambassador-guild-ally-add-force-2", choice.getId());
+            assertEquals("ambassador-guild-add-force-2", choice.getId());
             assertEquals("+2", choice.getLabel());
             assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(3);
-            assertEquals("ambassador-guild-ally-add-special-force-2", choice.getId());
+            assertEquals("ambassador-guild-add-special-force-2", choice.getId());
             assertEquals("+2 *", choice.getLabel());
             assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(4);
-            assertEquals("ambassador-guild-ally-add-force-3", choice.getId());
+            assertEquals("ambassador-guild-add-force-3", choice.getId());
             assertEquals("+3", choice.getLabel());
             assertEquals(Emojis.IX_SUBOID, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(5);
-            assertEquals("ambassador-guild-ally-add-special-force-3", choice.getId());
+            assertEquals("ambassador-guild-add-special-force-3", choice.getId());
             assertEquals("+3 *", choice.getLabel());
             assertEquals(Emojis.IX_CYBORG, choice.getEmoji());
             choice = ixChat.getChoices().getLast().get(6);
-            assertEquals("ambassador-guild-ally-execute", choice.getId());
+            assertEquals("ambassador-guild-execute", choice.getId());
             assertEquals("Confirm Shipment", choice.getLabel());
             choice = ixChat.getChoices().getLast().get(7);
-            assertEquals("ambassador-guild-ally-reset-forces", choice.getId());
+            assertEquals("ambassador-guild-reset-forces", choice.getId());
             assertEquals("Reset forces", choice.getLabel());
             choice = ixChat.getChoices().getLast().getLast();
-            assertEquals("ambassador-guild-ally-start-over", choice.getId());
+            assertEquals("ambassador-guild-start-over", choice.getId());
             assertEquals("Start over", choice.getLabel());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2265,7 +2037,7 @@ public class MovementTest extends DuneTest {
             movement.setForce(1);
             movement.addRegularForces(1);
             assertEquals(2, movement.getForce());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2277,7 +2049,7 @@ public class MovementTest extends DuneTest {
             // TODO: Should throw since Ecaz does not have special forces
 //            assertThrows(InvalidGameStateException.class, () -> movement.addSpecialForces(1));
             assertEquals(3, movement.getSpecialForce());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test
@@ -2287,7 +2059,7 @@ public class MovementTest extends DuneTest {
             movement.resetForces();
             assertEquals("Carthag", movement.getMovingTo());
             assertEquals(0, movement.getForce());
-            assertEquals(MoveType.GUILD_AMBASSADOR_FOR_ALLY, movement.getMoveType());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
         }
 
         @Test

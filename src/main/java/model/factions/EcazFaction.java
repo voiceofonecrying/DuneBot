@@ -185,22 +185,15 @@ public class EcazFaction extends Faction {
         Faction faction = this;
         if (forAlly)
             faction = game.getFaction(ally);
-        if (forAlly)
-            faction.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR_FOR_ALLY);
-        else
-            movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+        faction.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
         faction.getMovement().presentMoveFromChoices();
-//        String choicePrefix = "ambassador-fremen-" + (forAlly ? "ally-" : "");
-//        List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.hasForce("Ecaz")).map(Territory::getTerritoryName).map(t -> new DuneChoice("ecaz-fremen-move-from-" + t, t)).collect(Collectors.toList());
-//        choices.add(new DuneChoice("danger", choicePrefix + "pass", "Decline ride"));
-//        faction.getChat().reply("Where would you like to ride from?", choices);
     }
 
     public void presentGuildAmbassadorDestinationChoices(boolean forAlly) {
         Faction faction = this;
         if (forAlly)
             faction = game.getFaction(ally);
-        String choicePrefix = "ambassador-guild-" + (forAlly ? "ally-" : "");
+        String choicePrefix = "ambassador-guild-";
         if (getReservesStrength() == 0)
             faction.getChat().reply("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
         else {
@@ -218,7 +211,7 @@ public class EcazFaction extends Faction {
                 forceEmojis = faction.getForceEmoji() + " " + faction.getSpecialForceEmoji();
             faction.getChat().reply("Where would you like to place up to 4 " + forceEmojis + " from reserves?", choices);
             if (forAlly)
-                faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR_FOR_ALLY);
+                faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
             else
                 movement.setMoveType(MoveType.GUILD_AMBASSADOR);
         }

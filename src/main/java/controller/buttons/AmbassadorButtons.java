@@ -17,9 +17,7 @@ public class AmbassadorButtons {
         if (event.getComponentId().startsWith("ambassador-trigger-ally-")) triggerAmbassadorForAlly(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-trigger-")) triggerAmbassador(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-dont-trigger-")) dontTriggerAmbassador(event, discordGame);
-        else if (event.getComponentId().startsWith("ambassador-fremen-ally-")) handleFremenAmbassadorForAllyButtons(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-fremen-")) handleFremenAmbassadorButtons(event, discordGame);
-        else if (event.getComponentId().startsWith("ambassador-guild-ally-")) handleGuildAmbassadorForAllyButtons(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-guild-")) handleGuildAmbassadorButtons(event, discordGame);
     }
 
@@ -49,18 +47,8 @@ public class AmbassadorButtons {
         discordGame.queueDeleteMessage();
     }
 
-    private static void handleFremenAmbassadorForAllyButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        String action = event.getComponentId().replace("ambassador-fremen-ally-", "");
-        MovementButtonActions.handleMovementAction(event, discordGame, action);
-    }
-
     private static void handleFremenAmbassadorButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("ambassador-fremen-", "");
-        MovementButtonActions.handleMovementAction(event, discordGame, action);
-    }
-
-    private static void handleGuildAmbassadorForAllyButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        String action = event.getComponentId().replace("ambassador-guild-ally-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
     }
 
