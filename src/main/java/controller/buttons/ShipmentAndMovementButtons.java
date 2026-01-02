@@ -408,7 +408,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             boolean fremenRide = event.getComponentId().contains("-fremen-ride");
             boolean shaiHuludPlacement = event.getComponentId().contains("-place-shai-hulud");
             boolean greatMakerPlacement = event.getComponentId().contains("-place-great-maker");
-            boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
             boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
             boolean startingForces = event.getComponentId().contains("-starting-forces");
             boolean hmsPlacement = event.getComponentId().contains("-hms-placement");
