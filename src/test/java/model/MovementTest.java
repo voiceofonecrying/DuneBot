@@ -515,7 +515,7 @@ public class MovementTest extends DuneTest {
             movement.setSpecialForce(1);
             movement.setMovingFrom("Funeral Plain");
             movement.presentForcesChoices();
-            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.FREMEN_TROOP + " 1 " + Emojis.FREMEN_FEDAYKIN + "** to Carthag", fremenChat.getMessages().getLast());
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.FREMEN_TROOP + " 1 " + Emojis.FREMEN_FEDAYKIN + " ** to Carthag", fremenChat.getMessages().getLast());
             assertEquals(6, fremenChat.getChoices().getLast().size());
             DuneChoice choice = fremenChat.getChoices().getLast().getFirst();
             assertEquals("fremen-ride-add-force-1", choice.getId());
@@ -992,7 +992,6 @@ public class MovementTest extends DuneTest {
             movement.setForce(1);
             movement.setSpecialForce(0);
             movement.presentForcesChoices();
-            // TODO: Fix the extra space at end of forcesStringWithZeroes
             assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**1 " + Emojis.ECAZ_TROOP + " ** to Carthag", ecazChat.getMessages().getLast());
             assertEquals(8, ecazChat.getChoices().getLast().size());
             DuneChoice choice = ecazChat.getChoices().getLast().getFirst();
@@ -1262,7 +1261,7 @@ public class MovementTest extends DuneTest {
             boolean stateChanged = movement.processTerritory("Carthag");
             assertTrue(stateChanged);
             assertEquals("Carthag", movement.getMovingTo());
-            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + " ** to Carthag", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
@@ -1323,7 +1322,7 @@ public class MovementTest extends DuneTest {
             movement.setMovingFrom("Hidden Mobile Stronghold");
             movement.processSector("Cielago South (West Sector)");
             assertEquals("Cielago South (West Sector)", movement.getMovingTo());
-            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Cielago South (West Sector)", ixChat.getMessages().getLast());
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + " ** to Cielago South (West Sector)", ixChat.getMessages().getLast());
             assertEquals(7, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
@@ -1355,8 +1354,7 @@ public class MovementTest extends DuneTest {
             movement.setForce(1);
             movement.setSpecialForce(0);
             movement.presentForcesChoices();
-            // TODO: Fix the extra space at end of forcesStringWithZeroes
-            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**1 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
+            assertEquals("Use buttons below to add forces to your ride. Currently moving:\n**1 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + " ** to Carthag", ixChat.getMessages().getLast());
             assertEquals(8, ixChat.getChoices().getLast().size());
             DuneChoice choice = ixChat.getChoices().getLast().getFirst();
             assertEquals("ambassador-fremen-add-force-1", choice.getId());
@@ -1670,7 +1668,6 @@ public class MovementTest extends DuneTest {
             movement.setForce(1);
             movement.setSpecialForce(0);
             movement.presentForcesChoices();
-            // TODO: Fix the extra space at end of forcesStringWithZeroes
             assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**1 " + Emojis.ECAZ_TROOP + " ** to Carthag", ecazChat.getMessages().getLast());
             assertEquals(6, ecazChat.getChoices().getLast().size());
             DuneChoice choice = ecazChat.getChoices().getLast().getFirst();
@@ -1892,7 +1889,7 @@ public class MovementTest extends DuneTest {
             boolean stateChanged = movement.processTerritory("Carthag");
             assertTrue(stateChanged);
             assertEquals("Carthag", movement.getMovingTo());
-            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
+            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + " ** to Carthag", ixChat.getMessages().getLast());
             assertEquals(9, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
@@ -1958,7 +1955,7 @@ public class MovementTest extends DuneTest {
         void testProcessSector() {
             movement.processSector("Cielago South (West Sector)");
             assertEquals("Cielago South (West Sector)", movement.getMovingTo());
-            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Cielago South (West Sector)", ixChat.getMessages().getLast());
+            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**0 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + " ** to Cielago South (West Sector)", ixChat.getMessages().getLast());
             assertEquals(9, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-add-force-1", ixChat.getChoices().getLast().getFirst().getId());
             assertEquals("+1", ixChat.getChoices().getLast().getFirst().getLabel());
@@ -1995,7 +1992,7 @@ public class MovementTest extends DuneTest {
             movement.setForce(1);
             movement.setSpecialForce(0);
             movement.presentForcesChoices();
-            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**1 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + "** to Carthag", ixChat.getMessages().getLast());
+            assertEquals("Use buttons below to add forces to your shipment. Currently shipping:\n**1 " + Emojis.IX_SUBOID + " 0 " + Emojis.IX_CYBORG + " ** to Carthag", ixChat.getMessages().getLast());
             assertEquals(9, ixChat.getChoices().getLast().size());
             DuneChoice choice = ixChat.getChoices().getLast().getFirst();
             assertEquals("ambassador-guild-add-force-1", choice.getId());

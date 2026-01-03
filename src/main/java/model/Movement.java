@@ -379,7 +379,7 @@ public class Movement {
             message += "shipment. Currently shipping:";
         else
             message += "movement. Currently moving:";
-        message += "\n**" + faction.forcesStringWithZeroes(force, specialForce) + "** to " + movingTo;
+        message += "\n**" + faction.forcesStringWithZeroes(force, specialForce) + " ** to " + movingTo;
         if (force != 0 || specialForce != 0) {
             String executeLabel = "Confirm Movement";
             if (guildAmbassador)
