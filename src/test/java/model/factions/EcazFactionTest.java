@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class EcazFactionTest extends FactionTestTemplate {
     private EcazFaction faction;
+    Territory carthag;
 
     @Override
     Faction getFaction() {
@@ -26,6 +27,7 @@ public class EcazFactionTest extends FactionTestTemplate {
     void setUp() throws IOException {
         faction = new EcazFaction("player", "player");
         commonPostInstantiationSetUp();
+        carthag = game.getTerritory("Carthag");
     }
 
     @Test
@@ -239,7 +241,6 @@ public class EcazFactionTest extends FactionTestTemplate {
     class CheckForAmbassadorTrigger {
         AtreidesFaction atreides;
         BGFaction bg;
-        Territory carthag;
         TestTopic turnSummary;
 
         @BeforeEach
@@ -249,7 +250,6 @@ public class EcazFactionTest extends FactionTestTemplate {
             atreides = new AtreidesFaction("p", "u");
             atreides.setLedger(new TestTopic());
             bg = new BGFaction("p", "u");
-            carthag = game.getTerritory("Carthag");
             carthag.setEcazAmbassador("BG");
         }
 
@@ -289,13 +289,10 @@ public class EcazFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("#returnAmbassadorToSupply")
     class ReturnAmbassadorToSupply {
-        Territory carthag;
-
         @BeforeEach
         void setUp() throws IOException {
             turnSummary = new TestTopic();
             game.setTurnSummary(turnSummary);
-            carthag = game.getTerritory("Carthag");
             carthag.setEcazAmbassador("BG");
             faction.returnAmbassadorToSuppy(carthag, "BG");
         }
@@ -404,7 +401,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
 //            assertEquals("Which Ambassador effect would you like to trigger?", allyChat.getMessages().getFirst());
 //            assertEquals(5, allyChat.getChoices().getFirst().size());
-////            assertEquals("", String.join(", ",chat.getChoices().getFirst().stream().map(DuneChoice::getLabel).toList()));
+// //            assertEquals("", String.join(", ",chat.getChoices().getFirst().stream().map(DuneChoice::getLabel).toList()));
         }
 
         @Test
@@ -900,6 +897,33 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.discardWithCHOAMAmbassador("None");
             assertEquals("You are finished discarding with your " + Emojis.CHOAM + " Ambassador.", chat.getMessages().getFirst());
             assertTrue(chat.getChoices().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentGuildAmbassadorDestinationChoices")
+    class PresentGuildAmbassadorDestinationChoices {
+        @Test
+        void testEcazHasNoForcedInReserves() {
+            faction.placeForcesFromReserves(carthag, 14, false);
+            faction.presentGuildAmbassadorDestinationChoices(false);
+            assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.", chat.getMessages().getLast());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+
+        @Test
+        void testAllyHasNoForcedInReserves() throws IOException {
+            IxFaction ix = new IxFaction("ix", "ix");
+            game.addFaction(ix);
+            TestTopic ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            ix.setLedger(new TestTopic());
+            game.createAlliance(faction, ix);
+            ix.placeForcesFromReserves(carthag, 10, false);
+            ix.placeForcesFromReserves(carthag, 4, true);
+            faction.presentGuildAmbassadorDestinationChoices(true);
+            assertEquals("You have no " + Emojis.IX_SUBOID + " " + Emojis.IX_CYBORG + " in reserves to place with the Guild Ambassador.", ixChat.getMessages().getLast());
+            assertTrue(ixChat.getChoices().isEmpty());
         }
     }
 

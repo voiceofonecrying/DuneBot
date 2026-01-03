@@ -194,8 +194,13 @@ public class EcazFaction extends Faction {
         if (forAlly)
             faction = game.getFaction(ally);
         String choicePrefix = "ambassador-guild-";
-        if (getReservesStrength() == 0)
-            faction.getChat().reply("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.");
+
+        String forceEmojis = faction.getForceEmoji();
+        if (faction.hasSpecialForces())
+            forceEmojis += " " + faction.getSpecialForceEmoji();
+
+        if (faction.getTotalReservesStrength() == 0)
+            faction.getChat().reply("You have no " + forceEmojis + " in reserves to place with the Guild Ambassador.");
         else {
             List<DuneChoice> choices = new LinkedList<>();
             choices.add(new DuneChoice(choicePrefix + "stronghold", "Stronghold"));
@@ -206,14 +211,8 @@ public class EcazFaction extends Faction {
                 choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
             choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
             choices.add(new DuneChoice("danger", choicePrefix + "pass", "Pass shipment"));
-            String forceEmojis = faction.getForceEmoji();
-            if (forAlly && (faction instanceof EmperorFaction || faction instanceof FremenFaction || faction instanceof IxFaction))
-                forceEmojis += " " + faction.getSpecialForceEmoji();
             faction.getChat().reply("Where would you like to place up to 4 " + forceEmojis + " from reserves? " + faction.getPlayer(), choices);
-            if (forAlly)
-                faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            else
-                movement.setMoveType(MoveType.GUILD_AMBASSADOR);
+            faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
         }
     }
 

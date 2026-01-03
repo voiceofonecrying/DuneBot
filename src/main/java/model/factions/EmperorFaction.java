@@ -57,6 +57,11 @@ public class EmperorFaction extends Faction {
     }
 
     @Override
+    public boolean hasSpecialForces() {
+        return true;
+    }
+
+    @Override
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
         return numForces + " " + forceEmoji + " " + numSpecialForces + " " + specialForceEmoji;
     }

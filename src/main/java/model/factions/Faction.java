@@ -415,6 +415,10 @@ public class Faction {
         return forcesString;
     }
 
+    public boolean hasSpecialForces() {
+        return false;
+    }
+
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
         return numForces + " " + forceEmoji;
     }
