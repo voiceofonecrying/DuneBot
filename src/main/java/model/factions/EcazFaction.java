@@ -70,6 +70,7 @@ public class EcazFaction extends Faction {
     }
 
     public void triggerAmbassador(Faction triggeringFaction, String ambassador, boolean forAlly) {
+        chat.reply("You have triggered your " + ambassador + " Ambassador!");
         String triggerMessage = Emojis.ECAZ + " triggers their " + ambassador + " Ambassador against " + triggeringFaction.getEmoji();
         if (forAlly) {
             game.getFaction(ally).getChat().publish(Emojis.ECAZ + " has triggered their " + ambassador + " Ambassador for you!");
@@ -130,7 +131,6 @@ public class EcazFaction extends Faction {
 
         if (nonEcazAmbassadorsCount == 0)
             drawNewSupply();
-        chat.reply("You have triggered your " + ambassador + " Ambassador!");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }

@@ -373,7 +373,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
             faction.triggerAmbassador(harkonnen, "Atreides", false);
             assertEquals(Emojis.ECAZ + " triggers their Atreides Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals(Emojis.HARKONNEN + " hand is:\n\t" + Emojis.TREACHERY + " **Karama** _Special_\n\t" + Emojis.TREACHERY + " **Shield** _Defense - Projectile_", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Atreides Ambassador!", chat.getMessages().getFirst());
+            assertEquals(Emojis.HARKONNEN + " hand is:\n\t" + Emojis.TREACHERY + " **Karama** _Special_\n\t" + Emojis.TREACHERY + " **Shield** _Defense - Projectile_", chat.getMessages().getLast());
         }
 
         @Test
@@ -390,7 +391,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerBGGivesChoicesOfNonSupplyAmbassadors() {
             faction.triggerAmbassador(harkonnen, "BG", false);
             assertEquals(Emojis.ECAZ + " triggers their BG Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("Which Ambassador effect would you like to trigger?", chat.getMessages().getFirst());
+            assertEquals("You have triggered your BG Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Which Ambassador effect would you like to trigger?", chat.getMessages().getLast());
             assertEquals(5, chat.getChoices().getFirst().size());
 //            assertEquals("", String.join(", ",chat.getChoices().getFirst().stream().map(DuneChoice::getLabel).toList()));
         }
@@ -409,7 +411,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerCHOAMGivesDiscardButtons() {
             faction.triggerAmbassador(harkonnen, "CHOAM", false);
             assertEquals(Emojis.ECAZ + " triggers their CHOAM Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getFirst());
+            assertEquals("You have triggered your CHOAM Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getLast());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Done discarding", chat.getChoices().getFirst().getLast().getLabel());
         }
@@ -444,9 +447,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerFremenPresentsTerritoriesToMoveFrom() {
             faction.triggerAmbassador(harkonnen, "Fremen", false);
             assertEquals(Emojis.ECAZ + " triggers their Fremen Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            // TODO: publish the trigger message before the ride message
-            assertEquals("You have triggered your Fremen Ambassador!", chat.getMessages().getLast());
-            assertEquals("Where would you like to ride from? player", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Fremen Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Where would you like to ride from? player", chat.getMessages().getLast());
             assertEquals(2, chat.getChoices().getFirst().size());
             assertEquals("Imperial Basin (Center Sector)", chat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("Decline ride", chat.getChoices().getFirst().getLast().getLabel());
@@ -470,9 +472,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "Guild", false);
             assertTrue(modInfo.getMessages().isEmpty());
             assertEquals(Emojis.ECAZ + " triggers their Guild Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            // TODO: publish the trigger message before the place message
-            assertEquals("You have triggered your Guild Ambassador!", chat.getMessages().getLast());
-            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves? player", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Guild Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves? player", chat.getMessages().getLast());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Stronghold", chat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("ambassador-guild-stronghold", chat.getChoices().getFirst().getFirst().getId());
@@ -499,7 +500,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "Guild", false);
             assertTrue(modInfo.getMessages().isEmpty());
             assertEquals(Emojis.ECAZ + " triggers their Guild Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Guild Ambassador!", chat.getMessages().getFirst());
+            assertEquals("You have no " + Emojis.ECAZ_TROOP + " in reserves to place with the Guild Ambassador.", chat.getMessages().getLast());
         }
 
         @Test
@@ -511,8 +513,8 @@ public class EcazFactionTest extends FactionTestTemplate {
 
             faction.triggerAmbassador(atreides, "Harkonnen", false);
             assertEquals(Emojis.ECAZ + " triggers their Harkonnen Ambassador against " + Emojis.ATREIDES + " !", turnSummary.getMessages().getFirst());
-            assertTrue(chat.getMessages().getFirst().contains(Emojis.ATREIDES + " has "));
-            assertTrue(chat.getMessages().getFirst().contains(" as a Traitor!"));
+            assertTrue(chat.getMessages().getLast().contains(Emojis.ATREIDES + " has "));
+            assertTrue(chat.getMessages().getLast().contains(" as a Traitor!"));
         }
 
         @Test
@@ -537,15 +539,16 @@ public class EcazFactionTest extends FactionTestTemplate {
 
             faction.triggerAmbassador(bt, "Harkonnen", false);
             assertEquals(Emojis.ECAZ + " triggers their Harkonnen Ambassador against " + Emojis.BT + " !", turnSummary.getMessages().getFirst());
-            assertTrue(chat.getMessages().getFirst().contains(Emojis.BT + " has "));
-            assertTrue(chat.getMessages().getFirst().contains(" as a Face Dancer!"));
+            assertTrue(chat.getMessages().getLast().contains(Emojis.BT + " has "));
+            assertTrue(chat.getMessages().getLast().contains(" as a Face Dancer!"));
         }
 
         @Test
         public void testTriggerIxGivesDiscardButtons() {
             faction.triggerAmbassador(harkonnen, "Ix", false);
             assertEquals(Emojis.ECAZ + " triggers their Ix Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Ix Ambassador!", chat.getMessages().getFirst());
+            assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", chat.getMessages().getLast());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Don't discard", chat.getChoices().getFirst().getLast().getLabel());
         }
@@ -566,7 +569,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             turnSummary.clear();
             faction.triggerAmbassador(harkonnen, "Richese", false);
             assertEquals(Emojis.ECAZ + " triggers their Richese Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Richese Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", chat.getMessages().getLast());
             assertEquals(2, chat.getChoices().getFirst().size());
             assertEquals("Yes", chat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("No", chat.getChoices().getFirst().getLast().getLabel());
@@ -593,7 +597,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             turnSummary.clear();
             faction.triggerAmbassador(harkonnen, "Richese", false);
             assertEquals(Emojis.ECAZ + " triggers their Richese Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Richese Ambassador!", chat.getMessages().getFirst());
+            assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -601,7 +606,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testRicheseAmbassadorWhenHandIsFull() {
             faction.triggerAmbassador(harkonnen, "Richese", false);
             assertEquals(Emojis.ECAZ + " triggers their Richese Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your Richese Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -609,7 +615,8 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testBTAmbassadorNoLeadersOrForcesInTanks() {
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
+            assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
             assertEquals(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().get(1));
         }
@@ -629,7 +636,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.removeForces(faction.getHomeworld(), 2, false, true);
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
+            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -638,7 +646,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.removeForces(faction.getHomeworld(), 5, false, true);
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
+            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -648,7 +657,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             turnSummary.clear();
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("Whitmore Bludd was revived with your BT Ambassador.", chat.getMessages().getFirst());
+            assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Whitmore Bludd was revived with your BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -659,7 +669,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             turnSummary.clear();
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("Which leader would you like to revive?", chat.getMessages().getFirst());
+            assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Which leader would you like to revive?", chat.getMessages().getLast());
             assertEquals(2, chat.getChoices().getFirst().size());
         }
 
@@ -671,7 +682,8 @@ public class EcazFactionTest extends FactionTestTemplate {
             turnSummary.clear();
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("Would you like to revive a leader or 4 " + Emojis.ECAZ_TROOP + "?", chat.getMessages().getFirst());
+            assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
+            assertEquals("Would you like to revive a leader or 4 " + Emojis.ECAZ_TROOP + "?", chat.getMessages().getLast());
             assertEquals(2, chat.getChoices().getFirst().size());
         }
 
