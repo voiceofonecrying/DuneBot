@@ -726,8 +726,8 @@ public class MovementTest extends DuneTest {
             game.addFaction(harkonnen);
             carthag.setEcazAmbassador("Fremen");
             ecaz.triggerAmbassador(harkonnen, "Fremen", false);
-            // TODO: publish the trigger message before the place message
-            assertEquals("Where would you like to ride from? ec", ecazChat.getMessages().getFirst());
+            assertEquals("You have triggered your Fremen Ambassador!", ecazChat.getMessages().getFirst());
+            assertEquals("Where would you like to ride from? ec", ecazChat.getMessages().getLast());
             assertEquals(2, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-move-from-Imperial Basin (Center Sector)", ecazChat.getChoices().getLast().getFirst().getId());
             assertEquals("Imperial Basin (Center Sector)", ecazChat.getChoices().getLast().getFirst().getLabel());
@@ -1089,6 +1089,7 @@ public class MovementTest extends DuneTest {
             game.createAlliance(ecaz, ix);
             carthag.setEcazAmbassador("Fremen");
             ecaz.triggerAmbassador(harkonnen, "Fremen", true);
+            assertEquals("You have triggered your Fremen Ambassador!", ecazChat.getMessages().getFirst());
             assertEquals("Where would you like to ride from? ix", ixChat.getMessages().getLast());
             assertEquals(2, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-move-from-Hidden Mobile Stronghold", ixChat.getChoices().getLast().getFirst().getId());
