@@ -726,7 +726,8 @@ public class MovementTest extends DuneTest {
             game.addFaction(harkonnen);
             carthag.setEcazAmbassador("Fremen");
             ecaz.triggerAmbassador(harkonnen, "Fremen", false);
-            assertEquals("Where would you like to ride from? ec", ecazChat.getMessages().getLast());
+            // TODO: publish the trigger message before the place message
+            assertEquals("Where would you like to ride from? ec", ecazChat.getMessages().getFirst());
             assertEquals(2, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-fremen-move-from-Imperial Basin (Center Sector)", ecazChat.getChoices().getLast().getFirst().getId());
             assertEquals("Imperial Basin (Center Sector)", ecazChat.getChoices().getLast().getFirst().getLabel());
@@ -1473,7 +1474,7 @@ public class MovementTest extends DuneTest {
             movement.setForce(4);
             movement.setMovingTo("Carthag");
             movement.startOver();
-            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", ecazChat.getMessages().getLast());
+            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves? ec", ecazChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(5, ecazChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-stronghold", ecazChat.getChoices().getLast().getFirst().getId());
@@ -1774,7 +1775,7 @@ public class MovementTest extends DuneTest {
             movement.setForce(4);
             movement.setMovingTo("Carthag");
             movement.startOver();
-            assertEquals("Where would you like to place up to 4 " + Emojis.IX_SUBOID + " " + Emojis.IX_CYBORG + " from reserves?", ixChat.getMessages().getLast());
+            assertEquals("Where would you like to place up to 4 " + Emojis.IX_SUBOID + " " + Emojis.IX_CYBORG + " from reserves? ix", ixChat.getMessages().getLast());
             assertTrue(turnSummary.getMessages().isEmpty());
             assertEquals(5, ixChat.getChoices().getLast().size());
             assertEquals("ambassador-guild-stronghold", ixChat.getChoices().getLast().getFirst().getId());

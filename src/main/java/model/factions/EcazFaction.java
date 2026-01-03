@@ -70,7 +70,6 @@ public class EcazFaction extends Faction {
     }
 
     public void triggerAmbassador(Faction triggeringFaction, String ambassador, boolean forAlly) {
-        chat.reply("You have triggered your " + ambassador + " Ambassador!");
         String triggerMessage = Emojis.ECAZ + " triggers their " + ambassador + " Ambassador against " + triggeringFaction.getEmoji();
         if (forAlly) {
             game.getFaction(ally).getChat().publish(Emojis.ECAZ + " has triggered their " + ambassador + " Ambassador for you!");
@@ -131,6 +130,7 @@ public class EcazFaction extends Faction {
 
         if (nonEcazAmbassadorsCount == 0)
             drawNewSupply();
+        chat.reply("You have triggered your " + ambassador + " Ambassador!");
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
         game.setUpdated(UpdateType.MAP);
     }
@@ -206,10 +206,10 @@ public class EcazFaction extends Faction {
                 choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
             choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
             choices.add(new DuneChoice("danger", choicePrefix + "pass", "Pass shipment"));
-            String forceEmojis = Emojis.ECAZ_TROOP;
-            if (forAlly)
-                forceEmojis = faction.getForceEmoji() + " " + faction.getSpecialForceEmoji();
-            faction.getChat().reply("Where would you like to place up to 4 " + forceEmojis + " from reserves?", choices);
+            String forceEmojis = faction.getForceEmoji();
+            if (forAlly && (faction instanceof EmperorFaction || faction instanceof FremenFaction || faction instanceof IxFaction))
+                forceEmojis += " " + faction.getSpecialForceEmoji();
+            faction.getChat().reply("Where would you like to place up to 4 " + forceEmojis + " from reserves? " + faction.getPlayer(), choices);
             if (forAlly)
                 faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
             else
