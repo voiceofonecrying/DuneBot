@@ -665,7 +665,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             String noFieldMessage = faction.getShipment().getNoField() >= 0 ? "\n" + faction.getShipment().getNoField() + " " + Emojis.NO_FIELD + "\n": "";
             String currentlyShipping = "Currently ";
             currentlyShipping += isStartingForces ? "placing" : "shipping";
-            currentlyShipping += ":\n**" + faction.forcesStringWithZeroes(faction.getShipment().getForce(), faction.getShipment().getSpecialForce()) + noFieldMessage + "** to " + territory +
+            currentlyShipping += ":\n**" + faction.forcesStringWithZeroes(faction.getShipment().getForce(), faction.getShipment().getSpecialForce()) + " " + noFieldMessage + "** to " + territory +
                     (guildAmbassador || isStartingForces ? "" : " for " + spice + " " + Emojis.SPICE + "\n\nYou have " + faction.getSpice() + " " + Emojis.SPICE + " to spend.");
             String message = "Use buttons below to add forces to your ";
             message += isStartingForces ? "placement. " : "shipment. ";
@@ -733,7 +733,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
             String message = "Use buttons below to add forces to your ";
             message += fremenRide ? "ride." : "movement.";
-            message += " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getForce(), faction.getMovement().getSpecialForce()) + noField + "** to " + faction.getMovement().getMovingTo();
+            message += " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getForce(), faction.getMovement().getSpecialForce()) + " " + noField + "** to " + faction.getMovement().getMovingTo();
             if (movement.isMovingNoField() || movement.getForce() != 0 || movement.getSpecialForce() != 0 || movement.getSecondForce() != 0 || movement.getSecondSpecialForce() != 0) {
                 if (!fremenRide && !enterDiscoveryToken && faction.hasTreacheryCard("Hajr"))
                     forcesButtons.add(Button.secondary("hajr", "Confirm Movement and play Hajr"));
@@ -785,7 +785,7 @@ public class ShipmentAndMovementButtons implements Pressable {
                     }
                     String planetologistMessage = "Second group can move from " + territory.getTerritoryName() + " using Planetologist ability.";
                     planetologistMessage +=
-                            " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getSecondForce(), faction.getMovement().getSecondSpecialForce()) + "** from " + secondMovingFrom + " to " + faction.getMovement().getMovingTo();
+                            " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getSecondForce(), faction.getMovement().getSecondSpecialForce()) + " ** from " + secondMovingFrom + " to " + faction.getMovement().getMovingTo();
                     arrangeButtonsAndSend(planetologistMessage, secondForcesButtons, discordGame);
                 }
             }

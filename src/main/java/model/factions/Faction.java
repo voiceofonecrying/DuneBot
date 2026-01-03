@@ -416,7 +416,7 @@ public class Faction {
     }
 
     public String forcesStringWithZeroes(int numForces, int numSpecialForces) {
-        return numForces + " " + forceEmoji + " ";
+        return numForces + " " + forceEmoji;
     }
 
     public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, boolean karama, boolean crossShip) throws InvalidGameStateException {
