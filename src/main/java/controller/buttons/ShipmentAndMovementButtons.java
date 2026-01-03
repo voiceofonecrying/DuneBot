@@ -408,7 +408,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             boolean fremenRide = event.getComponentId().contains("-fremen-ride");
             boolean shaiHuludPlacement = event.getComponentId().contains("-place-shai-hulud");
             boolean greatMakerPlacement = event.getComponentId().contains("-place-great-maker");
-            boolean guildAmbassador = event.getComponentId().contains("-guild-ambassador");
             boolean btHTPlacement = event.getComponentId().contains("-bt-ht");
             boolean startingForces = event.getComponentId().contains("-starting-forces");
             boolean hmsPlacement = event.getComponentId().contains("-hms-placement");
@@ -418,8 +417,6 @@ public class ShipmentAndMovementButtons implements Pressable {
                 faction.getMovement().clear();
                 if (faction instanceof FremenFaction fremen)
                     fremen.presentWormRideChoices(fromTerritory);
-                else if (faction instanceof EcazFaction ecaz)
-                    ecaz.presentFremenAmbassadorRideFromChoices();
             } else if (shaiHuludPlacement || greatMakerPlacement) {
                 discordGame.queueMessage("Starting over");
                 String fromTerritory = faction.getMovement().getMovingFrom();
@@ -434,10 +431,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             } else {
                 faction.getShipment().clear();
                 faction.getShipment().setShipped(false);
-                if (guildAmbassador) {
-                    discordGame.queueMessage("Starting over");
-                    ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
-                } else if (btHTPlacement) {
+                if (btHTPlacement) {
                     discordGame.queueMessage("Starting over");
                     ((BTFaction) faction).presentHTChoices();
                 } else {

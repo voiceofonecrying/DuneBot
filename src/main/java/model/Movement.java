@@ -187,9 +187,9 @@ public class Movement {
         else if (moveType == MoveType.GREAT_MAKER_PLACEMENT)
             ((FremenFaction) faction).presentWormPlacementChoices(saveMovingFrom, "Great Maker");
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
-            ((EcazFaction) faction).presentFremenAmbassadorRideFromChoices();
+            faction.getGame().getEcazFaction().presentFremenAmbassadorRideFromChoices(!(faction instanceof EcazFaction));
         else if (moveType == MoveType.GUILD_AMBASSADOR)
-            ((EcazFaction) faction).presentGuildAmbassadorDestinationChoices();
+            faction.getGame().getEcazFaction().presentGuildAmbassadorDestinationChoices(!(faction instanceof EcazFaction));
         else if (moveType == MoveType.BT_HT)
             ((BTFaction) faction).presentHTChoices();
         else if (moveType == MoveType.HMS_PLACEMENT)
@@ -284,6 +284,13 @@ public class Movement {
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, shipment, isInitialPlacement)));
         return choice;
+    }
+
+    public void presentMoveFromChoices() {
+        Game game = faction.getGame();
+        List<DuneChoice> choices = game.getTerritories().values().stream().filter(t -> !(t instanceof HomeworldTerritory)).filter(t -> t.getTotalForceCount(faction) > 0).map(Territory::getTerritoryName).map(t -> new DuneChoice(getChoicePrefix() + "move-from-" + t, t)).collect(Collectors.toList());
+        choices.add(new DuneChoice("danger", getChoicePrefix() + "pass", "Decline ride"));
+        faction.getChat().reply("Where would you like to ride from? " + faction.getPlayer(), choices);
     }
 
     /**

@@ -361,6 +361,10 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.addTreacheryCard(new TreacheryCard("Kulon"));
             faction.addTreacheryCard(new TreacheryCard("Cheap Hero"));
             faction.addTreacheryCard(new TreacheryCard("Family Atomics"));
+            choam.addTreacheryCard(new TreacheryCard("Kull Wahad"));
+            choam.addTreacheryCard(new TreacheryCard("Snooper"));
+            choam.addTreacheryCard(new TreacheryCard("Snooper"));
+            choam.addTreacheryCard(new TreacheryCard("Cheap Hero"));
         }
 
         @Test
@@ -424,7 +428,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerEmperorAdds5Spice() {
             faction.triggerAmbassador(harkonnen, "Emperor", false);
             assertEquals(Emojis.ECAZ + " triggers their Emperor Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getFirst());
+            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 17 " + Emojis.SPICE, ledger.getMessages().getLast());
             assertEquals(17, faction.getSpice());
         }
 
@@ -432,16 +436,17 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerEmperorForAlly() {
             faction.triggerAmbassador(harkonnen, "Emperor", true);
             assertEquals(Emojis.ECAZ + " triggers their Emperor Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 7 " + Emojis.SPICE, allyLedger.getMessages().getFirst());
-//            assertEquals(7, choam.getSpice());
+            assertEquals("+5 " + Emojis.SPICE + " " + Emojis.EMPEROR + " Ambassador = 7 " + Emojis.SPICE, allyLedger.getMessages().getLast());
+            assertEquals(7, choam.getSpice());
         }
 
         @Test
         public void testTriggerFremenPresentsTerritoriesToMoveFrom() {
             faction.triggerAmbassador(harkonnen, "Fremen", false);
             assertEquals(Emojis.ECAZ + " triggers their Fremen Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", chat.getMessages().getFirst());
+            // TODO: publish the trigger message before the ride message
+            assertEquals("You have triggered your Fremen Ambassador!", chat.getMessages().getLast());
+            assertEquals("Where would you like to ride from? player", chat.getMessages().getFirst());
             assertEquals(2, chat.getChoices().getFirst().size());
             assertEquals("Imperial Basin (Center Sector)", chat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("Decline ride", chat.getChoices().getFirst().getLast().getLabel());
@@ -449,13 +454,15 @@ public class EcazFactionTest extends FactionTestTemplate {
 
         @Test
         public void testTriggerFremenForAlly() {
+            choam.placeForcesFromReserves(game.getTerritory("The Great Flat"), 5, false);
             faction.triggerAmbassador(harkonnen, "Fremen", true);
             assertEquals(Emojis.ECAZ + " triggers their Fremen Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals("You have triggered your Fremen Ambassador!\nWhere would you like to ride from?", allyChat.getMessages().getFirst());
-//            assertEquals(2, allyChat.getChoices().getFirst().size());
-//            assertEquals("Imperial Basin (Center Sector)", allyChat.getChoices().getFirst().getFirst().getLabel());
-//            assertEquals("Decline ride", allyChat.getChoices().getFirst().getLast().getLabel());
+            assertEquals("You have triggered your Fremen Ambassador!", chat.getMessages().getFirst());
+            assertEquals(Emojis.ECAZ + " has triggered their Fremen Ambassador for you!", allyChat.getMessages().getFirst());
+            assertEquals("Where would you like to ride from? ch", allyChat.getMessages().getLast());
+            assertEquals(2, allyChat.getChoices().getFirst().size());
+            assertEquals("The Great Flat", allyChat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("Decline ride", allyChat.getChoices().getFirst().getLast().getLabel());
         }
 
         @Test
@@ -463,7 +470,9 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "Guild", false);
             assertTrue(modInfo.getMessages().isEmpty());
             assertEquals(Emojis.ECAZ + " triggers their Guild Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
-            assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", chat.getMessages().getFirst());
+            // TODO: publish the trigger message before the place message
+            assertEquals("You have triggered your Guild Ambassador!", chat.getMessages().getLast());
+            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves? player", chat.getMessages().getFirst());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Stronghold", chat.getChoices().getFirst().getFirst().getLabel());
             assertEquals("ambassador-guild-stronghold", chat.getChoices().getFirst().getFirst().getId());
@@ -475,12 +484,13 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "Guild", true);
             assertTrue(modInfo.getMessages().isEmpty());
             assertEquals(Emojis.ECAZ + " triggers their Guild Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals("You have triggered your Guild Ambassador!\nWhere would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves?", chat.getMessages().getFirst());
-//            assertEquals(5, chat.getChoices().getFirst().size());
-//            assertEquals("Stronghold", chat.getChoices().getFirst().getFirst().getLabel());
-//            assertEquals("ambassador-guild-stronghold", chat.getChoices().getFirst().getFirst().getId());
-//            assertEquals("Pass shipment", chat.getChoices().getFirst().getLast().getLabel());
+            assertEquals("You have triggered your Guild Ambassador!", chat.getMessages().getLast());
+            assertEquals(Emojis.ECAZ + " has triggered their Guild Ambassador for you!", allyChat.getMessages().getFirst());
+            assertEquals("Where would you like to place up to 4 " + Emojis.CHOAM_TROOP + " from reserves? ch", allyChat.getMessages().getLast());
+            assertEquals(5, allyChat.getChoices().getFirst().size());
+            assertEquals("Stronghold", allyChat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("ambassador-guild-stronghold", allyChat.getChoices().getFirst().getFirst().getId());
+            assertEquals("Pass shipment", allyChat.getChoices().getFirst().getLast().getLabel());
         }
 
         @Test
