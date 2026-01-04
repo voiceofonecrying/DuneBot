@@ -30,6 +30,7 @@ public class Movement {
     public Movement(Faction faction) {
         this.moveType = MoveType.TBD;
         this.faction = faction;
+        clear();
     }
 
     public void clear() {
@@ -212,10 +213,15 @@ public class Movement {
         if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
             choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
         choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
-        choices.add(new DuneChoice("danger", choicePrefix + "pass", wormRide ? "No ride" : "I don't want to ship."));
+        choices.add(new DuneChoice("danger", choicePrefix + "pass", wormRide ? "No ride" : "Pass shipment"));
         if (wormRide)
             faction.getChat().reply("Where would you like to ride to from " + faction.getMovement().getMovingFrom() + "? " + faction.getPlayer(), choices);
-        else
+        else if (moveType == MoveType.GUILD_AMBASSADOR) {
+            String forceEmojis = faction.getForceEmoji();
+            if (faction.hasSpecialForces())
+                forceEmojis += " " + faction.getSpecialForceEmoji();
+            faction.getChat().reply("Where would you like to place up to 4 " + forceEmojis + " from reserves? " + faction.getPlayer(), choices);
+        } else
             faction.getChat().reply("Where would you like to ship to?", choices);
     }
 

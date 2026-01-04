@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -903,6 +904,66 @@ public class EcazFactionTest extends FactionTestTemplate {
     @Nested
     @DisplayName("#presentGuildAmbassadorDestinationChoices")
     class PresentGuildAmbassadorDestinationChoices {
+        IxFaction ix;
+        TestTopic ixChat;
+        Movement ixMovement;
+        Movement movement;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            ix = new IxFaction("ix", "ix");
+            game.addFaction(ix);
+            ixChat = new TestTopic();
+            ix.setChat(ixChat);
+            ix.setLedger(new TestTopic());
+            ixMovement = ix.getMovement();
+            movement = faction.getMovement();
+            game.createAlliance(faction, ix);
+            turnSummary.clear();
+        }
+
+        @Test
+        void testTerritoryTypeChoicesPresented() {
+            faction.presentGuildAmbassadorDestinationChoices(false);
+            assertEquals("Where would you like to place up to 4 " + Emojis.ECAZ_TROOP + " from reserves? player", chat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(5, chat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-stronghold", chat.getChoices().getLast().getFirst().getId());
+            assertEquals("Stronghold", chat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-guild-spice-blow", chat.getChoices().getLast().get(1).getId());
+            assertEquals("Spice Blow Territories", chat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-guild-rock", chat.getChoices().getLast().get(2).getId());
+            assertEquals("Rock Territories", chat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-guild-other", chat.getChoices().getLast().get(3).getId());
+            assertEquals("Somewhere else", chat.getChoices().getLast().get(3).getLabel());
+            assertEquals("ambassador-guild-pass", chat.getChoices().getLast().getLast().getId());
+            assertEquals("Pass shipment", chat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testTerritoryTypeChoicesPresentedToAlly() {
+            faction.presentGuildAmbassadorDestinationChoices(true);
+            assertEquals("Where would you like to place up to 4 " + Emojis.IX_SUBOID + " " + Emojis.IX_CYBORG + " from reserves? ix", ixChat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(5, ixChat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-stronghold", ixChat.getChoices().getLast().getFirst().getId());
+            assertEquals("Stronghold", ixChat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-guild-spice-blow", ixChat.getChoices().getLast().get(1).getId());
+            assertEquals("Spice Blow Territories", ixChat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-guild-rock", ixChat.getChoices().getLast().get(2).getId());
+            assertEquals("Rock Territories", ixChat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-guild-other", ixChat.getChoices().getLast().get(3).getId());
+            assertEquals("Somewhere else", ixChat.getChoices().getLast().get(3).getLabel());
+            assertEquals("ambassador-guild-pass", ixChat.getChoices().getLast().getLast().getId());
+            assertEquals("Pass shipment", ixChat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, ixMovement.getMoveType());
+            assertTrue(ixMovement.getMovingTo().isEmpty());
+            assertEquals(0, ixMovement.getForce());
+        }
+
         @Test
         void testEcazHasNoForcedInReserves() {
             faction.placeForcesFromReserves(carthag, 14, false);
@@ -912,13 +973,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testAllyHasNoForcedInReserves() throws IOException {
-            IxFaction ix = new IxFaction("ix", "ix");
-            game.addFaction(ix);
-            TestTopic ixChat = new TestTopic();
-            ix.setChat(ixChat);
-            ix.setLedger(new TestTopic());
-            game.createAlliance(faction, ix);
+        void testAllyHasNoForcedInReserves() {
             ix.placeForcesFromReserves(carthag, 10, false);
             ix.placeForcesFromReserves(carthag, 4, true);
             faction.presentGuildAmbassadorDestinationChoices(true);
