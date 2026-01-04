@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import enums.GameOption;
 import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
@@ -190,29 +189,15 @@ public class EcazFaction extends Faction {
     }
 
     public void presentGuildAmbassadorDestinationChoices(boolean forAlly) {
-        Faction faction = this;
-        if (forAlly)
-            faction = game.getFaction(ally);
-        String choicePrefix = "ambassador-guild-";
-
-        String forceEmojis = faction.getForceEmoji();
-        if (faction.hasSpecialForces())
-            forceEmojis += " " + faction.getSpecialForceEmoji();
-
-        if (faction.getTotalReservesStrength() == 0)
+        Faction faction = forAlly ? game.getFaction(ally) : this;
+        if (faction.getTotalReservesStrength() == 0) {
+            String forceEmojis = faction.getForceEmoji();
+            if (faction.hasSpecialForces())
+                forceEmojis += " " + faction.getSpecialForceEmoji();
             faction.getChat().reply("You have no " + forceEmojis + " in reserves to place with the Guild Ambassador.");
-        else {
-            List<DuneChoice> choices = new LinkedList<>();
-            choices.add(new DuneChoice(choicePrefix + "stronghold", "Stronghold"));
-            choices.add(new DuneChoice(choicePrefix + "spice-blow", "Spice Blow Territories"));
-            choices.add(new DuneChoice(choicePrefix + "rock", "Rock Territories"));
-            boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
-            if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-                choices.add(new DuneChoice(choicePrefix + "discovery-tokens", "Discovery Tokens"));
-            choices.add(new DuneChoice(choicePrefix + "other", "Somewhere else"));
-            choices.add(new DuneChoice("danger", choicePrefix + "pass", "Pass shipment"));
-            faction.getChat().reply("Where would you like to place up to 4 " + forceEmojis + " from reserves? " + faction.getPlayer(), choices);
+        } else {
             faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
+            faction.getMovement().presentTerritoryTypeChoices();
         }
     }
 
