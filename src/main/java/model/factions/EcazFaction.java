@@ -240,9 +240,10 @@ public class EcazFaction extends Faction {
     }
 
     public void presentBTAmbassadorChoices() {
-        List<Leader> ecazLeadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getName().equals("Sanya Ecaz") || l.getName().equals("Whitmore Bludd") || l.getName().equals("Ilesa Ecaz") || l.getName().equals("Rivvy Dinari") || l.getName().equals("Bindikk Narvi") || l.getName().equals("Duke Vidal")).toList();
+        Faction faction = this;
+        List<Leader> leadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getOriginalFactionName().equals(faction.getName())).toList();
         if (getRevivableForces() == 0) {
-            if (ecazLeadersInTanks.isEmpty()) {
+            if (leadersInTanks.isEmpty()) {
                 chat.publish("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.");
                 game.getTurnSummary().publish(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.");
             } else {
@@ -250,7 +251,7 @@ public class EcazFaction extends Faction {
             }
         } else {
             int numForces = Math.min(getRevivableForces(), 4);
-            if (ecazLeadersInTanks.isEmpty()) {
+            if (leadersInTanks.isEmpty()) {
                 reviveForcesWithBTAmbassador();
             } else {
                 List<DuneChoice> choices = new ArrayList<>();
@@ -268,12 +269,13 @@ public class EcazFaction extends Faction {
     }
 
     public void presentLeaderChoicesWithBTAmbassador() {
-        List<Leader> ecazLeadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getName().equals("Sanya Ecaz") || l.getName().equals("Whitmore Bludd") || l.getName().equals("Ilesa Ecaz") || l.getName().equals("Rivvy Dinari") || l.getName().equals("Bindikk Narvi") || l.getName().equals("Duke Vidal")).toList();
-        if (ecazLeadersInTanks.size() == 1) {
-            reviveLeaderWithBTAmbassador(ecazLeadersInTanks.getFirst().getName());
+        Faction faction = this;
+        List<Leader> leadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getOriginalFactionName().equals(faction.getName())).toList();
+        if (leadersInTanks.size() == 1) {
+            reviveLeaderWithBTAmbassador(leadersInTanks.getFirst().getName());
         } else {
             List<DuneChoice> choices = new ArrayList<>();
-            ecazLeadersInTanks.forEach(l -> choices.add(new DuneChoice("ecaz-bt-leader-" + l.getName(), l.getName())));
+            leadersInTanks.forEach(l -> choices.add(new DuneChoice("ecaz-bt-leader-" + l.getName(), l.getName())));
             chat.reply("Which leader would you like to revive?", choices);
         }
     }
