@@ -4,6 +4,7 @@ import constants.Colors;
 import constants.Emojis;
 import enums.ChoamInflationType;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import helpers.Exclude;
@@ -175,6 +176,10 @@ public class Faction {
 
     public String getSpecialForceEmoji() {
         return specialForceEmoji;
+    }
+
+    public String getForceEmojis() {
+        return forceEmoji + (specialForceEmoji != null ? " " + specialForceEmoji : "");
     }
 
     public Color getColor() {
@@ -1507,6 +1512,20 @@ public class Faction {
                 game.removeForces(t.getTerritoryName(), this, regularToWithdrawNow, starredToWithdrawNow, false);
                 game.getTurnSummary().publish(forcesString(regularToWithdrawNow, starredToWithdrawNow) + " returned to reserves with " + reason + ".");
             }
+        }
+    }
+
+    public void presentFremenAmbassadorRideFromChoices() {
+        movement.setMoveType(MoveType.FREMEN_AMBASSADOR);
+        movement.presentMoveFromChoices();
+    }
+
+    public void presentGuildAmbassadorDestinationChoices() {
+        if (getTotalReservesStrength() == 0) {
+            chat.reply("You have no " + getForceEmojis() + " in reserves to place with the Guild Ambassador.");
+        } else {
+            movement.setMoveType(MoveType.GUILD_AMBASSADOR);
+            movement.presentTerritoryTypeChoices();
         }
     }
 

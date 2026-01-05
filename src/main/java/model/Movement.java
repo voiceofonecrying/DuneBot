@@ -188,9 +188,9 @@ public class Movement {
         else if (moveType == MoveType.GREAT_MAKER_PLACEMENT)
             ((FremenFaction) faction).presentWormPlacementChoices(saveMovingFrom, "Great Maker");
         else if (moveType == MoveType.FREMEN_AMBASSADOR)
-            faction.getGame().getEcazFaction().presentFremenAmbassadorRideFromChoices(!(faction instanceof EcazFaction));
+            faction.presentFremenAmbassadorRideFromChoices();
         else if (moveType == MoveType.GUILD_AMBASSADOR)
-            faction.getGame().getEcazFaction().presentGuildAmbassadorDestinationChoices(!(faction instanceof EcazFaction));
+            faction.presentGuildAmbassadorDestinationChoices();
         else if (moveType == MoveType.BT_HT)
             ((BTFaction) faction).presentHTChoices();
         else if (moveType == MoveType.HMS_PLACEMENT)
