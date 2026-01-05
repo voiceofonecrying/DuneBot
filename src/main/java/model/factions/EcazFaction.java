@@ -1,7 +1,6 @@
 package model.factions;
 
 import constants.Emojis;
-import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -71,8 +70,10 @@ public class EcazFaction extends Faction {
     public void triggerAmbassador(Faction triggeringFaction, String ambassador, boolean forAlly) {
         chat.reply("You have triggered your " + ambassador + " Ambassador!");
         String triggerMessage = Emojis.ECAZ + " triggers their " + ambassador + " Ambassador against " + triggeringFaction.getEmoji();
+        Faction faction = this;
         if (forAlly) {
-            game.getFaction(ally).getChat().publish(Emojis.ECAZ + " has triggered their " + ambassador + " Ambassador for you!");
+            faction = game.getFaction(ally);
+            faction.getChat().publish(Emojis.ECAZ + " has triggered their " + ambassador + " Ambassador for you!");
             game.getTurnSummary().publish(triggerMessage + " for their ally!");
         } else
             game.getTurnSummary().publish(triggerMessage + " !");
@@ -103,8 +104,8 @@ public class EcazFaction extends Faction {
                         ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
                 case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
                 case "Emperor" -> triggerEmperorAmbassador(forAlly);
-                case "Fremen" -> presentFremenAmbassadorRideFromChoices(forAlly);
-                case "Guild" -> presentGuildAmbassadorDestinationChoices(forAlly);
+                case "Fremen" -> faction.presentFremenAmbassadorRideFromChoices();
+                case "Guild" -> faction.presentGuildAmbassadorDestinationChoices();
                 case "Harkonnen" ->
                         chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
                 case "Ix" -> presentIxAmbassadorDiscardChoices();
@@ -177,27 +178,6 @@ public class EcazFaction extends Faction {
             addSpice(3, "discard " + cardName + " with CHOAM Ambassador.");
             chat.reply("You discarded " + cardName + " for 3 " + Emojis.SPICE);
             presentCHOAMAmbassadorDiscardChoices();
-        }
-    }
-
-    public void presentFremenAmbassadorRideFromChoices(boolean forAlly) {
-        Faction faction = this;
-        if (forAlly)
-            faction = game.getFaction(ally);
-        faction.getMovement().setMoveType(MoveType.FREMEN_AMBASSADOR);
-        faction.getMovement().presentMoveFromChoices();
-    }
-
-    public void presentGuildAmbassadorDestinationChoices(boolean forAlly) {
-        Faction faction = forAlly ? game.getFaction(ally) : this;
-        if (faction.getTotalReservesStrength() == 0) {
-            String forceEmojis = faction.getForceEmoji();
-            if (faction.hasSpecialForces())
-                forceEmojis += " " + faction.getSpecialForceEmoji();
-            faction.getChat().reply("You have no " + forceEmojis + " in reserves to place with the Guild Ambassador.");
-        } else {
-            faction.getMovement().setMoveType(MoveType.GUILD_AMBASSADOR);
-            faction.getMovement().presentTerritoryTypeChoices();
         }
     }
 

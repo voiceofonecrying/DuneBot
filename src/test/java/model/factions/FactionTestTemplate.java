@@ -2,6 +2,7 @@ package model.factions;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
 import model.*;
@@ -22,6 +23,7 @@ abstract class FactionTestTemplate {
     Faction faction;
     TestTopic chat;
     TestTopic ledger;
+    Territory arrakeen;
 
     abstract Faction getFaction();
 
@@ -34,6 +36,7 @@ abstract class FactionTestTemplate {
         game.setGameActions(gameActions);
         chat = new TestTopic();
         ledger = new TestTopic();
+        arrakeen = game.getTerritory("Arrakeen");
     }
 
     void commonPostInstantiationSetUp() {
@@ -1295,12 +1298,53 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#presentGuildAmbassadorDestinationChoices")
+    class PresentGuildAmbassadorDestinationChoices {
+        Movement movement;
+
+        @BeforeEach
+        void setUp() throws IOException {
+            movement = faction.getMovement();
+            turnSummary.clear();
+        }
+
+        @Test
+        void testTerritoryTypeChoicesPresented() {
+            faction.presentGuildAmbassadorDestinationChoices();
+            assertEquals("Where would you like to place up to 4 " + faction.getForceEmojis() + " from reserves? player", chat.getMessages().getLast());
+            assertTrue(turnSummary.getMessages().isEmpty());
+            assertEquals(5, chat.getChoices().getLast().size());
+            assertEquals("ambassador-guild-stronghold", chat.getChoices().getLast().getFirst().getId());
+            assertEquals("Stronghold", chat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-guild-spice-blow", chat.getChoices().getLast().get(1).getId());
+            assertEquals("Spice Blow Territories", chat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-guild-rock", chat.getChoices().getLast().get(2).getId());
+            assertEquals("Rock Territories", chat.getChoices().getLast().get(2).getLabel());
+            assertEquals("ambassador-guild-other", chat.getChoices().getLast().get(3).getId());
+            assertEquals("Somewhere else", chat.getChoices().getLast().get(3).getLabel());
+            assertEquals("ambassador-guild-pass", chat.getChoices().getLast().getLast().getId());
+            assertEquals("Pass shipment", chat.getChoices().getLast().getLast().getLabel());
+            assertEquals(MoveType.GUILD_AMBASSADOR, movement.getMoveType());
+            assertTrue(movement.getMovingTo().isEmpty());
+            assertEquals(0, movement.getForce());
+        }
+
+        @Test
+        void testNoForcedInReserves() {
+            faction.placeForcesFromReserves(arrakeen, faction.getReservesStrength(), false);
+            faction.placeForcesFromReserves(arrakeen, faction.getSpecialReservesStrength(), true);
+            faction.presentGuildAmbassadorDestinationChoices();
+            assertEquals("You have no " + faction.getForceEmojis() + " in reserves to place with the Guild Ambassador.", chat.getMessages().getLast());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+    }
+
+    @Nested
     @DisplayName("#moritaniTerrorAlliance")
     class MoritaniTerrorAlliance {
         Faction faction;
         MoritaniFaction moritani;
         TestTopic moritaniChat;
-        Territory arrakeen;
 
         @BeforeEach
         public void setUp() throws InvalidGameStateException, IOException {
@@ -1310,7 +1354,6 @@ abstract class FactionTestTemplate {
             moritaniChat = new TestTopic();
             moritani.setChat(moritaniChat);
             moritani.setLedger(new TestTopic());
-            arrakeen = game.getTerritory("Arrakeen");
             game.getMoritaniFaction().placeTerrorToken(arrakeen, "Robbery");
         }
 
