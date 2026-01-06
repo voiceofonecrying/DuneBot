@@ -302,7 +302,6 @@ class EmperorFactionTest extends FactionTestTemplate {
     public void testEmperorCanPayForOneSardaukar() throws InvalidGameStateException {
         faction.removeForces(faction.getHomeworld(), 1, false, true);
         faction.removeForces(faction.getSecondHomeworld(), 1, true, true);
-        faction.setStarRevived(false);
         faction.presentPaidRevivalChoices(1);
         assertEquals("Would you like to purchase additional revivals including 1 " + Emojis.EMPEROR_SARDAUKAR + "? " + faction.getPlayer(), chat.getMessages().getFirst());
         assertEquals(2, faction.getRevivableForces());
@@ -326,14 +325,14 @@ class EmperorFactionTest extends FactionTestTemplate {
         @Test
         public void testSardaukarInTanksCannotBeRevived() {
             faction.removeForces("Salusa Secundus", 1, true, true);
-            faction.setStarRevived(true);
+            faction.performFreeRevivals();
+            faction.removeForces("Salusa Secundus", 1, true, true);
             assertThrows(IllegalArgumentException.class, () -> faction.reviveForces(true, 1));
         }
 
         @Test
         public void testSardaukarInTanksCanBeRevived() {
             faction.removeForces("Salusa Secundus", 1, true, true);
-            faction.setStarRevived(false);
             faction.reviveForces(true, 1);
             assertEquals(Emojis.EMPEROR + " revives 1 " + Emojis.EMPEROR_SARDAUKAR + " for 2 " + Emojis.SPICE, turnSummary.getMessages().getLast());
         }
@@ -548,6 +547,22 @@ class EmperorFactionTest extends FactionTestTemplate {
         void testNormalPaymentWithGuildInGame() throws InvalidGameStateException {
             assertEquals(" for 1 " + Emojis.SPICE, faction.payForShipment(1, habbanyaSietch, false, false));
             assertEquals(spiceBeforeShipment - 1, faction.getSpice());
+        }
+    }
+
+    @Nested
+    @DisplayName("#reviveForcesWithBTAmbassador")
+    class reviveForcesWithBTAmbassador extends FactionTestTemplate.reviveForcesWithBTAmbassador {
+        @Test
+        @Override
+        void testTwoForcesAndTwoSpecialsInTanks() {
+            faction.removeForces(faction.getSecondHomeworld(), 1, true, true);
+            faction.performFreeRevivals();
+            faction.removeForces(faction.getHomeworld(), 2, false, true);
+            faction.removeForces(faction.getSecondHomeworld(), 2, true, true);
+            faction.reviveForcesWithBTAmbassador();
+            assertEquals(faction.getEmoji() + " revives 2 " + faction.getForceEmoji() + " for free.", turnSummary.getMessages().getLast());
+            assertEquals("You revived 2 " + faction.getForceEmoji() + " with the BT Ambassador.", chat.getMessages().getLast());
         }
     }
 

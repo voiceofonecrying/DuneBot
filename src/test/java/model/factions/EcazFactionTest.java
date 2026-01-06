@@ -634,7 +634,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
-            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getLast());
+            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with the BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -644,7 +644,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
-            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getLast());
+            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with the BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -655,7 +655,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
-            assertEquals("Whitmore Bludd was revived with your BT Ambassador.", chat.getMessages().getLast());
+            assertEquals("Whitmore Bludd was revived with the BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 

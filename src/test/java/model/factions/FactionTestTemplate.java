@@ -1340,6 +1340,148 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#presentBTAmbassadorChoices")
+    class PresentBTAmbassadorChoices {
+        @Test
+        public void testNoLeadersOrForcesInTanks() {
+            faction.presentBTAmbassadorChoices();
+            assertEquals("You have no leaders or " + faction.getForceEmoji() + " in the tanks to revive with your BT Ambassador.", chat.getMessages().getLast());
+            assertEquals(0, chat.getChoices().size());
+            assertEquals(faction.getEmoji() + " has no leaders or " + faction.getForceEmoji() + " in the tanks to revive.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        public void testBTAmbassadorOnly2ForcesInTanks() {
+            faction.removeForces(faction.getHomeworld(), 2, false, true);
+            faction.presentBTAmbassadorChoices();
+            assertEquals("You revived 2 " + faction.getForceEmoji() + " with the BT Ambassador.", chat.getMessages().getLast());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testBTAmbassadorOnly5ForcesInTanks() {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            faction.presentBTAmbassadorChoices();
+            assertEquals("You revived 4 " + faction.getForceEmoji() + " with the BT Ambassador.", chat.getMessages().getLast());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testBTAmbassadorOnly1LeaderInTanks() {
+            Leader leader = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader.getName());
+            turnSummary.clear();
+            faction.presentBTAmbassadorChoices();
+            assertEquals(leader.getName() + " was revived with the BT Ambassador.", chat.getMessages().getLast());
+            assertEquals(0, chat.getChoices().size());
+            assertTrue(faction.getLeaders().contains(leader));
+        }
+
+        @Test
+        public void testBTAmbassadorOnly2LeadersInTanks() {
+            Leader leader1 = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader1.getName());
+            Leader leader2 = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader2.getName());
+            turnSummary.clear();
+            faction.presentBTAmbassadorChoices();
+            assertEquals("Which leader would you like to revive?", chat.getMessages().getLast());
+            assertEquals(2, chat.getChoices().getFirst().size());
+        }
+
+        @Test
+        public void testBTAmbassador5ForcesAnd2LeadersInTanks() {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            Leader leader1 = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader1.getName());
+            Leader leader2 = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader2.getName());
+            turnSummary.clear();
+            faction.presentBTAmbassadorChoices();
+            assertEquals("Would you like to revive a leader or 4 " + faction.getForceEmoji() + "?", chat.getMessages().getLast());
+            assertEquals(2, chat.getChoices().getFirst().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("#reviveForcesWithBTAmbassador")
+    class reviveForcesWithBTAmbassador {
+        @Test
+        void testThreeForcesInTanks() {
+            faction.removeForces(faction.getHomeworld(), 3, false, true);
+            faction.reviveForcesWithBTAmbassador();
+            assertEquals(faction.getEmoji() + " revives 3 " + faction.getForceEmoji() + " for free.", turnSummary.getMessages().getLast());
+            assertEquals("You revived 3 " + faction.getForceEmoji() + " with the BT Ambassador.", chat.getMessages().getLast());
+        }
+
+        @Test
+        void testFiveForcesInTanks() {
+            faction.removeForces(faction.getHomeworld(), 5, false, true);
+            faction.reviveForcesWithBTAmbassador();
+            assertEquals(faction.getEmoji() + " revives 4 " + faction.getForceEmoji() + " for free.", turnSummary.getMessages().getLast());
+            assertEquals("You revived 4 " + faction.getForceEmoji() + " with the BT Ambassador.", chat.getMessages().getLast());
+        }
+
+        @Test
+        void testTwoForcesAndTwoSpecialsInTanks() {
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentLeaderChoicesWithBTAmbassador")
+    class PresentLeaderChoicesWithBTAmbassador {
+        @Test
+        void testTwoLeadersInTheTanks() {
+            Leader leader1 = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader1.getName());
+            Leader leader2 = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader2.getName());
+            faction.presentLeaderChoicesWithBTAmbassador();
+            assertEquals("Which leader would you like to revive?", chat.getMessages().getLast());
+            assertEquals(2, chat.getChoices().getLast().size());
+            assertEquals(leader1.getName(), chat.getChoices().getLast().getFirst().getLabel());
+            assertEquals(leader2.getName(), chat.getChoices().getLast().getLast().getLabel());
+        }
+
+        @Test
+        void testOneLeaderInTheTanks() {
+            Leader leader = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader.getName());
+            faction.presentLeaderChoicesWithBTAmbassador();
+            assertTrue(faction.getLeaders().contains(leader));
+            assertEquals(leader.getName() + " was revived with the BT Ambassador.", chat.getMessages().getLast());
+            assertEquals(faction.getEmoji() + " revived " + leader.getName() + " with the BT Ambassador.", turnSummary.getMessages().getLast());
+        }
+
+//        @Test
+//        void testNoLeadersInTheTanks() {
+//            assertThrows(InvalidGameStateException.class, () -> faction.presentLeaderChoicesWithBTAmbassador());
+//        }
+    }
+
+    @Nested
+    @DisplayName("#reviveLeaderWithBTAmbassador")
+    class ReviveLeaderWithBTAmbassador {
+        @Test
+        void testLeaderInTanks() {
+            Leader leader = faction.getLeaders().getFirst();
+            game.killLeader(faction, leader.getName());
+            faction.reviveLeaderWithBTAmbassador(leader.getName());
+            assertTrue(faction.getLeaders().contains(leader));
+            assertEquals(leader.getName() + " was revived with the BT Ambassador.", chat.getMessages().getLast());
+            assertEquals(faction.getEmoji() + " revived " + leader.getName() + " with the BT Ambassador.", turnSummary.getMessages().getLast());
+        }
+
+        @Test
+        void testNoLeaderInTanks() {
+            Leader leader = faction.getLeaders().getFirst();
+            assertThrows(IllegalArgumentException.class, () -> faction.reviveLeaderWithBTAmbassador(leader.getName()));
+            assertTrue(chat.getMessages().isEmpty());
+            assertTrue(turnSummary.getMessages().isEmpty());
+        }
+    }
+
+    @Nested
     @DisplayName("#moritaniTerrorAlliance")
     class MoritaniTerrorAlliance {
         Faction faction;

@@ -431,6 +431,20 @@ class IxFactionTest extends FactionTestTemplate {
         }
     }
 
+    @Nested
+    @DisplayName("#reviveForcesWithBTAmbassador")
+    class reviveForcesWithBTAmbassador extends FactionTestTemplate.reviveForcesWithBTAmbassador {
+        @Test
+        @Override
+        void testTwoForcesAndTwoSpecialsInTanks() {
+            faction.removeForces(faction.getHomeworld(), 2, false, true);
+            faction.removeForces(faction.getHomeworld(), 3, true, true);
+            faction.reviveForcesWithBTAmbassador();
+            assertEquals(faction.getEmoji() + " revives 1 " + Emojis.IX_SUBOID + " 3 " + Emojis.IX_CYBORG + " for free.", turnSummary.getMessages().getLast());
+            assertEquals("You revived 1 " + Emojis.IX_SUBOID + " 3 " + Emojis.IX_CYBORG + " with the BT Ambassador.", chat.getMessages().getLast());
+        }
+    }
+
     @Test
     public void testFreeRevival() {
         assertEquals(1, faction.getFreeRevival());
