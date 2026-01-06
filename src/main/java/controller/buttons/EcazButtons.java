@@ -116,14 +116,15 @@ public class EcazButtons implements Pressable {
     }
 
     private static void btLeader(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
         String leaderName = event.getComponentId().split("-")[3];
         discordGame.queueDeleteMessage();
-        game.getEcazFaction().reviveLeaderWithBTAmbassador(leaderName);
+        faction.reviveLeaderWithBTAmbassador(leaderName);
         discordGame.pushGame();
     }
 
     private static void btWhichRevival(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        EcazFaction faction = game.getEcazFaction();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
         String revivalType = event.getComponentId().split("-")[4];
         discordGame.queueDeleteMessage();
         if (revivalType.equals("leader"))

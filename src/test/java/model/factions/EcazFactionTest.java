@@ -615,17 +615,17 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
             assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
-            assertEquals(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().get(1));
+            assertEquals(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().getLast());
         }
 
         @Test
         public void testBTAmbassadorForAlly() {
             faction.triggerAmbassador(harkonnen, "BT", true);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.", allyChat.getMessages().getFirst());
-//            assertEquals(0, allyChat.getChoices().size());
-//            assertEquals(Emojis.CHOAM + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.", turnSummary.getMessages().get(1));
+            assertEquals(Emojis.ECAZ + " has triggered their BT Ambassador for you!", allyChat.getMessages().getFirst());
+            assertEquals("You have no leaders or " + Emojis.CHOAM_TROOP + " in the tanks to revive with your BT Ambassador.", allyChat.getMessages().getLast());
+            assertEquals(0, allyChat.getChoices().size());
+            assertEquals(Emojis.CHOAM + " has no leaders or " + Emojis.CHOAM_TROOP + " in the tanks to revive.", turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -634,7 +634,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
-            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getLast());
+            assertEquals("You revived 2 " + Emojis.ECAZ_TROOP + " with the BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -644,7 +644,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
-            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with your BT Ambassador.", chat.getMessages().getLast());
+            assertEquals("You revived 4 " + Emojis.ECAZ_TROOP + " with the BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 
@@ -655,7 +655,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "BT", false);
             assertEquals(Emojis.ECAZ + " triggers their BT Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your BT Ambassador!", chat.getMessages().getFirst());
-            assertEquals("Whitmore Bludd was revived with your BT Ambassador.", chat.getMessages().getLast());
+            assertEquals("Whitmore Bludd was revived with the BT Ambassador.", chat.getMessages().getLast());
             assertEquals(0, chat.getChoices().size());
         }
 

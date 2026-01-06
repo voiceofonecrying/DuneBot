@@ -312,4 +312,12 @@ public class IxFaction extends Faction {
         }
         return paidRevivalTBD;
     }
+
+    @Override
+    public void reviveForcesWithBTAmbassador() {
+        int numCyborgs = Math.min(game.getTleilaxuTanks().getForceStrength("Ix*"), 4);
+        int numForces = Math.min(getRevivableForces(), 4 - numCyborgs);
+        game.reviveForces(this, false, numForces, numCyborgs, false);
+        chat.reply("You revived " + forcesString(numForces, numCyborgs) + " with the BT Ambassador.");
+    }
 }

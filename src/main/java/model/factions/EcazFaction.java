@@ -77,7 +77,7 @@ public class EcazFaction extends Faction {
             game.getTurnSummary().publish(triggerMessage + " for their ally!");
         } else
             game.getTurnSummary().publish(triggerMessage + " !");
-        List<String> supportedAmbassadorsForAlly = List.of("Emperor", "Fremen", "Guild");
+        List<String> supportedAmbassadorsForAlly = List.of("Emperor", "Fremen", "Guild", "BT");
         if (forAlly && !supportedAmbassadorsForAlly.contains(ambassador))
             game.getTurnSummary().publish(game.getModOrRoleMention() + " please execute the Ambassador for " + game.getFaction(ally).getEmoji());
         else {
@@ -110,7 +110,7 @@ public class EcazFaction extends Faction {
                         chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
                 case "Ix" -> presentIxAmbassadorDiscardChoices();
                 case "Richese" -> presentRicheseAmbassadorChoices();
-                case "BT" -> presentBTAmbassadorChoices();
+                case "BT" -> faction.presentBTAmbassadorChoices();
             }
         }
 
@@ -217,53 +217,6 @@ public class EcazFaction extends Faction {
             choices.add(new DuneChoice("secondary", "ecaz-richese-buy-no", "No"));
             chat.publish("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", choices);
         }
-    }
-
-    public void presentBTAmbassadorChoices() {
-        Faction faction = this;
-        List<Leader> leadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getOriginalFactionName().equals(faction.getName())).toList();
-        if (getRevivableForces() == 0) {
-            if (leadersInTanks.isEmpty()) {
-                chat.publish("You have no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive with your BT Ambassador.");
-                game.getTurnSummary().publish(Emojis.ECAZ + " has no leaders or " + Emojis.ECAZ_TROOP + " in the tanks to revive.");
-            } else {
-                presentLeaderChoicesWithBTAmbassador();
-            }
-        } else {
-            int numForces = Math.min(getRevivableForces(), 4);
-            if (leadersInTanks.isEmpty()) {
-                reviveForcesWithBTAmbassador();
-            } else {
-                List<DuneChoice> choices = new ArrayList<>();
-                choices.add(new DuneChoice("ecaz-bt-which-revival-leader", "Leader"));
-                choices.add(new DuneChoice("ecaz-bt-which-revival-forces-" + numForces, numForces + " Forces"));
-                chat.publish("Would you like to revive a leader or " + numForces + " " + Emojis.ECAZ_TROOP + "?", choices);
-            }
-        }
-    }
-
-    public void reviveForcesWithBTAmbassador() {
-        int numForces = Math.min(getRevivableForces(), 4);
-        game.reviveForces(this, false, numForces, 0);
-        chat.reply("You revived " + numForces + " " + Emojis.ECAZ_TROOP + " with your BT Ambassador.");
-    }
-
-    public void presentLeaderChoicesWithBTAmbassador() {
-        Faction faction = this;
-        List<Leader> leadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getOriginalFactionName().equals(faction.getName())).toList();
-        if (leadersInTanks.size() == 1) {
-            reviveLeaderWithBTAmbassador(leadersInTanks.getFirst().getName());
-        } else {
-            List<DuneChoice> choices = new ArrayList<>();
-            leadersInTanks.forEach(l -> choices.add(new DuneChoice("ecaz-bt-leader-" + l.getName(), l.getName())));
-            chat.reply("Which leader would you like to revive?", choices);
-        }
-    }
-
-    public void reviveLeaderWithBTAmbassador(String leaderName) {
-        reviveLeader(leaderName);
-        chat.reply(leaderName + " was revived with your BT Ambassador.");
-        game.getTurnSummary().publish(Emojis.ECAZ + " revived " + leaderName + " with their BT Ambassador.");
     }
 
     public void buyCardWithRicheseAmbassador(boolean buy) {

@@ -1089,10 +1089,6 @@ public class Faction {
         return !starRevived;
     }
 
-    public void setStarRevived(boolean starRevived) {
-        this.starRevived = starRevived;
-    }
-
     public boolean isPaidRevivalTBD() {
         return paidRevivalTBD;
     }
@@ -1527,6 +1523,53 @@ public class Faction {
             movement.setMoveType(MoveType.GUILD_AMBASSADOR);
             movement.presentTerritoryTypeChoices();
         }
+    }
+
+    public void presentBTAmbassadorChoices() {
+        List<Leader> leadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getOriginalFactionName().equals(this.getName())).toList();
+        if (getRevivableForces() == 0) {
+            if (leadersInTanks.isEmpty()) {
+                chat.publish("You have no leaders or " + forceEmoji + " in the tanks to revive with your BT Ambassador.");
+                game.getTurnSummary().publish(emoji + " has no leaders or " + forceEmoji + " in the tanks to revive.");
+            } else {
+                presentLeaderChoicesWithBTAmbassador();
+            }
+        } else {
+            int numForces = Math.min(getRevivableForces(), 4);
+            if (leadersInTanks.isEmpty()) {
+                reviveForcesWithBTAmbassador();
+            } else {
+                List<DuneChoice> choices = new ArrayList<>();
+                choices.add(new DuneChoice("ecaz-bt-which-revival-leader", "Leader"));
+                choices.add(new DuneChoice("ecaz-bt-which-revival-forces-" + numForces, numForces + " Forces"));
+                chat.publish("Would you like to revive a leader or " + numForces + " " + forceEmoji + "?", choices);
+            }
+        }
+    }
+
+    public void reviveForcesWithBTAmbassador() {
+        int numForces = Math.min(getRevivableForces(), 4);
+        game.reviveForces(this, false, numForces, 0);
+        chat.reply("You revived " + numForces + " " + forceEmoji + " with the BT Ambassador.");
+    }
+
+    public void presentLeaderChoicesWithBTAmbassador() {
+        List<Leader> leadersInTanks = game.getLeaderTanks().stream().filter(l -> l.getOriginalFactionName().equals(name)).toList();
+//        if (leadersInTanks.isEmpty())
+//            throw new InvalidGameStateException(name + " has no leaders in the tanks.");
+        if (leadersInTanks.size() == 1) {
+            reviveLeaderWithBTAmbassador(leadersInTanks.getFirst().getName());
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            leadersInTanks.forEach(l -> choices.add(new DuneChoice("ecaz-bt-leader-" + l.getName(), l.getName())));
+            chat.reply("Which leader would you like to revive?", choices);
+        }
+    }
+
+    public void reviveLeaderWithBTAmbassador(String leaderName) {
+        reviveLeader(leaderName);
+        chat.reply(leaderName + " was revived with the BT Ambassador.");
+        game.getTurnSummary().publish(emoji + " revived " + leaderName + " with the BT Ambassador.");
     }
 
     public void acceptTerrorAlliance(Faction moritani, String territoryName, String terror) throws InvalidGameStateException {

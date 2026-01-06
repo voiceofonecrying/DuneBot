@@ -198,6 +198,20 @@ class FremenFactionTest extends FactionTestTemplate {
         }
     }
 
+    @Nested
+    @DisplayName("#reviveForcesWithBTAmbassador")
+    class reviveForcesWithBTAmbassador extends FactionTestTemplate.reviveForcesWithBTAmbassador {
+        @Test
+        @Override
+        void testTwoForcesAndTwoSpecialsInTanks() {
+            faction.removeForces(faction.getHomeworld(), 2, false, true);
+            faction.removeForces(faction.getHomeworld(), 2, true, true);
+            faction.reviveForcesWithBTAmbassador();
+            assertEquals(faction.getEmoji() + " revives 2 " + faction.getForceEmoji() + " for free.", turnSummary.getMessages().getLast());
+            assertEquals("You revived 2 " + faction.getForceEmoji() + " with the BT Ambassador.", chat.getMessages().getLast());
+        }
+    }
+
     @Test
     public void testFreeRevival() {
         assertEquals(3, faction.getFreeRevival());
