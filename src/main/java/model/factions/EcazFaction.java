@@ -77,7 +77,7 @@ public class EcazFaction extends Faction {
             game.getTurnSummary().publish(triggerMessage + " for their ally!");
         } else
             game.getTurnSummary().publish(triggerMessage + " !");
-        List<String> supportedAmbassadorsForAlly = List.of("Emperor", "Fremen", "Guild", "BT");
+        List<String> supportedAmbassadorsForAlly = List.of("Atreides", "Emperor", "Fremen", "Guild", "Harkonnen", "BT");
         if (forAlly && !supportedAmbassadorsForAlly.contains(ambassador))
             game.getTurnSummary().publish(game.getModOrRoleMention() + " please execute the Ambassador for " + game.getFaction(ally).getEmoji());
         else {
@@ -98,16 +98,14 @@ public class EcazFaction extends Faction {
                     chat.publish("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", choices);
                     ambassadorSupply.add("Ecaz");
                 }
-                case "Atreides" ->
-                        chat.publish(triggeringFaction.getEmoji() + " hand is:\n\t" + String.join("\n\t", triggeringFaction.getTreacheryHand().stream().map(TreacheryCard::prettyNameAndDescription).toList()));
+                case "Atreides" -> faction.getChat().publish(triggeringFaction.getEmoji() + " hand is:\n\t" + String.join("\n\t", triggeringFaction.getTreacheryHand().stream().map(TreacheryCard::prettyNameAndDescription).toList()));
                 case "BG" -> chat.publish("Which Ambassador effect would you like to trigger?",
                         ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
                 case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
                 case "Emperor" -> triggerEmperorAmbassador(forAlly);
                 case "Fremen" -> faction.presentFremenAmbassadorRideFromChoices();
                 case "Guild" -> faction.presentGuildAmbassadorDestinationChoices();
-                case "Harkonnen" ->
-                        chat.publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
+                case "Harkonnen" -> faction.getChat().publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
                 case "Ix" -> presentIxAmbassadorDiscardChoices();
                 case "Richese" -> presentRicheseAmbassadorChoices();
                 case "BT" -> faction.presentBTAmbassadorChoices();
