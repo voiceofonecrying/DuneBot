@@ -380,8 +380,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             harkonnen.addTreacheryCard(new TreacheryCard("Shield"));
             faction.triggerAmbassador(harkonnen, "Atreides", true);
             assertEquals(Emojis.ECAZ + " triggers their Atreides Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals(Emojis.HARKONNEN + " hand is:\n\t" + Emojis.TREACHERY + " **Karama** _Special_\n\t" + Emojis.TREACHERY + " **Shield** _Defense - Projectile_", allyChat.getMessages().getFirst());
+            assertEquals(Emojis.HARKONNEN + " hand is:\n\t" + Emojis.TREACHERY + " **Karama** _Special_\n\t" + Emojis.TREACHERY + " **Shield** _Defense - Projectile_", allyChat.getMessages().getLast());
         }
 
         @Test
@@ -523,9 +522,8 @@ public class EcazFactionTest extends FactionTestTemplate {
 
             faction.triggerAmbassador(atreides, "Harkonnen", true);
             assertEquals(Emojis.ECAZ + " triggers their Harkonnen Ambassador against " + Emojis.ATREIDES + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertTrue(allyChat.getMessages().getFirst().contains(Emojis.ATREIDES + " has "));
-//            assertTrue(allyChat.getMessages().getFirst().contains(" as a Traitor!"));
+            assertTrue(allyChat.getMessages().getLast().contains(Emojis.ATREIDES + " has "));
+            assertTrue(allyChat.getMessages().getLast().contains(" as a Traitor!"));
         }
 
         @Test
