@@ -1572,6 +1572,30 @@ public class Faction {
         game.getTurnSummary().publish(emoji + " revived " + leaderName + " with the BT Ambassador.");
     }
 
+    public void presentCHOAMAmbassadorDiscardChoices() {
+        if (treacheryHand.isEmpty()) {
+            chat.publish("You have no " + Emojis.TREACHERY + " to discard with the CHOAM Ambassador.");
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            int i = 0;
+            for (TreacheryCard c : treacheryHand)
+                choices.add(new DuneChoice("ambassador-choam-discard-" + c.name() + "-" + i++, c.name()));
+            choices.add(new DuneChoice("secondary", "ambassador-choam-discard-None", "Done discarding"));
+            chat.publish("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time). " + player, choices);
+        }
+    }
+
+    public void discardWithCHOAMAmbassador(String cardName) {
+        if (cardName.equals("None")) {
+            chat.reply("You are finished discarding with the CHOAM Ambassador.");
+        } else {
+            discard(cardName);
+            addSpice(3, "discard " + cardName + " with CHOAM Ambassador.");
+            chat.reply("You discarded " + cardName + " for 3 " + Emojis.SPICE);
+            presentCHOAMAmbassadorDiscardChoices();
+        }
+    }
+
     public void acceptTerrorAlliance(Faction moritani, String territoryName, String terror) throws InvalidGameStateException {
         chat.reply("You have sent the emissary away with news of their new alliance!");
         game.getTerritory(territoryName).removeTerrorToken(game, terror, true);

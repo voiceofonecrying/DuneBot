@@ -77,7 +77,7 @@ public class EcazFaction extends Faction {
             game.getTurnSummary().publish(triggerMessage + " for their ally!");
         } else
             game.getTurnSummary().publish(triggerMessage + " !");
-        List<String> supportedAmbassadorsForAlly = List.of("Atreides", "Emperor", "Fremen", "Guild", "Harkonnen", "BT");
+        List<String> supportedAmbassadorsForAlly = List.of("Atreides", "Emperor", "Fremen", "Guild", "Harkonnen", "BT", "CHOAM");
         if (forAlly && !supportedAmbassadorsForAlly.contains(ambassador))
             game.getTurnSummary().publish(game.getModOrRoleMention() + " please execute the Ambassador for " + game.getFaction(ally).getEmoji());
         else {
@@ -101,7 +101,7 @@ public class EcazFaction extends Faction {
                 case "Atreides" -> faction.getChat().publish(triggeringFaction.getEmoji() + " hand is:\n\t" + String.join("\n\t", triggeringFaction.getTreacheryHand().stream().map(TreacheryCard::prettyNameAndDescription).toList()));
                 case "BG" -> chat.publish("Which Ambassador effect would you like to trigger?",
                         ambassadorPool.stream().map(option -> new DuneChoice("ecaz-bg-trigger-" + option + "-" + triggeringFaction.getName(), option)).collect(Collectors.toCollection(LinkedList::new)));
-                case "CHOAM" -> presentCHOAMAmbassadorDiscardChoices();
+                case "CHOAM" -> faction.presentCHOAMAmbassadorDiscardChoices();
                 case "Emperor" -> triggerEmperorAmbassador(forAlly);
                 case "Fremen" -> faction.presentFremenAmbassadorRideFromChoices();
                 case "Guild" -> faction.presentGuildAmbassadorDestinationChoices();
@@ -153,30 +153,6 @@ public class EcazFaction extends Faction {
         addLeader(game.getDukeVidal());
         chat.reply("Duke Vidal has come to fight for you!");
         game.getTurnSummary().publish("Duke Vidal now works for " + emoji);
-    }
-
-    public void presentCHOAMAmbassadorDiscardChoices() {
-        if (treacheryHand.isEmpty()) {
-            chat.publish("You have no " + Emojis.TREACHERY + " to discard with your " + Emojis.CHOAM + " Ambassador. Your Ambassador has been used.");
-        } else {
-            List<DuneChoice> choices = new ArrayList<>();
-            int i = 0;
-            for (TreacheryCard c : treacheryHand)
-                choices.add(new DuneChoice("ecaz-choam-discard-" + c.name() + "-" + i++, c.name()));
-            choices.add(new DuneChoice("secondary", "ecaz-choam-discard-None", "Done discarding"));
-            chat.publish("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", choices);
-        }
-    }
-
-    public void discardWithCHOAMAmbassador(String cardName) {
-        if (cardName.equals("None")) {
-            chat.reply("You are finished discarding with your " + Emojis.CHOAM + " Ambassador.");
-        } else {
-            discard(cardName);
-            addSpice(3, "discard " + cardName + " with CHOAM Ambassador.");
-            chat.reply("You discarded " + cardName + " for 3 " + Emojis.SPICE);
-            presentCHOAMAmbassadorDiscardChoices();
-        }
     }
 
     public void presentIxAmbassadorDiscardChoices() {
