@@ -22,7 +22,6 @@ public class EcazButtons implements Pressable {
         // And any button that begins with "ecaz" must be handled by this class
         if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame, game);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-choam-discard-")) choamDiscard(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-fremen-move-from-")) fremenMoveFrom(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-ix-discard-")) ixDiscard(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-richese-buy-")) richeseBuyCard(event, game, discordGame);
@@ -84,13 +83,6 @@ public class EcazButtons implements Pressable {
         discordGame.queueMessage("Your Bene Gesserit ambassador will be used for the " + event.getComponentId().split("-")[3] + " effect.");
         discordGame.queueDeleteMessage();
         game.getEcazFaction().triggerAmbassador(game.getFaction(event.getComponentId().split("-")[4]), event.getComponentId().split("-")[3], false);
-        discordGame.pushGame();
-    }
-
-    private static void choamDiscard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        String cardName = event.getComponentId().split("-")[3];
-        discordGame.queueDeleteMessage();
-        game.getEcazFaction().discardWithCHOAMAmbassador(cardName);
         discordGame.pushGame();
     }
 

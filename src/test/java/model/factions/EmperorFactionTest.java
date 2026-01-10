@@ -552,7 +552,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
     @Nested
     @DisplayName("#reviveForcesWithBTAmbassador")
-    class reviveForcesWithBTAmbassador extends FactionTestTemplate.reviveForcesWithBTAmbassador {
+    class ReviveForcesWithBTAmbassador extends FactionTestTemplate.ReviveForcesWithBTAmbassador {
         @Test
         @Override
         void testTwoForcesAndTwoSpecialsInTanks() {

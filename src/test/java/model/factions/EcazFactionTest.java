@@ -408,7 +408,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             faction.triggerAmbassador(harkonnen, "CHOAM", false);
             assertEquals(Emojis.ECAZ + " triggers their CHOAM Ambassador against " + Emojis.HARKONNEN + " !", turnSummary.getMessages().getFirst());
             assertEquals("You have triggered your CHOAM Ambassador!", chat.getMessages().getFirst());
-            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getLast());
+            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time). player", chat.getMessages().getLast());
             assertEquals(5, chat.getChoices().getFirst().size());
             assertEquals("Done discarding", chat.getChoices().getFirst().getLast().getLabel());
         }
@@ -417,10 +417,10 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerCHOAMForAlly() {
             faction.triggerAmbassador(harkonnen, "CHOAM", true);
             assertEquals(Emojis.ECAZ + " triggers their CHOAM Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", allyChat.getMessages().getFirst());
-//            assertEquals(5, allyChat.getChoices().getFirst().size());
-//            assertEquals("Done discarding", allyChat.getChoices().getFirst().getLast().getLabel());
+            assertEquals(Emojis.ECAZ + " has triggered their CHOAM Ambassador for you!", allyChat.getMessages().getFirst());
+            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time). ch", allyChat.getMessages().getLast());
+            assertEquals(5, allyChat.getChoices().getLast().size());
+            assertEquals("Done discarding", allyChat.getChoices().getLast().getLast().getLabel());
         }
 
         @Test
@@ -864,37 +864,6 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
             game.killLeader(moritani, "Duke Vidal");
             assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
-        }
-    }
-
-    @Nested
-    @DisplayName("discardWithCHOAMAmbassador")
-    class DiscardWithCHOAMAmbassador {
-        @Test
-        void testDiscardOneAndGetAskedAgain() {
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.addTreacheryCard(new TreacheryCard("Baliset"));
-            faction.discardWithCHOAMAmbassador("Kulon");
-            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
-            assertEquals(15, faction.getSpice());
-            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time).", chat.getMessages().getLast());
-        }
-
-        @Test
-        void testDiscardingLastCard() {
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.discardWithCHOAMAmbassador("Kulon");
-            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
-            assertEquals(15, faction.getSpice());
-            assertEquals("You have no " + Emojis.TREACHERY + " to discard with your " + Emojis.CHOAM + " Ambassador. Your Ambassador has been used.", chat.getMessages().getLast());
-            assertTrue(chat.getChoices().isEmpty());
-        }
-
-        @Test
-        void testDiscardNone() {
-            faction.discardWithCHOAMAmbassador("None");
-            assertEquals("You are finished discarding with your " + Emojis.CHOAM + " Ambassador.", chat.getMessages().getFirst());
-            assertTrue(chat.getChoices().isEmpty());
         }
     }
 
