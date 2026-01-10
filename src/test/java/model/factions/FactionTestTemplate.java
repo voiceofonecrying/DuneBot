@@ -1404,67 +1404,6 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
-    @DisplayName("#presentCHOAMAmbassadorDiscardChoices")
-    class PresentCHOAMAmbassadorDiscardChoices {
-        @Test
-        public void testFactionHasNoCards() {
-            faction.presentCHOAMAmbassadorDiscardChoices();
-            assertEquals("You have no " + Emojis.TREACHERY + " to discard with the CHOAM Ambassador.", chat.getMessages().getLast());
-        }
-
-        @Test
-        public void testFactionHasTwoCards() {
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.addTreacheryCard(new TreacheryCard("Baliset"));
-            faction.presentCHOAMAmbassadorDiscardChoices();
-            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time). player", chat.getMessages().getLast());
-            assertEquals(3, chat.getChoices().getLast().size());
-            assertEquals("Kulon", chat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-choam-discard-Kulon-0", chat.getChoices().getLast().getFirst().getId());
-            assertEquals("Baliset", chat.getChoices().getLast().get(1).getLabel());
-            assertEquals("ambassador-choam-discard-Baliset-1", chat.getChoices().getLast().get(1).getId());
-            assertEquals("Done discarding", chat.getChoices().getLast().getLast().getLabel());
-            assertEquals("ambassador-choam-discard-None", chat.getChoices().getLast().getLast().getId());
-        }
-    }
-
-    @Nested
-    @DisplayName("#discardWithCHOAMAmbassador")
-    class DiscardWithCHOAMAmbassador {
-        @Test
-        public void testFinishedDiscarding() {
-            faction.discardWithCHOAMAmbassador("None");
-            assertEquals("You are finished discarding with the CHOAM Ambassador.", chat.getMessages().getLast());
-            assertTrue(chat.getChoices().isEmpty());
-        }
-
-        @Test
-        public void testDiscardOneAndGetAskedAgain() {
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.addTreacheryCard(new TreacheryCard("Baliset"));
-            faction.discardWithCHOAMAmbassador("Kulon");
-            assertEquals(faction.getEmoji() + " discards Kulon.", turnSummary.getMessages().getLast());
-            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
-            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time). player", chat.getMessages().getLast());
-            assertEquals(2, chat.getChoices().getLast().size());
-            assertEquals("Baliset", chat.getChoices().getLast().getFirst().getLabel());
-            assertEquals("ambassador-choam-discard-Baliset-0", chat.getChoices().getLast().getFirst().getId());
-            assertEquals("Done discarding", chat.getChoices().getLast().getLast().getLabel());
-            assertEquals("ambassador-choam-discard-None", chat.getChoices().getLast().getLast().getId());
-        }
-
-        @Test
-        public void testDiscardLastCard() {
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.discardWithCHOAMAmbassador("Kulon");
-            assertEquals(faction.getEmoji() + " discards Kulon.", turnSummary.getMessages().getLast());
-            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
-            assertEquals("You have no " + Emojis.TREACHERY + " to discard with the CHOAM Ambassador.", chat.getMessages().getLast());
-            assertTrue(chat.getChoices().isEmpty());
-        }
-    }
-
-    @Nested
     @DisplayName("#reviveForcesWithBTAmbassador")
     class ReviveForcesWithBTAmbassador {
         @Test
@@ -1539,6 +1478,120 @@ abstract class FactionTestTemplate {
             assertThrows(IllegalArgumentException.class, () -> faction.reviveLeaderWithBTAmbassador(leader.getName()));
             assertTrue(chat.getMessages().isEmpty());
             assertTrue(turnSummary.getMessages().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentCHOAMAmbassadorDiscardChoices")
+    class PresentCHOAMAmbassadorDiscardChoices {
+        @Test
+        public void testFactionHasNoCards() {
+            faction.presentCHOAMAmbassadorDiscardChoices();
+            assertEquals("You have no " + Emojis.TREACHERY + " to discard with the CHOAM Ambassador.", chat.getMessages().getLast());
+        }
+
+        @Test
+        public void testFactionHasTwoCards() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.addTreacheryCard(new TreacheryCard("Baliset"));
+            faction.presentCHOAMAmbassadorDiscardChoices();
+            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time). player", chat.getMessages().getLast());
+            assertEquals(3, chat.getChoices().getLast().size());
+            assertEquals("Kulon", chat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-choam-discard-Kulon-0", chat.getChoices().getLast().getFirst().getId());
+            assertEquals("Baliset", chat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-choam-discard-Baliset-1", chat.getChoices().getLast().get(1).getId());
+            assertEquals("Done discarding", chat.getChoices().getLast().getLast().getLabel());
+            assertEquals("ambassador-choam-discard-None", chat.getChoices().getLast().getLast().getId());
+        }
+    }
+
+    @Nested
+    @DisplayName("#discardWithCHOAMAmbassador")
+    class DiscardWithCHOAMAmbassador {
+        @Test
+        public void testFinishedDiscarding() {
+            faction.discardWithCHOAMAmbassador("None");
+            assertEquals("You are finished discarding with the CHOAM Ambassador.", chat.getMessages().getLast());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+
+        @Test
+        public void testDiscardOneAndGetAskedAgain() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.addTreacheryCard(new TreacheryCard("Baliset"));
+            faction.discardWithCHOAMAmbassador("Kulon");
+            assertEquals(faction.getEmoji() + " discards Kulon.", turnSummary.getMessages().getLast());
+            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
+            assertEquals("Select " + Emojis.TREACHERY + " to discard for 3 " + Emojis.SPICE + " each (one at a time). player", chat.getMessages().getLast());
+            assertEquals(2, chat.getChoices().getLast().size());
+            assertEquals("Baliset", chat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-choam-discard-Baliset-0", chat.getChoices().getLast().getFirst().getId());
+            assertEquals("Done discarding", chat.getChoices().getLast().getLast().getLabel());
+            assertEquals("ambassador-choam-discard-None", chat.getChoices().getLast().getLast().getId());
+        }
+
+        @Test
+        public void testDiscardLastCard() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.discardWithCHOAMAmbassador("Kulon");
+            assertEquals(faction.getEmoji() + " discards Kulon.", turnSummary.getMessages().getLast());
+            assertEquals("You discarded Kulon for 3 " + Emojis.SPICE, chat.getMessages().getFirst());
+            assertEquals("You have no " + Emojis.TREACHERY + " to discard with the CHOAM Ambassador.", chat.getMessages().getLast());
+            assertTrue(chat.getChoices().isEmpty());
+        }
+    }
+
+    @Nested
+    @DisplayName("#presentIxAmbassadorDiscardChoices")
+    class PresentIxAmbassadorDiscardChoices {
+        @Test
+        public void testFactionHasNoCards() {
+            faction.presentIxAmbassadorDiscardChoices();
+            assertEquals("You have no " + Emojis.TREACHERY + " to discard with the Ix Ambassador.", chat.getMessages().getLast());
+        }
+
+        @Test
+        public void testFactionHasTwoCards() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.addTreacheryCard(new TreacheryCard("Baliset"));
+            faction.presentIxAmbassadorDiscardChoices();
+            assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", chat.getMessages().getLast());
+            assertEquals(3, chat.getChoices().getFirst().size());
+            assertEquals(3, chat.getChoices().getLast().size());
+            assertEquals("Kulon", chat.getChoices().getLast().getFirst().getLabel());
+            assertEquals("ambassador-ix-discard-Kulon-0", chat.getChoices().getLast().getFirst().getId());
+            assertEquals("Baliset", chat.getChoices().getLast().get(1).getLabel());
+            assertEquals("ambassador-ix-discard-Baliset-1", chat.getChoices().getLast().get(1).getId());
+            assertEquals("Don't discard", chat.getChoices().getFirst().getLast().getLabel());
+            assertEquals("ambassador-ix-discard-None", chat.getChoices().getLast().getLast().getId());
+        }
+    }
+
+    @Nested
+    @DisplayName("#discardAndDrawWithIxAmbassador")
+    class DiscardAndDrawWithIxAmbassador {
+        @Test
+        void testFactionHasNoCards() {
+            assertThrows(IllegalArgumentException.class, () -> faction.discardAndDrawWithIxAmbassador("Kulon"));
+        }
+
+        @Test
+        void testSuccessfulDiscard() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.discardAndDrawWithIxAmbassador("Kulon");
+            assertTrue(chat.getMessages().getFirst().startsWith("You discarded Kulon and drew "));
+            assertEquals(1, faction.getTreacheryHand().size());
+            assertNotEquals("Kulon", faction.getTreacheryHand().getFirst().name());
+        }
+
+        @Test
+        void testNoDiscard() {
+            faction.addTreacheryCard(new TreacheryCard("Kulon"));
+            faction.discardAndDrawWithIxAmbassador("None");
+            assertEquals("You will not discard and draw a new card with the Ix Ambassador.", chat.getMessages().getFirst());
+            assertEquals(1, faction.getTreacheryHand().size());
+            assertEquals("Kulon", faction.getTreacheryHand().getFirst().name());
         }
     }
 

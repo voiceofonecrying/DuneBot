@@ -19,6 +19,7 @@ public class AmbassadorButtons {
         else if (event.getComponentId().startsWith("ambassador-dont-trigger-")) dontTriggerAmbassador(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-fremen-")) handleFremenAmbassadorButtons(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-guild-")) handleGuildAmbassadorButtons(event, discordGame);
+        else if (event.getComponentId().startsWith("ambassador-ix-discard-")) ixDiscard(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-choam-discard-")) choamDiscard(event, discordGame);
     }
 
@@ -56,6 +57,15 @@ public class AmbassadorButtons {
     private static void handleGuildAmbassadorButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("ambassador-guild-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
+    }
+
+    private static void ixDiscard(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String cardName = event.getComponentId().split("-")[3];
+        discordGame.queueDeleteMessage();
+        faction.discardAndDrawWithIxAmbassador(cardName);
+        discordGame.pushGame();
     }
 
     private static void choamDiscard(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
