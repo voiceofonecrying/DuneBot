@@ -1596,6 +1596,29 @@ public class Faction {
         }
     }
 
+    public void presentIxAmbassadorDiscardChoices() {
+        if (treacheryHand.isEmpty()) {
+            chat.publish("You have no " + Emojis.TREACHERY + " to discard with the Ix Ambassador.");
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            int i = 0;
+            for (TreacheryCard c : treacheryHand)
+                choices.add(new DuneChoice("ambassador-ix-discard-" + c.name() + "-" + i++, c.name()));
+            choices.add(new DuneChoice("secondary", "ambassador-ix-discard-None", "Don't discard"));
+            chat.publish("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", choices);
+        }
+    }
+
+    public void discardAndDrawWithIxAmbassador(String cardName) {
+        if (cardName.equals("None")) {
+            chat.publish("You will not discard and draw a new card with the Ix Ambassador.");
+        } else {
+            discard(cardName);
+            game.drawTreacheryCard(name, true, true);
+            chat.publish("You discarded " + cardName + " and drew " + treacheryHand.getLast().name());
+        }
+    }
+
     public void acceptTerrorAlliance(Faction moritani, String territoryName, String terror) throws InvalidGameStateException {
         chat.reply("You have sent the emissary away with news of their new alliance!");
         game.getTerritory(territoryName).removeTerrorToken(game, terror, true);

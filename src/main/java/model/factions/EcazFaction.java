@@ -77,7 +77,7 @@ public class EcazFaction extends Faction {
             game.getTurnSummary().publish(triggerMessage + " for their ally!");
         } else
             game.getTurnSummary().publish(triggerMessage + " !");
-        List<String> supportedAmbassadorsForAlly = List.of("Atreides", "Emperor", "Fremen", "Guild", "Harkonnen", "BT", "CHOAM");
+        List<String> supportedAmbassadorsForAlly = List.of("Atreides", "Emperor", "Fremen", "Guild", "Harkonnen", "BT", "Ix", "CHOAM");
         if (forAlly && !supportedAmbassadorsForAlly.contains(ambassador))
             game.getTurnSummary().publish(game.getModOrRoleMention() + " please execute the Ambassador for " + game.getFaction(ally).getEmoji());
         else {
@@ -106,7 +106,7 @@ public class EcazFaction extends Faction {
                 case "Fremen" -> faction.presentFremenAmbassadorRideFromChoices();
                 case "Guild" -> faction.presentGuildAmbassadorDestinationChoices();
                 case "Harkonnen" -> faction.getChat().publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
-                case "Ix" -> presentIxAmbassadorDiscardChoices();
+                case "Ix" -> faction.presentIxAmbassadorDiscardChoices();
                 case "Richese" -> presentRicheseAmbassadorChoices();
                 case "BT" -> faction.presentBTAmbassadorChoices();
             }
@@ -153,29 +153,6 @@ public class EcazFaction extends Faction {
         addLeader(game.getDukeVidal());
         chat.reply("Duke Vidal has come to fight for you!");
         game.getTurnSummary().publish("Duke Vidal now works for " + emoji);
-    }
-
-    public void presentIxAmbassadorDiscardChoices() {
-        if (treacheryHand.isEmpty()) {
-            chat.publish("You have no " + Emojis.TREACHERY + " to discard with your " + Emojis.IX + " Ambassador. Your Ambassador has been used.");
-        } else {
-            List<DuneChoice> choices = new ArrayList<>();
-            int i = 0;
-            for (TreacheryCard c : treacheryHand)
-                choices.add(new DuneChoice("ecaz-ix-discard-" + c.name() + "-" + i++, c.name()));
-            choices.add(new DuneChoice("secondary", "ecaz-ix-discard-None", "Don't discard"));
-            chat.publish("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", choices);
-        }
-    }
-
-    public void discardAndDrawWithIxAmbassador(String cardName) {
-        if (cardName.equals("None")) {
-            chat.publish("You will not discard and draw a new card with your Ix Ambassador.");
-        } else {
-            discard(cardName);
-            game.drawTreacheryCard("Ecaz", true, true);
-            chat.publish("You discarded " + cardName + " and drew " + treacheryHand.getLast().name());
-        }
     }
 
     public void presentRicheseAmbassadorChoices() {

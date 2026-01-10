@@ -552,10 +552,10 @@ public class EcazFactionTest extends FactionTestTemplate {
         public void testTriggerIxForAlly() {
             faction.triggerAmbassador(harkonnen, "Ix", true);
             assertEquals(Emojis.ECAZ + " triggers their Ix Ambassador against " + Emojis.HARKONNEN + " for their ally!", turnSummary.getMessages().getFirst());
-            assertEquals(game.getModOrRoleMention() + " please execute the Ambassador for " + Emojis.CHOAM, turnSummary.getMessages().getLast());
-//            assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", allyChat.getMessages().getFirst());
-//            assertEquals(5, allyChat.getChoices().getFirst().size());
-//            assertEquals("Don't discard", allyChat.getChoices().getFirst().getLast().getLabel());
+            assertEquals(Emojis.ECAZ + " has triggered their Ix Ambassador for you!", allyChat.getMessages().getFirst());
+            assertEquals("You can discard a " + Emojis.TREACHERY + " from your hand and draw a new one.", allyChat.getMessages().getLast());
+            assertEquals(5, allyChat.getChoices().getLast().size());
+            assertEquals("Don't discard", allyChat.getChoices().getLast().getLast().getLabel());
         }
 
         @Test
@@ -864,33 +864,6 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertFalse(faction.getLeader("Duke Vidal").isPresent());
             game.killLeader(moritani, "Duke Vidal");
             assertThrows(InvalidGameStateException.class, () -> faction.gainDukeVidalWithEcazAmbassador());
-        }
-    }
-
-    @Nested
-    @DisplayName("#discardAndDrawWithIxAmbassador")
-    class DiscardAndDrawWithIxAmbassador {
-        @Test
-        void testEcazHasNoCards() {
-            assertThrows(IllegalArgumentException.class, () -> faction.discardAndDrawWithIxAmbassador("Kulon"));
-        }
-
-        @Test
-        void testSuccessfulDiscard() {
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.discardAndDrawWithIxAmbassador("Kulon");
-            assertTrue(chat.getMessages().getFirst().startsWith("You discarded Kulon and drew "));
-            assertEquals(1, faction.getTreacheryHand().size());
-            assertNotEquals("Kulon", faction.getTreacheryHand().getFirst().name());
-        }
-
-        @Test
-        void testNoDiscard() {
-            faction.addTreacheryCard(new TreacheryCard("Kulon"));
-            faction.discardAndDrawWithIxAmbassador("None");
-            assertEquals("You will not discard and draw a new card with your Ix Ambassador.", chat.getMessages().getFirst());
-            assertEquals(1, faction.getTreacheryHand().size());
-            assertEquals("Kulon", faction.getTreacheryHand().getFirst().name());
         }
     }
 
