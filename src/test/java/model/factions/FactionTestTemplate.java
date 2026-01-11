@@ -1596,6 +1596,79 @@ abstract class FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#presentRicheseAmbassadorChoices")
+    class PresentRicheseAmbassadorChoices {
+        @Test
+        public void testCanBuyACard() {
+            turnSummary.clear();
+            faction.addSpice(1, "For CHOAM test case");
+            faction.presentRicheseAmbassadorChoices();
+            assertEquals("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", chat.getMessages().getLast());
+            assertEquals(2, chat.getChoices().getFirst().size());
+            assertEquals("Yes", chat.getChoices().getFirst().getFirst().getLabel());
+            assertEquals("ambassador-richese-buy-yes", chat.getChoices().getFirst().getFirst().getId());
+            assertEquals("No", chat.getChoices().getFirst().getLast().getLabel());
+            assertEquals("ambassador-richese-buy-no", chat.getChoices().getFirst().getLast().getId());
+        }
+
+        @Test
+        public void testNotEnoughSpiceToBuyACard() {
+            faction.subtractSpice(faction.getSpice(), "Test");
+            faction.addSpice(2, "Test");
+            turnSummary.clear();
+            faction.presentRicheseAmbassadorChoices();
+            assertEquals(faction.getEmoji() + " does not buy a " + Emojis.TREACHERY + " with the Richese Ambassador.", turnSummary.getMessages().getLast());
+            assertEquals("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with the Richese Ambassador.", chat.getMessages().getLast());
+            assertEquals(0, chat.getChoices().size());
+        }
+
+        @Test
+        public void testRicheseAmbassadorWhenHandIsFull() {
+            while (faction.getTreacheryHand().size() < faction.getHandLimit())
+                game.drawTreacheryCard(faction.getName(), true, false);
+            faction.presentRicheseAmbassadorChoices();
+            assertEquals(faction.getEmoji() + " does not buy a " + Emojis.TREACHERY + " with the Richese Ambassador.", turnSummary.getMessages().getLast());
+            assertEquals("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with the Richese Ambassador.", chat.getMessages().getLast());
+            assertEquals(0, chat.getChoices().size());
+        }
+    }
+
+    @Nested
+    @DisplayName("#buyCardWithRicheseAmbassador")
+    class BuyCardWithRicheseAmbassador {
+        @Test
+        void testBuyCard() {
+            faction.addSpice(1, "For CHOAM test case");
+            faction.buyCardWithRicheseAmbassador(true);
+            assertTrue(chat.getMessages().getFirst().contains("with the Richese Ambassador."));
+            assertEquals(faction.getEmoji() + " buys a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + " with the Richese Ambassador." , turnSummary.getMessages().getLast());
+            assertEquals(1, faction.getTreacheryHand().size());
+        }
+
+        @Test
+        void testDontBuyCard() {
+            faction.buyCardWithRicheseAmbassador(false);
+            assertEquals("You will not buy a " + Emojis. TREACHERY + " with the Richese Ambassador.", chat.getMessages().getFirst());
+            assertEquals(faction.getEmoji() + " does not buy a " + Emojis.TREACHERY + " with the Richese Ambassador." , turnSummary.getMessages().getLast());
+            assertEquals(0, faction.getTreacheryHand().size());
+        }
+
+        @Test
+        void testNotEnoughSpice() {
+            faction.subtractSpice(faction.getSpice(), "test");
+            assertEquals(0, faction.getSpice());
+            assertThrows(IllegalStateException.class, () -> faction.buyCardWithRicheseAmbassador(true));
+        }
+
+        @Test
+        void testHandIsFull() {
+            while (faction.getTreacheryHand().size() < faction.getHandLimit())
+                game.drawTreacheryCard(faction.getName(), true, false);
+            assertThrows(IllegalStateException.class, () -> faction.buyCardWithRicheseAmbassador(true));
+        }
+    }
+
+    @Nested
     @DisplayName("#moritaniTerrorAlliance")
     class MoritaniTerrorAlliance {
         Faction faction;
