@@ -1619,6 +1619,33 @@ public class Faction {
         }
     }
 
+    public void presentRicheseAmbassadorChoices() {
+        if (treacheryHand.size() == handLimit) {
+            chat.publish("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with the Richese Ambassador.");
+            game.getTurnSummary().publish(emoji + " does not buy a " + Emojis.TREACHERY + " with the Richese Ambassador.");
+        } else if (spice < 3) {
+            chat.publish("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with the Richese Ambassador.");
+            game.getTurnSummary().publish(emoji + " does not buy a " + Emojis.TREACHERY + " with the Richese Ambassador.");
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("ambassador-richese-buy-yes", "Yes"));
+            choices.add(new DuneChoice("secondary", "ambassador-richese-buy-no", "No"));
+            chat.publish("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", choices);
+        }
+    }
+
+    public void buyCardWithRicheseAmbassador(boolean buy) {
+        if (buy) {
+            subtractSpice(3, "buy " + Emojis.TREACHERY + " with Richese Ambassador.");
+            game.drawTreacheryCard(name, true, false);
+            game.getTurnSummary().publish(emoji + " buys a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + " with the Richese Ambassador.");
+            chat.reply("You bought " + getTreacheryHand().getLast().name() + " with the Richese Ambassador.");
+        } else {
+            game.getTurnSummary().publish(emoji + " does not buy a " + Emojis.TREACHERY + " with the Richese Ambassador.");
+            chat.reply("You will not buy a " + Emojis.TREACHERY + " with the Richese Ambassador.");
+        }
+    }
+
     public void acceptTerrorAlliance(Faction moritani, String territoryName, String terror) throws InvalidGameStateException {
         chat.reply("You have sent the emissary away with news of their new alliance!");
         game.getTerritory(territoryName).removeTerrorToken(game, terror, true);

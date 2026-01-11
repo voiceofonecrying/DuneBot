@@ -23,7 +23,6 @@ public class EcazButtons implements Pressable {
         if (event.getComponentId().startsWith("ecaz-offer-alliance-")) offerAlliance(event, discordGame, game);
         else if (event.getComponentId().startsWith("ecaz-bg-trigger-")) bgAmbassadorTrigger(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-fremen-move-from-")) fremenMoveFrom(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ecaz-richese-buy-")) richeseBuyCard(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bt-leader-")) btLeader(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-bt-which-revival-")) btWhichRevival(event, game, discordGame);
         else if (event.getComponentId().startsWith("ecaz-place-ambassador-")) queueAmbassadorButtons(event, game, discordGame);
@@ -89,13 +88,6 @@ public class EcazButtons implements Pressable {
         String territoryName = event.getComponentId().split("-")[4];
         game.getEcazFaction().getMovement().setMovingFrom(territoryName);
         ShipmentAndMovementButtons.presentShippingChoices(event, game, discordGame);
-        discordGame.pushGame();
-    }
-
-    private static void richeseBuyCard(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
-        String response = event.getComponentId().split("-")[3];
-        discordGame.queueDeleteMessage();
-        game.getEcazFaction().buyCardWithRicheseAmbassador(response.equals("yes"));
         discordGame.pushGame();
     }
 

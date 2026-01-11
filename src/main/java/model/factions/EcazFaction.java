@@ -77,7 +77,7 @@ public class EcazFaction extends Faction {
             game.getTurnSummary().publish(triggerMessage + " for their ally!");
         } else
             game.getTurnSummary().publish(triggerMessage + " !");
-        List<String> supportedAmbassadorsForAlly = List.of("Atreides", "Emperor", "Fremen", "Guild", "Harkonnen", "BT", "Ix", "CHOAM");
+        List<String> supportedAmbassadorsForAlly = List.of("Atreides", "Emperor", "Fremen", "Guild", "Harkonnen", "BT", "Ix", "CHOAM", "Richese");
         if (forAlly && !supportedAmbassadorsForAlly.contains(ambassador))
             game.getTurnSummary().publish(game.getModOrRoleMention() + " please execute the Ambassador for " + game.getFaction(ally).getEmoji());
         else {
@@ -107,7 +107,7 @@ public class EcazFaction extends Faction {
                 case "Guild" -> faction.presentGuildAmbassadorDestinationChoices();
                 case "Harkonnen" -> faction.getChat().publish(triggeringFaction.getEmoji() + " has " + triggeringFaction.getTraitorHand().stream().findAny().orElseThrow().getEmojiNameAndStrengthString() + " as a " + (triggeringFaction instanceof BTFaction ? "Face Dancer!" : "Traitor!"));
                 case "Ix" -> faction.presentIxAmbassadorDiscardChoices();
-                case "Richese" -> presentRicheseAmbassadorChoices();
+                case "Richese" -> faction.presentRicheseAmbassadorChoices();
                 case "BT" -> faction.presentBTAmbassadorChoices();
             }
         }
@@ -153,33 +153,6 @@ public class EcazFaction extends Faction {
         addLeader(game.getDukeVidal());
         chat.reply("Duke Vidal has come to fight for you!");
         game.getTurnSummary().publish("Duke Vidal now works for " + emoji);
-    }
-
-    public void presentRicheseAmbassadorChoices() {
-        if (treacheryHand.size() == handLimit) {
-            chat.publish("Your hand is full, so you cannot buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.");
-            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese Ambassador.");
-        } else if (spice < 3) {
-            chat.publish("You do not have enough " + Emojis.SPICE + " to buy a " + Emojis.TREACHERY + " card with your Richese Ambassador.");
-            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a card with their Richese Ambassador.");
-        } else {
-            List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("ecaz-richese-buy-yes", "Yes"));
-            choices.add(new DuneChoice("secondary", "ecaz-richese-buy-no", "No"));
-            chat.publish("Would you like to buy a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + "?", choices);
-        }
-    }
-
-    public void buyCardWithRicheseAmbassador(boolean buy) {
-        if (buy) {
-            subtractSpice(3, "buy " + Emojis.TREACHERY + " with Richese Ambassador.");
-            game.drawTreacheryCard("Ecaz", true, false);
-            game.getTurnSummary().publish(Emojis.ECAZ + " buys a " + Emojis.TREACHERY + " card for 3 " + Emojis.SPICE + " with their Richese Ambassador.");
-            chat.reply("You bought " + getTreacheryHand().getLast().name() + " with your Richese Ambassador.");
-        } else {
-            game.getTurnSummary().publish(Emojis.ECAZ + " does not buy a " + Emojis.TREACHERY + " with their Richese Ambassador.");
-            chat.reply("You will not buy a " + Emojis.TREACHERY + " with your Richese Ambassador.");
-        }
     }
 
     public void sendAmbassadorLocationMessage(int cost) throws InvalidGameStateException {

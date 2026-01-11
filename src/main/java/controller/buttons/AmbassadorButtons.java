@@ -21,6 +21,7 @@ public class AmbassadorButtons {
         else if (event.getComponentId().startsWith("ambassador-guild-")) handleGuildAmbassadorButtons(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-ix-discard-")) ixDiscard(event, discordGame);
         else if (event.getComponentId().startsWith("ambassador-choam-discard-")) choamDiscard(event, discordGame);
+        else if (event.getComponentId().startsWith("ambassador-richese-buy-")) richeseBuyCard(event, discordGame);
     }
 
     private static void triggerAmbassadorForAlly(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -74,6 +75,15 @@ public class AmbassadorButtons {
         String cardName = event.getComponentId().split("-")[3];
         discordGame.queueDeleteMessage();
         faction.discardWithCHOAMAmbassador(cardName);
+        discordGame.pushGame();
+    }
+
+    private static void richeseBuyCard(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
+        Game game = discordGame.getGame();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String response = event.getComponentId().split("-")[3];
+        discordGame.queueDeleteMessage();
+        faction.buyCardWithRicheseAmbassador(response.equals("yes"));
         discordGame.pushGame();
     }
 }
