@@ -1664,6 +1664,7 @@ public class BattlePlanTest extends DuneTest {
 
         @Test
         void testEmperorNexusCunningKaramadSardaukar() throws InvalidGameStateException {
+            emperor.setNexusCard(new NexusCard("Emperor"));
             carthag.addForces("Emperor", 7);
             Battle battle = new Battle(game, List.of(carthag), List.of(emperor, harkonnen));
             battle.emperorNexusCunning(game, true);
