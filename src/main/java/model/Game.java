@@ -1125,8 +1125,9 @@ public class Game {
     }
 
     public void discardNexusCard(Faction faction) {
-        turnSummary.publish(faction.getEmoji() + " has discarded a Nexus Card.");
-        nexusDiscard.add(faction.getNexusCard());
+        NexusCard nexusCard = faction.getNexusCard();
+        turnSummary.publish(faction.getEmoji() + " has discarded the " + Emojis.getFactionEmoji(nexusCard.name()) + " Nexus Card.");
+        nexusDiscard.add(nexusCard);
         faction.setNexusCard(null);
         faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }

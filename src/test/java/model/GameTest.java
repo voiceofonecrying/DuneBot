@@ -67,6 +67,18 @@ class GameTest extends DuneTest {
         assertEquals("The game already has DISCOVERY_TOKENS. The " + Emojis.SPICE + " deck will have 5 Shai-Huluds and 2 Great Makers.", modInfo.getMessages().getFirst());
     }
 
+    @Test
+    public void testDiscardNexusCard() {
+        game.addFaction(atreides);
+        NexusCard nexusCard = new NexusCard("Harkonnen");
+        atreides.setNexusCard(nexusCard);
+        game.discardNexusCard(atreides);
+        assertEquals(Emojis.ATREIDES + " has discarded the " + Emojis.HARKONNEN + " Nexus Card.", turnSummary.getMessages().getLast());
+        assertTrue(game.getNexusDiscard().contains(nexusCard));
+        assertNull(atreides.getNexusCard());
+        assertTrue(atreides.getUpdateTypes().contains(UpdateType.MISC_BACK_OF_SHIELD));
+    }
+
     @Nested
     @DisplayName("#spiceBlowPhaseNextStep")
     class SpiceBlowPhaseNextStep {
@@ -2320,7 +2332,7 @@ class GameTest extends DuneTest {
         void noCurrentAllianceWithNexusCard() {
             fremen.setNexusCard(new NexusCard("Atreides"));
             game.createAlliance(fremen, guild);
-            assertEquals(Emojis.FREMEN + " has discarded a Nexus Card.", turnSummary.messages.get(0));
+            assertEquals(Emojis.FREMEN + " has discarded the " + Emojis.ATREIDES + " Nexus Card.", turnSummary.messages.get(0));
             assertEquals(Emojis.FREMEN + " and " + Emojis.GUILD + " have formed an alliance.", turnSummary.messages.get(1));
             assertEquals("Guild", fremen.getAlly());
             assertEquals("Fremen", guild.getAlly());
