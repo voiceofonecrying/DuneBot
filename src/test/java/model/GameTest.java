@@ -1420,6 +1420,22 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testFactionMayMoveIntoDiscoveryTokenUnderStorm() {
+            game.setStorm(18);
+            Territory meridianWest = game.getTerritory("Meridian (West Sector)");
+            meridianWest.setDiscoveryToken("Jacurutu Sietch");
+            Territory jacurutuSietch = game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
+            game.putTerritoryInAnotherTerritory(jacurutuSietch, meridianWest);
+            meridianWest.setDiscovered(true);
+            meridianWest.addForces("BG", 4);
+
+            game.startStormPhase();
+            assertEquals(Emojis.BG + " may move into Jacurutu Sietch from Meridian (West Sector).", turnSummary.getMessages().get(1));
+            assertEquals("Would you like to move into Jacurutu Sietch from Meridian (West Sector)? bg", bgChat.getMessages().getFirst());
+            assertEquals(2, bgChat.getChoices().getFirst().size());
+        }
+
+        @Test
         void testBGFlipIfAlone() {
             game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
             game.setStorm(1);
@@ -2666,6 +2682,19 @@ class GameTest extends DuneTest {
             assertEquals(12, atreides.getSpice());
             assertTrue(turnSummary.getMessages().stream().anyMatch(m ->m.equals(Emojis.HARKONNEN + " collects 2 " + Emojis.SPICE + " for occupying Caladan")));
             assertTrue(turnSummary.getMessages().stream().anyMatch(m ->m.equals(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.")));
+        }
+
+        @Test
+        void testFactionMayRevealDiscoveryTokenUnderStorm() throws InvalidGameStateException {
+            game.setStorm(18);
+            Territory meridianWest = game.getTerritory("Meridian (West Sector)");
+            meridianWest.setDiscoveryToken("Jacurutu Sietch");
+            game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
+            meridianWest.addForces("BG", 4);
+
+            game.startSpiceHarvest();
+            assertEquals("Would you like to reveal Jacurutu Sietch in Meridian (West Sector)? bg", bgChat.getMessages().getFirst());
+            assertEquals(2, bgChat.getChoices().getFirst().size());
         }
     }
 
