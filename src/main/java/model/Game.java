@@ -1301,7 +1301,7 @@ public class Game {
 
         for (Territory newDiscovery : territories.values().stream().filter(Territory::isJustDiscovered).toList()) {
             for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-                List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, false);
+                List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, true);
                 List<Territory> aggTerritoryWithDiscovery = null;
                 for (List<Territory> aggTerritory : aggregateTerritoryList) {
                     for (Territory t : aggTerritory) {
@@ -2147,7 +2147,7 @@ public class Game {
         }
 
         for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-            List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, false);
+            List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, true);
             for (List<Territory> territorySectors : aggregateTerritoryList) {
                 String discoveryTerritoryName = "";
                 String discoveryTokenName = "";
@@ -2163,7 +2163,7 @@ public class Game {
                         List<DuneChoice> choices = new ArrayList<>();
                         choices.add(new DuneChoice("spicecollection-reveal-discovery-token-" + discoveryTerritoryName, "Yes"));
                         choices.add(new DuneChoice("danger", "spicecollection-don't-reveal-discovery-token", "No"));
-                        faction.getChat().publish(faction.getPlayer() + "Would you like to reveal the discovery token at " + discoveryTerritoryName + "? (" + discoveryTokenName + ")", choices);
+                        faction.getChat().publish("Would you like to reveal " + discoveryTokenName + " in " + discoveryTerritoryName + "? " + faction.getPlayer(), choices);
                     }
                 }
             }
