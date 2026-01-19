@@ -32,6 +32,7 @@ public class GameResult {
     private String mikarrol;
     private String wydras;
     private String spinnette;
+    private String lindaren;
     private List<Set<String>> winningPlayers;
     private String predictedFaction;
     private String predictedPlayer;
@@ -250,6 +251,14 @@ public class GameResult {
         this.spinnette = spinnette;
     }
 
+    public String getLindaren() {
+        return lindaren;
+    }
+
+    public void setLindaren(String lindaren) {
+        this.lindaren = lindaren;
+    }
+
     public List<Set<String>> getWinningPlayers() {
         return winningPlayers;
     }
@@ -288,19 +297,6 @@ public class GameResult {
 
     public void setEndingForum(String endingForum) {
         this.endingForum = endingForum;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        GameResult that = (GameResult) o;
-        return Objects.equals(gameName, that.gameName) && Objects.equals(messageID, that.messageID) && Objects.equals(archiveDate, that.archiveDate) && Objects.equals(gameStartDate, that.gameStartDate) && Objects.equals(gameEndDate, that.gameEndDate) && Objects.equals(gameDuration, that.gameDuration) && Objects.equals(daysUntilArchive, that.daysUntilArchive) && Objects.equals(moderator, that.moderator) && Objects.equals(victoryType, that.victoryType) && Objects.equals(turn, that.turn) && Objects.equals(winningFactions, that.winningFactions) && Objects.equals(atreides, that.atreides) && Objects.equals(bg, that.bg) && Objects.equals(bt, that.bt) && Objects.equals(choam, that.choam) && Objects.equals(ecaz, that.ecaz) && Objects.equals(emperor, that.emperor) && Objects.equals(fremen, that.fremen) && Objects.equals(guild, that.guild) && Objects.equals(harkonnen, that.harkonnen) && Objects.equals(ix, that.ix) && Objects.equals(moritani, that.moritani) && Objects.equals(richese, that.richese) && Objects.equals(mikarrol, that.mikarrol) && Objects.equals(wydras, that.wydras) && Objects.equals(spinnette, that.spinnette) && Objects.equals(winningPlayers, that.winningPlayers) && Objects.equals(predictedFaction, that.predictedFaction) && Objects.equals(predictedPlayer, that.predictedPlayer);
-    }
-
-    @Override
-    public int hashCode() {
-        return Objects.hash(gameName, messageID, archiveDate, gameStartDate, gameEndDate, gameDuration, daysUntilArchive, moderator, victoryType, turn, winningFactions, atreides, bg, bt, choam, ecaz, emperor, fremen, guild, harkonnen, ix, moritani, richese, mikarrol, wydras, spinnette, winningPlayers, predictedFaction, predictedPlayer);
     }
 
     public String getFieldValue(String fieldName) {
@@ -352,7 +348,8 @@ public class GameResult {
         else if (richese != null && richese.equals(playerName)) return true;
         else if (mikarrol != null && mikarrol.equals(playerName)) return true;
         else if (wydras != null && wydras.equals(playerName)) return true;
-        else return spinnette != null && spinnette.equals(playerName);
+        else if (spinnette != null && spinnette.equals(playerName)) return true;
+        else return lindaren != null && lindaren.equals(playerName);
     }
 
     public String getFactionForPlayer(String playerName) {
@@ -378,7 +375,7 @@ public class GameResult {
     }
 
     public static String getHeader() {
-        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Richese,Mikarrol,Wydras,Spinnette,Turn,Win Type,Faction 1,Faction 2,Faction 3,Faction 4,Faction 5,Faction 6,Winner 1,Winner 2,Winner 3,Winner 4,Winner 5,Winner 6,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
+        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Richese,Mikarrol,Wydras,Spinnette,Lindaren,Turn,Win Type,Faction 1,Faction 2,Faction 3,Faction 4,Faction 5,Faction 6,Winner 1,Winner 2,Winner 3,Winner 4,Winner 5,Winner 6,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
     }
 
     public String csvString() {
@@ -398,6 +395,7 @@ public class GameResult {
         gameRecord += (mikarrol == null ? "" : mikarrol) + ",";
         gameRecord += (wydras == null ? "" : wydras) + ",";
         gameRecord += (spinnette == null ? "" : spinnette) + ",";
+        gameRecord += (lindaren == null ? "" : lindaren) + ",";
         gameRecord += turn + ",";
         gameRecord += (victoryType == null ? "" : victoryType) + ",";
         List<String> allFactionWinners = winningFactions.stream().flatMap(Collection::stream).toList();

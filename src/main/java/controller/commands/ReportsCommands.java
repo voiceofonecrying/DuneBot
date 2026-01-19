@@ -767,7 +767,8 @@ public class ReportsCommands {
         allFactionPerformance.add(factionPerformance(gameResults, "richese", Emojis.RICHESE));
         allFactionPerformance.add(factionPerformance(gameResults, "mikarrol", ":mikarrol:"));
         allFactionPerformance.add(factionPerformance(gameResults, "wydras", ":wydras:"));
-//        allFactionPerformance.add(factionPerformance(gameResults, "spinnette", "Spinnette"));
+        allFactionPerformance.add(factionPerformance(gameResults, "spinnette", ":regional_indicator_s:"));
+        allFactionPerformance.add(factionPerformance(gameResults, "lindaren", ":lindaren"));
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         return allFactionPerformance;
     }
@@ -1016,6 +1017,7 @@ public class ReportsCommands {
         int mikarrolGames;
         int wydrasGames;
         int spinnetteGames;
+        int lindarenGames;
         int atreidesWins;
         int bgWins;
         int btWins;
@@ -1031,6 +1033,7 @@ public class ReportsCommands {
         int mikarrolWins;
         int wydrasWins;
         int spinnetteWins;
+        int lindarenWins;
 
         public String publish(String playerTag, Guild guild) {
             String returnString = playerTag + " has played in " + games + " games and won " + wins;
@@ -1094,6 +1097,10 @@ public class ReportsCommands {
                 returnString += "\nSpinnette " + spinnetteGames + " games";
                 if (spinnetteWins > 0) returnString += ", " + spinnetteWins + " wins";
             }
+            if (lindarenGames > 0) {
+                returnString += "\nSpinnette " + lindarenGames + " games";
+                if (lindarenWins > 0) returnString += ", " + lindarenWins + " wins";
+            }
             return tagEmojis(guild, returnString);
         }
     }
@@ -1152,6 +1159,9 @@ public class ReportsCommands {
             } else if (gameResult.getSpinnette() != null && gameResult.getSpinnette().equals(playerName)) {
                 pr.spinnetteGames++;
                 if (winner) pr.spinnetteWins++;
+            } else if (gameResult.getLindaren() != null && gameResult.getLindaren().equals(playerName)) {
+                pr.lindarenGames++;
+                if (winner) pr.lindarenWins++;
             }
         }
         return pr;
