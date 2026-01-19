@@ -430,6 +430,7 @@ public class ReportsCommands {
         players.addAll(gameResults.stream().map(GameResult::getMikarrol).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getWydras).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getSpinnette).filter(Objects::nonNull).collect(Collectors.toSet()));
+        players.addAll(gameResults.stream().map(GameResult::getLindaren).filter(Objects::nonNull).collect(Collectors.toSet()));
         return players;
     }
 
@@ -520,7 +521,8 @@ public class ReportsCommands {
                 + gameResults.gameResults.stream().filter(gr -> gr.getRichese() != null && gr.getRichese().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getMikarrol() != null && gr.getMikarrol().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getWydras() != null && gr.getWydras().equals(playerName)).toList().size()
-                + gameResults.gameResults.stream().filter(gr -> gr.getSpinnette() != null && gr.getSpinnette().equals(playerName)).toList().size();
+                + gameResults.gameResults.stream().filter(gr -> gr.getSpinnette() != null && gr.getSpinnette().equals(playerName)).toList().size()
+                + gameResults.gameResults.stream().filter(gr -> gr.getLindaren() != null && gr.getLindaren().equals(playerName)).toList().size();
         int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
 
         int totalWins = 0;
@@ -768,7 +770,7 @@ public class ReportsCommands {
         allFactionPerformance.add(factionPerformance(gameResults, "mikarrol", ":mikarrol:"));
         allFactionPerformance.add(factionPerformance(gameResults, "wydras", ":wydras:"));
         allFactionPerformance.add(factionPerformance(gameResults, "spinnette", ":regional_indicator_s:"));
-        allFactionPerformance.add(factionPerformance(gameResults, "lindaren", ":lindaren"));
+        allFactionPerformance.add(factionPerformance(gameResults, "lindaren", ":lindaren:"));
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         return allFactionPerformance;
     }
@@ -1098,7 +1100,7 @@ public class ReportsCommands {
                 if (spinnetteWins > 0) returnString += ", " + spinnetteWins + " wins";
             }
             if (lindarenGames > 0) {
-                returnString += "\nSpinnette " + lindarenGames + " games";
+                returnString += "\nLindaren " + lindarenGames + " games";
                 if (lindarenWins > 0) returnString += ", " + lindarenWins + " wins";
             }
             return tagEmojis(guild, returnString);
