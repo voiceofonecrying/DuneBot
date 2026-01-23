@@ -8,6 +8,7 @@ import model.*;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -201,6 +202,7 @@ public class EmperorFaction extends Faction {
             removeSpecialForcesFromSalusaSecundus(Math.min(amount, secundusAmount));
             if (amount > secundusAmount)
                 removeSpecialForcesFromKaitain(amount - secundusAmount);
+            ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, specialForceEmoji));
         }
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
