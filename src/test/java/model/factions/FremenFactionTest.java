@@ -146,9 +146,17 @@ class FremenFactionTest extends FactionTestTemplate {
     @DisplayName("#placeForcesFromReserves")
     class PlaceForcesFromReserves extends FactionTestTemplate.PlaceForcesFromReserves {
         @Test
+        @Override
         void testFlipToLowThreshold() {
             faction.placeForcesFromReserves(sietchTabr, 1, true);
             super.testFlipToLowThreshold();
+        }
+
+        @Test
+        @Override
+        void testReportStarredPlacementToLedger() {
+            faction.placeForcesFromReserves(sietchTabr, 1, true);
+            assertEquals("1 " + Emojis.FREMEN_FEDAYKIN + " removed from reserves.", ledger.getMessages().getLast());
         }
     }
 

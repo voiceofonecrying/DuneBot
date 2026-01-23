@@ -868,6 +868,11 @@ abstract class FactionTestTemplate {
             faction.placeForcesFromReserves(sietchTabr, numForces, false);
             assertFalse(faction.isHighThreshold());
         }
+
+        @Test
+        void testReportStarredPlacementToLedger() {
+            assertThrows(IllegalArgumentException.class, () -> faction.placeForcesFromReserves(sietchTabr, 1, true));
+        }
     }
 
     @Nested

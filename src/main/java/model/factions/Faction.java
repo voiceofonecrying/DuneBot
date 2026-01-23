@@ -490,7 +490,6 @@ public class Faction {
             removeSpecialReserves(amount);
         else
             removeReserves(amount);
-        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, forceEmoji));
         territory.addForces(forceName, amount);
         game.setUpdated(UpdateType.MAP);
     }
@@ -502,6 +501,7 @@ public class Faction {
 
     public void removeReserves(int amount) {
         game.getTerritory(homeworld).removeForces(game, name, amount);
+        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, forceEmoji));
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
@@ -512,6 +512,7 @@ public class Faction {
 
     public void removeSpecialReserves(int amount) {
         game.getTerritory(homeworld).removeForces(game, name + "*", amount);
+        ledger.publish(MessageFormat.format("{0} {1} removed from reserves.", amount, specialForceEmoji));
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
