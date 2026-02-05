@@ -700,17 +700,11 @@ public class CommandManager extends ListenerAdapter {
 
     private void drawNexusCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         Faction faction = game.getFaction(discordGame.required(CommandOptions.faction).getAsString());
-        boolean discarded = false;
         game.removeAlliance(faction);
-        if (faction.getNexusCard() != null) {
-            discarded = true;
-            game.getNexusDiscard().add(faction.getNexusCard());
-        }
+        if (faction.getNexusCard() != null)
+            game.discardNexusCard(faction);
         faction.setNexusCard(game.getNexusDeck().pollFirst());
-        if (discarded)
-            game.getTurnSummary().publish(faction.getEmoji() + " has replaced their Nexus Card.");
-        else
-            game.getTurnSummary().publish(faction.getEmoji() + " has drawn a Nexus Card.");
+        game.getTurnSummary().publish(faction.getEmoji() + " has drawn a Nexus Card.");
         showFactionInfo(faction.getName(), discordGame);
         discordGame.pushGame();
     }
