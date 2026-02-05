@@ -39,7 +39,7 @@ public class EventListener extends ListenerAdapter {
     }
 
     private static final Pattern cardPattern = Pattern
-            .compile(":(treachery|leader|stronghold|nexus):([^:\\v]*):\\1:");
+            .compile(":(treachery|leader|stronghold|nexus|ringed_planet):([^:\\v]*):\\1:");
 
     private static final Pattern mentionPattern = Pattern.compile("@\\h*(:[a-zA-Z0-9_]+:)");
 
@@ -70,14 +70,8 @@ public class EventListener extends ListenerAdapter {
                     case "leader" -> CardImages.getLeaderSkillImage(guild, cardName).ifPresent(fileUploads::add);
                     case "stronghold" -> CardImages.getStrongholdImage(guild, cardName).ifPresent(fileUploads::add);
                     case "nexus" -> CardImages.getNexusImage(guild, cardName).ifPresent(fileUploads::add);
+                    case "ringed_planet" -> CardImages.getHomeworldImage(guild, cardName).ifPresent(fileUploads::add);
                 }
-            }
-            int planetEmojiIndex = message.indexOf("\uD83E\uDE90");
-            if (planetEmojiIndex != -1) {
-                String homeworldMessage = message.substring(planetEmojiIndex + 2);
-                planetEmojiIndex = homeworldMessage.indexOf("\uD83E\uDE90");
-                String cardName = homeworldMessage.substring(0, planetEmojiIndex).replace("\uD83E\uDE90", "").trim();
-                fileUploads.addAll(getHomeworldCardImages(guild, cardName));
             }
             if (!fileUploads.isEmpty()) {
                 event.getChannel().sendFiles(fileUploads).queue();
@@ -142,7 +136,7 @@ public class EventListener extends ListenerAdapter {
             game.getFactions().stream()
                     .filter(f -> channelName.endsWith("-whispers")
                             && threadChannel.getParentChannel().getName().equals(f.getInfoChannelPrefix() + "-info"))
-                    .map(f -> channelName.substring(0, channelName.indexOf("-")))
+                    .map(_ -> channelName.substring(0, channelName.indexOf("-")))
                     .map(n -> discordGame.tagEmojis(Emojis.getFactionEmoji(n)))
                     .findFirst().ifPresent(emoji -> {
                         List<Button> buttons = new ArrayList<>();
@@ -172,15 +166,6 @@ public class EventListener extends ListenerAdapter {
                 ExceptionHandler.sendExceptionToModInfo(category, e, context, event.getAuthor());
             }
         }
-    }
-
-    List<FileUpload> getHomeworldCardImages(Guild guild, String cardName) {
-        cardName = cardName.trim();
-        logger.debug("Loading homeworld card images for: {}", cardName);
-        List<FileUpload> list = new ArrayList<>();
-        CardImages.getHomeworldImage(guild, cardName + " High").ifPresent(list::add);
-        CardImages.getHomeworldImage(guild, cardName + " Low").ifPresent(list::add);
-        return list;
     }
 
     /**
