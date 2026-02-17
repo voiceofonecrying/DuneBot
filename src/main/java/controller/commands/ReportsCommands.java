@@ -70,6 +70,7 @@ public class ReportsCommands {
                 new SubcommandData("solo-victories", "Factions and players with solo victories"),
                 new SubcommandData("high-faction-plays", "Which player-faction combos have occurred the most?"),
                 new SubcommandData("high-faction-wins", "Which player-faction combos have won the most?"),
+                new SubcommandData("faction-masters", "Top players for a given faction").addOptions(allFactions),
                 new SubcommandData("most-player-alliance-wins", "Which players have won as allies the most?"),
                 new SubcommandData("longest-games", "The 10 longest games and the tortured mod."),
                 new SubcommandData("fastest-games", "The 20 fastest games by days per turn.")
@@ -100,6 +101,7 @@ public class ReportsCommands {
             case "solo-victories" -> responseMessage = soloVictories(event.getGuild(), grList, members);
             case "high-faction-plays" -> responseMessage = highFactionGames(event.getGuild(), grList, members, false);
             case "high-faction-wins" -> responseMessage = highFactionGames(event.getGuild(), grList, members, true);
+            case "faction-masters" -> responseMessage = factionMasters(event, event.getGuild(), grList, members);
             case "most-player-alliance-wins" -> responseMessage = writePlayerAllyPerformance(event.getGuild(), grList, members);
             case "longest-games" -> responseMessage = longestGames(event.getGuild(), grList, members);
             case "fastest-games" -> responseMessage = fastestGames(event.getGuild(), grList, members);
@@ -461,7 +463,6 @@ public class ReportsCommands {
         for (String player : players) {
             allPlayerPerformance.add(playerPerformance(gameResults, player));
         }
-//        allPlayerPerformance.sort((a, b) -> a.numWins == b.numWins ? a.numGames - b.numGames : b.numWins - a.numWins);
         allPlayerPerformance.sort((a, b) -> Float.compare(b.winsOverExpectation, a.winsOverExpectation));
         StringBuilder playerStatsString = new StringBuilder("__Supreme Rulers of Arrakis__");
 //        playerStatsString.append("\n*Players must have played in a game that ended in the past year*");
@@ -473,6 +474,70 @@ public class ReportsCommands {
             String player = getPlayerString(guild, pp.playerName, members);
             playerStatsString.append("\n").append(winsOverExpectation).append(" - ").append(player).append(" - ").append(" Expected wins: ").append(numExpectedWins).append(", Actual: ").append(pp.numWins);
         }
+        return playerStatsString.toString();
+    }
+
+    private static List<PlayerPerformance> getTopFactionWinsAboveExpected(Guild guild, GRList gameResults, List<Member> members, String factionName) {
+        Set<String> players = getAllPlayers(gameResults);
+        List<PlayerPerformance> allPlayerPerformance = new ArrayList<>();
+        for (String player : players) {
+            allPlayerPerformance.add(playerFactionPerformance(gameResults, player, factionName));
+        }
+        allPlayerPerformance.sort((a, b) -> Float.compare(b.winsOverExpectation, a.winsOverExpectation));
+        return allPlayerPerformance;
+    }
+
+    public static String factionMasters(SlashCommandInteractionEvent event, Guild guild, GRList gameResults, List<Member> members) {
+        OptionMapping optionMapping = event.getOption(allFactions.getName());
+        String factionName = Objects.requireNonNull(optionMapping).getAsString();
+        String factionNameLowerCase = factionName.toLowerCase();
+        List<PlayerPerformance> allPlayerPerformance = getTopFactionWinsAboveExpected(guild, gameResults, members, factionNameLowerCase);
+        StringBuilder playerStatsString = new StringBuilder();
+        int lines = 0;
+        for (PlayerPerformance pp : allPlayerPerformance) {
+            if (lines > 10)
+                break;
+            if (pp.winsOverExpectation < 0)
+                break;
+            if (pp.numWins < 2)
+                continue;
+            if (LocalDate.parse(pp.lastGameEnd).isBefore(LocalDate.now().minusYears(1)))
+                continue;
+            String numExpectedWins = new DecimalFormat("#0.0").format(pp.numExpectedWins);
+            String winsOverExpectation = new DecimalFormat("#0.0").format(pp.winsOverExpectation);
+            String player = getPlayerString(guild, pp.playerName, members);
+            if (!playerStatsString.isEmpty())
+                playerStatsString.append("\n");
+            playerStatsString.append(winsOverExpectation).append(" - ").append(player).append(" - ").append(" Expected wins: ").append(numExpectedWins).append(", Actual: ").append(pp.numWins);
+            lines++;
+        }
+        if (playerStatsString.isEmpty())
+            return "No players have 2 or more wins with " + factionName;
+        return playerStatsString.toString();
+    }
+
+    public static String writeTopFactionWinsAboveExpected(Guild guild, GRList gameResults, List<Member> members, String factionName) {
+        factionName = factionName.toLowerCase();
+        List<PlayerPerformance> allPlayerPerformance = getTopFactionWinsAboveExpected(guild, gameResults, members, factionName);
+        StringBuilder playerStatsString = new StringBuilder();
+        Float winsOverExpected = null;
+        for (PlayerPerformance pp : allPlayerPerformance) {
+            if (LocalDate.parse(pp.lastGameEnd).isBefore(LocalDate.now().minusYears(1)))
+                continue;
+            if (pp.numWins < 2)
+                continue;
+            if (winsOverExpected != null && pp.winsOverExpectation < winsOverExpected)
+                break;
+            winsOverExpected = pp.winsOverExpectation;
+            String numExpectedWins = new DecimalFormat("#0.0").format(pp.numExpectedWins);
+            String winsOverExpectation = new DecimalFormat("#0.0").format(pp.winsOverExpectation);
+            String player = getPlayerString(guild, pp.playerName, members);
+            if (!playerStatsString.isEmpty())
+                playerStatsString.append("\n");
+            playerStatsString.append(Emojis.getFactionEmoji(factionName)).append(" ").append(winsOverExpectation).append(" - ").append(player).append(" - ").append(" Expected wins: ").append(numExpectedWins).append(", Actual: ").append(pp.numWins);
+        }
+        if (playerStatsString.isEmpty())
+            return "No players have 2 or more wins with " + Emojis.getFactionEmoji(factionName);
         return playerStatsString.toString();
     }
 
@@ -541,6 +606,58 @@ public class ReportsCommands {
             String pf = gr.getFactionForPlayer(playerName);
             if (pf != null) {
                 expectedWinsThisGame = factionPerformance(gameResults, pf, Emojis.getFactionEmoji(pf)).winPercentage;
+                for (String f : factionNames)
+                    for (FactionPerformance fp : allFactionPerformance)
+                        if (gr.getFieldValue(f) != null && fp.factionEmoji.equals(Emojis.getFactionEmoji(f)))
+                            totalFactionWinPercentage += fp.winPercentage;
+                expectedWins += (float) (expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
+//                System.out.println(gr.getGameName() + " " + playerName + " " + expectedWins + " " + expectedWinsThisGame + " " + expectedWinsThisGame / totalFactionWinPercentage * overallWinPercentage * 6);
+                if (LocalDate.parse(gr.getGameEndDate()).isAfter(LocalDate.parse(lastGameEnd)))
+                    lastGameEnd = gr.getGameEndDate();
+            }
+        }
+        float winPercentage = numWins/(float)numGames;
+        return new PlayerPerformance(playerName, numGames, numWins, winPercentage, expectedWins, lastGameEnd);
+    }
+
+    private static PlayerPerformance playerFactionPerformance(GRList gameResults, String playerName, String factionName) {
+        int numGames = gameResults.gameResults.stream().filter(gr -> gr.getFieldValue(factionName) != null && gr.getFieldValue(factionName).equals(playerName)).toList().size();
+        int numWins = gameResults.gameResults.stream().filter(gr -> gr.getFieldValue(factionName) != null && gr.getFieldValue(factionName).equals(playerName) && gr.isWinningPlayer(playerName)).toList().size();
+//        int numGames = gameResults.gameResults.stream().filter(gr -> gr.getAtreides() != null && gr.getAtreides().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getBG() != null && gr.getBG().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getBT() != null && gr.getBT().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getCHOAM() != null && gr.getCHOAM().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getEcaz() != null && gr.getEcaz().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getEmperor() != null && gr.getEmperor().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getFremen() != null && gr.getFremen().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getGuild() != null && gr.getGuild().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getHarkonnen() != null && gr.getHarkonnen().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getIx() != null && gr.getIx().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getMoritani() != null && gr.getMoritani().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getRichese() != null && gr.getRichese().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getMikarrol() != null && gr.getMikarrol().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getWydras() != null && gr.getWydras().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getSpinnette() != null && gr.getSpinnette().equals(playerName)).toList().size()
+//                + gameResults.gameResults.stream().filter(gr -> gr.getLindaren() != null && gr.getLindaren().equals(playerName)).toList().size();
+//        int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
+
+        int totalWins = 0;
+        for (GameResult gr : gameResults.gameResults) {
+            for (Set<String> ss : gr.getWinningFactions()) {
+                totalWins += ss.size();
+            }
+        }
+        double overallWinPercentage = totalWins/(6.0 * gameResults.gameResults.size());
+        List<FactionPerformance> allFactionPerformance = getAllFactionPerformance(gameResults);
+        float expectedWins = 0;
+        String lastGameEnd = "2020-01-01";
+        for (GameResult gr : gameResults.gameResults) {
+            float expectedWinsThisGame = 0;
+            float totalFactionWinPercentage = 0;
+            String pf = gr.getFactionForPlayer(playerName);
+            if (pf != null) {
+                if (pf.equals(factionName))
+                    expectedWinsThisGame = factionPerformance(gameResults, pf, Emojis.getFactionEmoji(pf)).winPercentage;
                 for (String f : factionNames)
                     for (FactionPerformance fp : allFactionPerformance)
                         if (gr.getFieldValue(f) != null && fp.factionEmoji.equals(Emojis.getFactionEmoji(f)))
@@ -1276,7 +1393,15 @@ public class ReportsCommands {
         playerStatsChannel.sendMessage("__Played All 12 Factions__\n" + playedAllTwelve(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__Won as All Original 6 Factions__\n" + wonAsAllOriginalSix(guild, grList, members)).queue();
 //        playerStatsChannel.sendMessage("__High Faction Wins__\n" + highFactionGames(guild, grList, members, true)).queue();
-        playerStatsChannel.sendMessage("__High Faction Plays__\n" + highFactionGames(guild, grList, members, false)).queue();
+//        playerStatsChannel.sendMessage("__High Faction Plays__\n" + highFactionGames(guild, grList, members, false)).queue();
+
+        playerStatsString = new StringBuilder("__Faction Masters__\n_Minimum 2 wins and a game played in the last year._\n");
+        for (String fn : factionNames) {
+            String s = writeTopFactionWinsAboveExpected(guild, grList, members, fn);
+            playerStatsString.append(s).append("\n");
+        }
+        playerStatsChannel.sendMessage(tagEmojis(guild, playerStatsString.toString())).queue();
+
 //        playerStatsChannel.sendMessage(playerSoloVictories(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
 //        playerStatsChannel.sendMessage("__Played Original 6 Multiple Times__\n" + playedAllOriginalSixMultipleTimes(guild, grList, members)).queue();
@@ -1796,8 +1921,8 @@ public class ReportsCommands {
         return factionSoloVictories(guild, gameResults) + "\n\n" + playerSoloVictories(guild, gameResults, members);
     }
 
-    private static final List<String> factionNamesCapitalized = List.of("Atreides", "BG", "BT", "CHOAM", "Ecaz", "Emperor", "Fremen", "Guild", "Harkonnen", "Ix", "Moritani", "Richese");
-    private static final List<String> factionNames = List.of("atreides", "bg", "bt", "choam", "ecaz", "emperor", "fremen", "guild", "harkonnen", "ix", "moritani", "richese");
+    private static final List<String> factionNamesCapitalized = List.of("Atreides", "BG", "Emperor", "Fremen", "Guild", "Harkonnen", "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+    private static final List<String> factionNames = List.of("atreides", "bg", "emperor", "fremen", "guild", "harkonnen", "bt", "ix", "choam", "richese", "ecaz", "moritani");
 
     public static String writePlayerAllyPerformance(Guild guild, GRList gameResults, List<Member> members) {
         List<MutableTriple<String, String, Integer>> playerAllyWinsTriple = new ArrayList<>();
