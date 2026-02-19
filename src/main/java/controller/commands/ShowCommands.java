@@ -434,7 +434,7 @@ public class ShowCommands {
         if (!capturedSkilledLeaders.isEmpty()) {
             for (Leader leader : capturedSkilledLeaders) {
                 FactionView fv = new FactionView(discordGame, discordGame.getGame().getFaction(leader.getOriginalFactionName()));
-                builder.addEmbeds(fv.getLeaderSkillEmbed(leader));
+                builder.addEmbeds(fv.getLeaderSkillEmbed(game, leader));
             }
             discordGame.queueMessage(infoChannelName, builder.build());
         }
@@ -1303,7 +1303,7 @@ public class ShowCommands {
         if (!capturedSkilledLeaders.isEmpty()) {
             for (Leader leader : capturedSkilledLeaders) {
                 FactionView fv = new FactionView(discordGame, discordGame.getGame().getFaction(leader.getOriginalFactionName()));
-                builder.addEmbeds(fv.getLeaderSkillEmbed(leader));
+                builder.addEmbeds(fv.getLeaderSkillEmbed(discordGame.getGame(), leader));
             }
             discordGame.queueMessage(infoChannelName, builder.build());
         }

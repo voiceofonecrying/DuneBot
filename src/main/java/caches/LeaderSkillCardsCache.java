@@ -25,10 +25,14 @@ public class LeaderSkillCardsCache {
     }
 
     public static String getDescription(String cardName) {
+        if (cardName == null)
+            return "";
         return getCardInfo(cardName).getOrDefault("Description", "");
     }
 
     public static String getInBattleDescription(String cardName) {
+        if (cardName == null)
+            return "";
         return getCardInfo(cardName).getOrDefault("In Battle Description", "");
     }
 }
