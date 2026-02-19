@@ -137,6 +137,9 @@ public class CommandOptions {
     public static final OptionData factionLeaderSkill =
             new OptionData(OptionType.STRING, "factionleaderskill", "Leader Skill available to the faction", true)
                     .setAutoComplete(true);
+    public static final OptionData newLeaderSkill = new OptionData(OptionType.STRING, "new-leader-skill-card", "Name of the new Leader Skill Card", true);
+    public static final OptionData newLeaderSkillInFront = new OptionData(OptionType.STRING, "new-leader-skill-in-front", "The effect of the Leader Skill in front of shield", false);
+    public static final OptionData newLeaderSkillInBattle = new OptionData(OptionType.STRING, "new-leader-skill-in-battle", "The effect of the Leader Skill in battle", false);
     public static final OptionData spiceBlowDeck = new OptionData(OptionType.STRING, "spice-blow-deck", "Which deck to discard spice blow to (A or B)", true)
             .addChoice("A", "A")
             .addChoice("B", "B");

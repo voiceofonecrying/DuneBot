@@ -268,12 +268,18 @@ public class FactionView {
 
         return skilledLeaders.stream()
                 .filter(l -> l.getOriginalFactionName().equals(faction.getName()))
-                .map(this::getLeaderSkillEmbed)
+                .map(l -> getLeaderSkillEmbed(game, l))
                 .toList();
     }
 
-    public MessageEmbed getLeaderSkillEmbed(Leader leader) {
+    public MessageEmbed getLeaderSkillEmbed(Game game, Leader leader) {
         LeaderSkillCard leaderSkillCard = leader.getSkillCard();
+        String description = leaderSkillCard.description();
+        if (description.isEmpty())
+            description = game.getHomebrewLeaderSkillDescription(leaderSkillCard.name());
+        String inBattleDescription = leaderSkillCard.inBattleDescription();
+        if (inBattleDescription.isEmpty())
+            inBattleDescription = game.getHomebrewLeaderSkillInBattleDescription(leaderSkillCard.name());
 
         EmbedBuilder eb = new EmbedBuilder()
                 .setTitle(
@@ -286,12 +292,12 @@ public class FactionView {
                 .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
                 .addField(
                         "When Leader is in Front of Shield",
-                        leaderSkillCard.description(),
+                        description,
                         false
                 )
                 .addField(
                         "When Leader is in Battle",
-                        leaderSkillCard.inBattleDescription(),
+                        inBattleDescription,
                         false
                 );
         List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",

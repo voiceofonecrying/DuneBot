@@ -62,6 +62,8 @@ public class SetupCommands {
                         new SubcommandData("new-leader-skills", "Give the player two new leader skills to choose from.").addOptions(faction),
                         new SubcommandData("leader-skill", "Add leader skill to faction")
                                 .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
+                        new SubcommandData("add-leader-skill-card", "Add a Homebrew Leader Skill card to the deck.")
+                                .addOptions(newLeaderSkill, newLeaderSkillInFront, newLeaderSkillInBattle),
                         new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand and advance"),
                         new SubcommandData("bg-prediction", "Set BG prediction").addOptions(faction, turn),
                         new SubcommandData("faction-board-position", "Set a board position for a faction, swap with the faction currently there").addOptions(faction, dotPosition),
@@ -91,6 +93,7 @@ public class SetupCommands {
             case "advance" -> advance(event.getGuild(), discordGame, game);
             case "new-leader-skills" -> newLeaderSkills(discordGame, game);
             case "leader-skill" -> factionLeaderSkill(discordGame, game);
+            case "add-leader-skill-card" -> addLeaderSkillCard(discordGame, game);
             case "harkonnen-mulligan" -> harkonnenMulligan(event, discordGame, game);
             case "bg-prediction" -> setPrediction(discordGame, game);
             case "faction-board-position" -> setFactionBoardPosition(discordGame, game);
@@ -833,6 +836,14 @@ public class SetupCommands {
         String leaderName = discordGame.required(factionLeader).getAsString();
         String leaderSkillName = discordGame.required(factionLeaderSkill).getAsString();
         game.getFaction(factionName).assignSkillToLeader(leaderName, leaderSkillName);
+        discordGame.pushGame();
+    }
+
+    public static void addLeaderSkillCard(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String leaderSkillName = discordGame.required(newLeaderSkill).getAsString();
+        String leaderSkillInFront = discordGame.optional(newLeaderSkillInFront) != null ? discordGame.required(newLeaderSkillInFront).getAsString() : "";
+        String leaderSkillInBattle = discordGame.optional(newLeaderSkillInBattle) != null ? discordGame.required(newLeaderSkillInBattle).getAsString() : "";
+        game.addHomebrewLeaderSkill(leaderSkillName, leaderSkillInFront, leaderSkillInBattle);
         discordGame.pushGame();
     }
 

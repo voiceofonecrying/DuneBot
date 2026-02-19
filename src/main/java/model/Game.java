@@ -49,6 +49,8 @@ public class Game {
     private SpiceCard discardATopBeforeReshuffle;
     private final LinkedList<TraitorCard> traitorDeck;
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
+    private final HashMap<String, String> homebrewLeaderSkillDescriptions;
+    private final HashMap<String, String> homebrewLeaderSkillInBattleDescriptions;
     private final LinkedList<NexusCard> nexusDeck;
     private final LinkedList<NexusCard> nexusDiscard;
     private final TleilaxuTanks tleilaxuTanks;
@@ -124,6 +126,8 @@ public class Game {
         this.spiceDeck = new LinkedList<>();
         this.traitorDeck = new LinkedList<>();
         this.leaderSkillDeck = new LinkedList<>();
+        this.homebrewLeaderSkillDescriptions = new HashMap<>();
+        this.homebrewLeaderSkillInBattleDescriptions = new HashMap<>();
         this.spiceDiscardA = new LinkedList<>();
         this.spiceDiscardB = new LinkedList<>();
         this.tleilaxuTanks = new TleilaxuTanks();
@@ -847,6 +851,22 @@ public class Game {
 
     public LinkedList<LeaderSkillCard> getLeaderSkillDeck() {
         return leaderSkillDeck;
+    }
+
+    public void addHomebrewLeaderSkill(String leaderSkillName, String leaderSkillInFront, String leaderSkillInBattle) {
+        homebrewLeaderSkillDescriptions.put(leaderSkillName, leaderSkillInFront);
+        homebrewLeaderSkillInBattleDescriptions.put(leaderSkillName, leaderSkillInBattle);
+        leaderSkillDeck.add(new LeaderSkillCard(leaderSkillName));
+    }
+
+    public String getHomebrewLeaderSkillDescription(String leaderSkillName) {
+        String description = homebrewLeaderSkillDescriptions.get(leaderSkillName);
+        return description == null ? "" : description;
+    }
+
+    public String getHomebrewLeaderSkillInBattleDescription(String leaderSkillName) {
+        String description = homebrewLeaderSkillInBattleDescriptions.get(leaderSkillName);
+        return description == null ? "" : description;
     }
 
     public LinkedList<TreacheryCard> getTreacheryDiscard() {

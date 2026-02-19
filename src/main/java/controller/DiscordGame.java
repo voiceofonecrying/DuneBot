@@ -2,7 +2,6 @@ package controller;
 
 import caches.EmojiCache;
 import caches.GameCache;
-import caches.LeaderSkillCardsCache;
 import com.google.gson.*;
 import controller.channels.*;
 import exceptions.ChannelNotFoundException;
@@ -157,10 +156,6 @@ public class DiscordGame {
                 .registerPreProcessor(TreacheryCard.class, (_, src, _) -> {
                     JsonObject jsonObject = src.getAsJsonObject();
                     jsonObject.addProperty("name", jsonObject.get("name").getAsString().trim());
-                })
-                .registerPreProcessor(LeaderSkillCard.class, (_, src, _) -> {
-                    JsonObject jsonObject = src.getAsJsonObject();
-                    jsonObject.addProperty("name", LeaderSkillCardsCache.getCardInfo(jsonObject.get("name").getAsString()).get("Name"));
                 })
                 .registerPreProcessor(Game.class, (_, src, _) -> {
                     JsonObject jsonObject = src.getAsJsonObject();
