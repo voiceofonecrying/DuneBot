@@ -569,7 +569,7 @@ public class Faction {
                 .findFirst()
                 .orElseThrow(() -> new IllegalArgumentException("Leader Skill not found"));
         leader.setSkillCard(leaderSkillCard);
-        chat.publish("After years of training, " + leaderName + " has become a " + leaderSkillCard.name() + "!");
+        chat.reply("After years of training, " + leaderName + " has become a " + leaderSkillCard.name() + "!");
 
         LeaderSkillCard returnedLeaderSkillCard = getLeaderSkillsHand().stream()
                 .filter(l -> !l.name().equalsIgnoreCase(leaderSkillName))
