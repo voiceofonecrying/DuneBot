@@ -60,7 +60,7 @@ public class SetupCommands {
                                 .addOptions(faction, CommandOptions.traitor),
                         new SubcommandData("advance", "Advance the setup of the game."),
                         new SubcommandData("new-leader-skills", "Give the player two new leader skills to choose from.").addOptions(faction),
-                        new SubcommandData("leader-skill", "Add leader skill to faction")
+                        new SubcommandData("leader-skill", "Add leader skill to a leader")
                                 .addOptions(faction, CommandOptions.factionLeader, CommandOptions.factionLeaderSkill),
                         new SubcommandData("add-leader-skill-card", "Add a Homebrew Leader Skill card to the deck.")
                                 .addOptions(newLeaderSkill, newLeaderSkillInFront, newLeaderSkillInBattle),
@@ -676,20 +676,17 @@ public class SetupCommands {
         game.drawCard("leader skills deck", faction.getName());
         game.drawCard("leader skills deck", faction.getName());
 
-        MessageCreateBuilder message = new MessageCreateBuilder();
-        message.setContent(faction.getPlayer());
-        message.addContent(" please select your leader and their skill from the following two options:\n");
-        faction.getLeaderSkillsHand().forEach(leaderSkillCard -> message.addContent("* " + leaderSkillCard.name() + "\n"));
-
-        faction.getLeaderSkillsHand().stream()
-                .map(leaderSkillCard -> CardImages.getLeaderSkillImage(
-                        discordGame.getEvent().getGuild(), leaderSkillCard.name())
-                )
-                .filter(Optional::isPresent)
-                .map(Optional::get)
-                .forEach(message::addFiles);
-
-        discordGame.getFactionChat(faction).queueMessage(message);
+        for (LeaderSkillCard leaderSkillCard : faction.getLeaderSkillsHand()) {
+            MessageCreateBuilder message = new MessageCreateBuilder();
+            Optional<FileUpload> image = CardImages.getLeaderSkillImage(discordGame.getGuild(), leaderSkillCard.name());
+            if (image.isPresent())
+                message.addFiles(image.get());
+            else
+                message.addContent("**Leader Skill:** " + leaderSkillCard.name() + "\n**In front of shield:**\n" + game.getHomebrewLeaderSkillDescription(leaderSkillCard.name()) + "\n**In battle:**\n" + game.getHomebrewLeaderSkillInBattleDescription(leaderSkillCard.name()));
+            discordGame.getFactionChat(faction).queueMessage(message);
+        }
+        List<DuneChoice> choices = faction.getLeaderSkillsHand().stream().map(l -> new DuneChoice("faction-leader-skill-" + l.name(), l.name())).collect(Collectors.toList());
+        faction.getChat().publish("Select one Leader Skill " + faction.getPlayer(), choices);
     }
 
     public static void newLeaderSkills(DiscordGame discordGame, Game game) throws ChannelNotFoundException {

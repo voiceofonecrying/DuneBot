@@ -7,6 +7,7 @@ import controller.commands.SetupCommands;
 import controller.commands.ShowCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
+import model.DuneChoice;
 import model.Game;
 import model.factions.*;
 import net.dv8tion.jda.api.events.interaction.component.ButtonInteractionEvent;
@@ -14,7 +15,9 @@ import net.dv8tion.jda.api.components.buttons.Button;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 import static controller.buttons.ShipmentAndMovementButtons.arrangeButtonsAndSend;
 import static controller.buttons.ShipmentAndMovementButtons.getButtonComparator;
@@ -28,6 +31,8 @@ public class FactionButtons {
         else if (event.getComponentId().equals("faction-pay-extortion")) payExtortion(event, game, discordGame);
         else if (event.getComponentId().equals("faction-decline-extortion")) declineExtortion(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-restore-to-player-")) restoreFactionToPlayer(event, game, discordGame);
+        else if (event.getComponentId().startsWith("faction-leader-skill-")) leaderSkill(event, game, discordGame);
+        else if (event.getComponentId().startsWith("faction-skilled-leader-")) skilledLeader(event, game, discordGame);
     }
 
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -141,5 +146,27 @@ public class FactionButtons {
         faction.setPlayer(playerName);
         discordGame.queueMessage(faction.getEmoji() + " has been restored to " + faction.getUserName());
         discordGame.pushGame();
+    }
+
+    private static void leaderSkill(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String leaderSkill = event.getComponentId().split("-")[3];
+        List<DuneChoice> choices = faction.getLeaders().stream().map(l -> new DuneChoice("faction-skilled-leader-" + leaderSkill + "-" + l.getName(), l.getName())).collect(Collectors.toList());
+        faction.getChat().reply("Which leader will be a " + leaderSkill + "?", choices);
+        discordGame.pushGame();
+    }
+
+    private static void skilledLeader(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String leaderSkill = event.getComponentId().split("-")[3];
+        String leaderName = event.getComponentId().split("-")[4];
+        faction.assignSkillToLeader(leaderName, leaderSkill);
+        discordGame.pushGame();
+        if (game.getTurn() > 0 || game.getFactions().stream().anyMatch(f -> !f.getLeaderSkillsHand().isEmpty())) {
+            discordGame.pushGame();
+        } else {
+            game.getModInfo().publish("All Leader Skills have been selected. Game is auto-advancing.");
+            SetupCommands.advance(event.getGuild(), discordGame, game);
+        }
     }
 }
