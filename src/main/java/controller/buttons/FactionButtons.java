@@ -22,7 +22,6 @@ import static controller.buttons.ShipmentAndMovementButtons.getButtonComparator;
 public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("faction-ally-support-")) allySpiceSupport(event, game, discordGame);
-        else if (event.getComponentId().startsWith("ally-support-")) allySpiceSupport(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-whisper-")) whisper(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-storm-dial-")) stormDial(event, game, discordGame);
         else if (event.getComponentId().startsWith("faction-charity-")) charity(event, game, discordGame);
@@ -34,8 +33,6 @@ public class FactionButtons {
     private static void allySpiceSupport(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String support = event.getComponentId().split("-")[3];
-        if (event.getComponentId().startsWith("ally-support-"))
-            support = event.getComponentId().split("-")[3];
         String ally = faction.getAlly();
         switch (support) {
             case "number" -> {
