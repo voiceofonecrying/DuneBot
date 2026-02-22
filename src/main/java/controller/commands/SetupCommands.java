@@ -450,6 +450,7 @@ public class SetupCommands {
 
         Category gameCategory = discordGame.getGameCategory();
         game.getNexusDeck().add(new NexusCard(factionName));
+        Collections.shuffle(game.getNexusDeck());
         discordGame.pushGame();
 
         TextChannel channel = gameCategory.createTextChannel(factionName.toLowerCase() + "-info")
