@@ -25,6 +25,8 @@ import net.dv8tion.jda.api.components.buttons.Button;
 import net.dv8tion.jda.api.components.selections.StringSelectMenu;
 import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.api.utils.messages.MessageCreateBuilder;
+import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
+import net.dv8tion.jda.internal.utils.tuple.Pair;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -144,6 +146,33 @@ public class ShowCommands {
         return null;
     }
 
+    public static List<Pair<Leader, BufferedImage>> getLeaderImagesForGraphicMode(DiscordGame discordGame, Faction faction) throws IOException {
+        List<Pair<Leader, BufferedImage>> leadersAndImages = new ArrayList<>();
+        for (Leader leader : faction.getLeaders()) {
+            BufferedImage leaderImage;
+            List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+            if (!allFactionNames.contains(leader.getOriginalFactionName())) {
+                String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
+                if (imageUrl != null) {
+                    try {
+                        InputStream is = new URI(imageUrl).toURL().openStream();
+                        leaderImage = ImageIO.read(is);
+                        leadersAndImages.add(new ImmutablePair<>(leader, leaderImage));
+                    } catch (URISyntaxException e) {
+                        leadersAndImages.add(new ImmutablePair<>(leader, null));
+                    }
+                } else {
+                    leadersAndImages.add(new ImmutablePair<>(leader, null));
+                }
+            } else {
+                leaderImage = getResourceImage(leader.getName());
+                leadersAndImages.add(new ImmutablePair<>(leader, leaderImage));
+            }
+        }
+        return leadersAndImages;
+    }
+
     public static void drawFactionInfo(DiscordGame discordGame, Game game, String factionName) throws IOException, ChannelNotFoundException, InvalidGameStateException {
         if (game.getMute()) return;
 
@@ -223,35 +252,24 @@ public class ShowCommands {
         offset = (numLeaders - 1) * 450;
         List<Leader> unplacedLeaders = new ArrayList<>();
         List<Leader> capturedSkilledLeaders = new ArrayList<>();
-        for (Leader leader : faction.getLeaders()) {
-            BufferedImage leaderImage;
-            List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
-            if (!allFactionNames.contains(leader.getOriginalFactionName())) {
-                String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
-                if (imageUrl != null) {
-                    try {
-                        InputStream is = new URI(imageUrl).toURL().openStream();
-                        leaderImage = ImageIO.read(is);
-                    } catch (URISyntaxException e) {
-                        unplacedLeaders.add(leader);
-                        continue;
-                    }
-                } else {
-                    unplacedLeaders.add(leader);
-                    continue;
-                }
-            } else
-                leaderImage = getResourceImage(leader.getName());
-            if (!leader.getName().equals("Kwisatz Haderach")) leaderImage = resize(leaderImage, 500, 500);
-            else leaderImage = resize(leaderImage, 500, 301);
-            Point leaderPoint = new Point(300, 750 + offset);
-            table = overlay(table, leaderImage, leaderPoint, 1);
-            offset -= 450;
+        for (Pair<Leader, BufferedImage> leaderAndImage : getLeaderImagesForGraphicMode(discordGame, faction)) {
+            Leader leader = leaderAndImage.getLeft();
             if (!leader.getOriginalFactionName().equals(faction.getName()) && leader.getSkillCard() != null)
                 capturedSkilledLeaders.add(leader);
             if (leader.getBattleTerritoryName() != null)
                 leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
+            BufferedImage leaderImage = leaderAndImage.getRight();
+            if (leaderImage == null) {
+                unplacedLeaders.add(leader);
+                continue;
+            }
+            if (!leader.getName().equals("Kwisatz Haderach"))
+                leaderImage = resize(leaderImage, 500, 500);
+            else
+                leaderImage = resize(leaderImage, 500, 301);
+            Point leaderPoint = new Point(300, 750 + offset);
+            table = overlay(table, leaderImage, leaderPoint, 1);
+            offset -= 450;
         }
 
         offset = 0;
@@ -1234,6 +1252,33 @@ public class ShowCommands {
         return rotated;
     }
 
+    public static List<Pair<Leader, FileUpload>> getLeaderImagesForTextMode(DiscordGame discordGame, Faction faction) throws IOException {
+        List<Pair<Leader, FileUpload>> leadersAndImages = new ArrayList<>();
+        for (Leader leader : faction.getLeaders()) {
+            FileUpload leaderImage;
+            List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+            if (!allFactionNames.contains(leader.getOriginalFactionName())) {
+                String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
+                if (imageUrl != null) {
+                    try {
+                        InputStream is = new URI(imageUrl).toURL().openStream();
+                        leaderImage = FileUpload.fromData(is, leader.getName() + ".png");
+                        leadersAndImages.add(new ImmutablePair<>(leader, leaderImage));
+                    } catch (URISyntaxException e) {
+                        leadersAndImages.add(new ImmutablePair<>(leader, null));
+                    }
+                } else {
+                    leadersAndImages.add(new ImmutablePair<>(leader, null));
+                }
+            } else {
+                leaderImage = getResourceFile(leader.getName());
+                leadersAndImages.add(new ImmutablePair<>(leader, leaderImage));
+            }
+        }
+        return leadersAndImages;
+    }
+
     public static void writeFactionInfo(DiscordGame discordGame, String factionName) throws ChannelNotFoundException, IOException, InvalidGameStateException {
         writeFactionInfo(discordGame, discordGame.getGame().getFaction(factionName));
     }
@@ -1285,19 +1330,20 @@ public class ShowCommands {
                         factionSpecificString +
                         traitorString);
         StringBuilder leadersInTerritories = new StringBuilder();
+        List<Leader> unplacedLeaders = new ArrayList<>();
         List<Leader> capturedSkilledLeaders = new ArrayList<>();
-        List<Leader> homebrewLeaders = new ArrayList<>();
-        for (Leader leader : faction.getLeaders()) {
-            List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
-            if (!allFactionNames.contains(leader.getOriginalFactionName()))
-                homebrewLeaders.add(leader);
-            else if (!(faction instanceof HomebrewFaction))
-                builder = builder.addFiles(getResourceFile(leader.getName()));
+        for (Pair<Leader, FileUpload> leaderAndImage : getLeaderImagesForTextMode(discordGame, faction)) {
+            Leader leader = leaderAndImage.getLeft();
             if (!leader.getOriginalFactionName().equals(faction.getName()) && leader.getSkillCard() != null)
                 capturedSkilledLeaders.add(leader);
             if (leader.getBattleTerritoryName() != null)
                 leadersInTerritories.append(leader.getName()).append(" is in ").append(leader.getBattleTerritoryName()).append("\n");
+            FileUpload leaderImage = leaderAndImage.getRight();
+            if (leaderImage == null) {
+                unplacedLeaders.add(leader);
+                continue;
+            }
+            builder = builder.addFiles(leaderImage);
         }
         discordGame.queueMessage(infoChannelName, builder.build());
         builder = new MessageCreateBuilder();
@@ -1308,7 +1354,7 @@ public class ShowCommands {
             }
             discordGame.queueMessage(infoChannelName, builder.build());
         }
-        if (!homebrewLeaders.isEmpty())
+        if (!unplacedLeaders.isEmpty())
             discordGame.queueMessage(infoChannelName, "__Homebrew Leaders:__\n" + String.join("\n", faction.getLeaders().stream().map(Leader::getEmoiNameAndValueString).toList()));
 
         if (!leadersInTerritories.isEmpty())
