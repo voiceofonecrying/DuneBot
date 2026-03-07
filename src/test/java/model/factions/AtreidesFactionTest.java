@@ -5,10 +5,7 @@ import enums.GameOption;
 import exceptions.InvalidGameStateException;
 import model.HomeworldTerritory;
 import model.Territory;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.RepeatedTest;
-import org.junit.jupiter.api.RepetitionInfo;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
 
 import java.io.IOException;
 
@@ -113,6 +110,17 @@ class AtreidesFactionTest extends FactionTestTemplate {
     @Test
     public void testInitialHasMiningEquipment() {
         assertTrue(faction.hasMiningEquipment());
+    }
+
+    @Nested
+    @DisplayName("#canUseOrnithopters")
+    class CanUseOrnithopters extends FactionTestTemplate.CanUseOrnithopters {
+        @Test
+        @Override
+        void testNoOrnithopters() {
+            faction.removeForces("Arrakeen", 10, false, false);
+            assertFalse(faction.canUseOrnithopters(game, territory, false));
+        }
     }
 
     @Test

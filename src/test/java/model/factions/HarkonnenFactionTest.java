@@ -116,6 +116,17 @@ class HarkonnenFactionTest extends FactionTestTemplate {
         assertTrue(faction.hasMiningEquipment());
     }
 
+    @Nested
+    @DisplayName("#canUseOrnithopters")
+    class CanUseOrnithopters extends FactionTestTemplate.CanUseOrnithopters {
+        @Test
+        @Override
+        void testNoOrnithopters() {
+            faction.removeForces("Carthag", 10, false, false);
+            assertFalse(faction.canUseOrnithopters(game, territory, false));
+        }
+    }
+
     @Test
     public void testInitialReserves() {
         assertEquals(10, faction.getReservesStrength());
