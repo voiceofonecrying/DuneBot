@@ -686,9 +686,10 @@ public class Faction {
         this.hasMiningEquipment = hasMiningEquipment;
     }
 
-    public boolean canUseOrnithopters(Game game, Territory from, boolean ornithopter) {
-        return ornithopter || game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(name)) ||
-                game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(name));
+    public boolean canUseOrnithopters(Game game, Territory from, boolean playingOrnithopterCardOrToken) {
+        return playingOrnithopterCardOrToken ||
+                game.getTerritory("Arrakeen").hasActiveFaction(this) ||
+                game.getTerritory("Carthag").hasActiveFaction(this);
     }
 
     public boolean isDecliningCharity() {
