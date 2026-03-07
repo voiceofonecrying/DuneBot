@@ -550,7 +550,7 @@ abstract class FactionTestTemplate {
             game.addFaction(new HarkonnenFaction("p", "u"));
             game.addFaction(new EmperorFaction("p", "u"));
             homeworldName = getFaction().getHomeworld();
-            territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
+            territory = (HomeworldTerritory) game.getTerritory(homeworldName);
         }
 
         @Test
@@ -795,7 +795,7 @@ abstract class FactionTestTemplate {
         @BeforeEach
         void setUp() throws IOException {
             faction = getFaction();
-            territory = game.getTerritories().get("The Great Flat");
+            territory = game.getTerritory("The Great Flat");
             bg = new BGFaction("p", "u");
             bgChat = new TestTopic();
             bg.setChat(bgChat);
@@ -849,7 +849,7 @@ abstract class FactionTestTemplate {
 
         @BeforeEach
         void setUp() {
-            sietchTabr = game.getTerritories().get("Sietch Tabr");
+            sietchTabr = game.getTerritory("Sietch Tabr");
             faction = getFaction();
             homeworld = faction.getHomeworldTerritory();
             faction.placeForcesFromReserves(sietchTabr, 1, false);
@@ -1017,8 +1017,8 @@ abstract class FactionTestTemplate {
         @BeforeEach
         void setUp() {
             faction = getFaction();
-            theGreatFlat = game.getTerritories().get("The Great Flat");
-            funeralPlain = game.getTerritories().get("Funeral Plain");
+            theGreatFlat = game.getTerritory("The Great Flat");
+            funeralPlain = game.getTerritory("Funeral Plain");
             faction.placeForcesFromReserves(theGreatFlat, 1, false);
             movement = faction.getMovement();
             movement.clear();
@@ -1061,6 +1061,42 @@ abstract class FactionTestTemplate {
             assertEquals("Will you trigger your Robbery Terror Token in Funeral Plain against " + faction.getEmoji() + "? mo", moritaniChat.getMessages().getFirst());
         }
     }
+    
+    @Nested
+    @DisplayName("#canUseOrnithopters")
+    class CanUseOrnithopters {
+        Faction faction;
+        Territory territory;
+
+        @BeforeEach
+        void setUp() {
+            faction = getFaction();
+            territory = game.getTerritory("Sihaya Ridge");
+            faction.placeForcesFromReserves(territory, 1, false);
+        }
+        
+        @Test
+        void testNoOrnithopters() {
+            assertFalse(faction.canUseOrnithopters(game, territory, false));
+        }
+
+        @Test
+        void testInArrakeen() {
+            faction.placeForcesFromReserves(game.getTerritory("Arrakeen"), 1, false);
+            assertTrue(faction.canUseOrnithopters(game, territory, false));
+        }
+
+        @Test
+        void testInCarthag() {
+            faction.placeForcesFromReserves(game.getTerritory("Carthag"), 1, false);
+            assertTrue(faction.canUseOrnithopters(game, territory, false));
+        }
+
+        @Test
+        void testPlayingOrnithopterCardOrToken() {
+            assertTrue(faction.canUseOrnithopters(game, territory, true));
+        }
+    }
 
     @Nested
     @DisplayName("#removeForces")
@@ -1073,7 +1109,7 @@ abstract class FactionTestTemplate {
         void setUp() {
             faction = getFaction();
 
-            territory = game.getTerritories().get("Sihaya Ridge");
+            territory = game.getTerritory("Sihaya Ridge");
             forceName = faction.getName();
 
             territory.addForces(forceName, 5);
@@ -1180,28 +1216,28 @@ abstract class FactionTestTemplate {
 
         @Test
         void trueOnShieldWall() {
-            territory = game.getTerritories().get("Shield Wall (North Sector)");
+            territory = game.getTerritory("Shield Wall (North Sector)");
             territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
 
         @Test
         void trueInImperialBasin() {
-            territory = game.getTerritories().get("Imperial Basin (Center Sector)");
+            territory = game.getTerritory("Imperial Basin (Center Sector)");
             territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
 
         @Test
         void trueInFalseWallEast() {
-            territory = game.getTerritories().get("False Wall East (Far North Sector)");
+            territory = game.getTerritory("False Wall East (Far North Sector)");
             territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }
 
         @Test
         void trueInGaraKulon() {
-            territory = game.getTerritories().get("Gara Kulon");
+            territory = game.getTerritory("Gara Kulon");
             territory.addForces(forceName, 1);
             assertTrue(faction.isNearShieldWall());
         }

@@ -345,6 +345,46 @@ class BGFactionTest extends FactionTestTemplate {
     }
 
     @Nested
+    @DisplayName("#canUseOrnithopters")
+    class CanUseOrnithopters extends FactionTestTemplate.CanUseOrnithopters {
+        @Test
+        void testAdvisorInArrakeen() {
+            Territory arrakeen = game.getTerritory("Arrakeen");
+            faction.placeForcesFromReserves(arrakeen, 1, false);
+            game.getBGFaction().flipForces(arrakeen);
+            assertFalse(faction.canUseOrnithopters(game, territory, false));
+        }
+
+        @Test
+        void testAdvisorInCarthag() {
+            Territory carthag = game.getTerritory("Carthag");
+            faction.placeForcesFromReserves(carthag, 1, false);
+            game.getBGFaction().flipForces(carthag);
+            assertFalse(faction.canUseOrnithopters(game, territory, false));
+        }
+
+        @Test
+        void testAdvisorCannotUseArrakeenOrnithopters() {
+            game.getBGFaction().flipForces(territory);
+            faction.placeForcesFromReserves(game.getTerritory("Arrakeen"), 1, false);
+            assertFalse(faction.canUseOrnithopters(game, territory, false));
+        }
+
+        @Test
+        void testAdvisorCannotUseCarthagOrnithopters() {
+            game.getBGFaction().flipForces(territory);
+            faction.placeForcesFromReserves(game.getTerritory("Carthag"), 1, false);
+            assertFalse(faction.canUseOrnithopters(game, territory, false));
+        }
+
+        @Test
+        void testAdvisorCannotUseOrnithopterCardOrToken() {
+            game.getBGFaction().flipForces(territory);
+            assertFalse(faction.canUseOrnithopters(game, territory, true));
+        }
+    }
+
+    @Nested
     @DisplayName("#presentAdvisorChoices")
     class PresentAdvisorChoices {
         HarkonnenFaction harkonnen;

@@ -322,13 +322,6 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.pushGame();
     }
 
-    private static boolean canUseOrnithopters(Game game, Faction faction, Territory from, boolean ornithopter) {
-        if (faction instanceof BGFaction && from.hasForce("Advisor"))
-            return false;
-        return ornithopter || game.getTerritory("Arrakeen").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName())) ||
-                game.getTerritory("Carthag").getActiveFactions(game).stream().anyMatch(f -> f.getName().equals(faction.getName()));
-    }
-
     private static void queueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         Territory from = game.getTerritory(event.getComponentId().replace("moving-from-", "").replace("ornithopter-", ""));
@@ -337,7 +330,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         int spacesCanMove = 1;
         if (faction instanceof FremenFaction || (faction instanceof IxFaction && from.getForceStrength("Ix*") > 0))
             spacesCanMove = 2;
-        if (canUseOrnithopters(game, faction, from, ornithopter))
+        if (faction.canUseOrnithopters(game, from, ornithopter))
             spacesCanMove = 3;
         if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().getFirst().getSkillCard().name().equals("Planetologist") && spacesCanMove < 3)
             spacesCanMove++;

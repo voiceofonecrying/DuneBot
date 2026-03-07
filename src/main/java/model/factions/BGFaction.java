@@ -212,6 +212,13 @@ public class BGFaction extends Faction {
         }
     }
 
+    @Override
+    public boolean canUseOrnithopters(Game game, Territory from, boolean ornithopter) {
+        if (from.hasForce("Advisor"))
+            return false;
+        return super.canUseOrnithopters(game, from, ornithopter);
+    }
+
     /**
      * Flip BG forces in a territory between normal and advisor.
      *
