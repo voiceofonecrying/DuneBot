@@ -2,6 +2,7 @@ package controller.commands;
 
 import constants.Emojis;
 import controller.DiscordGame;
+import enums.ChoamInflationType;
 import enums.GameOption;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
@@ -810,7 +811,7 @@ public class ShowCommands {
 
             // Only show if inflation is active for current or future turns
             if (choam.getFirstInflationRound() > 0 && choam.getFirstInflationRound() + 1 >= currentTurn) {
-                enums.ChoamInflationType currentInflation = choam.getInflationType(currentTurn);
+                ChoamInflationType currentInflation = choam.getInflationType(currentTurn);
 
                 if (currentInflation != null) {
                     // Map enum to image name
@@ -917,10 +918,12 @@ public class ShowCommands {
             }
             offset = 0;
             if (territory.getDiscoveryToken() != null) {
-                getResourceImage(territory.getDiscoveryToken());
-                BufferedImage discoveryToken;
-                if (territory.isDiscovered()) {
+                BufferedImage discoveryToken = null;
+                try {
                     discoveryToken = getResourceImage(territory.getDiscoveryToken());
+                } catch (Exception ignored) {
+                }
+                if (territory.isDiscovered() && discoveryToken != null) {
                     discoveryToken = resize(discoveryToken, 500, 500);
                     for (String ignored : game.getTerritory(territory.getDiscoveryToken()).getTerrorTokens()) {
                         BufferedImage terrorToken = getResourceImage("Terror Token");
@@ -949,8 +952,8 @@ public class ShowCommands {
                     }
                 }
                 else {
-                    if (territory.isRock()) discoveryToken = getResourceImage("Smuggler Token");
-                    else discoveryToken = getResourceImage("Hiereg Token");
+                    String imageName = territory.isRock() ? "Smuggler Token" : "Hiereg Token";
+                    discoveryToken = getResourceImage(imageName);
                 }
                 discoveryToken = resize(discoveryToken, 60, 60);
                 board = overlay(board, discoveryToken, Initializers.getPoints(territory.getTerritoryName()).get(i), 1);
