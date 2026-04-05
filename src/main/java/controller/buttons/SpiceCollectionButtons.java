@@ -36,31 +36,31 @@ public class SpiceCollectionButtons  implements Pressable{
                 case "Jacurutu Sietch" -> {
                     Territory jacurutuSietch = territories.addDiscoveryToken("Jacurutu Sietch", true);
                     game.putTerritoryInAnotherTerritory(jacurutuSietch, territory);
-                    discordGame.getTurnSummary().queueMessage("Jacurutu Sietch has been discovered in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered Jacurutu Sietch in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Cistern" -> {
                     Territory cistern = territories.addDiscoveryToken("Cistern", false);
                     game.putTerritoryInAnotherTerritory(cistern, territory);
-                    discordGame.getTurnSummary().queueMessage("A Cistern has been discovered in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the Cistern in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Ecological Testing Station" -> {
                     Territory ecologicalTestingStation = territories.addDiscoveryToken("Ecological Testing Station", false);
                     game.putTerritoryInAnotherTerritory(ecologicalTestingStation, territory);
-                    discordGame.getTurnSummary().queueMessage("An Ecological Testing Station has been discovered in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the Ecological Testing Station in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Shrine" -> {
                     Territory shrine = territories.addDiscoveryToken("Shrine", false);
                     game.putTerritoryInAnotherTerritory(shrine, territory);
-                    discordGame.getTurnSummary().queueMessage("A Shrine has been discovered in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the Shrine in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Orgiz Processing Station" -> {
                     Territory orgizProcessingStation = territories.addDiscoveryToken("Orgiz Processing Station", false);
                     game.putTerritoryInAnotherTerritory(orgizProcessingStation, territory);
-                    discordGame.getTurnSummary().queueMessage("The Orgiz Processing Station has been discovered in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the Orgiz Processing Station in " + territory.getTerritoryName() + "!");
                     territory.setDiscovered(true);
                 }
                 case "Treachery Card Stash" -> {
@@ -69,27 +69,28 @@ public class SpiceCollectionButtons  implements Pressable{
                     if (faction.getTreacheryHand().size() > faction.getHandLimit())
                         faction.getChat().publish("Your hand is over the limit. Please select a card to discard.");
                     faction.getLedger().publish(Objects.requireNonNull(card).name() + " found in " + territory.getTerritoryName());
-                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.TREACHERY + " stash in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the " + Emojis.TREACHERY + " stash in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
 
                 }
                 case "Spice Stash" -> {
                     faction.addSpice(7, Emojis.SPICE + " stash discovery token");
-                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered a " + Emojis.SPICE + " stash in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the " + Emojis.SPICE + " stash in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
                 }
                 case "Ornithopter" -> {
                     faction.setOrnithoperToken(true);
                     faction.getLedger().publish("Ornithopter found in " + territory.getTerritoryName());
-                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered an Ornithopter in " + territory.getTerritoryName() + "!");
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the Ornithopter in " + territory.getTerritoryName() + "!");
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
                 }
+                default -> discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the " + token + " in " + territory.getTerritoryName() + "!");
             }
             discordGame.pushGame();
-            discordGame.queueMessage("You revealed " + token + " in " + territory.getTerritoryName() + ".");
+            discordGame.queueMessage("You discovered " + token + " in " + territory.getTerritoryName() + ".");
             discordGame.queueDeleteMessage();
 
             game.setUpdated(UpdateType.MAP);
