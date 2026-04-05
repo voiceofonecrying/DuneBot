@@ -1,5 +1,6 @@
 package controller.buttons;
 
+import constants.Emojis;
 import controller.commands.SetupCommands;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -41,8 +42,15 @@ public class IxButtons implements Pressable {
     }
 
     public static void hmsSubPhase(Game game) {
-        game.getIxFaction().startHMSMovement();
-        hmsQueueMovableTerritories(game);
+        IxFaction ix = game.getIxFaction();
+        if (ix.isHighThreshold()) {
+            ix.startHMSMovement();
+            hmsQueueMovableTerritories(game);
+        } else {
+            game.getTurnSummary().publish(Emojis.IX + " is at Low Threshold and cannot move the HMS.");
+            ix.getChat().publish("You are at Low Threshold and cannot move the HMS.");
+            game.setIxHMSActionRequired(false);
+        }
     }
 
     private static void hmsPassMovement(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
