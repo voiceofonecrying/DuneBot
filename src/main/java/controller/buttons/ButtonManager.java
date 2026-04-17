@@ -20,11 +20,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static controller.commands.ShowCommands.refreshChangedInfo;
 
@@ -32,7 +31,7 @@ public class ButtonManager extends ListenerAdapter {
     private static final Logger logger = LoggerFactory.getLogger(ButtonManager.class);
 
     static boolean allowModButtonPress = false;
-    static Set<Long> buttonMessageIds = new HashSet<>();
+    static Set<Long> buttonMessageIds = ConcurrentHashMap.newKeySet();
     private static boolean runSynchronously = false;
 
     public static void setRunSynchronously(boolean synchronous) {
@@ -100,13 +99,11 @@ public class ButtonManager extends ListenerAdapter {
                 CommandCompletionGuard.decrementCommandCount();
             }
         } else {
-            // Run asynchronously in production
             String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
-            CompletableFuture<Void> future = Queue.getFuture(categoryName);
-            Queue.putFuture(categoryName, future
-                    .thenRunAsync(() -> runButtonCommand(event))
-                    .thenRunAsync(() -> buttonMessageIds.remove(messageId))
-                    .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
+            Queue.submit(categoryName,
+                    () -> runButtonCommand(event),
+                    () -> buttonMessageIds.remove(messageId),
+                    CommandCompletionGuard::decrementCommandCount);
         }
     }
 
@@ -194,14 +191,28 @@ public class ButtonManager extends ListenerAdapter {
                 event.getMessage().delete().complete();
             } catch (Exception ignored) {}
         } catch (InvalidGameStateException e) {
-            event.getHook().editOriginal(e.getMessage()).queue();
+            replyWithError(event, e);
         } catch (Exception e) {
-            event.getHook().editOriginal(e.getMessage()).queue();
+            replyWithError(event, e);
             logger.error("Button interaction failed: {}", event.getComponentId(), e);
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
-                ExceptionHandler.sendExceptionToModInfo(category, e, "Button press: " + event.getComponentId(), event.getUser());
+                try {
+                    ExceptionHandler.sendExceptionToModInfo(category, e, "Button press: " + event.getComponentId(), event.getUser());
+                } catch (Exception reportFailure) {
+                    logger.error("Failed to report button exception to mod-info", reportFailure);
+                }
             }
+        }
+    }
+
+    private static void replyWithError(ButtonInteractionEvent event, Throwable e) {
+        String content = e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName();
+        try {
+            event.getHook().editOriginal(content).queue(null, err ->
+                    logger.error("Failed to send error reply to button interaction", err));
+        } catch (Exception replyFailure) {
+            logger.error("Failed to build error reply for button interaction", replyFailure);
         }
     }
 }
