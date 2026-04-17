@@ -1,10 +1,10 @@
 package caches;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class GameCache {
-    static Map<String, String> gameJson = new HashMap<>();
+    static Map<String, String> gameJson = new ConcurrentHashMap<>();
 
     public static String getGameJson(String gameName) {
         return gameJson.get(gameName);

@@ -79,12 +79,19 @@ public class CommandManager extends ListenerAdapter {
     @Override
     public void onStringSelectInteraction(StringSelectInteractionEvent event) {
         CommandCompletionGuard.incrementCommandCount();
+        try {
+            runStringSelectInteraction(event);
+        } finally {
+            CommandCompletionGuard.decrementCommandCount();
+        }
+    }
+
+    private void runStringSelectInteraction(StringSelectInteractionEvent event) {
         if (event.getComponentId().startsWith("bidding-menu-")) {
             int bid;
             boolean useExact = true;
             if (event.getInteraction().getSelectedOptions().size() == 2) {
                 if (!event.getInteraction().getSelectedOptions().get(0).getValue().equals("auto-increment")) {
-                    CommandCompletionGuard.decrementCommandCount();
                     event.reply("You cannot select two bids.").queue();
                     return;
                 }
@@ -165,7 +172,6 @@ public class CommandManager extends ListenerAdapter {
 
 
         }
-        CommandCompletionGuard.decrementCommandCount();
     }
     @Override
     public void onSlashCommandInteraction(@NotNull SlashCommandInteractionEvent event) {
@@ -212,28 +218,31 @@ public class CommandManager extends ListenerAdapter {
                 event.getHook().editOriginal(ReportsCommands.playerRecord(event)).queue();
             } else {
                 String categoryName = Objects.requireNonNull(DiscordGame.categoryFromEvent(event)).getName();
-                CompletableFuture<Void> future = Queue.getFuture(categoryName);
 
                 // Incrementing count again because it will be decremented when the future is resolved.
                 CommandCompletionGuard.incrementCommandCount();
 
-                // Use synchronous execution in test mode to avoid thread-local mock issues
                 if (runSynchronously) {
-                    Queue.putFuture(categoryName, future
-                            .thenRun(() -> runGameCommand(event))
-                            .thenRun(CommandCompletionGuard::decrementCommandCount));
+                    // Synchronous execution in test mode to avoid thread-local mock issues.
+                    Queue.submitSync(categoryName,
+                            () -> runGameCommand(event),
+                            CommandCompletionGuard::decrementCommandCount);
                 } else {
-                    Queue.putFuture(categoryName, future
-                            .thenRunAsync(() -> runGameCommand(event))
-                            .thenRunAsync(CommandCompletionGuard::decrementCommandCount));
+                    Queue.submit(categoryName,
+                            () -> runGameCommand(event),
+                            CommandCompletionGuard::decrementCommandCount);
                 }
             }
         } catch (Exception e) {
-            event.getHook().editOriginal(e.getMessage()).queue();
+            editOriginalSafely(event, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
             logger.error("Slash command execution failed: {}", event.getCommandString(), e);
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
-                ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getCommandString(), event.getUser());
+                try {
+                    ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getCommandString(), event.getUser());
+                } catch (Exception reportFailure) {
+                    logger.error("Failed to report slash command exception to mod-info", reportFailure);
+                }
             }
         } finally {
             CommandCompletionGuard.decrementCommandCount();
@@ -337,16 +346,29 @@ public class CommandManager extends ListenerAdapter {
             discordGame.sendAllMessages();
 
             if (ephemeralMessage.isEmpty()) ephemeralMessage = "Command Done.";
-            event.getHook().editOriginal(ephemeralMessage).queue();
+            editOriginalSafely(event, ephemeralMessage);
         } catch (InvalidGameStateException e) {
-            event.getHook().editOriginal(e.getMessage()).queue();
+            editOriginalSafely(event, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
         } catch (Exception e) {
-            event.getHook().editOriginal(e.getMessage()).queue();
+            editOriginalSafely(event, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
             logger.error("Game command execution failed: {}", event.getCommandString(), e);
             Category category = DiscordGame.categoryFromEvent(event);
             if (category != null) {
-                ExceptionHandler.sendExceptionToModInfo(category, e, "Game command: " + event.getCommandString(), event.getUser());
+                try {
+                    ExceptionHandler.sendExceptionToModInfo(category, e, "Game command: " + event.getCommandString(), event.getUser());
+                } catch (Exception reportFailure) {
+                    logger.error("Failed to report game command exception to mod-info", reportFailure);
+                }
             }
+        }
+    }
+
+    private static void editOriginalSafely(SlashCommandInteractionEvent event, String content) {
+        try {
+            event.getHook().editOriginal(content).queue(null, err ->
+                    logger.error("Failed to edit slash command reply", err));
+        } catch (Exception replyFailure) {
+            logger.error("Failed to build slash command reply", replyFailure);
         }
     }
 

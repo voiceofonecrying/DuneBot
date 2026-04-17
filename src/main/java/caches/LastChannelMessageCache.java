@@ -2,8 +2,8 @@ package caches;
 
 import net.dv8tion.jda.api.entities.Message;
 
-import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * A cache class that stores the last message for each channel identified by its channel ID.
@@ -11,7 +11,7 @@ import java.util.Map;
  * the last message in any given channel.
  */
 public class LastChannelMessageCache {
-    static Map<String, Message> lastChannelMessage = new HashMap<>();
+    static Map<String, Message> lastChannelMessage = new ConcurrentHashMap<>();
 
     /**
      * Retrieves the last message sent in the specified channel.
