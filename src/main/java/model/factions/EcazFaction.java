@@ -96,7 +96,6 @@ public class EcazFaction extends Faction {
                     choices.add(getVidal);
                     choices.add(offerAlliance);
                     chat.publish("Your Ecaz Ambassador has been triggered by " + triggeringFaction.getEmoji() + "! Which would you like to do?", choices);
-                    ambassadorSupply.add("Ecaz");
                 }
                 case "Atreides" -> faction.getChat().publish(triggeringFaction.getEmoji() + " hand is:\n\t" + String.join("\n\t", triggeringFaction.getTreacheryHand().stream().map(TreacheryCard::prettyNameAndDescription).toList()));
                 case "BG" -> chat.publish("Which Ambassador effect would you like to trigger?",
@@ -118,6 +117,8 @@ public class EcazFaction extends Faction {
         }
         if (!ambassador.equals("BG") && !ambassador.equals("Ecaz")) {
             triggeredAmbassadors.add(ambassador);
+        } else if (ambassador.equals("Ecaz")) {
+            ambassadorSupply.add("Ecaz");
         }
 
         long nonEcazAmbassadorsCount = game.getTerritories().values().stream()

@@ -761,6 +761,14 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertEquals("Get Duke Vidal", chat.getChoices().getFirst().getFirst().getLabel());
             assertTrue(chat.getChoices().getFirst().getFirst().isDisabled());
         }
+
+        @Test
+        public void testEcazAmbassadorForAllyReturnsToSupply() throws InvalidGameStateException {
+            game.createAlliance(faction, harkonnen);
+            faction.placeAmbassador("Carthag", "Ecaz", 1);
+            faction.triggerAmbassador(bt, "Ecaz", true);
+            assertTrue(faction.getAmbassadorSupply().contains("Ecaz"));
+        }
     }
 
     @Nested
