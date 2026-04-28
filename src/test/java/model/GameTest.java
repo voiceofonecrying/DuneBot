@@ -2685,6 +2685,19 @@ class GameTest extends DuneTest {
         }
 
         @Test
+        void testFactionMustBeInSameSectorAsDiscoveryToken() throws InvalidGameStateException {
+            game.setStorm(9);
+            Territory meridianWest = game.getTerritory("Meridian (West Sector)");
+            Territory meridianEast = game.getTerritory("Meridian (East Sector)");
+            meridianWest.setDiscoveryToken("Jacurutu Sietch");
+            game.getTerritories().addDiscoveryToken("Jacurutu Sietch", true);
+            meridianEast.addForces("BG", 4);
+
+            game.startSpiceHarvest();
+            assertTrue(bgChat.getMessages().isEmpty());
+        }
+
+        @Test
         void testFactionMayRevealDiscoveryTokenUnderStorm() throws InvalidGameStateException {
             game.setStorm(18);
             Territory meridianWest = game.getTerritory("Meridian (West Sector)");
