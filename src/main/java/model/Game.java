@@ -2166,27 +2166,16 @@ public class Game {
             turnSummary.publish(Emojis.HARKONNEN + " gains 2 " + Emojis.SPICE + " for Giedi Prime High Threshold advantage.");
         }
 
-        for (String aggregateTerritoryName : territories.getDistinctAggregateTerritoryNames()) {
-            List<List<Territory>> aggregateTerritoryList = territories.getAggregateTerritoryList(aggregateTerritoryName, storm, true);
-            for (List<Territory> territorySectors : aggregateTerritoryList) {
-                String discoveryTerritoryName = "";
-                String discoveryTokenName = "";
-                for (Territory territory : territorySectors) {
-                    if (territory.getDiscoveryToken() == null || territory.isDiscovered()) continue;
-                    discoveryTerritoryName = territory.getTerritoryName();
-                    discoveryTokenName = territory.getDiscoveryToken();
-                }
-                if (!discoveryTerritoryName.isEmpty()) {
-                    for (Territory territory: territorySectors) {
-                        if (territory.countActiveFactions() == 0) continue;
-                        Faction faction = territory.getActiveFactions(this).getFirst();
-                        List<DuneChoice> choices = new ArrayList<>();
-                        choices.add(new DuneChoice("spicecollection-reveal-discovery-token-" + discoveryTerritoryName, "Yes"));
-                        choices.add(new DuneChoice("danger", "spicecollection-don't-reveal-discovery-token", "No"));
-                        faction.getChat().publish("Would you like to reveal " + discoveryTokenName + " in " + discoveryTerritoryName + "? " + faction.getPlayer(), choices);
-                    }
-                }
-            }
+        for (Territory territory : territories.values()) {
+            if (territory.getDiscoveryToken() == null || territory.isDiscovered() || territory.countActiveFactions() == 0)
+                continue;
+            String discoveryTerritoryName = territory.getTerritoryName();
+            String discoveryTokenName = territory.getDiscoveryToken();
+            Faction faction = territory.getActiveFactions(this).getFirst();
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("spicecollection-reveal-discovery-token-" + discoveryTerritoryName, "Yes"));
+            choices.add(new DuneChoice("danger", "spicecollection-don't-reveal-discovery-token", "No"));
+            faction.getChat().publish("Would you like to reveal " + discoveryTokenName + " in " + discoveryTerritoryName + "? " + faction.getPlayer(), choices);
         }
 
         if (altSpiceProductionTriggered) {
