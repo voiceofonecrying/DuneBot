@@ -77,7 +77,7 @@ public class CommandManager extends ListenerAdapter {
     }
 
     @Override
-    public void onStringSelectInteraction(StringSelectInteractionEvent event) {
+    public void onStringSelectInteraction(@NotNull StringSelectInteractionEvent event) {
         CommandCompletionGuard.incrementCommandCount();
         try {
             runStringSelectInteraction(event);
@@ -1071,6 +1071,7 @@ public class CommandManager extends ListenerAdapter {
                 if (category != null)
                     categoryName = category.getName();
                 String state = ReportsCommands.activeGame(event.getGuild(), game, categoryName, true, false);
+                state += "\nNext storm movement: " + game.getStormMovement();
                 discordGame.getModInfo().queueMessage(state);
             }
         }
