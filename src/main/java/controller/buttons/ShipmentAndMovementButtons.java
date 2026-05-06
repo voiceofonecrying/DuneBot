@@ -324,7 +324,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
     private static void queueMovableTerritories(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean ornithopter) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        Territory from = game.getTerritory(event.getComponentId().replace("moving-from-", "").replace("ornithopter-", ""));
+        Territory from = game.getTerritory(event.getComponentId().replace("moving-from-", "").replace("ornithopter-", "").replace("token-", ""));
         String territoryName = from.getTerritoryName();
         faction.getMovement().setMovingFrom(territoryName);
         int spacesCanMove = 1;
