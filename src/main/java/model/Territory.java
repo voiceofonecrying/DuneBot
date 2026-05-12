@@ -301,6 +301,8 @@ public class Territory {
         StringBuilder message = new StringBuilder();
 
         for (Force force : new ArrayList<>(forces)) {
+            if (force.getName().equals("Hidden Mobile Stronghold"))
+                continue;
             String factionName = force.getFactionName();
             String forceName = force.getName();
             int strength = force.getStrength();
