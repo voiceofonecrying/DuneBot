@@ -1008,7 +1008,9 @@ public class Game {
     }
 
     public void destroyShieldWall() throws InvalidGameStateException {
-        Faction factionWithAtomics = factions.stream().filter(f -> f.hasTreacheryCard("Family Atomics")).findFirst().orElse(null);
+        Faction factionWithAtomics = factions.stream()
+                .filter(f -> !f.getName().equals("Hidden Mobile Stronghold"))
+                .filter(f -> f.hasTreacheryCard("Family Atomics")).findFirst().orElse(null);
         if (factionWithAtomics == null)
             throw new InvalidGameStateException("No faction holds Family Atomics.");
         if (!factionWithAtomics.isNearShieldWall())
