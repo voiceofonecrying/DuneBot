@@ -1,5 +1,6 @@
 package controller.commands;
 
+import caches.EmojiCache;
 import constants.Emojis;
 import controller.DiscordGame;
 import enums.ChoamInflationType;
@@ -487,7 +488,7 @@ public class ShowCommands {
             if (territory != null && (game.getPhase() < 8 || game.allFactionsHaveMoved())) {
                 int noField = territory.getRicheseNoField();
                 Button button = Button.success("richese-reveal-no-field", "Reveal " + noField + " No-Field in " + territory.getTerritoryName());
-                button = button.withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(Emojis.NO_FIELD)));
+                button = button.withEmoji(Emoji.fromFormatted(EmojiCache.tagEmojis(Emojis.NO_FIELD)));
                 discordGame.queueMessage(infoChannelName, new MessageCreateBuilder().addComponents(ActionRow.of(List.of(button))).build());
             }
         }
@@ -554,7 +555,7 @@ public class ShowCommands {
         if (faction.hasAlly()) {
             MessageCreateBuilder builder = new MessageCreateBuilder();
             EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
-            embedBuilder.setTitle(discordGame.tagEmojis("**Set Ally " + Emojis.SPICE + " Support**"));
+            embedBuilder.setTitle(EmojiCache.tagEmojis("**Set Ally " + Emojis.SPICE + " Support**"));
             String infoChannelName = faction.getInfoChannelPrefix() + "-info";
             String allyEmoji = game.getFaction(faction.getAlly()).getEmoji();
             List<String> descriptionMessages = new ArrayList<>();
@@ -596,7 +597,7 @@ public class ShowCommands {
                     default -> {
                     }
                 }
-                descriptionMessages.add(discordGame.tagEmojis(message));
+                descriptionMessages.add(EmojiCache.tagEmojis(message));
                 embedBuilder.appendDescription(String.join("\n", descriptionMessages));
                 builder.addEmbeds(embedBuilder.build());
                 builder.addComponents(ActionRow.of(buttons));
@@ -644,7 +645,7 @@ public class ShowCommands {
                 }
             }
             if (faction instanceof AtreidesFaction || faction instanceof BGFaction) {
-                embedBuilder.appendDescription(discordGame.tagEmojis(String.join("\n", descriptionMessages)));
+                embedBuilder.appendDescription(EmojiCache.tagEmojis(String.join("\n", descriptionMessages)));
                 builder.addEmbeds(embedBuilder.build());
                 if (isReply)
                     discordGame.queueMessage(builder);
@@ -1458,7 +1459,7 @@ public class ShowCommands {
             Bidding bidding = game.getBidding();
             biddingMarketSize = ":convenience_store: " + (bidding.getMarket().size() + (bidding.getBidCard() != null ? 1 : 0)) + " ";
         } catch (InvalidGameStateException ignored) {}
-        String deckSizes = discordGame.tagEmojis(biddingMarketSize + Emojis.TREACHERY + " " + game.getTreacheryDeck().size()
+        String deckSizes = EmojiCache.tagEmojis(biddingMarketSize + Emojis.TREACHERY + " " + game.getTreacheryDeck().size()
                         + " :wastebasket: " + game.getTreacheryDiscard().size()
                         + " " + Emojis.SPICE + " " + game.getSpiceDeck().size());
         embedBuilder.addField("Deck Sizes", deckSizes, false);

@@ -1,5 +1,6 @@
 package controller.listeners;
 
+import caches.EmojiCache;
 import caches.LastChannelMessageCache;
 import constants.Emojis;
 import controller.CommandCompletionGuard;
@@ -97,11 +98,11 @@ public class EventListener extends ListenerAdapter {
         game.getFactions().stream()
                 .filter(faction -> faction.getPlayer().equals(event.getMember().getUser().getAsMention()))
                 .forEach(faction -> event.getMessage()
-                        .addReaction(discordGame.getEmoji(faction.getEmoji()))
+                        .addReaction(EmojiCache.get(faction.getEmoji()))
                         .queue());
 
         if (event.getMember().getRoles().stream().anyMatch(role -> role.getName().equals(game.getModRole()))) {
-            event.getMessage().addReaction(discordGame.getEmoji(Emojis.MOD_EMPEROR)).queue();
+            event.getMessage().addReaction(EmojiCache.get(Emojis.MOD_EMPEROR)).queue();
         }
 
         removeEmojiFromLastMessage(event);
@@ -137,7 +138,7 @@ public class EventListener extends ListenerAdapter {
                     .filter(f -> channelName.endsWith("-whispers")
                             && threadChannel.getParentChannel().getName().equals(f.getInfoChannelPrefix() + "-info"))
                     .map(_ -> channelName.substring(0, channelName.indexOf("-")))
-                    .map(n -> discordGame.tagEmojis(Emojis.getFactionEmoji(n)))
+                    .map(n -> EmojiCache.tagEmojis(Emojis.getFactionEmoji(n)))
                     .findFirst().ifPresent(emoji -> {
                         List<Button> buttons = new ArrayList<>();
                         String recipientLowerCase = threadChannel.getName().replace("-whispers", "");

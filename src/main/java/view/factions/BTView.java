@@ -1,5 +1,6 @@
 package view.factions;
 
+import caches.EmojiCache;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import model.TraitorCard;
@@ -24,7 +25,7 @@ public class BTView extends FactionView {
             EmbedBuilder faceDancerBuilder = new EmbedBuilder()
                     .setColor(faction.getColor());
             List<String> revealedFDs = faction.getRevealedFaceDancers().stream().map(TraitorCard::getEmojiAndNameString).toList();
-            faceDancerBuilder.addField("Revealed Face Dancers", discordGame.tagEmojis(String.join("\n", revealedFDs)), false);
+            faceDancerBuilder.addField("Revealed Face Dancers", EmojiCache.tagEmojis(String.join("\n", revealedFDs)), false);
             return Collections.singletonList(faceDancerBuilder.build());
         }
         return new ArrayList<>();

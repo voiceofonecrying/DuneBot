@@ -1,5 +1,6 @@
 package controller.channels;
 
+import caches.EmojiCache;
 import controller.DiscordGame;
 import controller.commands.ShowCommands;
 import enums.UpdateType;
@@ -67,7 +68,7 @@ public class DiscordChannel implements DuneTopic {
         for (DuneChoice choice : choices) {
             Button button;
             if (choice.getLabel() == null) {
-                Emoji emoji = Emoji.fromFormatted(discordGame.tagEmojis(choice.getEmoji()));
+                Emoji emoji = Emoji.fromFormatted(EmojiCache.tagEmojis(choice.getEmoji()));
                 switch (choice.getType()) {
                     case "secondary" -> button = Button.secondary(choice.getId(), emoji).withDisabled(choice.isDisabled());
                     case "danger" -> button = Button.danger(choice.getId(), emoji).withDisabled(choice.isDisabled());
@@ -82,7 +83,7 @@ public class DiscordChannel implements DuneTopic {
                     default -> button = Button.primary(choice.getId(), choice.getLabel()).withDisabled(choice.isDisabled());
                 }
                 if (choice.getEmoji() != null)
-                    button = button.withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(choice.getEmoji())));
+                    button = button.withEmoji(Emoji.fromFormatted(EmojiCache.tagEmojis(choice.getEmoji())));
             }
             buttons.add(button);
         }

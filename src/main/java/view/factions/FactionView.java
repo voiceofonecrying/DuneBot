@@ -1,5 +1,6 @@
 package view.factions;
 
+import caches.EmojiCache;
 import constants.Emojis;
 import controller.DiscordGame;
 import controller.commands.ShowCommands;
@@ -44,7 +45,7 @@ public class FactionView {
         MessageCreateBuilder builder = new MessageCreateBuilder();
 
         builder.addContent(
-                discordGame.tagEmojis(
+                EmojiCache.tagEmojis(
                         MessageFormat.format(
                                 "{0} {1} Info {0}\n",
                                 faction.getEmoji(), faction.getName()
@@ -73,7 +74,7 @@ public class FactionView {
     }
 
     public static String getTaggedReservesString(DiscordGame discordGame, Faction faction) {
-        return discordGame.tagEmojis(faction.forcesStringWithZeroes(faction.getReservesStrength(), faction.getSpecialReservesStrength()));
+        return EmojiCache.tagEmojis(faction.forcesStringWithZeroes(faction.getReservesStrength(), faction.getSpecialReservesStrength()));
     }
 
     private MessageEmbed getSummaryEmbed() {
@@ -83,21 +84,21 @@ public class FactionView {
         if (game.hasGameOption(GameOption.SPICE_PUBLIC)) {
             embedBuilder.addField(
                     "Back",
-                    discordGame.tagEmojis(faction.getSpice() + " " + Emojis.SPICE),
+                    EmojiCache.tagEmojis(faction.getSpice() + " " + Emojis.SPICE),
                     true
             );
         }
 
         embedBuilder.addField(
                 "Front",
-                discordGame.tagEmojis(faction.getFrontOfShieldSpice() + " " + Emojis.SPICE),
+                EmojiCache.tagEmojis(faction.getFrontOfShieldSpice() + " " + Emojis.SPICE),
                 true
         );
 
         if (game.hasGameOption(GameOption.TREACHERY_CARD_COUNT_PUBLIC)) {
             embedBuilder.addField(
                     "Treachery",
-                    discordGame.tagEmojis(faction.getTreacheryHand().size() + " " + Emojis.TREACHERY),
+                    EmojiCache.tagEmojis(faction.getTreacheryHand().size() + " " + Emojis.TREACHERY),
                     true
             );
         }
@@ -119,7 +120,7 @@ public class FactionView {
                     techTokenString += " + " + techSpice + " " + Emojis.SPICE;
                 embedBuilder.addField(
                         "Tech",
-                        discordGame.tagEmojis(techTokenString),
+                        EmojiCache.tagEmojis(techTokenString),
                         true
                 );
             }
@@ -211,7 +212,7 @@ public class FactionView {
             );
             homeworldBuilder.addField("", highDescription, false);
             homeworldBuilder.addField("",
-                    discordGame.tagEmojis(
+                    EmojiCache.tagEmojis(
                             MessageFormat.format(
                                     "{0} add {1} to dial in battle here.\n{0} only lose {1} to Lasgun/Shield explosion on {2}.",
                                     faction.getName(), highBattleExplosion, homeworldName
@@ -227,7 +228,7 @@ public class FactionView {
 
             if (lowRevivalCharity > 0) {
                 homeworldBuilder.addField("",
-                        discordGame.tagEmojis(
+                        EmojiCache.tagEmojis(
                                 MessageFormat.format(
                                         "+{0} free revival",
                                         lowRevivalCharity
@@ -235,7 +236,7 @@ public class FactionView {
                         false);
 
                 homeworldBuilder.addField("",
-                        discordGame.tagEmojis(
+                        EmojiCache.tagEmojis(
                                 MessageFormat.format(
                                         "+{0} CHOAM Charity (from Spice Bank)",
                                         lowRevivalCharity
@@ -243,7 +244,7 @@ public class FactionView {
                         false);
 
                 homeworldBuilder.addField("",
-                        discordGame.tagEmojis(
+                        EmojiCache.tagEmojis(
                                 MessageFormat.format(
                                         "{0} add {1} to dial in battle here.\n{0} only lose {1} to Lasgun/Shield explosion on {2}.",
                                         faction.getName(), lowBattleExplosion, homeworldName
@@ -255,7 +256,7 @@ public class FactionView {
                         false);
 
                 homeworldBuilder.addField("Occupied Spice",
-                        discordGame.tagEmojis(occupiedSpice + " " + Emojis.SPICE),
+                        EmojiCache.tagEmojis(occupiedSpice + " " + Emojis.SPICE),
                         false);
             }
         }
@@ -283,7 +284,7 @@ public class FactionView {
 
         EmbedBuilder eb = new EmbedBuilder()
                 .setTitle(
-                        discordGame.tagEmojis(
+                        EmojiCache.tagEmojis(
                                 MessageFormat.format(
                                         "{0} {1} is a {2} {0}",
                                         Emojis.LEADER, leader.getName(), leaderSkillCard.name()
@@ -320,7 +321,7 @@ public class FactionView {
     private MessageEmbed getStrongholdCardEmbed(StrongholdCard strongholdCard) {
         return new EmbedBuilder()
                 .setTitle(
-                        discordGame.tagEmojis(
+                        EmojiCache.tagEmojis(
                                 MessageFormat.format(
                                         "{0} {1} {0}",
                                         Emojis.STRONGHOLD, strongholdCard.name()

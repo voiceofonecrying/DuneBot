@@ -1,4 +1,4 @@
-import caches.EmojiCache;
+import caches.ApplicationEmojiSync;
 import controller.CommandCompletionGuard;
 import controller.buttons.ButtonManager;
 import controller.commands.CommandManager;
@@ -61,10 +61,9 @@ public class DuneBot {
 
             jda.awaitReady();
 
-            jda.getGuilds().forEach((guild) -> {
-                EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
-                guild.loadMembers().onSuccess(commandManager::gatherMembers);
-            });
+            ApplicationEmojiSync.sync(jda);
+
+            jda.getGuilds().forEach((guild) -> guild.loadMembers().onSuccess(commandManager::gatherMembers));
 
             Signal.handle(new Signal("USR1"), signal -> {
                 logger.info("Received USR1 signal. Stopping all commands...");
