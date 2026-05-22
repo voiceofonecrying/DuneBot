@@ -1,5 +1,6 @@
 package view.factions;
 
+import caches.EmojiCache;
 import constants.Emojis;
 import controller.DiscordGame;
 import enums.ChoamInflationType;
@@ -45,8 +46,8 @@ public class ChoamView extends FactionView {
 
                 if (!inflationMessages.isEmpty()) {
                     fields.add(new MessageEmbed.Field(
-                            discordGame.tagEmojis(Emojis.CHOAM + " Inflation"),
-                            discordGame.tagEmojis(String.join("\n", inflationMessages)),
+                            EmojiCache.tagEmojis(Emojis.CHOAM + " Inflation"),
+                            EmojiCache.tagEmojis(String.join("\n", inflationMessages)),
                             false
                     ));
                 }

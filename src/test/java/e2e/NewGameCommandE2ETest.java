@@ -58,9 +58,8 @@ class NewGameCommandE2ETest {
         moderatorMember = guildState.createMember(modUser.getUserId());
         moderatorMember.addRole(modRole.getRoleId());
 
-        // Initialize EmojiCache with empty emoji list for this guild
-        // EmojiCache doesn't connect to Discord - it's just an in-memory cache
-        EmojiCache.setEmojis(String.valueOf(guildState.getGuildId()), Collections.emptyList());
+        // EmojiCache is global to the bot's application emojis; tests start with it empty.
+        EmojiCache.putAll(Collections.emptyList());
 
         // Create CommandManager instance
         commandManager = new CommandManager();

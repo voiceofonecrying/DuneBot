@@ -1,5 +1,6 @@
 package view.factions;
 
+import caches.EmojiCache;
 import constants.Emojis;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
@@ -28,7 +29,7 @@ public class EcazView extends FactionView {
             returnList.add(
                     new MessageEmbed.Field(
                             "Loyal Leader",
-                            discordGame.tagEmojis(faction.getLoyalLeader().getName()),
+                            EmojiCache.tagEmojis(faction.getLoyalLeader().getName()),
                             true
                     )
             );
@@ -55,8 +56,8 @@ public class EcazView extends FactionView {
 
         if (!ambassadorLocations.isEmpty()) {
             fields.add(new MessageEmbed.Field(
-                    discordGame.tagEmojis(Emojis.ECAZ + " Ambassador Locations"),
-                    discordGame.tagEmojis(String.join("\n", ambassadorLocations)),
+                    EmojiCache.tagEmojis(Emojis.ECAZ + " Ambassador Locations"),
+                    EmojiCache.tagEmojis(String.join("\n", ambassadorLocations)),
                     false
             ));
         }

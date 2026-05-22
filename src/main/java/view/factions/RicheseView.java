@@ -1,5 +1,6 @@
 package view.factions;
 
+import caches.EmojiCache;
 import constants.Emojis;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
@@ -23,7 +24,7 @@ public class RicheseView extends FactionView {
             return Collections.singletonList(
                     new MessageEmbed.Field(
                             "No-Field",
-                            discordGame.tagEmojis(faction.getFrontOfShieldNoField() + " " + Emojis.NO_FIELD),
+                            EmojiCache.tagEmojis(faction.getFrontOfShieldNoField() + " " + Emojis.NO_FIELD),
                             true
                     )
             );

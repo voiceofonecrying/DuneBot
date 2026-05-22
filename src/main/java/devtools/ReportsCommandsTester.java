@@ -1,6 +1,6 @@
 package devtools;
 
-import caches.EmojiCache;
+import caches.ApplicationEmojiSync;
 import controller.commands.CommandManager;
 import controller.commands.ReportsCommands;
 import exceptions.ChannelNotFoundException;
@@ -27,7 +27,7 @@ public class ReportsCommandsTester {
         Guild guild = testJDA.getGuildById(testGuildId);
         if (guild == null) throw new ChannelNotFoundException("Guild not found");
 
-        EmojiCache.setEmojis(guild.getId(), guild.getEmojis());
+        ApplicationEmojiSync.sync(testJDA);
 //        String a = ReportsCommands.playedAllExpansion(guild, List.of());
 //        System.out.println(a + " " + a.length() + "\n============");
         System.out.println(ReportsCommands.updateStats(guild, testJDA, true, List.of(), true, false));

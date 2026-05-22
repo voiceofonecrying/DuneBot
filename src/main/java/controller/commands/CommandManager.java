@@ -1,5 +1,6 @@
 package controller.commands;
 
+import caches.EmojiCache;
 import constants.Emojis;
 import controller.Alliance;
 import controller.CommandCompletionGuard;
@@ -1198,13 +1199,13 @@ public class CommandManager extends ListenerAdapter {
         message += "\nExpansions: ";
         message += waitingListItemResult("O6", DiscordGame.required(originalSixFactions, event).getAsString());
         message += " -- ";
-        message += waitingListItemResult("<:bt:991763325576810546> <:ix:991763319406997514>", DiscordGame.required(ixianstleilaxuExpansion, event).getAsString());
+        message += waitingListItemResult(EmojiCache.getFormatted("bt") + " " + EmojiCache.getFormatted("ix"), DiscordGame.required(ixianstleilaxuExpansion, event).getAsString());
         message += " -- ";
-        message += waitingListItemResult("<:choam:991763324624703538> <:rich:991763318467465337>", DiscordGame.required(choamricheseExpansion, event).getAsString());
+        message += waitingListItemResult(EmojiCache.getFormatted("choam") + " " + EmojiCache.getFormatted("rich"), DiscordGame.required(choamricheseExpansion, event).getAsString());
         message += " -- ";
-        message += waitingListItemResult("<:ecaz:1142126129105346590> <:moritani:1142126199775182879>", DiscordGame.required(ecazmoritaniExpansion, event).getAsString());
+        message += waitingListItemResult(EmojiCache.getFormatted("ecaz") + " " + EmojiCache.getFormatted("moritani"), DiscordGame.required(ecazmoritaniExpansion, event).getAsString());
         message += "\nOptions: ";
-        message += waitingListItemResult("<:weirding:991763071775297681>", DiscordGame.required(leaderSkills, event).getAsString());
+        message += waitingListItemResult(EmojiCache.getFormatted("weirding"), DiscordGame.required(leaderSkills, event).getAsString());
         message += " -- ";
         message += waitingListItemResult(":european_castle:", DiscordGame.required(strongholdCards, event).getAsString());
         message += " -- ";

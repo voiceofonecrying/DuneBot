@@ -1,5 +1,6 @@
 package view.factions;
 
+import caches.EmojiCache;
 import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import model.factions.MoritaniFaction;
@@ -37,7 +38,7 @@ public class MoritaniView extends FactionView {
 
     private MessageEmbed.Field getAssassinationTargetField(String assassinationTarget) {
         return new MessageEmbed.Field(
-                discordGame.tagEmojis(assassinationTarget),
+                EmojiCache.tagEmojis(assassinationTarget),
                 "",
                 false
         );

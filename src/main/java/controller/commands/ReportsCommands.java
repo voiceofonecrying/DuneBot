@@ -16,7 +16,6 @@ import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.concrete.ThreadChannel;
-import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.OptionMapping;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -709,7 +708,7 @@ public class ReportsCommands {
         }
 //        moderatorsString.append("\n\n__Most frequent faction winners for each mod__");
 //        for (MutableTriple<String, Integer, List<String>> p : modAndMaxFactionWins)
-//            moderatorsString.append("\n").append(p.getMiddle()).append(" - ").append(tagEmojis(guild, String.join(" ", p.getRight()))).append(" - ").append(p.getLeft());
+//            moderatorsString.append("\n").append(p.getMiddle()).append(" - ").append(EmojiCache.tagEmojis(String.join(" ", p.getRight()))).append(" - ").append(p.getLeft());
         moderatorsString.append("\n\n__Moderator Assists__");
         Set<String> assisters = gameResults.gameResults.stream().filter(gameResult -> gameResult.getAssistantModerators() != null).flatMap(gameResult -> gameResult.getAssistantModerators().stream()).collect(Collectors.toSet());
         List<Pair<String, List<GameResult>>> assistersAndNumGames = new ArrayList<>();
@@ -906,7 +905,7 @@ public class ReportsCommands {
 //            String averageTurnsWins = new DecimalFormat("#0.0").format(fs.averageWinsTurns);
 //            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(averageTurns).append(" per game, ").append(averageTurnsWins).append(" per win");
 //        }
-        return tagEmojis(guild, factionStatsString.toString());
+        return EmojiCache.tagEmojis(factionStatsString.toString());
     }
 
     private static class FactionAllyPerformance {
@@ -952,7 +951,7 @@ public class ReportsCommands {
             if (fp.numWins != currentWins && lines > 5)
                 break;
             String winPercentage = new DecimalFormat("#0.0%").format((float)fp.numWins/fp.numGames);
-            result.append(tagEmojis(guild, fp.numWins + " - " + Emojis.getFactionEmoji(capitalize(fp.name1)) + " " + Emojis.getFactionEmoji(capitalize(fp.name2)) + " - " + winPercentage + ofGamesWithBothFactions + "\n"));
+            result.append(EmojiCache.tagEmojis(fp.numWins + " - " + Emojis.getFactionEmoji(capitalize(fp.name1)) + " " + Emojis.getFactionEmoji(capitalize(fp.name2)) + " - " + winPercentage + ofGamesWithBothFactions + "\n"));
             ofGamesWithBothFactions = "";
             currentWins = fp.numWins;
             lines++;
@@ -1075,7 +1074,7 @@ public class ReportsCommands {
                         .append(new DecimalFormat("#0.0%").format(ts.numWins/(float)ts.numTotalWins))
                         .append(" of ").append(ts.numTotalWins).append(" ").append(ts.turn).append(" wins");
         }
-        return tagEmojis(guild, turnStatsString.toString());
+        return EmojiCache.tagEmojis(turnStatsString.toString());
     }
 
     private static String turnsHistogram(GRList gameResults) {
@@ -1114,7 +1113,7 @@ public class ReportsCommands {
         }
         factionsSoloWins.sort((a, b) -> Integer.compare(b.getRight(), a.getRight()));
         for (Pair<String, Integer> fsw : factionsSoloWins)
-            response.append("\n").append(tagEmojis(guild, Emojis.getFactionEmoji(fsw.getLeft()))).append(" ").append(fsw.getRight());
+            response.append("\n").append(EmojiCache.tagEmojis(Emojis.getFactionEmoji(fsw.getLeft()))).append(" ").append(fsw.getRight());
         return response.toString();
     }
 
@@ -1220,7 +1219,7 @@ public class ReportsCommands {
                 returnString += "\nLindaren " + lindarenGames + " games";
                 if (lindarenWins > 0) returnString += ", " + lindarenWins + " wins";
             }
-            return tagEmojis(guild, returnString);
+            return EmojiCache.tagEmojis(returnString);
         }
     }
 
@@ -1400,7 +1399,7 @@ public class ReportsCommands {
             String s = writeTopFactionWinsAboveExpected(guild, grList, members, fn);
             playerStatsString.append(s).append("\n");
         }
-        playerStatsChannel.sendMessage(tagEmojis(guild, playerStatsString.toString())).queue();
+        playerStatsChannel.sendMessage(EmojiCache.tagEmojis(playerStatsString.toString())).queue();
 
 //        playerStatsChannel.sendMessage(playerSoloVictories(guild, grList, members)).queue();
         playerStatsChannel.sendMessage("__Won with Most Different Factions__\n" + wonAsMostFactions(guild, grList, members)).queue();
@@ -1581,7 +1580,7 @@ public class ReportsCommands {
                 victoryType = "G";
             else if (winnersString.contains(":guild: victory condition"))
                 victoryType = "G";
-            else if (winnersString.contains(tagEmojis(guild,":guild: Default")))
+            else if (winnersString.contains(EmojiCache.tagEmojis(":guild: Default")))
                 victoryType = "G";
             else if (gameName.contains("PBD67"))
                 victoryType = "Most strongholds";
@@ -1718,25 +1717,6 @@ public class ReportsCommands {
         return numNewGames;
     }
 
-    public static RichCustomEmoji getEmoji(Guild guild, String emojiName) {
-        Map<String, RichCustomEmoji> emojis = EmojiCache.getEmojis(Objects.requireNonNull(guild).getId());
-        return emojis.get(emojiName.replace(":", ""));
-    }
-
-    public static String getEmojiTag(Guild guild, String emojiName) {
-        RichCustomEmoji emoji = getEmoji(guild, emojiName);
-        return emoji == null ? ":" + emojiName.replace(":", "") + ":" : emoji.getFormatted();
-    }
-    public static String tagEmojis(Guild guild, String message) {
-        Matcher matcher = untaggedEmojis.matcher(message);
-        StringBuilder stringBuilder = new StringBuilder();
-        while (matcher.find()) {
-            matcher.appendReplacement(stringBuilder, getEmojiTag(guild, matcher.group(1)));
-        }
-        matcher.appendTail(stringBuilder);
-        return stringBuilder.toString();
-    }
-
     public static String playerRecord(SlashCommandInteractionEvent event) {
         OptionMapping optionMapping = event.getOption(user.getName());
         User thePlayer = (optionMapping != null ? optionMapping.getAsUser() : null);
@@ -1793,7 +1773,7 @@ public class ReportsCommands {
         }
         if (playedAll.isEmpty() && missingOne.isEmpty())
             return "No players have played all " + listSize + " factions.";
-        return tagEmojis(guild, playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
+        return EmojiCache.tagEmojis(playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
     }
 
     private static class PlayerFactionCounts {
@@ -1847,7 +1827,7 @@ public class ReportsCommands {
             }
             playedAll.append("\n");
         }
-        return tagEmojis(guild, playedAll.toString());
+        return EmojiCache.tagEmojis(playedAll.toString());
     }
 
     public static String wonAsAllOriginalSix(Guild guild, GRList grList, List<Member> members) {
@@ -1884,7 +1864,7 @@ public class ReportsCommands {
         }
         if (playedAll.isEmpty() && missingOne.isEmpty())
             return "No players have won with all " + listSize + " factions.";
-        return tagEmojis(guild, playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
+        return EmojiCache.tagEmojis(playedAll.toString() + missingOne + (showMissingTwo ? missingTwo : ""));
     }
 
     public static String wonAsMostFactions(Guild guild, GRList gameResults, List<Member> members) {
@@ -1914,7 +1894,7 @@ public class ReportsCommands {
         playedMax.append(maxMinusOne).append(maxMinusTwo).append(maxMinusThree);
         if (playedMax.isEmpty())
             return "No players have played.";
-        return tagEmojis(guild, playedMax.toString());
+        return EmojiCache.tagEmojis(playedMax.toString());
     }
 
     public static String soloVictories(Guild guild, GRList gameResults, List<Member> members) {
@@ -1978,7 +1958,7 @@ public class ReportsCommands {
         }
         if (maxGames == 0)
             return "No players have played.";
-        return tagEmojis(guild, result.toString());
+        return EmojiCache.tagEmojis(result.toString());
     }
 
     private static String playerSoloVictories(Guild guild, GRList gameResults, List<Member> members) {
@@ -1999,9 +1979,9 @@ public class ReportsCommands {
             factionNames.forEach(factionName -> {
                 int factionWins = soloWinGames.stream().filter(gr -> gr.isWinningPlayer(fsw.getLeft())).filter(gr -> gr.isWinningFaction(factionName)).toList().size();
                 if (factionWins > 0)
-                    factionCounts.append(factionWins).append(" ").append(tagEmojis(guild, Emojis.getFactionEmoji(factionName))).append(" ");
+                    factionCounts.append(factionWins).append(" ").append(EmojiCache.tagEmojis(Emojis.getFactionEmoji(factionName))).append(" ");
             });
-            response.append("\n").append(fsw.getRight()).append(" - ").append(tagEmojis(guild, getPlayerString(guild, fsw.getLeft(), members))).append(" - ").append(factionCounts);
+            response.append("\n").append(fsw.getRight()).append(" - ").append(EmojiCache.tagEmojis(getPlayerString(guild, fsw.getLeft(), members))).append(" - ").append(factionCounts);
         }
         return response.toString();
     }

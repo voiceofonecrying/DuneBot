@@ -328,30 +328,29 @@ abstract class SetupCommandsE2ETestBase {
      * Creates properly formatted emoji strings that JDA's Emoji.fromFormatted() can parse.
      */
     protected void setupMockEmojis() {
-        List<net.dv8tion.jda.api.entities.emoji.RichCustomEmoji> mockEmojis = new ArrayList<>();
+        List<net.dv8tion.jda.api.entities.emoji.ApplicationEmoji> mockEmojis = new ArrayList<>();
 
-        // Common faction emoji names (without colons, as stored in EmojiCache)
+        // Common faction emoji base names. The on-Discord name carries a _xxx checksum suffix;
+        // EmojiCache strips it on lookup.
         String[] emojiNames = {"atreides", "harkonnen", "emperor", "fremen", "guild", "bt", "ix", "tleilaxu", "bg", "choam", "richese", "ecaz", "moritani"};
 
         for (int i = 0; i < emojiNames.length; i++) {
-            String emojiName = emojiNames[i];
+            String baseName = emojiNames[i];
+            String fullName = baseName + "_" + String.format("%03d", i);
             long emojiId = 100000000L + i;
 
-            net.dv8tion.jda.api.entities.emoji.RichCustomEmoji emoji =
-                    mock(net.dv8tion.jda.api.entities.emoji.RichCustomEmoji.class);
+            net.dv8tion.jda.api.entities.emoji.ApplicationEmoji emoji =
+                    mock(net.dv8tion.jda.api.entities.emoji.ApplicationEmoji.class);
 
-            // Mock the methods that EmojiCache and DiscordGame use
-            when(emoji.getName()).thenReturn(emojiName);
+            when(emoji.getName()).thenReturn(fullName);
             when(emoji.getIdLong()).thenReturn(emojiId);
-            when(emoji.getAsMention()).thenReturn("<:" + emojiName + ":" + emojiId + ">");
-            // CRITICAL: getFormatted() must return properly formatted string for Emoji.fromFormatted() to work
-            when(emoji.getFormatted()).thenReturn("<:" + emojiName + ":" + emojiId + ">");
+            when(emoji.getAsMention()).thenReturn("<:" + fullName + ":" + emojiId + ">");
+            when(emoji.getFormatted()).thenReturn("<:" + fullName + ":" + emojiId + ">");
 
             mockEmojis.add(emoji);
         }
 
-        // Set the emojis in EmojiCache so DiscordGame can find them
-        EmojiCache.setEmojis(String.valueOf(guildState.getGuildId()), mockEmojis);
+        EmojiCache.putAll(mockEmojis);
     }
 
     // ========== Helper Methods for Tests ==========

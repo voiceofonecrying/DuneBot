@@ -1,5 +1,6 @@
 package controller.buttons;
 
+import caches.EmojiCache;
 import constants.Emojis;
 import controller.channels.TurnSummary;
 import controller.commands.RunCommands;
@@ -637,10 +638,10 @@ public class ShipmentAndMovementButtons implements Pressable {
             buttonSuffix = "-starting-forces";
         shipOrMove += buttonSuffix + "-";
         for (int i = 0; i < buttonLimitForces; i++) {
-            forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "+" + (i + 1)).withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(faction.getForceEmoji()))));
+            forcesButtons.add(Button.primary("add-force-" + shipOrMove + (i + 1), "+" + (i + 1)).withEmoji(Emoji.fromFormatted(EmojiCache.tagEmojis(faction.getForceEmoji()))));
         }
         for (int i = 0; i < buttonLimitSpecialForces; i++) {
-            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + (i + 1), "+" + (i + 1) + " *").withEmoji(Emoji.fromFormatted(discordGame.tagEmojis(faction.getSpecialForceEmoji()))));
+            forcesButtons.add(Button.primary("add-special-force-" + shipOrMove + (i + 1), "+" + (i + 1) + " *").withEmoji(Emoji.fromFormatted(EmojiCache.tagEmojis(faction.getSpecialForceEmoji()))));
         }
 
         if (isShipment) {
