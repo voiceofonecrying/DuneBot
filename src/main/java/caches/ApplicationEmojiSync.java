@@ -17,11 +17,13 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.CRC32;
 
@@ -29,10 +31,18 @@ import java.util.zip.CRC32;
  * Reconciles the bot's application-level emojis with image files bundled in the
  * {@code emojis/} resource directory.
  *
- * <p>Each resource file's expected emoji name is {@code <basename>_<xxx>}, where
- * {@code xxx} is the last three decimal digits of a CRC32 over the file bytes.
- * Changing an image (without renaming it) therefore yields a new expected name,
- * which is what lets the next startup detect drift by name alone.
+ * <p>Each resource file contributes <em>two</em> emojis on Discord:
+ * <ul>
+ *   <li>a base-name emoji ({@code <basename>}) — the one code references and the
+ *       one Discord displays in notifications, reactions, and emoji picker;</li>
+ *   <li>a marker emoji ({@code <basename>_<xxx>}) where {@code xxx} is the last
+ *       three decimal digits of a CRC32 over the file bytes — a sentinel whose
+ *       presence tells the next startup that the base-name emoji is up-to-date.
+ *       Nothing in code ever looks the marker up.</li>
+ * </ul>
+ * Changing an image's bytes (without renaming) yields a new marker name, which
+ * is how the next startup detects drift and re-uploads both the base and the
+ * marker.
  *
  * <p>{@link #sync(JDA)} uploads missing emojis synchronously and queues stale
  * deletes in the background, returning a future that callers may ignore.
@@ -40,8 +50,11 @@ import java.util.zip.CRC32;
 public class ApplicationEmojiSync {
     private static final Logger logger = LoggerFactory.getLogger(ApplicationEmojiSync.class);
     private static final String RESOURCE_DIR = "emojis";
+    private static final Pattern MARKER_SUFFIX = Pattern.compile("_\\d{3}$");
 
-    private record EmojiResource(String name, byte[] bytes) {}
+    private record EmojiResource(String baseName, byte[] bytes) {}
+
+    private record Plan(String base, String marker, byte[] bytes) {}
 
     /**
      * Reconcile application emojis with the {@code emojis/} resource directory.
@@ -59,40 +72,78 @@ public class ApplicationEmojiSync {
             return CompletableFuture.completedFuture(null);
         }
 
-        List<ApplicationEmoji> existing = jda.retrieveApplicationEmojis().complete();
-        Set<String> existingNames = new HashSet<>();
-        for (ApplicationEmoji e : existing) existingNames.add(e.getName());
-
+        List<Plan> plans = new ArrayList<>(resources.size());
         Set<String> expectedNames = new HashSet<>();
-        for (EmojiResource r : resources) expectedNames.add(r.name());
-
-        List<ApplicationEmoji> uploaded = uploadMissing(jda, resources, existingNames);
-
-        List<ApplicationEmoji> survivors = new ArrayList<>(uploaded);
-        for (ApplicationEmoji e : existing) {
-            if (expectedNames.contains(e.getName())) survivors.add(e);
+        for (EmojiResource r : resources) {
+            Plan p = new Plan(r.baseName(), r.baseName() + "_" + checksumSuffix(r.bytes()), r.bytes());
+            plans.add(p);
+            expectedNames.add(p.base());
+            expectedNames.add(p.marker());
         }
-        EmojiCache.putAll(survivors);
 
-        return deleteStaleAsync(existing, expectedNames);
+        List<ApplicationEmoji> existing = jda.retrieveApplicationEmojis().complete();
+        Map<String, ApplicationEmoji> existingByName = new HashMap<>();
+        for (ApplicationEmoji e : existing) existingByName.put(e.getName(), e);
+
+        deleteDriftedBases(plans, existingByName);
+
+        List<ApplicationEmoji> uploaded = uploadMissing(jda, plans, existingByName);
+
+        List<ApplicationEmoji> baseSurvivors = new ArrayList<>();
+        for (ApplicationEmoji e : uploaded) {
+            if (!MARKER_SUFFIX.matcher(e.getName()).find()) baseSurvivors.add(e);
+        }
+        for (ApplicationEmoji e : existingByName.values()) {
+            if (expectedNames.contains(e.getName()) && !MARKER_SUFFIX.matcher(e.getName()).find()) {
+                baseSurvivors.add(e);
+            }
+        }
+        EmojiCache.putAll(baseSurvivors);
+
+        return deleteStaleAsync(existingByName.values(), expectedNames);
     }
 
-    private static List<ApplicationEmoji> uploadMissing(JDA jda, List<EmojiResource> resources, Set<String> existingNames) {
-        List<ApplicationEmoji> uploaded = new ArrayList<>();
-        for (EmojiResource r : resources) {
-            if (existingNames.contains(r.name())) continue;
+    /**
+     * For every plan whose marker is missing, the base emoji (if it exists) is
+     * stale — its bytes no longer match the current resource. Sync-delete it so
+     * the upload phase can create a fresh one with the same name.
+     */
+    private static void deleteDriftedBases(List<Plan> plans, Map<String, ApplicationEmoji> existingByName) {
+        for (Plan p : plans) {
+            if (existingByName.containsKey(p.marker())) continue;
+            ApplicationEmoji staleBase = existingByName.remove(p.base());
+            if (staleBase == null) continue;
             try {
-                logger.info("Uploading application emoji: {}", r.name());
-                uploaded.add(jda.createApplicationEmoji(r.name(), Icon.from(r.bytes())).complete());
+                logger.info("Deleting drifted application emoji: {}", staleBase.getName());
+                staleBase.delete().complete();
             } catch (RuntimeException e) {
-                logger.error("Failed to upload application emoji {}", r.name(), e);
+                logger.error("Failed to delete drifted application emoji {}", staleBase.getName(), e);
             }
+        }
+    }
+
+    private static List<ApplicationEmoji> uploadMissing(JDA jda, List<Plan> plans, Map<String, ApplicationEmoji> existingByName) {
+        List<ApplicationEmoji> uploaded = new ArrayList<>();
+        for (Plan p : plans) {
+            uploaded.addAll(uploadIfAbsent(jda, p.base(), p.bytes(), existingByName));
+            uploaded.addAll(uploadIfAbsent(jda, p.marker(), p.bytes(), existingByName));
         }
         return uploaded;
     }
 
-    private static CompletableFuture<Void> deleteStaleAsync(List<ApplicationEmoji> existing, Set<String> expectedNames) {
-        List<ApplicationEmoji> toDelete = existing.stream()
+    private static List<ApplicationEmoji> uploadIfAbsent(JDA jda, String name, byte[] bytes, Map<String, ApplicationEmoji> existingByName) {
+        if (existingByName.containsKey(name)) return List.of();
+        try {
+            logger.info("Uploading application emoji: {}", name);
+            return List.of(jda.createApplicationEmoji(name, Icon.from(bytes)).complete());
+        } catch (RuntimeException e) {
+            logger.error("Failed to upload application emoji {}", name, e);
+            return List.of();
+        }
+    }
+
+    private static CompletableFuture<Void> deleteStaleAsync(java.util.Collection<ApplicationEmoji> survivingExisting, Set<String> expectedNames) {
+        List<ApplicationEmoji> toDelete = survivingExisting.stream()
                 .filter(e -> !expectedNames.contains(e.getName()))
                 .toList();
         if (toDelete.isEmpty()) return CompletableFuture.completedFuture(null);
@@ -152,8 +203,7 @@ public class ApplicationEmojiSync {
                 String fileName = p.getFileName().toString();
                 int dot = fileName.lastIndexOf('.');
                 String base = dot >= 0 ? fileName.substring(0, dot) : fileName;
-                byte[] bytes = Files.readAllBytes(p);
-                out.add(new EmojiResource(base + "_" + checksumSuffix(bytes), bytes));
+                out.add(new EmojiResource(base, Files.readAllBytes(p)));
             }
         }
         return out;

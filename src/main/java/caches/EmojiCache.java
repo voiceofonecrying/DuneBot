@@ -24,11 +24,17 @@ public class EmojiCache {
 
     private static final Map<String, ApplicationEmoji> byBaseName = new HashMap<>();
 
-    /** Replace the cache contents with the given emojis, indexed by base name. */
+    /**
+     * Replace the cache contents with the given emojis, keyed by name.
+     * Emojis whose name ends in the {@code _xxx} CRC suffix are skipped — those
+     * are checksum-marker sentinels for {@link ApplicationEmojiSync} drift detection
+     * and must never be returned from a {@link #get(String)} lookup.
+     */
     public static void putAll(Collection<ApplicationEmoji> emojis) {
         byBaseName.clear();
         for (ApplicationEmoji emoji : emojis) {
-            byBaseName.put(stripSuffix(emoji.getName()), emoji);
+            if (SUFFIX.matcher(emoji.getName()).find()) continue;
+            byBaseName.put(emoji.getName(), emoji);
         }
     }
 
