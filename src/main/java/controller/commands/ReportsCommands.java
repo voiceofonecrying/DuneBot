@@ -433,6 +433,10 @@ public class ReportsCommands {
         players.addAll(gameResults.stream().map(GameResult::getWydras).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getSpinnette).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getLindaren).filter(Objects::nonNull).collect(Collectors.toSet()));
+        players.addAll(gameResults.stream().map(GameResult::getIduali).filter(Objects::nonNull).collect(Collectors.toSet()));
+        players.addAll(gameResults.stream().map(GameResult::getSmugglers).filter(Objects::nonNull).collect(Collectors.toSet()));
+        players.addAll(gameResults.stream().map(GameResult::getSpaceorks).filter(Objects::nonNull).collect(Collectors.toSet()));
+        players.addAll(gameResults.stream().map(GameResult::getOrdos).filter(Objects::nonNull).collect(Collectors.toSet()));
         return players;
     }
 
@@ -587,7 +591,11 @@ public class ReportsCommands {
                 + gameResults.gameResults.stream().filter(gr -> gr.getMikarrol() != null && gr.getMikarrol().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getWydras() != null && gr.getWydras().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getSpinnette() != null && gr.getSpinnette().equals(playerName)).toList().size()
-                + gameResults.gameResults.stream().filter(gr -> gr.getLindaren() != null && gr.getLindaren().equals(playerName)).toList().size();
+                + gameResults.gameResults.stream().filter(gr -> gr.getLindaren() != null && gr.getLindaren().equals(playerName)).toList().size()
+                + gameResults.gameResults.stream().filter(gr -> gr.getIduali() != null && gr.getIduali().equals(playerName)).toList().size()
+                + gameResults.gameResults.stream().filter(gr -> gr.getSmugglers() != null && gr.getSmugglers().equals(playerName)).toList().size()
+                + gameResults.gameResults.stream().filter(gr -> gr.getSpaceorks() != null && gr.getSpaceorks().equals(playerName)).toList().size()
+                + gameResults.gameResults.stream().filter(gr -> gr.getOrdos() != null && gr.getOrdos().equals(playerName)).toList().size();
         int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
 
         int totalWins = 0;
@@ -623,23 +631,6 @@ public class ReportsCommands {
     private static PlayerPerformance playerFactionPerformance(GRList gameResults, String playerName, String factionName) {
         int numGames = gameResults.gameResults.stream().filter(gr -> gr.getFieldValue(factionName) != null && gr.getFieldValue(factionName).equals(playerName)).toList().size();
         int numWins = gameResults.gameResults.stream().filter(gr -> gr.getFieldValue(factionName) != null && gr.getFieldValue(factionName).equals(playerName) && gr.isWinningPlayer(playerName)).toList().size();
-//        int numGames = gameResults.gameResults.stream().filter(gr -> gr.getAtreides() != null && gr.getAtreides().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getBG() != null && gr.getBG().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getBT() != null && gr.getBT().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getCHOAM() != null && gr.getCHOAM().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getEcaz() != null && gr.getEcaz().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getEmperor() != null && gr.getEmperor().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getFremen() != null && gr.getFremen().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getGuild() != null && gr.getGuild().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getHarkonnen() != null && gr.getHarkonnen().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getIx() != null && gr.getIx().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getMoritani() != null && gr.getMoritani().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getRichese() != null && gr.getRichese().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getMikarrol() != null && gr.getMikarrol().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getWydras() != null && gr.getWydras().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getSpinnette() != null && gr.getSpinnette().equals(playerName)).toList().size()
-//                + gameResults.gameResults.stream().filter(gr -> gr.getLindaren() != null && gr.getLindaren().equals(playerName)).toList().size();
-//        int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
 
         int totalWins = 0;
         for (GameResult gr : gameResults.gameResults) {
@@ -870,27 +861,36 @@ public class ReportsCommands {
         return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage, averageTurns, averageWinsTurns);
     }
 
-    private static final List<String> homebrewFactions = List.of("mikarrol", "wydras", "spinnette", "lindaren");
+    public static final Map<String, String> homebrewFactionsAndEmojis = Map.of(
+            "mikarrol", ":mikarrol:",
+            "wydras", ":wydras:",
+            "spinnette", ":crossed_swords:",
+            "lindaren", ":lindaren:",
+            "iduali", ":scorpion:",
+            "smugglers", ":detective:",
+            "spaceorks", ":troll:",
+            "ordos", ":snake:"
+    );
 
     private static FactionPerformance overallHomebrewFactionPerformance(GRList gameResults) {
         List<GameResult> gamesWithFaction = new ArrayList<>();
         for (GameResult gameResult : gameResults.gameResults) {
-            for (String factionName : homebrewFactions) {
+            homebrewFactionsAndEmojis.forEach((factionName, _) -> {
                 String n = gameResult.getFieldValue(factionName);
                 if (n != null && !n.isEmpty()) {
                     gamesWithFaction.add(gameResult);
                 }
-            }
+            });
         }
         int numGames = gamesWithFaction.size();
         int totalTurns = gamesWithFaction.stream().mapToInt(GameResult::getTurn).sum();
         List<GameResult> gamesWithFactionWin = new ArrayList<>();
         for (GameResult gr : gameResults.gameResults) {
-            for (String factionName : homebrewFactions) {
+            homebrewFactionsAndEmojis.forEach((factionName, _) -> {
                 if (gr.isWinningFaction(factionName)) {
                     gamesWithFactionWin.add(gr);
                 }
-            }
+            });
         }
         int numWins = gamesWithFactionWin.size();
         int totalWinsTurns = gamesWithFactionWin.stream().mapToInt(GameResult::getTurn).sum();
@@ -902,8 +902,9 @@ public class ReportsCommands {
 
     private static List<FactionPerformance> getAllHomebrewFactionPerformance(GRList gameResults) {
         List<FactionPerformance> allFactionPerformance = new ArrayList<>();
-        for (String factionName : homebrewFactions)
-            allFactionPerformance.add(factionPerformance(gameResults, factionName, StringUtils.capitalize(factionName)));
+        homebrewFactionsAndEmojis.forEach((factionName, factionEmoji) -> {
+            allFactionPerformance.add(factionPerformance(gameResults, factionName, StringUtils.capitalize(factionName) + " " + factionEmoji));
+        });
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         return allFactionPerformance;
     }
@@ -923,10 +924,6 @@ public class ReportsCommands {
         allFactionPerformance.add(factionPerformance(gameResults, "moritani", Emojis.MORITANI));
         allFactionPerformance.add(factionPerformance(gameResults, "richese", Emojis.RICHESE));
         allFactionPerformance.add(overallHomebrewFactionPerformance(gameResults));
-//        allFactionPerformance.add(factionPerformance(gameResults, "mikarrol", ":mikarrol:"));
-//        allFactionPerformance.add(factionPerformance(gameResults, "wydras", ":wydras:"));
-//        allFactionPerformance.add(factionPerformance(gameResults, "spinnette", ":regional_indicator_s:"));
-//        allFactionPerformance.add(factionPerformance(gameResults, "lindaren", ":lindaren:"));
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         return allFactionPerformance;
     }
@@ -1193,6 +1190,10 @@ public class ReportsCommands {
         int wydrasGames;
         int spinnetteGames;
         int lindarenGames;
+        int idualiGames;
+        int smugglersGames;
+        int spaceorksGames;
+        int ordosGames;
         int atreidesWins;
         int bgWins;
         int btWins;
@@ -1209,6 +1210,10 @@ public class ReportsCommands {
         int wydrasWins;
         int spinnetteWins;
         int lindarenWins;
+        int idualiWins;
+        int smugglersWins;
+        int spaceorksWins;
+        int ordosWins;
 
         public String publish(String playerTag, Guild guild) {
             String returnString = playerTag + " has played in " + games + " games and won " + wins;
@@ -1276,6 +1281,22 @@ public class ReportsCommands {
                 returnString += "\nLindaren " + lindarenGames + " games";
                 if (lindarenWins > 0) returnString += ", " + lindarenWins + " wins";
             }
+            if (idualiGames > 0) {
+                returnString += "\nIduali " + idualiGames + " games";
+                if (idualiWins > 0) returnString += ", " + idualiWins + " wins";
+            }
+            if (smugglersGames > 0) {
+                returnString += "\nSmugglers " + smugglersGames + " games";
+                if (smugglersWins > 0) returnString += ", " + smugglersWins + " wins";
+            }
+            if (spaceorksGames > 0) {
+                returnString += "\nSpace Orks " + spaceorksGames + " games";
+                if (spaceorksWins > 0) returnString += ", " + spaceorksWins + " wins";
+            }
+            if (ordosGames > 0) {
+                returnString += "\nOrdos " + ordosGames + " games";
+                if (ordosWins > 0) returnString += ", " + ordosWins + " wins";
+            }
             return EmojiCache.tagEmojis(returnString);
         }
     }
@@ -1337,6 +1358,18 @@ public class ReportsCommands {
             } else if (gameResult.getLindaren() != null && gameResult.getLindaren().equals(playerName)) {
                 pr.lindarenGames++;
                 if (winner) pr.lindarenWins++;
+            } else if (gameResult.getIduali() != null && gameResult.getIduali().equals(playerName)) {
+                pr.idualiGames++;
+                if (winner) pr.idualiWins++;
+            } else if (gameResult.getSmugglers() != null && gameResult.getSmugglers().equals(playerName)) {
+                pr.smugglersGames++;
+                if (winner) pr.smugglersWins++;
+            } else if (gameResult.getSpaceorks() != null && gameResult.getSpaceorks().equals(playerName)) {
+                pr.spaceorksGames++;
+                if (winner) pr.spaceorksWins++;
+            } else if (gameResult.getOrdos() != null && gameResult.getOrdos().equals(playerName)) {
+                pr.ordosGames++;
+                if (winner) pr.ordosWins++;
             }
         }
         return pr;

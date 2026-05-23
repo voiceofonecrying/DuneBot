@@ -33,6 +33,10 @@ public class GameResult {
     private String wydras;
     private String spinnette;
     private String lindaren;
+    private String iduali;
+    private String smugglers;
+    private String spaceorks;
+    private String ordos;
     private List<Set<String>> winningPlayers;
     private String predictedFaction;
     private String predictedPlayer;
@@ -259,6 +263,38 @@ public class GameResult {
         this.lindaren = lindaren;
     }
 
+    public String getIduali() {
+        return iduali;
+    }
+
+    public void setIduali(String iduali) {
+        this.iduali = iduali;
+    }
+
+    public String getSmugglers() {
+        return smugglers;
+    }
+
+    public void setSmugglers(String smugglers) {
+        this.smugglers = smugglers;
+    }
+
+    public String getSpaceorks() {
+        return spaceorks;
+    }
+
+    public void setSpaceorks(String spaceorks) {
+        this.spaceorks = spaceorks;
+    }
+
+    public String getOrdos() {
+        return ordos;
+    }
+
+    public void setOrdos(String ordos) {
+        this.ordos = ordos;
+    }
+
     public List<Set<String>> getWinningPlayers() {
         return winningPlayers;
     }
@@ -349,7 +385,11 @@ public class GameResult {
         else if (mikarrol != null && mikarrol.equals(playerName)) return true;
         else if (wydras != null && wydras.equals(playerName)) return true;
         else if (spinnette != null && spinnette.equals(playerName)) return true;
-        else return lindaren != null && lindaren.equals(playerName);
+        else if (lindaren != null && lindaren.equals(playerName)) return true;
+        else if (iduali != null && iduali.equals(playerName)) return true;
+        else if (smugglers != null && smugglers.equals(playerName)) return true;
+        else if (spaceorks != null && spaceorks.equals(playerName)) return true;
+        else return ordos != null && ordos.equals(playerName);
     }
 
     public String getFactionForPlayer(String playerName) {
@@ -375,7 +415,7 @@ public class GameResult {
     }
 
     public static String getHeader() {
-        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Richese,Mikarrol,Wydras,Spinnette,Lindaren,Turn,Win Type,Faction 1,Faction 2,Faction 3,Faction 4,Faction 5,Faction 6,Winner 1,Winner 2,Winner 3,Winner 4,Winner 5,Winner 6,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
+        return "V1.0,Atreides,BG,BT,CHOAM,Ecaz,Emperor,Fremen,Guild,Harkonnen,Ix,Moritani,Richese,Mikarrol,Wydras,Spinnette,Lindaren,Iduali,Smugglers,Space Orks,Ordos,Turn,Win Type,Faction 1,Faction 2,Faction 3,Faction 4,Faction 5,Faction 6,Winner 1,Winner 2,Winner 3,Winner 4,Winner 5,Winner 6,Predicted Faction,Predicted Player,Mod,Game Start,Game End,Duration,Archived,Days Until Archive";
     }
 
     public String csvString() {
@@ -396,6 +436,10 @@ public class GameResult {
         gameRecord += (wydras == null ? "" : wydras) + ",";
         gameRecord += (spinnette == null ? "" : spinnette) + ",";
         gameRecord += (lindaren == null ? "" : lindaren) + ",";
+        gameRecord += (iduali == null ? "" : iduali) + ",";
+        gameRecord += (smugglers == null ? "" : smugglers) + ",";
+        gameRecord += (spaceorks == null ? "" : spaceorks) + ",";
+        gameRecord += (ordos == null ? "" : ordos) + ",";
         gameRecord += turn + ",";
         gameRecord += (victoryType == null ? "" : victoryType) + ",";
         List<String> allFactionWinners = winningFactions.stream().flatMap(Collection::stream).toList();
