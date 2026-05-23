@@ -330,22 +330,22 @@ abstract class SetupCommandsE2ETestBase {
     protected void setupMockEmojis() {
         List<net.dv8tion.jda.api.entities.emoji.ApplicationEmoji> mockEmojis = new ArrayList<>();
 
-        // Common faction emoji base names. The on-Discord name carries a _xxx checksum suffix;
-        // EmojiCache strips it on lookup.
+        // Common faction emoji base names. The cache is keyed by these exact names;
+        // checksum-marker emojis (`name_xxx`) exist on Discord only for drift detection
+        // and never enter the cache, so the test mocks omit them.
         String[] emojiNames = {"atreides", "harkonnen", "emperor", "fremen", "guild", "bt", "ix", "tleilaxu", "bg", "choam", "richese", "ecaz", "moritani"};
 
         for (int i = 0; i < emojiNames.length; i++) {
-            String baseName = emojiNames[i];
-            String fullName = baseName + "_" + String.format("%03d", i);
+            String name = emojiNames[i];
             long emojiId = 100000000L + i;
 
             net.dv8tion.jda.api.entities.emoji.ApplicationEmoji emoji =
                     mock(net.dv8tion.jda.api.entities.emoji.ApplicationEmoji.class);
 
-            when(emoji.getName()).thenReturn(fullName);
+            when(emoji.getName()).thenReturn(name);
             when(emoji.getIdLong()).thenReturn(emojiId);
-            when(emoji.getAsMention()).thenReturn("<:" + fullName + ":" + emojiId + ">");
-            when(emoji.getFormatted()).thenReturn("<:" + fullName + ":" + emojiId + ">");
+            when(emoji.getAsMention()).thenReturn("<:" + name + ":" + emojiId + ">");
+            when(emoji.getFormatted()).thenReturn("<:" + name + ":" + emojiId + ">");
 
             mockEmojis.add(emoji);
         }
