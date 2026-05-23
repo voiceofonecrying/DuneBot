@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.utils.FileUpload;
 import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
 import net.dv8tion.jda.internal.utils.tuple.MutableTriple;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -869,6 +870,44 @@ public class ReportsCommands {
         return new FactionPerformance(factionEmoji, numGames, numWins, winPercentage, averageTurns, averageWinsTurns);
     }
 
+    private static final List<String> homebrewFactions = List.of("mikarrol", "wydras", "spinnette", "lindaren");
+
+    private static FactionPerformance overallHomebrewFactionPerformance(GRList gameResults) {
+        List<GameResult> gamesWithFaction = new ArrayList<>();
+        for (GameResult gameResult : gameResults.gameResults) {
+            for (String factionName : homebrewFactions) {
+                String n = gameResult.getFieldValue(factionName);
+                if (n != null && !n.isEmpty()) {
+                    gamesWithFaction.add(gameResult);
+                }
+            }
+        }
+        int numGames = gamesWithFaction.size();
+        int totalTurns = gamesWithFaction.stream().mapToInt(GameResult::getTurn).sum();
+        List<GameResult> gamesWithFactionWin = new ArrayList<>();
+        for (GameResult gr : gameResults.gameResults) {
+            for (String factionName : homebrewFactions) {
+                if (gr.isWinningFaction(factionName)) {
+                    gamesWithFactionWin.add(gr);
+                }
+            }
+        }
+        int numWins = gamesWithFactionWin.size();
+        int totalWinsTurns = gamesWithFactionWin.stream().mapToInt(GameResult::getTurn).sum();
+        float winPercentage = numWins/(float)numGames;
+        float averageTurns = totalTurns/(float)numGames;
+        float averageWinsTurns = totalWinsTurns/(float)numWins;
+        return new FactionPerformance(":homes:", numGames, numWins, winPercentage, averageTurns, averageWinsTurns);
+    }
+
+    private static List<FactionPerformance> getAllHomebrewFactionPerformance(GRList gameResults) {
+        List<FactionPerformance> allFactionPerformance = new ArrayList<>();
+        for (String factionName : homebrewFactions)
+            allFactionPerformance.add(factionPerformance(gameResults, factionName, StringUtils.capitalize(factionName)));
+        allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
+        return allFactionPerformance;
+    }
+
     private static List<FactionPerformance> getAllFactionPerformance(GRList gameResults) {
         List<FactionPerformance> allFactionPerformance = new ArrayList<>();
         allFactionPerformance.add(factionPerformance(gameResults, "atreides", Emojis.ATREIDES));
@@ -883,10 +922,11 @@ public class ReportsCommands {
         allFactionPerformance.add(factionPerformance(gameResults, "ix", Emojis.IX));
         allFactionPerformance.add(factionPerformance(gameResults, "moritani", Emojis.MORITANI));
         allFactionPerformance.add(factionPerformance(gameResults, "richese", Emojis.RICHESE));
-        allFactionPerformance.add(factionPerformance(gameResults, "mikarrol", ":mikarrol:"));
-        allFactionPerformance.add(factionPerformance(gameResults, "wydras", ":wydras:"));
-        allFactionPerformance.add(factionPerformance(gameResults, "spinnette", ":regional_indicator_s:"));
-        allFactionPerformance.add(factionPerformance(gameResults, "lindaren", ":lindaren:"));
+        allFactionPerformance.add(overallHomebrewFactionPerformance(gameResults));
+//        allFactionPerformance.add(factionPerformance(gameResults, "mikarrol", ":mikarrol:"));
+//        allFactionPerformance.add(factionPerformance(gameResults, "wydras", ":wydras:"));
+//        allFactionPerformance.add(factionPerformance(gameResults, "spinnette", ":regional_indicator_s:"));
+//        allFactionPerformance.add(factionPerformance(gameResults, "lindaren", ":lindaren:"));
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         return allFactionPerformance;
     }
@@ -898,6 +938,23 @@ public class ReportsCommands {
             String winPercentage = new DecimalFormat("#0.0%").format(fs.winPercentage);
             factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(winPercentage).append(" - ").append(fs.numWins).append("/").append(fs.numGames)
                     ;//.append(", Average number of turns with faction win = ").append(fs.averageWinsTurns);
+        }
+//        factionStatsString.append("\n\n__Average Turns with Faction__ (includes " + Emojis.GUILD + " and " + Emojis.FREMEN + " special victories as 10 turns)");
+//        for (FactionPerformance fs : allFactionPerformance) {
+//            String averageTurns = new DecimalFormat("#0.0").format(fs.averageTurns);
+//            String averageTurnsWins = new DecimalFormat("#0.0").format(fs.averageWinsTurns);
+//            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(averageTurns).append(" per game, ").append(averageTurnsWins).append(" per win");
+//        }
+        return EmojiCache.tagEmojis(factionStatsString.toString());
+    }
+
+    public static String writeHomebrewFactionStats(Guild guild, GRList gameResults) {
+        List<FactionPerformance> allFactionPerformance = getAllHomebrewFactionPerformance(gameResults);
+        StringBuilder factionStatsString = new StringBuilder(":homes: __Hombrew Factions__");
+        for (FactionPerformance fs : allFactionPerformance) {
+            String winPercentage = new DecimalFormat("#0.0%").format(fs.winPercentage);
+            factionStatsString.append("\n").append(fs.factionEmoji).append(" ").append(winPercentage).append(" - ").append(fs.numWins).append("/").append(fs.numGames)
+            ;//.append(", Average number of turns with faction win = ").append(fs.averageWinsTurns);
         }
 //        factionStatsString.append("\n\n__Average Turns with Faction__ (includes " + Emojis.GUILD + " and " + Emojis.FREMEN + " special victories as 10 turns)");
 //        for (FactionPerformance fs : allFactionPerformance) {
@@ -1338,6 +1395,7 @@ public class ReportsCommands {
         List<Message> messages = messageHistory.getRetrievedHistory();
         messages.forEach(msg -> msg.delete().queue());
         factionStatsChannel.sendMessage(writeFactionStats(guild, grList)).queue();
+        factionStatsChannel.sendMessage(writeHomebrewFactionStats(guild, grList)).queue();
         factionStatsChannel.sendMessage(turnsHistogram(grList)).queue();
         factionStatsChannel.sendMessage(updateTurnStats(guild, grList)).queue();
         factionStatsChannel.sendMessage(factionSoloVictories(guild, grList)).queue();
