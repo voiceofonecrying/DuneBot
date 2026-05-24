@@ -1677,6 +1677,21 @@ public class BattlePlanTest extends DuneTest {
         }
 
         @Test
+        void testIxSuboidsRemainHalfStrength() throws InvalidGameStateException {
+            game.addFaction(ix);
+            carthag.addForces("Ix", 3);
+            carthag.addForces("Ix*", 1);
+            Battle battle = new Battle(game, List.of(carthag), List.of(ix, harkonnen));
+            BattlePlan bp = new BattlePlan(game, battle, ix, true, cammarPilru, null, false, null, null, 2, false, 1);
+            assertEquals(0, bp.getRegularDialed());
+            assertEquals(1, bp.getSpecialDialed());
+            assertEquals(3, bp.getNumForcesNotDialed());
+            assertEquals(6, bp.getDoubleBattleStrength());
+            assertTrue(ixChat.getMessages().stream().noneMatch(m -> m.contains("troop losses")));
+            assertTrue(ixChat.getChoices().isEmpty());
+        }
+
+        @Test
         void testIxNexusCunning() throws InvalidGameStateException {
             game.addFaction(ix);
             carthag.addForces("Ix", 3);

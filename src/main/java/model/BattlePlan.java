@@ -232,8 +232,8 @@ public class BattlePlan {
             spice += 2;
 
         int doubleStrengthSpecial = specialsNegated ? 0 : specialNotDialed;
-        int doubleStrengthSpecialWithSpice = 0;
         doubleStrengthSpecial = Math.min(wholeNumberDial / 2, doubleStrengthSpecial);
+        int doubleStrengthSpecialWithSpice = 0;
         if (isSpiceNeeded(game, battle, faction, true)) {
             doubleStrengthSpecial = Math.min(doubleStrengthSpecial, spice);
             doubleStrengthSpecialWithSpice = doubleStrengthSpecial;
@@ -348,16 +348,18 @@ public class BattlePlan {
                 unspicedSpecials--;
                 pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - specialsSwappedOut));
             }
-        } else if (isIx && battle.isIxCunning()) {
-            while (unspicedSpecials > 0 && (regularNotDialed - regularsSwappedIn) >= 1) {
-                regularsSwappedIn++;
-                unspicedSpecials--;
-                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - unspicedSpecials));
-            }
-            while (spicedSpecials > 0 && (regularNotDialed - regularsSwappedIn) >= 2) {
-                regularsSwappedIn++;
-                spicedSpecials--;
-                pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - spicedSpecials));
+        } else if (isIx) {
+            if (battle.isIxCunning()) {
+                while (unspicedSpecials > 0 && (regularNotDialed - regularsSwappedIn) >= 1) {
+                    regularsSwappedIn++;
+                    unspicedSpecials--;
+                    pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - unspicedSpecials));
+                }
+                while (spicedSpecials > 0 && (regularNotDialed - regularsSwappedIn) >= 2) {
+                    regularsSwappedIn++;
+                    spicedSpecials--;
+                    pairsOfLossOptions.add(new ImmutablePair<>(regularDialed + regularsSwappedIn, specialDialed - spicedSpecials));
+                }
             }
         } else {
             while (specialsNegated && (regularNotDialed - regularsSwappedIn) >= 1 && unspicedSpecials > 0) {
