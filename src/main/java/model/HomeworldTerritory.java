@@ -97,6 +97,10 @@ public class HomeworldTerritory extends Territory {
         return 1;
     }
 
+    public void callParentAddForces(String forceName, int amount) {
+        super.addForces(forceName, amount);
+    }
+
     @Override
     public void addForces(String forceName, int amount) {
         if (amount == 0)
