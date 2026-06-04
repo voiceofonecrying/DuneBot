@@ -1148,19 +1148,12 @@ public class ShowCommands {
             star = resize(star, 8, 8);
             forceImage = overlay(forceImage, star, new Point(20, 7), 1);
         }
-        if (strength == 20) {
-            BufferedImage twoImage = getResourceImage("2");
-            BufferedImage zeroImage = getResourceImage("0");
-            twoImage = resize(twoImage, 12, 12);
-            zeroImage = resize(zeroImage, 12, 12);
-            forceImage = overlay(forceImage, twoImage, new Point(28, 14), 1);
-            forceImage = overlay(forceImage, zeroImage, new Point(36, 14), 1);
-        } else if (strength > 9) {
-            BufferedImage oneImage = getResourceImage("1");
-            BufferedImage digitImage = getResourceImage(String.valueOf(strength - 10));
-            oneImage = resize(oneImage, 12, 12);
+        if (strength > 9) {
+            BufferedImage tensImage = getResourceImage(String.valueOf(strength / 10));
+            BufferedImage digitImage = getResourceImage(String.valueOf(strength % 10));
+            tensImage = resize(tensImage, 12, 12);
             digitImage = resize(digitImage, 12, 12);
-            forceImage = overlay(forceImage, oneImage, new Point(28, 14), 1);
+            forceImage = overlay(forceImage, tensImage, new Point(28, 14), 1);
             forceImage = overlay(forceImage, digitImage, new Point(36, 14), 1);
         } else {
             BufferedImage numberImage = getResourceImage(String.valueOf(strength));
