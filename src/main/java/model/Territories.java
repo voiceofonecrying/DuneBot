@@ -7,8 +7,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 public class Territories extends HashMap<String, Territory> {
-    public Territory addHomeworld(Game game, String homeworldName, String factionName) {
-        Territory homeworld = new HomeworldTerritory(game, homeworldName, factionName);
+    public HomeworldTerritory addHomeworld(Game game, String homeworldName, String factionName) {
+        HomeworldTerritory homeworld = new HomeworldTerritory(game, homeworldName, factionName);
         put(homeworldName, homeworld);
         return homeworld;
     }
