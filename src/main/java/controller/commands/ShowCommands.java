@@ -1074,7 +1074,11 @@ public class ShowCommands {
         i = 0;
         offset = 0;
         for (Leader leader : game.getLeaderTanks()) {
-            Faction leaderFaction = game.getFaction(leader.getOriginalFactionName());
+            Faction leaderFaction;
+            if (leader.getName().equals("Duke Vidal") && !game.hasEcazFaction())
+                leaderFaction = game.getMoritaniFaction();
+            else
+                leaderFaction = game.getFaction(leader.getOriginalFactionName());
             BufferedImage leaderImage;
             if (leaderFaction instanceof HomebrewFaction) {
                 leaderImage = getSigilImage(leaderFaction);
