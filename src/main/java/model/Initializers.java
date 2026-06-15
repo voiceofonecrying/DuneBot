@@ -329,7 +329,11 @@ public class Initializers {
                 points.add(new Point(287, 631));
             }
             case "Habbanya Erg (East Sector)" -> points.add(new Point(230, 640));
-            case "Habbanya Ridge Flat (West Sector)" -> points.add(new Point(125, 710));
+            case "Habbanya Ridge Flat (West Sector)" -> {
+                points.add(new Point(125, 710));
+                points.add(new Point(130, 680));
+                points.add(new Point(150, 745));
+            }
             case "Wind Pass North (South Sector)" -> points.add(new Point(377, 655));
             case "Cielago West (North Sector)" -> points.add(new Point(335, 710));
             case "False Wall West (South Sector)" -> {
