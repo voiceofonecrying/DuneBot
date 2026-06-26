@@ -816,6 +816,14 @@ class BattleTest extends DuneTest {
         }
 
         @Test
+        void testBothPlansSubmittedTagsMod() throws InvalidGameStateException {
+            game.setMod("@TheMod");
+            battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
+            battle1.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
+            assertEquals("@TheMod", gameActions.getMessages().getLast());
+        }
+
+        @Test
         void testKHWithout7Killed() throws InvalidGameStateException {
             atreides.addTreacheryCard(lasgun);
             String message = battle1.setBattlePlan(game, atreides, "Duncan Idaho", true, "0", 0, "Lasgun", "None");
@@ -830,7 +838,7 @@ class BattleTest extends DuneTest {
             battle1.setBattlePlan(game, atreides, duncanIdaho, null, false, 0, false, 0, null, null);
             assertTrue(gameActions.getMessages().isEmpty());
             battle1.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
-            assertEquals(Emojis.HARKONNEN + " battle plan submitted.", gameActions.getMessages().getLast());
+            assertEquals(Emojis.HARKONNEN + " battle plan submitted.", gameActions.getMessages().getFirst());
             gameActions.clear();
             battle1.setBattlePlan(game, harkonnen, feydRautha, null, false, 0, false, 0, null, null);
             assertTrue(gameActions.getMessages().isEmpty());
