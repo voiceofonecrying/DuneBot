@@ -35,7 +35,7 @@ public class GameResult {
     private String lindaren;
     private String iduali;
     private String smugglers;
-    private String spaceorks;
+    private String orks;
     private String ordos;
     private List<Set<String>> winningPlayers;
     private String predictedFaction;
@@ -279,12 +279,12 @@ public class GameResult {
         this.smugglers = smugglers;
     }
 
-    public String getSpaceorks() {
-        return spaceorks;
+    public String getOrks() {
+        return orks;
     }
 
-    public void setSpaceorks(String spaceorks) {
-        this.spaceorks = spaceorks;
+    public void setOrks(String orks) {
+        this.orks = orks;
     }
 
     public String getOrdos() {
@@ -388,7 +388,7 @@ public class GameResult {
         else if (lindaren != null && lindaren.equals(playerName)) return true;
         else if (iduali != null && iduali.equals(playerName)) return true;
         else if (smugglers != null && smugglers.equals(playerName)) return true;
-        else if (spaceorks != null && spaceorks.equals(playerName)) return true;
+        else if (orks != null && orks.equals(playerName)) return true;
         else return ordos != null && ordos.equals(playerName);
     }
 
@@ -438,7 +438,7 @@ public class GameResult {
         gameRecord += (lindaren == null ? "" : lindaren) + ",";
         gameRecord += (iduali == null ? "" : iduali) + ",";
         gameRecord += (smugglers == null ? "" : smugglers) + ",";
-        gameRecord += (spaceorks == null ? "" : spaceorks) + ",";
+        gameRecord += (orks == null ? "" : orks) + ",";
         gameRecord += (ordos == null ? "" : ordos) + ",";
         gameRecord += turn + ",";
         gameRecord += (victoryType == null ? "" : victoryType) + ",";
