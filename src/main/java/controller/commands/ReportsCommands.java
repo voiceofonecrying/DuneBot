@@ -435,7 +435,7 @@ public class ReportsCommands {
         players.addAll(gameResults.stream().map(GameResult::getLindaren).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getIduali).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getSmugglers).filter(Objects::nonNull).collect(Collectors.toSet()));
-        players.addAll(gameResults.stream().map(GameResult::getSpaceorks).filter(Objects::nonNull).collect(Collectors.toSet()));
+        players.addAll(gameResults.stream().map(GameResult::getOrks).filter(Objects::nonNull).collect(Collectors.toSet()));
         players.addAll(gameResults.stream().map(GameResult::getOrdos).filter(Objects::nonNull).collect(Collectors.toSet()));
         return players;
     }
@@ -594,7 +594,7 @@ public class ReportsCommands {
                 + gameResults.gameResults.stream().filter(gr -> gr.getLindaren() != null && gr.getLindaren().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getIduali() != null && gr.getIduali().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getSmugglers() != null && gr.getSmugglers().equals(playerName)).toList().size()
-                + gameResults.gameResults.stream().filter(gr -> gr.getSpaceorks() != null && gr.getSpaceorks().equals(playerName)).toList().size()
+                + gameResults.gameResults.stream().filter(gr -> gr.getOrks() != null && gr.getOrks().equals(playerName)).toList().size()
                 + gameResults.gameResults.stream().filter(gr -> gr.getOrdos() != null && gr.getOrdos().equals(playerName)).toList().size();
         int numWins = gameResults.gameResults.stream().filter(gr -> gr.isWinningPlayer(playerName)).toList().size();
 
@@ -868,7 +868,7 @@ public class ReportsCommands {
             "lindaren", ":lindaren:",
             "iduali", ":scorpion:",
             "smugglers", ":detective:",
-            "spaceorks", ":troll:",
+            "orks", ":troll:",
             "ordos", ":snake:"
     );
 
@@ -1192,7 +1192,7 @@ public class ReportsCommands {
         int lindarenGames;
         int idualiGames;
         int smugglersGames;
-        int spaceorksGames;
+        int orksGames;
         int ordosGames;
         int atreidesWins;
         int bgWins;
@@ -1212,7 +1212,7 @@ public class ReportsCommands {
         int lindarenWins;
         int idualiWins;
         int smugglersWins;
-        int spaceorksWins;
+        int orksWins;
         int ordosWins;
 
         public String publish(String playerTag, Guild guild) {
@@ -1289,9 +1289,9 @@ public class ReportsCommands {
                 returnString += "\nSmugglers " + smugglersGames + " games";
                 if (smugglersWins > 0) returnString += ", " + smugglersWins + " wins";
             }
-            if (spaceorksGames > 0) {
-                returnString += "\nSpace Orks " + spaceorksGames + " games";
-                if (spaceorksWins > 0) returnString += ", " + spaceorksWins + " wins";
+            if (orksGames > 0) {
+                returnString += "\nSpace Orks " + orksGames + " games";
+                if (orksWins > 0) returnString += ", " + orksWins + " wins";
             }
             if (ordosGames > 0) {
                 returnString += "\nOrdos " + ordosGames + " games";
@@ -1364,9 +1364,9 @@ public class ReportsCommands {
             } else if (gameResult.getSmugglers() != null && gameResult.getSmugglers().equals(playerName)) {
                 pr.smugglersGames++;
                 if (winner) pr.smugglersWins++;
-            } else if (gameResult.getSpaceorks() != null && gameResult.getSpaceorks().equals(playerName)) {
-                pr.spaceorksGames++;
-                if (winner) pr.spaceorksWins++;
+            } else if (gameResult.getOrks() != null && gameResult.getOrks().equals(playerName)) {
+                pr.orksGames++;
+                if (winner) pr.orksWins++;
             } else if (gameResult.getOrdos() != null && gameResult.getOrdos().equals(playerName)) {
                 pr.ordosGames++;
                 if (winner) pr.ordosWins++;
