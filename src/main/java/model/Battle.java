@@ -442,12 +442,18 @@ public class Battle {
 
         BattlePlan battlePlan = new BattlePlan(game, this, faction, planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice);
         if (planIsForAggressor) {
-            if (aggressorBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
+            if (aggressorBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null) {
                 game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
+                if (defenderBattlePlan != null && defenderBattlePlan.isDialedForcesSettled())
+                    game.getGameActions().publish(game.getModOrRoleMention());
+            }
             aggressorBattlePlan = battlePlan;
         } else {
-            if (defenderBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null)
+            if (defenderBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null) {
                 game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
+                if (aggressorBattlePlan != null && aggressorBattlePlan.isDialedForcesSettled())
+                    game.getGameActions().publish(game.getModOrRoleMention());
+            }
             defenderBattlePlan = battlePlan;
         }
         if (aggressorBattlePlan != null && defenderBattlePlan != null) {
@@ -546,8 +552,12 @@ public class Battle {
             battlePlan = defenderBattlePlan;
         else
             throw new InvalidGameStateException(factionName + " is not in the current battle.");
-        if (!battlePlan.isDialedForcesSettled())
+        if (!battlePlan.isDialedForcesSettled()) {
             game.getGameActions().publish(Emojis.getFactionEmoji(factionName) + " battle plan submitted.");
+            if (aggressorBattlePlan != null && aggressorBattlePlan.isDialedForcesSettled()
+                    && defenderBattlePlan != null && defenderBattlePlan.isDialedForcesSettled())
+                game.getGameActions().publish(game.getModOrRoleMention());
+        }
         battlePlan.setForcesDialed(regularDialed, specialDialed);
         String emojiFactionName = factionName.equals("Ecaz") ? ecazAllyName : factionName;
         Faction emojiFaction = game.getFaction(emojiFactionName);
