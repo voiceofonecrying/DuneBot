@@ -58,7 +58,9 @@ public class BGButtons implements Pressable {
     }
 
     private static void dontAdvise(ButtonInteractionEvent event, DiscordGame discordGame) {
-        discordGame.queueMessage(Emojis.BG + " Don't advise in " + event.getComponentId().split("-")[3]);
+        String noAdviseMessage = " will not advise the shipment to " + event.getComponentId().split("-")[3];
+        discordGame.queueMessage("You" + noAdviseMessage);
+        discordGame.getGame().getTurnSummary().publish(Emojis.BG + noAdviseMessage);
         discordGame.queueDeleteMessage();
     }
 
