@@ -268,13 +268,13 @@ public class FactionView {
         List<Leader> skilledLeaders = faction.getSkilledLeaders();
 
         return skilledLeaders.stream()
-                .filter(l -> l.getOriginalFactionName().equals(faction.getName()))
                 .map(l -> getLeaderSkillEmbed(game, l))
                 .toList();
     }
 
     public MessageEmbed getLeaderSkillEmbed(Game game, Leader leader) {
         LeaderSkillCard leaderSkillCard = leader.getSkillCard();
+        String playerFaction = faction.getName();
         String description = leaderSkillCard.description();
         if (description.isEmpty())
             description = game.getHomebrewLeaderSkillDescription(leaderSkillCard.name());
@@ -291,16 +291,14 @@ public class FactionView {
                                 )))
                 .setColor(faction.getColor())
                 .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()))
-                .addField(
-                        "When Leader is in Front of Shield",
-                        description,
-                        false
-                )
-                .addField(
-                        "When Leader is in Battle",
-                        inBattleDescription,
-                        false
-                );
+        ;
+
+        // Captured Leaders cannot be placed Front of Shield to get LS top of card ability
+        if(faction.getName() != "Harkonnen" || leader.getOriginalFactionName().equals("Harkonnen")) {
+                eb.addField("When Leader is in Front of Shield", description, false);
+        }
+        eb.addField("When Leader is in Battle", inBattleDescription, false);
+
         List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
                 "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
         if (!(faction instanceof HomebrewFaction) && allFactionNames.contains(leader.getOriginalFactionName()))
