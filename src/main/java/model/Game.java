@@ -950,6 +950,22 @@ public class Game {
         return leader;
     }
 
+    public void refreshDukeVidal() {
+        Optional<Leader> optVidal;
+        optVidal = leaderTanks.stream().filter(l -> l.getName().equals("Duke Vidal")).findFirst();
+        if (optVidal.isPresent()) {
+            dukeVidal = optVidal.get();
+        } else {
+            for (Faction f : factions) {
+                optVidal = f.getLeader("Duke Vidal");
+                if (optVidal.isPresent()) {
+                    dukeVidal = optVidal.get();
+                    break;
+                }
+            }
+        }
+    }
+
     public void createDukeVidal() {
         if (dukeVidal == null)
             dukeVidal = new Leader("Duke Vidal", 6, "Ecaz", null, false);

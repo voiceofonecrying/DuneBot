@@ -19,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 abstract class FactionTestTemplate {
     Game game;
     TestTopic turnSummary;
+    TestTopic modInfo;
     TestTopic gameActions;
     Faction faction;
     TestTopic chat;
@@ -32,6 +33,8 @@ abstract class FactionTestTemplate {
         game = new Game();
         turnSummary = new TestTopic();
         game.setTurnSummary(turnSummary);
+        modInfo = new TestTopic();
+        game.setModInfo(modInfo);
         gameActions = new TestTopic();
         game.setGameActions(gameActions);
         chat = new TestTopic();
