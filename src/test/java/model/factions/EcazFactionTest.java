@@ -975,7 +975,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertTrue(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
             assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
             assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
-            assertEquals(Emojis.BT + " may revive Duke Vidal from the tanks.", turnSummary.getMessages().getLast());
+            assertEquals(Emojis.BT + " may revive Duke Vidal in Revival Phase.", turnSummary.getMessages().getLast());
         }
 
         @Test
@@ -995,7 +995,7 @@ public class EcazFactionTest extends FactionTestTemplate {
             assertTrue(game.getLeaderTanks().stream().anyMatch(l -> l.getName().equals("Duke Vidal")));
             assertEquals("Ecaz has flipped to Low Threshold.", turnSummary.getMessages().getFirst());
             assertEquals("Ecaz is now occupied by " + Emojis.BT, turnSummary.getMessages().get(1));
-            assertEquals(Emojis.BT + " may revive Duke Vidal from the tanks.", turnSummary.getMessages().getLast());
+            assertEquals(Emojis.BT + " may revive Duke Vidal in Revival Phase.", turnSummary.getMessages().getLast());
         }
 
         @Test

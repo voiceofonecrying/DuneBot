@@ -348,6 +348,7 @@ public class DiscordGame {
         Gson gson = createGsonDeserializer();
         Game game = gson.fromJson(gameJson, Game.class);
         addGameReferenceToFactions(game);
+        game.refreshDukeVidal();
 
         for (Territory territory : game.getTerritories().values()) {
             if (territory.hasForce("Hidden Mobile Stronghold")) {

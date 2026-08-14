@@ -148,15 +148,18 @@ public class HomeworldTerritory extends Territory {
 
     protected void checkForOccupierTakingDukeVidal() {
         if (territoryName.equals("Ecaz") && game.getEcazFaction().isHomeworldOccupied()) {
+            Faction occupier = game.getEcazFaction().getOccupier();
             if (game.getLeaderTanks().contains(game.getDukeVidal())) {
-                game.getTurnSummary().publish(game.getEcazFaction().getOccupier().getEmoji() + " may revive Duke Vidal from the tanks.");
-                game.getEcazFaction().getOccupier().getChat().publish("Would you like to revive Duke Vidal from the tanks as Ecaz occupier? ");
+                String revivalMessage = occupier.getEmoji() + " may revive Duke Vidal in Revival Phase.";
+                game.getTurnSummary().publish(revivalMessage);
+                game.getModInfo().publish(revivalMessage + " " + game.getModOrRoleMention());
+                occupier.getChat().publish("You may revive Duke Vidal in Revival Phase. " + occupier.getPlayer());
             } else {
                 for (Faction faction1 : game.getFactions()) {
                     faction1.getLeaders().removeIf(leader1 -> leader1.getName().equals("Duke Vidal"));
                 }
-                game.getEcazFaction().getOccupier().getLeaders().add(game.getDukeVidal());
-                game.getTurnSummary().publish("Duke Vidal has left to work for " + game.getEcazFaction().getOccupier().getEmoji() + " (Ecaz homeworld occupied)");
+                occupier.getLeaders().add(game.getDukeVidal());
+                game.getTurnSummary().publish("Duke Vidal has left to work for " + occupier.getEmoji() + " (Ecaz homeworld occupied)");
             }
         }
     }
