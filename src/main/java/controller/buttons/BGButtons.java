@@ -58,10 +58,9 @@ public class BGButtons implements Pressable {
     }
 
     private static void dontAdvise(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException {
-        String noAdviseMessage = " will not advise the shipment to " + event.getComponentId().split("-")[3];
-        discordGame.queueMessage("You" + noAdviseMessage);
-        discordGame.getTurnSummary().queueMessage(Emojis.BG + noAdviseMessage);
-        discordGame.queueDeleteMessage();
+        Game game = discordGame.getGame();
+        String territoryName = event.getComponentId().split("-")[3];
+        game.getBGFaction().dontAdvise(game, territoryName);
     }
 
     private static void allyVoice(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {

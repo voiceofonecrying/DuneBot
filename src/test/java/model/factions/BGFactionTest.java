@@ -595,6 +595,13 @@ class BGFactionTest extends FactionTestTemplate {
         }
     }
 
+    @Test
+    void testDontAdvise() {
+        faction.dontAdvise(game, "Carthag");
+        assertEquals("You will not advise the shipment to Carthag.", chat.getMessages().getLast());
+        assertEquals(Emojis.BG + " will not advise the shipment to Carthag.", turnSummary.getMessages().getLast());
+    }
+
     @Nested
     @DisplayName("#placeForces")
     class PlaceForces extends FactionTestTemplate.PlaceForces {

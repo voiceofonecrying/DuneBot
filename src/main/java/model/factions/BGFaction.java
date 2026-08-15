@@ -307,6 +307,12 @@ public class BGFaction extends Faction {
         game.setUpdated(UpdateType.MAP);
     }
 
+    public void dontAdvise(Game game, String territoryName) {
+        String noAdviseMessage = " will not advise the shipment to " + territoryName + ".";
+        chat.reply("You" + noAdviseMessage);
+        game.getTurnSummary().publish(Emojis.BG + noAdviseMessage);
+    }
+
     public void presentFlipMessage(Game game, String territoryName) {
         if (territoryName.equals("Polar Sink") || game.getTerritory(territoryName) instanceof HomeworldTerritory)
             return;
