@@ -614,7 +614,7 @@ public class BattlePlan {
         if (opponentHasBureaucrat)
             bonuses -= numStrongholdsOccupied;
         if (stoneBurnerForTroops())
-            return 2 * (regularNotDialed + specialNotDialed) + 2 * bonuses;
+            return 2 * (regularNotDialed + specialNotDialed);
         int doubleBattleStrength = 2 * wholeNumberDial + 2 * bonuses;
         if (plusHalfDial) doubleBattleStrength++;
         doubleBattleStrength += 2 * getLeaderContribution();
@@ -722,12 +722,14 @@ public class BattlePlan {
 
     public String getDialString() {
         String dialString = "Dial: " + wholeNumberDial + (plusHalfDial ? ".5" : "");
-        if (ecazTroopsForAlly != 0 && !stoneBurnerForTroops())
-            dialString += " + " + Math.ceilDiv(ecazTroopsForAlly, 2) + " " + Emojis.ECAZ_TROOP + " support";
-        if (homeworldDialAdvantage != 0)
-            dialString += "\n  +" + homeworldDialAdvantage + " for Homeworld advantage";
-        if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
-            dialString += "\n  +2 for Reinforcements";
+        if(!stoneBurnerForTroops()) {
+            if (ecazTroopsForAlly != 0)
+                dialString += " + " + Math.ceilDiv(ecazTroopsForAlly, 2) + " " + Emojis.ECAZ_TROOP + " support";
+            if (homeworldDialAdvantage != 0)
+                dialString += "\n  +" + homeworldDialAdvantage + " for Homeworld advantage";
+            if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
+                dialString += "\n  +2 for Reinforcements";
+        }
         return dialString;
     }
 
