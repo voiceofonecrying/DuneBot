@@ -15,6 +15,8 @@ public class Colors {
     public static final Color HARKONNEN = Color.decode("#3B3530");
     public static final Color MORITANI = Color.decode("#419BA8");
     public static final Color RICHESE = Color.decode("#B1AFA3");
+    public static final Color IDUALI = Color.decode("#470704");
+    public static final Color ORKS = Color.decode("#4B9326");
 
     public static Color getFactionColor(String factionName) {
         switch (factionName) {
@@ -53,6 +55,12 @@ public class Colors {
             }
             case "Moritani" -> {
                 return MORITANI;
+            }
+            case "Iduali" -> {
+                return IDUALI;
+            }
+            case "Orks" -> {
+                return ORKS;
             }
         }
         throw new IllegalArgumentException("Invalid faction name: " + factionName);

@@ -445,7 +445,7 @@ public class SetupCommands {
         Gson gson = DiscordGame.createGsonDeserializer();
         HomebrewFaction.FactionSpecs specs;
         specs = gson.fromJson(jsonResults, HomebrewFaction.FactionSpecs.class);
-        faction.initalizeFromSpecs(specs);
+        faction.initalizeFromSpecs(specs, discordGame);
         String proxyFaction = specs.getFactionProxy();
 
         Category gameCategory = discordGame.getGameCategory();

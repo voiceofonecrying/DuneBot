@@ -2,7 +2,10 @@ package model.factions;
 
 import constants.Colors;
 import constants.Emojis;
+import controller.DiscordGame;
+import exceptions.ChannelNotFoundException;
 import model.*;
+import net.dv8tion.jda.api.entities.channel.concrete.Category;
 
 import java.awt.*;
 import java.io.IOException;
@@ -10,6 +13,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class HomebrewFaction extends Faction{
+    Boolean hasEmojiAndColor = false;
     String factionProxy;
     String homeworldProxy;
     String highDescription;
@@ -29,12 +33,19 @@ public class HomebrewFaction extends Faction{
             int value;
         }
 
+        public static class ChannelSpecs {
+            String name;
+            String post;
+        }
+
         String factionProxy;
+        Boolean hasEmojiAndColor;
         int spice;
         int handLimit = 4;
         int freeRevival = 1;
         int maxRevival = 3;
         List<LeaderSpecs> leaders;
+        List<ChannelSpecs> channels;
         String homeworld;
         String homeworldProxy;
         int highThreshold = 12;
@@ -52,16 +63,31 @@ public class HomebrewFaction extends Faction{
         }
     }
 
-    public void initalizeFromSpecs(FactionSpecs specs) {
+    public void initalizeFromSpecs(FactionSpecs specs, DiscordGame discordGame) throws ChannelNotFoundException {
+        if(specs.hasEmojiAndColor != null)
+            hasEmojiAndColor = specs.hasEmojiAndColor;
+
         setFactionProxy(specs.factionProxy);
         spice = specs.spice;
         handLimit = specs.handLimit;
         freeRevival = specs.freeRevival;
         maxRevival = specs.maxRevival;
+
+        String emojiFaction = hasEmojiAndColor ? name : factionProxy;
+
         for (FactionSpecs.LeaderSpecs ls : specs.leaders) {
-            Leader leader = new Leader(ls.name, ls.value, name, factionProxy,  null, false);
+            Leader leader = new Leader(ls.name, ls.value, name, emojiFaction,  null, false);
             leaders.add(leader);
-            game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
+            game.getTraitorDeck().add(new TraitorCard(ls.name, name, emojiFaction, ls.value));
+        }
+        if(specs.channels != null) {
+            for (FactionSpecs.ChannelSpecs c : specs.channels) {
+                Category gameCategory = discordGame.getGameCategory();
+                gameCategory.createTextChannel(c.name).queue(channel -> {
+                    if(c.post != null)
+                        channel.sendMessage(c.post).queue();
+                });
+            }
         }
         homeworld = specs.homeworld;
         if (specs.homeworldProxy != null)
@@ -86,6 +112,21 @@ public class HomebrewFaction extends Faction{
     }
 
     public void setFactionProxy(String factionProxy) {
+        if(hasEmojiAndColor) {
+            emoji = Emojis.getFactionEmoji(name);
+            forceEmoji = Emojis.getForceEmoji(name);
+            this.factionProxy = name;
+        }
+        else {
+            this.factionProxy = factionProxy;
+            emoji = Emojis.getFactionEmoji(factionProxy);
+            forceEmoji = Emojis.getForceEmoji(factionProxy);
+
+            game.getTraitorDeck().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
+            for (Faction f : game.getFactions())
+                f.getTraitorHand().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
+        }
+
         HashMap<String, String> homeworldName = new HashMap<>();
         homeworldName.put("Atreides", "Caladan");
         homeworldName.put("BG", "Wallach IX");
@@ -99,13 +140,7 @@ public class HomebrewFaction extends Faction{
         homeworldName.put("Ix", "Ix");
         homeworldName.put("Moritani", "Grumman");
         homeworldName.put("Richese", "Richese");
-        this.factionProxy = factionProxy;
-        emoji = Emojis.getFactionEmoji(factionProxy);
-        forceEmoji = Emojis.getForceEmoji(factionProxy);
         homeworldProxy = homeworldName.get(factionProxy);
-        game.getTraitorDeck().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
-        for (Faction f : game.getFactions())
-            f.getTraitorHand().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
     }
 
     public String getHomeworldProxy() {
@@ -138,7 +173,8 @@ public class HomebrewFaction extends Faction{
 
     @Override
     public Color getColor() {
-        return Colors.getFactionColor(factionProxy);
+        String colorFaction = hasEmojiAndColor ? name : factionProxy;
+        return Colors.getFactionColor(colorFaction);
     }
 
     @Override

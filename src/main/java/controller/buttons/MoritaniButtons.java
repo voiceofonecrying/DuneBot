@@ -124,7 +124,6 @@ public class MoritaniButtons implements Pressable {
     private static void moveTerrorToken(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Territory toTerritory = game.getTerritory(event.getComponentId().split("-")[3]);
         String terror = event.getComponentId().split("-")[4];
-        Territory fromTerritory = game.getTerritory(event.getComponentId().split("-")[5]);
         discordGame.queueDeleteMessage();
         game.getMoritaniFaction().moveTerrorToken(toTerritory, terror);
         discordGame.pushGame();
