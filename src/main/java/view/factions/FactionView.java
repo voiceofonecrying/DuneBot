@@ -292,7 +292,7 @@ public class FactionView {
                 .setUrl(CardImages.getLeaderSkillCardLink(discordGame.getEvent().getGuild(), leaderSkillCard.name()));
 
         // Captured Leaders cannot be placed Front of Shield to get LS top of card ability
-        if(!faction.getName().equals("Harkonnen") || leader.getOriginalFactionName().equals("Harkonnen"))
+        if (!(faction instanceof HarkonnenFaction) || leader.getOriginalFactionName().equals("Harkonnen"))
             eb.addField("When Leader is in Front of Shield", description, false);
 
         eb.addField("When Leader is in Battle", inBattleDescription, false);
