@@ -722,7 +722,7 @@ public class BattlePlan {
 
     public String getDialString() {
         String dialString = "Dial: " + wholeNumberDial + (plusHalfDial ? ".5" : "");
-        if(!stoneBurnerForTroops()) {
+        if (!stoneBurnerForTroops()) {
             if (ecazTroopsForAlly != 0)
                 dialString += " + " + Math.ceilDiv(ecazTroopsForAlly, 2) + " " + Emojis.ECAZ_TROOP + " support";
             if (homeworldDialAdvantage != 0)
