@@ -56,7 +56,7 @@ public class HomebrewFaction extends Faction{
     }
 
     public void initalizeFromSpecs(FactionSpecs specs) {
-        if(specs.emojisSetup != null)
+        if (specs.emojisSetup != null)
             emojisSetup = specs.emojisSetup;
 
         setFactionProxy(specs.factionProxy);
@@ -93,7 +93,7 @@ public class HomebrewFaction extends Faction{
     }
 
     public void setFactionProxy(String factionProxy) {
-        if(emojisSetup) {
+        if (emojisSetup) {
             emoji = Emojis.getFactionEmoji(name);
             forceEmoji = Emojis.getForceEmoji(name);
             this.factionProxy = name;
