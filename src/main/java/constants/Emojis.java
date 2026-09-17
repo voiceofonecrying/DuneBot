@@ -25,19 +25,13 @@ public final class Emojis {
     public static final String GUILD_TROOP = ":guild_troop:";
     public static final String HARKONNEN = ":harkonnen:";
     public static final String HARKONNEN_TROOP = ":harkonnen_troop:";
-    public static final String IDUALI = ":iduali:";
-    public static final String IDUALI_TROOP = ":iduali_troop:";
     public static final String IX = ":ix:";
     public static final String IX_SUBOID = ":ixian_suboid:";
     public static final String IX_CYBORG = ":ixian_cyborg:";
     public static final String MORITANI = ":moritani:";
     public static final String MORITANI_TROOP = ":moritani_troop:";
-    public static final String ORKS = ":orks:";
-    public static final String ORKS_TROOP = ":orks_troop:";
     public static final String RICHESE = ":rich:";
     public static final String RICHESE_TROOP = ":richese_troop:";
-    public static final String SPINNETTE = ":spinnette:";
-    public static final String SPINNETTE_TROOP = ":spinnette_troop:";
     public static final String SPICE = ":spice4:";
     public static final String TREACHERY = ":treachery:";
     public static final String DUNE_RULEBOOK = ":DuneRulebook01:";
@@ -91,15 +85,6 @@ public final class Emojis {
             }
             case "moritani" -> {
                 return MORITANI;
-            }
-            case "iduali" -> {
-                return IDUALI;
-            }
-            case "spinnette" -> {
-                return SPINNETTE;
-            }
-            case "orks" -> {
-                return ORKS;
             }
         }
         return ":black_joker:";
@@ -163,15 +148,6 @@ public final class Emojis {
             }
             case "Wydras" -> {
                 return BG_FIGHTER;
-            }
-            case "Iduali" -> {
-                return IDUALI_TROOP;
-            }
-            case "Spinnette" -> {
-                return SPINNETTE_TROOP;
-            }
-            case "Orks" -> {
-                return ORKS_TROOP;
             }
         }
         return MORITANI_TROOP;
