@@ -10,8 +10,10 @@ import java.util.HashMap;
 import java.util.List;
 
 public class HomebrewFaction extends Faction{
+    Boolean emojisSetup = false;
     String factionProxy;
     String homeworldProxy;
+    String colorProxy;
     String highDescription;
     String lowDescription;
     String occupiedDescription;
@@ -29,6 +31,7 @@ public class HomebrewFaction extends Faction{
             int value;
         }
 
+        Boolean emojisSetup;
         String factionProxy;
         int spice;
         int handLimit = 4;
@@ -53,15 +56,19 @@ public class HomebrewFaction extends Faction{
     }
 
     public void initalizeFromSpecs(FactionSpecs specs) {
+        if (specs.emojisSetup != null)
+            emojisSetup = specs.emojisSetup;
+
         setFactionProxy(specs.factionProxy);
         spice = specs.spice;
         handLimit = specs.handLimit;
         freeRevival = specs.freeRevival;
         maxRevival = specs.maxRevival;
+        String emojiFaction = emojisSetup ? name : factionProxy;
         for (FactionSpecs.LeaderSpecs ls : specs.leaders) {
-            Leader leader = new Leader(ls.name, ls.value, name, factionProxy,  null, false);
+            Leader leader = new Leader(ls.name, ls.value, name, emojiFaction,  null, false);
             leaders.add(leader);
-            game.getTraitorDeck().add(new TraitorCard(ls.name, name, factionProxy, ls.value));
+            game.getTraitorDeck().add(new TraitorCard(ls.name, name, emojiFaction, ls.value));
         }
         homeworld = specs.homeworld;
         if (specs.homeworldProxy != null)
@@ -86,6 +93,22 @@ public class HomebrewFaction extends Faction{
     }
 
     public void setFactionProxy(String factionProxy) {
+        if (emojisSetup) {
+            emoji = Emojis.getFactionEmoji(name);
+            forceEmoji = Emojis.getForceEmoji(name);
+            this.factionProxy = name;
+        }
+        else {
+            this.factionProxy = factionProxy;
+            emoji = Emojis.getFactionEmoji(factionProxy);
+            forceEmoji = Emojis.getForceEmoji(factionProxy);
+
+            game.getTraitorDeck().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
+            for (Faction f : game.getFactions())
+                f.getTraitorHand().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
+        }
+
+        colorProxy = factionProxy;
         HashMap<String, String> homeworldName = new HashMap<>();
         homeworldName.put("Atreides", "Caladan");
         homeworldName.put("BG", "Wallach IX");
@@ -99,13 +122,7 @@ public class HomebrewFaction extends Faction{
         homeworldName.put("Ix", "Ix");
         homeworldName.put("Moritani", "Grumman");
         homeworldName.put("Richese", "Richese");
-        this.factionProxy = factionProxy;
-        emoji = Emojis.getFactionEmoji(factionProxy);
-        forceEmoji = Emojis.getForceEmoji(factionProxy);
         homeworldProxy = homeworldName.get(factionProxy);
-        game.getTraitorDeck().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
-        for (Faction f : game.getFactions())
-            f.getTraitorHand().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
     }
 
     public String getHomeworldProxy() {
@@ -138,7 +155,7 @@ public class HomebrewFaction extends Faction{
 
     @Override
     public Color getColor() {
-        return Colors.getFactionColor(factionProxy);
+        return Colors.getFactionColor(colorProxy);
     }
 
     @Override
