@@ -11,7 +11,7 @@ import java.util.List;
 
 public class HomebrewFaction extends Faction{
     Boolean emojisSetup = false;
-    Color shieldColor;
+    String color;
     String factionProxy;
     String homeworldProxy;
     String colorProxy;
@@ -63,7 +63,7 @@ public class HomebrewFaction extends Faction{
 
         setFactionProxy(specs.factionProxy);
         if (specs.color != null)
-            shieldColor = Color.decode(specs.color);
+            color = specs.color;
         spice = specs.spice;
         handLimit = specs.handLimit;
         freeRevival = specs.freeRevival;
@@ -159,8 +159,8 @@ public class HomebrewFaction extends Faction{
 
     @Override
     public Color getColor() {
-        if (shieldColor != null)
-            return shieldColor;
+        if (color != null)
+            return Color.decode(color);
         return Colors.getFactionColor(colorProxy);
     }
 
