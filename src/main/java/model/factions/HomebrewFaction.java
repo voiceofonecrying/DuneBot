@@ -96,13 +96,17 @@ public class HomebrewFaction extends Faction{
         return factionProxy;
     }
 
+    // Temporary migration function. Can be removed after games 183, 186, and 187 reload from json
+    public void setupColorProxy() {
+        colorProxy = factionProxy;
+    }
+
     public void setFactionProxy(String factionProxy) {
         if(emojisSetup) {
             emoji = ":" + name.toLowerCase() + ":";
             forceEmoji = ":" + name.toLowerCase() + "_troop:";
             this.factionProxy = name;
-        }
-        else {
+        } else {
             this.factionProxy = factionProxy;
             emoji = Emojis.getFactionEmoji(factionProxy);
             forceEmoji = Emojis.getForceEmoji(factionProxy);
