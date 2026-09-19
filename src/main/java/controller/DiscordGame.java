@@ -363,6 +363,8 @@ public class DiscordGame {
 
         for (Faction f : game.getFactions()) {
             // Temporary migrations when adding new Faction member variables can be placed here to add them to active games.
+            if (f instanceof HomebrewFaction hf)
+                hf.setupColorProxy();
             // End Temporary
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
