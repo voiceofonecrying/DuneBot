@@ -148,6 +148,22 @@ public class ShowCommands {
         return null;
     }
 
+    public static String getHomebrewFactionImageUrlFromHomebrewChannel(DiscordGame discordGame, String typeChannel, String name) {
+        List<Category> categoryList = discordGame.getGuild().getCategoriesByName("Homebrew Resources", false);
+        if (!categoryList.isEmpty()) {
+            Category gameResources = categoryList.getFirst();
+            List<TextChannel> channel = gameResources.getTextChannels().stream().filter(c -> c.getName().equals(typeChannel)).toList();
+            if (!channel.isEmpty()) {
+                //TextChannel homebrewResources = channel.getFirst();
+                //List<ThreadChannel> threadChannels = homebrewResources.getThreadChannels().stream().filter(t -> t.getName().equals(imageType)).toList();
+                Optional<Message> optMsg = channel.getFirst().getIterableHistory().stream().filter(m -> m.getContentRaw().equals(name)).findFirst();
+                if (optMsg.isPresent())
+                    return optMsg.get().getAttachments().getFirst().getUrl();
+            }
+        }
+        return null;
+    }
+
     public static List<Pair<Leader, BufferedImage>> getLeaderImagesForGraphicMode(DiscordGame discordGame, Faction faction) throws IOException {
         List<Pair<Leader, BufferedImage>> leadersAndImages = new ArrayList<>();
         for (Leader leader : faction.getLeaders()) {
@@ -851,6 +867,28 @@ public class ShowCommands {
                     Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
                     Point placementCorner = new Point(placement.x - 20 + offset, placement.y);
                     board = overlay(board, terrorToken, placementCorner, 1);
+                    offset += 20;
+                }
+            }
+            offset = 0;
+
+            if (!territory.getHomebrewTokens().isEmpty()) {
+                for (int j = 0; j < territory.getHomebrewTokens().size(); j++) {
+                    BufferedImage tokenImage = null;
+                    String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, "tokens", territory.getHomebrewTokens().get(j));
+                    if (imageUrl != null) {
+                        try {
+                            InputStream is = new URI(imageUrl).toURL().openStream();
+                            tokenImage = ImageIO.read(is);
+                        } catch (Exception ignored) {
+                            tokenImage = getResourceImage("Terror Token");
+                        }
+                    }
+
+                    tokenImage = resize(tokenImage, 40, 40);
+                    Point placement = Initializers.getPoints(territory.getTerritoryName()).get(1);
+                    Point placementCorner = new Point(placement.x - 20 + offset, placement.y);
+                    board = overlay(board, tokenImage, placementCorner, 1);
                     offset += 20;
                 }
             }

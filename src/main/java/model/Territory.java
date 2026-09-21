@@ -25,6 +25,7 @@ public class Territory {
     private Integer richeseNoField;
     private String ecazAmbassador;
     private final List<String> terrorTokens;
+    private final List<String> homebrewTokens;
     private boolean aftermathToken;
     private String discoveryToken;
     private boolean discovered;
@@ -44,6 +45,7 @@ public class Territory {
         this.ecazAmbassador = null;
         this.aftermathToken = false;
         this.terrorTokens = new LinkedList<>();
+        this.homebrewTokens = new LinkedList<>();
     }
 
     public String getTerritoryName() {
@@ -243,6 +245,10 @@ public class Territory {
         this.ecazAmbassador = null;
     }
 
+    public List<String> getHomebrewTokens() {
+        return homebrewTokens;
+    }
+
     public List<String> getTerrorTokens() {
         return terrorTokens;
     }
@@ -270,6 +276,16 @@ public class Territory {
             throw new IllegalArgumentException(territoryName + " does not have the " + terrorTokenName + " Terror Token.");
         if (returnToMoritani)
             game.getMoritaniFaction().addTerrorToken(terrorTokenName);
+        game.setUpdated(UpdateType.MAP);
+    }
+
+    public void addHomebrewToken(Game game, String homebrewToken) throws InvalidGameStateException {
+        homebrewTokens.add(homebrewToken);
+        game.setUpdated(UpdateType.MAP);
+    }
+
+    public void removeHomebrewToken(Game game, String homebrewToken) {
+        homebrewTokens.remove(homebrewToken);
         game.setUpdated(UpdateType.MAP);
     }
 
@@ -318,7 +334,7 @@ public class Territory {
 
         return message.toString();
     }
-    
+
     public void stormTroopsFremen(Game game) {
         List<Force> fremenForces = forces.stream()
                 .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
