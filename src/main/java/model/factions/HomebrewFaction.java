@@ -11,6 +11,7 @@ import java.util.List;
 
 public class HomebrewFaction extends Faction{
     Boolean emojisSetup = false;
+    String colorHexCode;
     String color;
     String factionProxy;
     String homeworldProxy;
@@ -63,7 +64,11 @@ public class HomebrewFaction extends Faction{
 
         setFactionProxy(specs.factionProxy);
         if (specs.color != null)
-            color = specs.color;
+            colorHexCode = specs.color;
+        else {
+            Color decodedColor = Colors.getFactionColor(factionProxy);
+            colorHexCode = String.format("#%02x%02x%02x", decodedColor.getRed(), decodedColor.getGreen(), decodedColor.getBlue());
+        }
         spice = specs.spice;
         handLimit = specs.handLimit;
         freeRevival = specs.freeRevival;
@@ -97,8 +102,16 @@ public class HomebrewFaction extends Faction{
     }
 
     // Temporary migration function. Can be removed after games 183, 186, and 187 reload from json
-    public void setupColorProxy() {
-        colorProxy = factionProxy;
+    public void setupColorHexCode() {
+        if (color != null)
+            colorHexCode = color;
+        else if (colorProxy != null) {
+            Color decodedColor = Colors.getFactionColor(colorProxy);
+            colorHexCode = String.format("#%02x%02x%02x", decodedColor.getRed(), decodedColor.getGreen(), decodedColor.getBlue());
+        } else {
+            Color decodedColor = Colors.getFactionColor(factionProxy);
+            colorHexCode = String.format("#%02x%02x%02x", decodedColor.getRed(), decodedColor.getGreen(), decodedColor.getBlue());
+        }
     }
 
     public void setFactionProxy(String factionProxy) {
@@ -116,7 +129,6 @@ public class HomebrewFaction extends Faction{
                 f.getTraitorHand().stream().filter(t -> t.getFactionName().equals(name)).forEach(t -> t.setEmojiFaction(factionProxy));
         }
 
-        colorProxy = factionProxy;
         HashMap<String, String> homeworldName = new HashMap<>();
         homeworldName.put("Atreides", "Caladan");
         homeworldName.put("BG", "Wallach IX");
@@ -163,9 +175,7 @@ public class HomebrewFaction extends Faction{
 
     @Override
     public Color getColor() {
-        if (color != null)
-            return Color.decode(color);
-        return Colors.getFactionColor(colorProxy);
+        return Color.decode(colorHexCode);
     }
 
     @Override
