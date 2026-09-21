@@ -93,7 +93,7 @@ public class ShowCommands {
 
     private static BufferedImage getSigilImage(Faction faction) throws IOException {
         if (faction instanceof HomebrewFaction hbFaction)
-            return getResourceImage(hbFaction.getFactionProxy() + " Sigil");
+            return getResourceImage(faction.getName() + " Sigil", hbFaction.getFactionProxy() + " Sigil");
         return getResourceImage(faction.getName() + " Sigil");
     }
 
@@ -116,6 +116,18 @@ public class ShowCommands {
     private static BufferedImage getResourceImage(String name) throws IOException {
         URL file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".png");
         if (file == null) file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".jpg");
+        assert file != null;
+        return ImageIO.read(file);
+    }
+
+    private static BufferedImage getResourceImage(String name, String proxyName) throws IOException {
+        URL file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".png");
+        if (file == null)
+            file = ShowCommands.class.getClassLoader().getResource("Board Components/" + name + ".jpg");
+        if (file == null)
+            file = ShowCommands.class.getClassLoader().getResource("Board Components/" + proxyName + ".png");
+        if (file == null)
+            file = ShowCommands.class.getClassLoader().getResource("Board Components/" + proxyName + ".jpg");
         assert file != null;
         return ImageIO.read(file);
     }
