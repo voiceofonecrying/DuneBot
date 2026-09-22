@@ -93,7 +93,7 @@ public class ShowCommands {
 
     private static BufferedImage getSigilImage(Faction faction) throws IOException {
         if (faction instanceof HomebrewFaction hbFaction)
-            return getResourceImage(faction.getName() + " Sigil", hbFaction.getFactionProxy() + " Sigil");
+            return getResourceImage(hbFaction.getFactionProxy() + " Sigil");
         return getResourceImage(faction.getName() + " Sigil");
     }
 
