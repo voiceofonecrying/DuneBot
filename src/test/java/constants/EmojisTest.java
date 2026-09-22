@@ -48,7 +48,7 @@ class EmojisTest {
         // Test case: shorthand "rich"
         String emojiName = ":rich:";
         String result = Emojis.standardiseEmojiName(emojiName);
-        assertEquals(":rich:", result, "Expected shorthand 'rich' to standardize to ':rich:'");
+        assertEquals(":richese:", result, "Expected shorthand 'rich' to standardize to ':richese:'");
     }
 
     @Test
