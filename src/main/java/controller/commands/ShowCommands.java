@@ -837,7 +837,7 @@ public class ShowCommands {
         for (Territory territory : game.getTerritories().values()) {
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
                     && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
-                    && !territory.isAftermathToken() && !territory.hasTerrorToken()
+                    && !territory.isAftermathToken() && !territory.hasTerrorToken() && !territory.hasHomebrewToken()
                     && territory.getDiscoveryToken() == null) continue;
             if (territory.isDiscoveryToken() || territory instanceof HomeworldTerritory || territory.getTerritoryName().equals("Hidden Mobile Stronghold"))
                 continue;
@@ -870,7 +870,7 @@ public class ShowCommands {
                     offset += 20;
                 }
             }
-            offset = 0;
+            // Homebrew tokens start from offset after placing terror tokens
 
             if (!territory.getHomebrewTokens().isEmpty()) {
                 for (int j = 0; j < territory.getHomebrewTokens().size(); j++) {

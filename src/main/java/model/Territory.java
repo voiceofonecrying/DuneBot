@@ -249,6 +249,10 @@ public class Territory {
         return homebrewTokens;
     }
 
+    public boolean hasHomebrewToken() {
+        return !getHomebrewTokens().isEmpty();
+    }
+
     public List<String> getTerrorTokens() {
         return terrorTokens;
     }
