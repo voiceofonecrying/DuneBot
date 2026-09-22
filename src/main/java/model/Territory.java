@@ -25,7 +25,8 @@ public class Territory {
     private Integer richeseNoField;
     private String ecazAmbassador;
     private final List<String> terrorTokens;
-    private final List<String> homebrewTokens;
+    // can be final too after migration
+    private List<String> homebrewTokens;
     private boolean aftermathToken;
     private String discoveryToken;
     private boolean discovered;
@@ -530,5 +531,11 @@ public class Territory {
         int endLocation = territoryName.indexOf(" (");
         if (endLocation == -1) return territoryName;
         return territoryName.substring(0, endLocation);
+    }
+
+    // Temporary migration function. Can be removed after games reload from json
+    public void setupHomebrewTokens() {
+        if (homebrewTokens == null)
+            homebrewTokens = new LinkedList<>();
     }
 }
