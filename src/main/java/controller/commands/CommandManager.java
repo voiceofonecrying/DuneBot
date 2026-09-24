@@ -1201,7 +1201,7 @@ public class CommandManager extends ListenerAdapter {
         message += " -- ";
         message += waitingListItemResult(EmojiCache.getFormatted("bt") + " " + EmojiCache.getFormatted("ix"), DiscordGame.required(ixianstleilaxuExpansion, event).getAsString());
         message += " -- ";
-        message += waitingListItemResult(EmojiCache.getFormatted("choam") + " " + EmojiCache.getFormatted("rich"), DiscordGame.required(choamricheseExpansion, event).getAsString());
+        message += waitingListItemResult(EmojiCache.getFormatted("choam") + " " + EmojiCache.getFormatted("richese"), DiscordGame.required(choamricheseExpansion, event).getAsString());
         message += " -- ";
         message += waitingListItemResult(EmojiCache.getFormatted("ecaz") + " " + EmojiCache.getFormatted("moritani"), DiscordGame.required(ecazmoritaniExpansion, event).getAsString());
         message += "\nOptions: ";
