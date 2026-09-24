@@ -193,4 +193,9 @@ public class RicheseFaction extends Faction {
     public List<TreacheryCard> getTreacheryCardCache() {
         return treacheryCardCache;
     }
+
+    // Temporary migration function.
+    public void setupRich() {
+        emoji = Emojis.RICHESE;
+    }
 }
