@@ -25,6 +25,8 @@ public class Territory {
     private Integer richeseNoField;
     private String ecazAmbassador;
     private final List<String> terrorTokens;
+    // can be final too after migration
+    private List<String> homebrewTokens;
     private boolean aftermathToken;
     private String discoveryToken;
     private boolean discovered;
@@ -44,6 +46,7 @@ public class Territory {
         this.ecazAmbassador = null;
         this.aftermathToken = false;
         this.terrorTokens = new LinkedList<>();
+        this.homebrewTokens = new LinkedList<>();
     }
 
     public String getTerritoryName() {
@@ -243,6 +246,14 @@ public class Territory {
         this.ecazAmbassador = null;
     }
 
+    public List<String> getHomebrewTokens() {
+        return homebrewTokens;
+    }
+
+    public boolean hasHomebrewToken() {
+        return !getHomebrewTokens().isEmpty();
+    }
+
     public List<String> getTerrorTokens() {
         return terrorTokens;
     }
@@ -270,6 +281,16 @@ public class Territory {
             throw new IllegalArgumentException(territoryName + " does not have the " + terrorTokenName + " Terror Token.");
         if (returnToMoritani)
             game.getMoritaniFaction().addTerrorToken(terrorTokenName);
+        game.setUpdated(UpdateType.MAP);
+    }
+
+    public void addHomebrewToken(Game game, String homebrewToken) throws InvalidGameStateException {
+        homebrewTokens.add(homebrewToken);
+        game.setUpdated(UpdateType.MAP);
+    }
+
+    public void removeHomebrewToken(Game game, String homebrewToken) {
+        homebrewTokens.remove(homebrewToken);
         game.setUpdated(UpdateType.MAP);
     }
 
@@ -318,7 +339,7 @@ public class Territory {
 
         return message.toString();
     }
-    
+
     public void stormTroopsFremen(Game game) {
         List<Force> fremenForces = forces.stream()
                 .filter(f -> f.getFactionName().equalsIgnoreCase("Fremen"))
@@ -510,5 +531,11 @@ public class Territory {
         int endLocation = territoryName.indexOf(" (");
         if (endLocation == -1) return territoryName;
         return territoryName.substring(0, endLocation);
+    }
+
+    // Temporary migration function. Can be removed after games reload from json
+    public void setupHomebrewTokens() {
+        if (homebrewTokens == null)
+            homebrewTokens = new LinkedList<>();
     }
 }

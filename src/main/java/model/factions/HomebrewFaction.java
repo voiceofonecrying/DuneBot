@@ -3,7 +3,7 @@ package model.factions;
 import constants.Colors;
 import constants.Emojis;
 import model.*;
-
+import exceptions.InvalidGameStateException;
 import java.awt.*;
 import java.io.IOException;
 import java.util.HashMap;
@@ -143,6 +143,17 @@ public class HomebrewFaction extends Faction{
         homeworldName.put("Moritani", "Grumman");
         homeworldName.put("Richese", "Richese");
         homeworldProxy = homeworldName.get(factionProxy);
+    }
+
+    public void addToken(Territory territory, String homebrewTokenName) throws InvalidGameStateException {
+        territory.addHomebrewToken(game, homebrewTokenName);
+        String message = "A " + emoji + " Token was placed in " + territory.getTerritoryName();
+        game.getTurnSummary().publish(message);
+    }
+
+    public void removeToken(Territory territory, String homebrewTokenName) {
+        territory.removeHomebrewToken(game, homebrewTokenName);
+        game.getTurnSummary().publish(emoji + " Token has been removed from " + territory.getTerritoryName());
     }
 
     public String getHomeworldProxy() {
