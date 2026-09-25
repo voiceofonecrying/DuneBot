@@ -329,10 +329,10 @@ public class ShipmentAndMovementButtons implements Pressable {
         String territoryName = from.getTerritoryName();
         faction.getMovement().setMovingFrom(territoryName);
         int spacesCanMove = 1;
-        if (faction instanceof FremenFaction || (faction instanceof IxFaction && from.getForceStrength("Ix*") > 0))
-            spacesCanMove = 2;
         if (faction.canUseOrnithopters(game, from, ornithopter))
             spacesCanMove = 3;
+        else if (!faction.isMovementKaramaed() && (faction instanceof FremenFaction || (faction instanceof IxFaction && from.getForceStrength("Ix*") > 0)))
+            spacesCanMove = 2;
         if (!faction.getSkilledLeaders().isEmpty() && faction.getSkilledLeaders().getFirst().getSkillCard().name().equals("Planetologist") && spacesCanMove < 3)
             spacesCanMove++;
         Set<String> moveableTerritories;
