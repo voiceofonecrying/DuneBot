@@ -64,6 +64,7 @@ public class Faction {
     private boolean autoBidTurn;
     private boolean outbidAlly;
     private boolean specialKaramaPowerUsed;
+    private boolean movementKaramaed;
     private NexusCard nexusCard;
     protected Shipment shipment;
     protected Movement movement;
@@ -104,6 +105,7 @@ public class Faction {
         this.useExact = true;
         this.outbidAlly = false;
         this.specialKaramaPowerUsed = false;
+        this.movementKaramaed = false;
         this.shipment = new Shipment();
         this.movement = new Movement(this);
         this.spiceForAlly = 0;
@@ -1495,6 +1497,7 @@ public class Faction {
         } else {
             game.moveForces(this, movingFrom, movingTo, secondMovingFrom, force, specialForce, secondForce, secondSpecialForce, false);
         }
+        movementKaramaed = false;
         movement.clear();
         setUpdated(UpdateType.MAP);
     }
@@ -1720,5 +1723,19 @@ public class Faction {
             game.getMentatPause().factionDeclinesExtortion(game, this);
             chat.reply("You will not pay Extortion.");
         }
+    }
+
+    public boolean isMovementKaramaed() {
+        return movementKaramaed;
+    }
+
+    public void karamaMovement(String chatMessage, String publicMessage) {
+        movementKaramaed = true;
+        chat.publish(chatMessage + player);
+        game.getTurnSummary().publish(emoji + publicMessage);
+    }
+
+    public void endKaramaMovement() {
+        movementKaramaed = false;
     }
 }
