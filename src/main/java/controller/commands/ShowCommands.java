@@ -1305,7 +1305,6 @@ public class ShowCommands {
         List<TraitorCard> traitors = faction.getTraitorHand();
         String infoChannelName = faction.getInfoChannelPrefix() + "-info";
         StringBuilder factionSpecificString = new StringBuilder();
-        String nexusCard = faction.getNexusCard() == null ? "" : "\n__Nexus Card:__\n" + Emojis.NEXUS + faction.getNexusCard().name();
 
         switch (faction) {
             case BGFaction bg -> factionSpecificString.append("\n__Prediction:__ ")
@@ -1328,7 +1327,6 @@ public class ShowCommands {
                         faction.getSpice() +
                         reservesString +
                         ornithopter +
-                        nexusCard +
                         factionSpecificString +
                         traitorString);
         StringBuilder leadersInTerritories = new StringBuilder();
@@ -1391,6 +1389,20 @@ public class ShowCommands {
             else if (faction instanceof BTFaction)
                 writeFaceDownLeaders(discordGame, faction.getGame(), infoChannelName);
         }
+
+        //Write nexus card if any
+        if (faction.getNexusCard() != null) {
+            MessageCreateBuilder nexusCardMessageBuilder = new MessageCreateBuilder();
+            String nexusName = faction.getNexusCard().name();
+            Optional<FileUpload> image = CardImages.getNexusImage(discordGame.getEvent().getGuild(), nexusName);
+
+            if (image.isPresent())
+                nexusCardMessageBuilder = nexusCardMessageBuilder.addFiles(image.get());
+
+            nexusCardMessageBuilder.addContent("\n__Nexus Card:__\n" + Emojis.NEXUS + " " + nexusName);
+            discordGame.queueMessage(infoChannelName, nexusCardMessageBuilder.build());
+        }
+
         sendInfoButtons(discordGame.getGame(), discordGame, faction);
     }
 
