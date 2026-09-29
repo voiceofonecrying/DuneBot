@@ -66,7 +66,7 @@ public class HomebrewFaction extends Faction{
         if (specs.color != null)
             colorHexCode = specs.color;
         else {
-            Color decodedColor = Colors.getFactionColor(factionProxy);
+            Color decodedColor = Colors.getFactionColor(specs.factionProxy);
             colorHexCode = String.format("#%02x%02x%02x", decodedColor.getRed(), decodedColor.getGreen(), decodedColor.getBlue());
         }
         spice = specs.spice;
@@ -99,19 +99,6 @@ public class HomebrewFaction extends Faction{
 
     public String getFactionProxy() {
         return factionProxy;
-    }
-
-    // Temporary migration function. Can be removed after games 183, 186, and 187 reload from json
-    public void setupColorHexCode() {
-        if (color != null)
-            colorHexCode = color;
-        else if (colorProxy != null) {
-            Color decodedColor = Colors.getFactionColor(colorProxy);
-            colorHexCode = String.format("#%02x%02x%02x", decodedColor.getRed(), decodedColor.getGreen(), decodedColor.getBlue());
-        } else {
-            Color decodedColor = Colors.getFactionColor(factionProxy);
-            colorHexCode = String.format("#%02x%02x%02x", decodedColor.getRed(), decodedColor.getGreen(), decodedColor.getBlue());
-        }
     }
 
     public void setFactionProxy(String factionProxy) {
