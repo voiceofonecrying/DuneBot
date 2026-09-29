@@ -351,7 +351,7 @@ public class DiscordGame {
         game.refreshDukeVidal();
 
         for (Territory territory : game.getTerritories().values()) {
-            // Temporary migrations when adding new Faction member variables can be placed here to add them to active games.
+            // Temporary migrations when adding new Territory member variables can be placed here to add them to active games.
             territory.setupHomebrewTokens();
             // End Temporary
             if (territory.hasForce("Hidden Mobile Stronghold")) {
@@ -366,10 +366,6 @@ public class DiscordGame {
 
         for (Faction f : game.getFactions()) {
             // Temporary migrations when adding new Faction member variables can be placed here to add them to active games.
-            if (f instanceof HomebrewFaction hf)
-                hf.setupColorHexCode();
-            if (f instanceof RicheseFaction rf)
-                rf.setupRich();
             // End Temporary
             f.setLedger(getFactionLedger(f));
             f.setChat(getFactionChat(f));
