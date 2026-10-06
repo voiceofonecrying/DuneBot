@@ -22,6 +22,7 @@ public class IxCommands {
                 new SubcommandData("block-bidding-advantage", "Prevent Ix from seeing the cards up for bid."),
                 new SubcommandData("technology", "Swap a card in hand for the next card up for bid.").addOptions(CommandOptions.ixCard),
                 new SubcommandData("ally-card-swap", "Ix ally can swap card just won for top card from treachery deck."),
+                new SubcommandData("karama-cyborg-movement", "Prevent Ix from moving 2 with Cyborgs in their next Movement"),
                 new SubcommandData("place-hms", "Place or move the HMS into a territory.").addOptions(CommandOptions.hmsTerritory),
                 new SubcommandData("reposition-hms", "Rotate presentation of HMS by 90 degrees").addOptions(CommandOptions.clockDirection)
         ));
@@ -37,6 +38,7 @@ public class IxCommands {
             case "block-bidding-advantage" -> blockBiddingAdvantage(discordGame, game);
             case "technology" -> technology(discordGame, game);
             case "ally-card-swap" -> allyCardSwap(discordGame, game);
+            case "karama-cyborg-movement" -> karamaMovementSpeed(discordGame, game);
             case "place-hms" -> placeHMS(discordGame, game);
             case "reposition-hms" -> rotateHMSGraphic(discordGame, game);
         }
@@ -77,6 +79,13 @@ public class IxCommands {
             game.rotateHMS90degrees();
         }
         game.rotateHMS90degrees();
+        discordGame.pushGame();
+    }
+
+     public static void karamaMovementSpeed(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+		String chatMessage = "Your Cyborgs' faster movement has been negated by Karama. ";
+		String publicMessage = " Cyborg faster movement has been negated by Karama.";
+		game.getIxFaction().karamaMovement(chatMessage, publicMessage);
         discordGame.pushGame();
     }
 }

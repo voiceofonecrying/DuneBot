@@ -175,6 +175,7 @@ public class Movement {
             throw new InvalidGameStateException("Ix must place the HMS.");
         }
         clear();
+        faction.endKaramaMovement();
         moveType = MoveType.TBD;
     }
 

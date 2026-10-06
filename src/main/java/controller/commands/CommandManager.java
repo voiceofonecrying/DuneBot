@@ -290,6 +290,7 @@ public class CommandManager extends ListenerAdapter {
                 case "bt" -> BTCommands.runCommand(event, discordGame, game);
                 case "ecaz" -> EcazCommands.runCommand(event, discordGame, game);
                 case "hark" -> HarkCommands.runCommand(event, discordGame, game);
+                case "fremen" -> FremenCommands.runCommand(event, discordGame, game);
                 case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
                 case "ix" -> IxCommands.runCommand(event, discordGame, game);
                 case "moritani" -> MoritaniCommands.runCommand(event, discordGame, game);
@@ -457,6 +458,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(RicheseCommands.getCommands());
         commandData.addAll(BTCommands.getCommands());
         commandData.addAll(HarkCommands.getCommands());
+        commandData.addAll(FremenCommands.getCommands());
         commandData.addAll(ChoamCommands.getCommands());
         commandData.addAll(IxCommands.getCommands());
         commandData.addAll(BGCommands.getCommands());
