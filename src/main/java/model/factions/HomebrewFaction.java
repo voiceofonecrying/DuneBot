@@ -2,12 +2,17 @@ package model.factions;
 
 import constants.Colors;
 import constants.Emojis;
+import enums.GameOption;
 import model.*;
 import exceptions.InvalidGameStateException;
 import java.awt.*;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Random;
+import java.util.stream.Collectors;
 
 public class HomebrewFaction extends Faction{
     Boolean emojisSetup = false;
@@ -22,8 +27,47 @@ public class HomebrewFaction extends Faction{
     int highBattleExplosion;
     int lowBattleExplosion;
     int lowRevivalCharity;
+    List<HomebrewAbility> homebrewAbilities;
+
+    private class HomebrewAbility {
+        String type;
+        String name;
+        boolean targetsOpponent;
+        boolean homeworldsOnly;
+        boolean requiresHT;
+        boolean alliance;
+        List<HomebrewAbilityState> states = new LinkedList<>();
+        HomebrewAbilityRoll roll;
+        String currentState;
+
+        public void setCurrentState(String newState) {
+            currentState = newState;
+        }
+
+        public float getCurrentState() {
+            HomebrewAbilityState state = states.stream()
+                .filter(s -> currentState.equals(s.name))
+                .findFirst()
+                .orElse(null);
+
+            return state.value;
+        }
+    }
+
+    private class HomebrewAbilityState {
+        String name;
+        float value;
+    }
+
+    private class HomebrewAbilityRoll {
+        int sides;
+        int perForce;
+        int minResult;
+        float bonus;
+    }
 
     public HomebrewFaction(String name, String player, String userName) throws IOException {
+        this.homebrewAbilities = new LinkedList<>();
         super(name, player, userName);
     }
 
@@ -52,6 +96,7 @@ public class HomebrewFaction extends Faction{
         int highBattleExplosion;
         int lowBattleExplosion;
         int lowRevivalCharity;
+        List<HomebrewAbility> abilities;
 
         public String getFactionProxy() {
             return factionProxy;
@@ -69,6 +114,7 @@ public class HomebrewFaction extends Faction{
             Color decodedColor = Colors.getFactionColor(specs.factionProxy);
             colorHexCode = String.format("#%02x%02x%02x", decodedColor.getRed(), decodedColor.getGreen(), decodedColor.getBlue());
         }
+        homebrewAbilities = specs.abilities;
         spice = specs.spice;
         handLimit = specs.handLimit;
         freeRevival = specs.freeRevival;
@@ -102,7 +148,7 @@ public class HomebrewFaction extends Faction{
     }
 
     public void setFactionProxy(String factionProxy) {
-        if(emojisSetup) {
+        if (emojisSetup) {
             emoji = ":" + name.toLowerCase() + ":";
             forceEmoji = ":" + name.toLowerCase() + "_troop:";
             this.factionProxy = name;
@@ -185,5 +231,119 @@ public class HomebrewFaction extends Faction{
             territory.getForces().forEach(f -> hwt.callParentAddForces(f.getName(), f.getStrength()));
         }
         return (HomeworldTerritory) game.getTerritory(homeworld);
+    }
+
+    public List<HomebrewAbility> getJSONAbilities() {
+        return homebrewAbilities;
+    }
+
+    public List<HomebrewAbility> getJSONAbilities(String type) {
+        return homebrewAbilities.stream().filter(a -> a.type == type).collect(Collectors.toList());
+    }
+
+    public List<HomebrewAbility> getJSONBattleAbilities(Territory territory, boolean targetingOpponent, boolean forAlly) {
+        return homebrewAbilities.stream().filter(a ->
+            a.type.equals("battle") &&
+            (targetingOpponent ? a.targetsOpponent : !a.targetsOpponent) &&
+            (!a.homeworldsOnly || territory instanceof HomeworldTerritory) &&
+            (!a.requiresHT || (isHighThreshold() && game.hasGameOption(GameOption.HOMEWORLDS))) &&
+            (!forAlly || a.alliance)
+        ).collect(Collectors.toList());
+    }
+
+    public void setAbilityState(String ability, String state) {
+        homebrewAbilities.stream()
+            .filter(a -> ability.equals(a.name))
+            .forEach(a -> a.currentState = state);
+    }
+
+    public List<String> getJSONAbilityNames() {
+        List<String> result = new ArrayList<>();
+        for (HomebrewAbility ability : homebrewAbilities) {
+            result.add(ability.name);
+        }
+        return result;
+    }
+
+    public List<String> getJSONAbilityStateNames() {
+        List<String> result = new ArrayList<>();
+        for (HomebrewAbility ability : homebrewAbilities) {
+            for (HomebrewAbilityState state : ability.states) {
+                result.add(state.name);
+            }
+        }
+        return result;
+    }
+
+    private BattlePlanBonus calculateDialBonus(Territory territory, int forcesDialed, boolean targetingOpponent, boolean forAlly) {
+        float bonus = 0;
+        StringBuilder description = new StringBuilder();
+
+        for (HomebrewAbility ability : getJSONBattleAbilities(territory, targetingOpponent, forAlly)) {
+            float abilityBonus = ability.getCurrentState();
+            abilityBonus += getBattleAbilityRoll(ability, forcesDialed);
+            bonus += abilityBonus;
+            if (abilityBonus == 0)
+                continue;
+            String plus = abilityBonus > 0 ? "+" : "";
+            String formattedValue = abilityBonus % 1 == 0 ?
+                String.valueOf((int)abilityBonus) :
+                String.valueOf(abilityBonus);
+            description.append("\n ")
+                .append(plus)
+                .append(formattedValue)
+                .append(" for ")
+                .append(ability.name);
+            if (forAlly) {
+                description.append(" (")
+                    .append(name)
+                    .append(" alliance ability)");
+            }
+        }
+
+        BattlePlanBonus result = new BattlePlanBonus(bonus, description.toString());
+        if (!forAlly && hasAlly()) {
+            BattlePlanBonus allyBonus = targetingOpponent ?
+                game.getFaction(ally).getAllianceBattleOpponentDialPenalty(territory, forcesDialed) :
+                game.getFaction(ally).getAllianceBattleDialBonus(territory, forcesDialed);
+            result = result.add(allyBonus);
+        }
+
+        return result;
+    }
+
+    private float getBattleAbilityRoll(HomebrewAbility ability, int forcesDialed) {
+        if (ability.roll == null || "inactive".equalsIgnoreCase(ability.currentState))
+            return 0;
+        float result = 0;
+        for (int i = 1; i <= ability.roll.perForce * forcesDialed; i++) {
+            Random dice = new Random();
+            int rolled = dice.nextInt(ability.roll.sides) + 1;
+            if (rolled >= ability.roll.minResult) {
+                result += ability.roll.bonus;
+            }
+        }
+        double doubled = Math.floor(result * 2);
+        return (float)doubled / 2;
+    }
+
+    @Override
+    public BattlePlanBonus getBattleDialBonus(Territory territory, int forcesDialed) {
+        return calculateDialBonus(territory, forcesDialed, false, false);
+    }
+
+    @Override
+    public BattlePlanBonus getAllianceBattleDialBonus(Territory territory, int forcesDialed) {
+        return calculateDialBonus(territory, forcesDialed, false, true);
+    }
+
+    @Override
+    public BattlePlanBonus getBattleOpponentDialPenalty(Territory territory, int forcesDialed) {
+        return calculateDialBonus(territory, forcesDialed, true, false);
+    }
+
+    @Override
+    public BattlePlanBonus getAllianceBattleOpponentDialPenalty(Territory territory, int forcesDialed) {
+        return calculateDialBonus(territory, forcesDialed, true, true);
     }
 }

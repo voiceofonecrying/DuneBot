@@ -7,6 +7,8 @@ import model.factions.*;
 import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
+import static controller.commands.CommandOptions.territory;
+
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +39,8 @@ public class BattlePlan {
     private final boolean arrakeenStrongholdCard;
     private int arrakeenStrongholdSpice;
     private final int homeworldDialAdvantage;
+    private final float factionDialAdvantage;
+    private String factionDialAdvantageString;
     private final int numStrongholdsOccupied;
     private final int numForcesInReserve;
     private int spiceBankerSupport;
@@ -80,11 +84,17 @@ public class BattlePlan {
         if (arrakeenStrongholdCard)
             arrakeenStrongholdSpice = Math.min(2, wholeNumberDial);
         calculateForcesDialedAndSpiceUsed(game, battle, faction, wholeNumberDial, plusHalfDial, spice);
-
+        Territory territory = battle.getTerritorySectors(game).getFirst();
+        Faction opponent = aggressor ? battle.getDefender(game) : battle.getAggressor(game);
+        BattlePlanBonus factionBonus = faction.getBattleDialBonus(territory, regularDialed + specialDialed);
+        BattlePlanBonus opponentPenalty = opponent.getBattleOpponentDialPenalty(territory, regularDialed + specialDialed);
+        BattlePlanBonus combinedBonus = factionBonus.add(opponentPenalty);
+        this.factionDialAdvantage = combinedBonus.value();
+        this.factionDialAdvantageString = combinedBonus.description();
         this.leaderSkillsInFront = getLeaderSkillsInFront(faction);
         // Handling of the hmsStrongholdProxy intentionally excluded here in case player initially selected Carthag but wants to change
         this.carthagStrongholdCard = game.hasGameOption(GameOption.STRONGHOLD_SKILLS) && wholeTerritoryName.equals("Carthag") && faction.hasStrongholdCard("Carthag");
-        this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, battle.getTerritorySectors(game).getFirst());
+        this.homeworldDialAdvantage = faction.homeworldDialAdvantage(game, territory);
         this.numStrongholdsOccupied = getNumStrongholdsOccupied(game, faction);
         this.spiceBankerSupport = 0;
         this.juiceOfSapho = false;
@@ -93,7 +103,7 @@ public class BattlePlan {
         game.getModInfo().publish(faction.getEmoji() + " battle plan for " + wholeTerritoryName + ":\n" + getPlanMessage(false));
         faction.getChat().publish("Your battle plan for " + wholeTerritoryName + " has been submitted:\n" + getPlanMessage(false));
         faction.getChat().publish(getForcesRemainingString(game));
-        Faction opponent = aggressor ? battle.getDefender(game) : battle.getAggressor(game);
+
         this.canCallTraitor = false;
         this.declinedTraitor = false;
         this.willCallTraitor = false;
@@ -102,6 +112,7 @@ public class BattlePlan {
         this.harkWillCallTraitor = false;
         this.leaderIsTraitor = false;
         this.opponentIsTraitor = false;
+
         presentEarlyTraitorChoices(game, faction, opponent, false);
     }
 
@@ -172,7 +183,7 @@ public class BattlePlan {
         return regularNotDialed;
     }
 
-    public int getSpecialNotDialed () {
+    public int getSpecialNotDialed() {
         return specialNotDialed;
     }
 
@@ -582,7 +593,7 @@ public class BattlePlan {
     }
 
     public int getDoubleBattleStrength() {
-        int bonuses = homeworldDialAdvantage;
+        float bonuses = homeworldDialAdvantage + factionDialAdvantage;
         if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
             bonuses += 2;
         if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
@@ -615,7 +626,8 @@ public class BattlePlan {
             bonuses -= numStrongholdsOccupied;
         if (stoneBurnerForTroops())
             return 2 * (regularNotDialed + specialNotDialed);
-        int doubleBattleStrength = 2 * wholeNumberDial + 2 * bonuses;
+        float doubleBonuses = 2 * bonuses;
+        int doubleBattleStrength = 2 * wholeNumberDial + (int)doubleBonuses;
         if (plusHalfDial) doubleBattleStrength++;
         doubleBattleStrength += 2 * getLeaderContribution();
         doubleBattleStrength += 2 * Math.ceilDiv(ecazTroopsForAlly, 2);
@@ -623,8 +635,11 @@ public class BattlePlan {
     }
 
     public String getTotalStrengthString() {
-        int wholeNumber = getDoubleBattleStrength() / 2;
-        return MessageFormat.format("{0}{1}", wholeNumber, plusHalfDial ? ".5" : "");
+        int doubledStrength = getDoubleBattleStrength();
+
+        return doubledStrength % 2 == 0
+                ? String.valueOf(doubledStrength / 2)
+                : String.valueOf(doubledStrength / 2.0);
     }
 
     public void addCarthagStrongholdPower() {
@@ -729,6 +744,8 @@ public class BattlePlan {
                 dialString += "\n  +" + homeworldDialAdvantage + " for Homeworld advantage";
             if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
                 dialString += "\n  +2 for Reinforcements";
+            if (factionDialAdvantageString != null)
+                dialString += factionDialAdvantageString;
         }
         return dialString;
     }
@@ -919,7 +936,7 @@ public class BattlePlan {
             else if (weapon.name().equals("Reinforcements")
                     && isNotPlanetologist
                     && numForcesInReserve < 3)
-                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
+                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinforcements");
             else if (isNotPlanetologist && weapon.isGreenSpecialCard() && !weapon.name().equals("Harass and Withdraw") && !weapon.name().equals("Reinforcements"))
                 throw new InvalidGameStateException(weapon.name() + " can only be played as a weapon if leader has Planetologist skill");
         }
@@ -931,7 +948,7 @@ public class BattlePlan {
             else if (defense.name().equals("Harass and Withdraw") && (faction.getHomeworld().equals(wholeTerritoryName) || (faction instanceof EmperorFaction emperor && emperor.getSecondHomeworld().equals(wholeTerritoryName))))
                 throw new InvalidGameStateException("Harass and Withdraw cannot be used on your Homeworld");
             else if (defense.name().equals("Reinforcements") && numForcesInReserve < 3)
-                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinformcements");
+                throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinforcements");
         }
     }
 
