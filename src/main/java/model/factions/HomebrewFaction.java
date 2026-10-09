@@ -183,6 +183,7 @@ public class HomebrewFaction extends Faction{
             game.getTerritories().remove(homeworld, territory);
             HomeworldTerritory hwt = game.getTerritories().addHomeworld(game, homeworld, name);
             territory.getForces().forEach(f -> hwt.callParentAddForces(f.getName(), f.getStrength()));
+            hwt.setRicheseNoField(territory.getRicheseNoField());
         }
         return (HomeworldTerritory) game.getTerritory(homeworld);
     }
