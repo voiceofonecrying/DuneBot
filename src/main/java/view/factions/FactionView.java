@@ -300,9 +300,12 @@ public class FactionView {
         List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
                 "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
         if (!(faction instanceof HomebrewFaction) && allFactionNames.contains(leader.getOriginalFactionName()))
-            eb = eb.setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.getName()));
+            try {
+                eb = eb.setThumbnail(CardImages.getLeaderImageLink(discordGame.getEvent().getGuild(), leader.getName()));
+            } catch (Exception ignored) {}
         else
             eb = eb.setThumbnail(ShowCommands.getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName()));
+        // Thumbnail will be blank for any leader whose image is missing in the leaders channel, or a homebrew whose thread has expired
         return eb.build();
     }
 

@@ -765,7 +765,8 @@ public class ShowCommands {
                 Point sigilPlacement = new Point(500, 850);
                 Point kaitainSigilPlacement = new Point(920, 950);
                 homeworld = overlay(homeworld, sigil, faction instanceof EmperorFaction ? kaitainSigilPlacement : sigilPlacement, 1);
-                for (Force force : game.getTerritory(faction.getHomeworld()).getForces()) {
+                Territory homeworldTerritory = game.getTerritory(faction.getHomeworld());
+                for (Force force : homeworldTerritory.getForces()) {
                     BufferedImage forceImage = buildForceImage(game, force);
                     forceImage = resize(forceImage, 376, 232);
                     Point forcePlacement = new Point(500, 175 + offset);
@@ -774,17 +775,30 @@ public class ShowCommands {
                     homeworld = overlay(homeworld, forceImage, forcePlacement, 1);
                     offset += 240;
                 }
+                if (homeworldTerritory.hasRicheseNoField()) {
+                    BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 232, 232);
+                    Point noFieldPlacement = faction instanceof EmperorFaction
+                            ? new Point(920, 275 + offset)
+                            : new Point(500, 175 + offset);
+
+                    homeworld = overlay(homeworld, noFieldImage, noFieldPlacement, 1);
+                }
                 offset = 0;
                 homeworlds = concatenateHorizontally(homeworlds, homeworld);
                 if (faction instanceof EmperorFaction emperorFaction) {
                     BufferedImage salusa = getResourceImage("Salusa Secundus");
                     salusa = overlay(salusa, sigil, sigilPlacement, 1);
-                    for (Force force : game.getTerritory(emperorFaction.getSecondHomeworld()).getForces()) {
+                    Territory salusaTerritory = game.getTerritory(emperorFaction.getSecondHomeworld());
+                    for (Force force : salusaTerritory.getForces()) {
                         BufferedImage forceImage = buildForceImage(game, force);
                         forceImage = resize(forceImage, 376, 232);
                         Point forcePlacement = new Point(500, 175 + offset);
                         salusa = overlay(salusa, forceImage, forcePlacement, 1);
                         offset += 240;
+                    }
+                    if (salusaTerritory.hasRicheseNoField()) {
+                        BufferedImage noFieldImage = resize(getResourceImage("No-Field Hidden"), 232, 232);
+                        salusa = overlay(salusa, noFieldImage, new Point(500, 175 + offset), 1);
                     }
                     homeworlds = concatenateHorizontally(homeworlds, salusa);
                 }
