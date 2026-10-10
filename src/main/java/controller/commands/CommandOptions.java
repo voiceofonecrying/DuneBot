@@ -46,6 +46,10 @@ public class CommandOptions {
             .setAutoComplete(true);
     public static final OptionData proxyFaction = new OptionData(OptionType.STRING, "proxy-faction-name", "The proxy for the Homebrew Faction", true)
             .setAutoComplete(true);
+    public static final OptionData homebrewAbility = new OptionData(OptionType.STRING, "homebrew-ability", "The name of the Homebrew Ability", true)
+            .setAutoComplete(true);
+    public static final OptionData homebrewAbilityState = new OptionData(OptionType.STRING, "homebrew-ability-state", "The state to set for the Ability", true)
+            .setAutoComplete(true);
     public static final OptionData factionOrTanks = new OptionData(OptionType.STRING, "faction-or-tanks", "Holder of the leader to kill or flip face down", true)
             .setAutoComplete(true);
     public static final OptionData otherFaction = new OptionData(OptionType.STRING, "other-factionname", "The Other faction", true)
@@ -59,7 +63,7 @@ public class CommandOptions {
     public static final OptionData whisperFaction = new OptionData(OptionType.STRING, "whisper-recipient", "The faction you want to whisper to. Omit in -whisper threads to reply.", false)
             .setAutoComplete(true);
     public static final OptionData homebrewFactionName = new OptionData(OptionType.STRING, "name", "The name of the homebrew faction", true);
-    public static final OptionData homebrewTokenName = new OptionData(OptionType.STRING, "token", "The name of the Token in Homebrew Resources category", true);
+    public static final OptionData homebrewTokenName = new OptionData(OptionType.STRING, "homebrew-token", "The name of the Token in Homebrew Resources category", true);
     public static final OptionData dotPosition = new OptionData(OptionType.INTEGER, "dot-position", "1 = dot in sector 1, then the others in storm order", true);
     public static final OptionData turn = new OptionData(OptionType.INTEGER, "turn", "The turn number.", true);
     public static final OptionData guildSpecialWin = new OptionData(OptionType.BOOLEAN, "guild-special", "Was this a Guild special victory condition?", false);
@@ -281,6 +285,8 @@ public class CommandOptions {
             case "factionname", "other-factionname", "sender", "recipient", "paid-to-faction", "karama-faction", "other-winner", "whisper-recipient" ->
                     choices = factions(game, searchValue);
             case "homebrew-faction-name" -> choices = homebrewFactions(game, searchValue);
+            case "homebrew-ability" -> choices = homebrewAbilities(game, searchValue);
+            case "homebrew-ability-state" -> choices = homebrewAbilityStates(game, searchValue);
             case "proxy-faction-name" -> choices = proxyFactions(game, searchValue);
             case "faction-or-tanks" -> choices = factionsOrTanks(game, searchValue);
             case "starred-forces-faction" -> choices = starredForcesFactions(game, searchValue);
@@ -338,6 +344,36 @@ public class CommandOptions {
                 .filter(factionName -> factionName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                 .map(factionName -> new Command.Choice(factionName, factionName))
                 .collect(Collectors.toList());
+    }
+
+    private static List<Command.Choice> homebrewAbilities(@NotNull Game game, String searchValue) {
+        List<Command.Choice> abilities = new ArrayList<>();
+
+        for (Faction f : game.getFactions()) {
+                if (f instanceof HomebrewFaction) {
+                        HomebrewFaction hf = (HomebrewFaction)f;
+                        hf.getJSONAbilityNames().stream()
+                        .filter(abilityName -> abilityName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                        .forEach(abilityName -> abilities.add(new Command.Choice(abilityName, abilityName)));
+                }
+        }
+
+        return abilities;
+    }
+
+    private static List<Command.Choice> homebrewAbilityStates(@NotNull Game game, String searchValue) {
+        List<Command.Choice> states = new ArrayList<>();
+
+        for (Faction f : game.getFactions()) {
+                if (f instanceof HomebrewFaction) {
+                        HomebrewFaction hf = (HomebrewFaction)f;
+                        hf.getJSONAbilityStateNames().stream()
+                        .filter(stateName -> stateName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                        .forEach(stateName -> states.add(new Command.Choice(stateName, stateName)));
+                }
+        }
+
+        return states.stream().distinct().toList();
     }
 
     private static List<Command.Choice> proxyFactions(@NotNull Game game, String searchValue) {
