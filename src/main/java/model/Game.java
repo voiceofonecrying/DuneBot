@@ -990,7 +990,7 @@ public class Game {
     public void releaseDukeVidal(boolean justRevivedByEcaz) {
         Faction faction = factions.stream().filter(f -> f.getLeader("Duke Vidal").isPresent()).findFirst().orElse(null);
         if (faction != null) {
-            faction.removeLeader("Duke Vidal");
+            dukeVidal = faction.removeLeader("Duke Vidal");
             turnSummary.publish("Duke Vidal is no longer in service to " + faction.getEmoji() + (justRevivedByEcaz ? " - what a rotten scoundrel!" : ""));
         }
     }
@@ -1764,7 +1764,7 @@ public class Game {
         else
             promptNextFactionToShip();
     }
-    
+
     public void playJuiceOfSapho(Faction faction, boolean last) throws InvalidGameStateException {
         if (faction.getTreacheryHand().stream().noneMatch(treacheryCard -> treacheryCard.name().equals("Juice of Sapho")))
             throw new InvalidGameStateException("You do not have Juice of Sapho.");
@@ -2068,6 +2068,7 @@ public class Game {
                 if (getMoritaniFaction().getLeader("Duke Vidal").isEmpty())
                     turnSummary.publish(Emojis.MORITANI + " may not take Duke Vidal because Ecaz Homeworld is occupied.");
             } else {
+                refreshDukeVidal();
                 factions.forEach(Faction::loseDukeVidalToMoritani);
                 getMoritaniFaction().getDukeVidal();
                 getMoritaniFaction().getChat().publish("Duke Vidal has come to fight for you!");
