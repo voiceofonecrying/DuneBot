@@ -702,7 +702,8 @@ public class Battle {
             if (executeResolution)
                 game.killLeader(faction, battlePlan.getKilledLeaderString());
         } else if (battlePlan.getLeader() != null && battlePlan.getLeader().getName().equals("Duke Vidal")) {
-            if (!(faction instanceof BTFaction) || faction.getAlly().equals("Ecaz")) {
+            boolean occupiesEcaz = game.hasEcazFaction() && game.getEcazFaction().getOccupier() == faction;
+            if (!occupiesEcaz && !(faction instanceof BTFaction) || faction.getAlly().equals("Ecaz")) {
                 resolution += emojis + " sets Duke Vidal aside\n";
                 String btVidalMessage = "If Duke Vidal was a Ghola, he should be assigned back to " + Emojis.BT;
                 if (faction instanceof BTFaction)
