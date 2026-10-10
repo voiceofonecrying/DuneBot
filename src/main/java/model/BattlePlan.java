@@ -7,8 +7,6 @@ import model.factions.*;
 import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
 
-import static controller.commands.CommandOptions.territory;
-
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.List;
