@@ -296,6 +296,7 @@ public class CommandManager extends ListenerAdapter {
                 case "moritani" -> MoritaniCommands.runCommand(event, discordGame, game);
                 case "bg" -> BGCommands.runCommand(event, discordGame, game);
                 case "atreides" -> AtreidesCommands.runCommand(event, discordGame, game);
+                case "mikarrol" -> MikarrolCommands.runCommand(event, discordGame, game);
                 case "homebrew" -> HomebrewCommands.runCommand(event, discordGame, game);
                 case "player" -> ephemeralMessage = PlayerCommands.runCommand(event, discordGame, game);
                 case "draw-treachery-card" -> drawTreacheryCard(discordGame, game);
@@ -465,6 +466,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(AtreidesCommands.getCommands());
         commandData.addAll(EcazCommands.getCommands());
         commandData.addAll(MoritaniCommands.getCommands());
+        commandData.addAll(MikarrolCommands.getCommands());
         commandData.addAll(HomebrewCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()

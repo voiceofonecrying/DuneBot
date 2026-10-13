@@ -767,6 +767,25 @@ public class Game {
         return (MoritaniFaction) getFactionOrNull("Moritani");
     }
 
+    /**
+     * Get the Mikarrol faction object
+     *
+     * @return the MikarrolFaction object if Mikarrol is in the game
+     * @throws IllegalArgumentException if Mikarrol is not in the game
+     */
+    public MikarrolFaction getMikarrolFaction() {
+        return (MikarrolFaction) getFaction("Mikarrol");
+    }
+
+    /**
+     * Get the Mikarrol faction object
+     *
+     * @return the MikarrolFaction object if Mikarrol is in the game or null if Mikarrol is not in the game
+     */
+    public MikarrolFaction getMikarrolFactionOrNull() {
+        return (MikarrolFaction) getFactionOrNull("Mikarrol");
+    }
+
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
     }
@@ -813,6 +832,10 @@ public class Game {
 
     public boolean hasMoritaniFaction() {
         return hasFaction("Moritani");
+    }
+
+    public boolean hasMikarrolFaction() {
+        return hasFaction("Mikarrol");
     }
 
     public void addFaction(Faction faction) {
@@ -1008,6 +1031,7 @@ public class Game {
         phaseForTracker = phase;
         phase++;
         subPhase = 1;
+        this.getFactions().forEach(f -> f.performEndOfPhaseActions());
 
         if (turn >= 1 && phase > 10) {
             advanceTurn();

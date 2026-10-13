@@ -127,6 +127,7 @@ public class HomebrewFaction extends Faction{
         homeworldName.put("Guild", "Junction");
         homeworldName.put("Harkonnen", "Giedi Prime");
         homeworldName.put("Ix", "Ix");
+        homeworldName.put("Mikarrol", "Kublai XII");
         homeworldName.put("Moritani", "Grumman");
         homeworldName.put("Richese", "Richese");
         homeworldProxy = homeworldName.get(factionProxy);

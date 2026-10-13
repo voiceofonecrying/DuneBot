@@ -13,6 +13,7 @@ public class Colors {
     public static final Color GUILD = Color.decode("#C8622F");
     public static final Color IX = Color.decode("#B9B786");
     public static final Color HARKONNEN = Color.decode("#3B3530");
+    public static final Color MIKARROL = Color.decode("#C1297A");
     public static final Color MORITANI = Color.decode("#419BA8");
     public static final Color RICHESE = Color.decode("#B1AFA3");
 
@@ -50,6 +51,9 @@ public class Colors {
             }
             case "Ecaz" -> {
                 return ECAZ;
+            }
+            case "Mikarrol" -> {
+                return MIKARROL;
             }
             case "Moritani" -> {
                 return MORITANI;

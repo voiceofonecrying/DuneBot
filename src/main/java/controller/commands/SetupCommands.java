@@ -387,14 +387,15 @@ public class SetupCommands {
             case "BG" -> faction = new BGFaction(playerName, userName);
             case "BT" -> faction = new BTFaction(playerName, userName);
             case "CHOAM" -> faction = new ChoamFaction(playerName, userName);
+            case "ECAZ" -> faction = new EcazFaction(playerName, userName);
             case "EMPEROR" -> faction = new EmperorFaction(playerName, userName);
             case "FREMEN" -> faction = new FremenFaction(playerName, userName);
             case "GUILD" -> faction = new GuildFaction(playerName, userName);
             case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName);
             case "IX" -> faction = new IxFaction(playerName, userName);
-            case "RICHESE" -> faction = new RicheseFaction(playerName, userName);
-            case "ECAZ" -> faction = new EcazFaction(playerName, userName);
+            case "MIKARROL" -> faction = new MikarrolFaction(playerName, userName);
             case "MORITANI" -> faction = new MoritaniFaction(playerName, userName);
+            case "RICHESE" -> faction = new RicheseFaction(playerName, userName);
             default -> throw new IllegalStateException("Unexpected value: " + factionName.toUpperCase());
         }
 
