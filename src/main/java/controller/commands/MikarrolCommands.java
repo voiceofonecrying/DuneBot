@@ -20,8 +20,8 @@ public class MikarrolCommands {
         commandData.add(
                 Commands.slash("mikarrol", "Commands related to Mikarrol.").addSubcommands(
                         new SubcommandData("raid", "Raid a faction's treachery hand.").addOptions(faction),
-						new SubcommandData("slavers", "Activate Mikarrol's Slavers advantage.").addOptions(amount),
-						new SubcommandData("ally-slavers", "Activate Mikarrol's alliance ability.").addOptions(amount),
+                        new SubcommandData("slavers", "Activate Mikarrol's Slavers advantage.").addOptions(amount),
+	                    new SubcommandData("ally-slavers", "Activate Mikarrol's alliance ability.").addOptions(amount),
                         new SubcommandData("block-raiders", "Block or unblock Mikarrol from using Raiders.").addOptions(mikarrolKaramad)
                 )
         );
@@ -35,8 +35,8 @@ public class MikarrolCommands {
 
         switch (name) {
             case "raid" -> raid(discordGame, game);
-			case "slavers" -> slavers(discordGame, game);
-			case "ally-slavers" -> allySlavers(discordGame, game);
+	        case "slavers" -> slavers(discordGame, game);
+	        case "ally-slavers" -> allySlavers(discordGame, game);
             case "block-raiders" -> blockRaiders(discordGame, game);
         }
     }
@@ -53,18 +53,18 @@ public class MikarrolCommands {
         discordGame.pushGame();
     }
 
-	private static void slavers(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-		int slaversAmount = discordGame.required(amount).getAsInt();
-		MikarrolFaction faction = game.getMikarrolFaction();
-		faction.setSlaversAmount(slaversAmount);
-		faction.slavers();
+    private static void slavers(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        int slaversAmount = discordGame.required(amount).getAsInt();
+        MikarrolFaction faction = game.getMikarrolFaction();
+        faction.setSlaversAmount(slaversAmount);
+        faction.slavers();
 	}
 
-	private static void allySlavers(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-		int slaversAmount = discordGame.required(amount).getAsInt();
-		MikarrolFaction faction = game.getMikarrolFaction();
-		faction.setAllySlaversAmount(slaversAmount);
-		faction.allySlavers();
-	}
+    private static void allySlavers(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        int slaversAmount = discordGame.required(amount).getAsInt();
+        MikarrolFaction faction = game.getMikarrolFaction();
+        faction.setAllySlaversAmount(slaversAmount);
+        faction.allySlavers();
+    }
 }
 

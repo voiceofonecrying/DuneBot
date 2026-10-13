@@ -32,21 +32,21 @@ public class MikarrolButtons implements Pressable {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("mikarrol-discard-raid-card")) discardRaidedCard(event, game, discordGame);
         else if (event.getComponentId().equals("mikarrol-keep-raid-card")) keepRaidedCard(event, game, discordGame);
-		else if (event.getComponentId().equals("mikarrol-raid")) raid(event, game, discordGame);
-		else if (event.getComponentId().equals("mikarrol-decline-raid")) declineRaid(event, game, discordGame);
-		else if (event.getComponentId().equals("mikarrol-finished-discarding")) finishDiscard(event, game, discordGame);
+        else if (event.getComponentId().equals("mikarrol-raid")) raid(event, game, discordGame);
+        else if (event.getComponentId().equals("mikarrol-decline-raid")) declineRaid(event, game, discordGame);
+        else if (event.getComponentId().equals("mikarrol-finished-discarding")) finishDiscard(event, game, discordGame);
         else if (event.getComponentId().startsWith("mikarrol-discard-")) discard(event, game, discordGame);
-		else if (event.getComponentId().startsWith("mikarrol-slavers-")) setSlavers(event, game, discordGame);
+        else if (event.getComponentId().startsWith("mikarrol-slavers-")) setSlavers(event, game, discordGame);
         else if (event.getComponentId().startsWith("mikarrol-ally-slavers-")) setAllySlavers(event, game, discordGame);
     }
 
-	public static void sendSlaversButtons(MikarrolFaction mikarrol, Faction ally, boolean forAlly, DiscordGame discordGame, boolean isReply) throws ChannelNotFoundException, InvalidGameStateException {
-		Faction primaryFaction = forAlly ? ally : (Faction)mikarrol;
-		int currentAmount = forAlly ? mikarrol.getAllySlaversAmount() : mikarrol.getSlaversAmount();
-		String forceEmoji = forAlly ? Emojis.getForceEmoji(ally.getName()) : Emojis.getForceEmoji("Mikarrol");
-		String numButton = forAlly ? "mikarrol-ally-slavers-number" : "mikarrol-slavers-number";
-		String resetButton = forAlly ? "mikarrol-ally-slavers-reset" : "mikarrol-slavers-reset";
-		MessageCreateBuilder builder = new MessageCreateBuilder();
+    public static void sendSlaversButtons(MikarrolFaction mikarrol, Faction ally, boolean forAlly, DiscordGame discordGame, boolean isReply) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction primaryFaction = forAlly ? ally : (Faction)mikarrol;
+        int currentAmount = forAlly ? mikarrol.getAllySlaversAmount() : mikarrol.getSlaversAmount();
+        String forceEmoji = forAlly ? Emojis.getForceEmoji(ally.getName()) : Emojis.getForceEmoji("Mikarrol");
+        String numButton = forAlly ? "mikarrol-ally-slavers-number" : "mikarrol-slavers-number";
+        String resetButton = forAlly ? "mikarrol-ally-slavers-reset" : "mikarrol-slavers-reset";
+        MessageCreateBuilder builder = new MessageCreateBuilder();
         EmbedBuilder embedBuilder = new EmbedBuilder().setColor(Color.DARK_GRAY);
         embedBuilder.setTitle(EmojiCache.tagEmojis("**Set Slavers Amount** " + mikarrol.getEmoji()));
         String infoChannelName = primaryFaction.getInfoChannelPrefix() + "-info";
@@ -65,7 +65,7 @@ public class MikarrolButtons implements Pressable {
             else
                 discordGame.queueMessage(infoChannelName, builder.build());
         }
-	}
+    }
 
     private static void setSlavers(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws InvalidGameStateException, ChannelNotFoundException {
         MikarrolFaction faction = game.getMikarrolFaction();
@@ -94,9 +94,9 @@ public class MikarrolButtons implements Pressable {
     }
 
     private static void setAllySlavers(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws InvalidGameStateException, ChannelNotFoundException {
-		Faction allyFaction = ButtonManager.getButtonPresser(event, game);
-		if (allyFaction.getAlly() != "Mikarrol")
-			throw new InvalidGameStateException("You are not currently allied with Mikarrol");
+        Faction allyFaction = ButtonManager.getButtonPresser(event, game);
+        if (allyFaction.getAlly() != "Mikarrol")
+            throw new InvalidGameStateException("You are not currently allied with Mikarrol");
         String forces = event.getComponentId().split("-")[3];
         MikarrolFaction mikarrol = game.getMikarrolFaction();
 
