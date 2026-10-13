@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class MikarrolFactionTest extends FactionTestTemplate {
     private MikarrolFaction faction;
-	private FremenFaction fremen;
+    private FremenFaction fremen;
 
     @Override
     Faction getFaction() {
@@ -24,7 +24,7 @@ class MikarrolFactionTest extends FactionTestTemplate {
     void setUp() throws IOException {
         faction = new MikarrolFaction("player", "player");
         commonPostInstantiationSetUp();
-		fremen = new FremenFaction("fr", "fr");
+        fremen = new FremenFaction("fr", "fr");
         game.addFaction(fremen);
     }
 
@@ -165,7 +165,7 @@ class MikarrolFactionTest extends FactionTestTemplate {
             atreidesChat = new TestTopic();
             atreides.setChat(atreidesChat);
             atreides.setLedger(new TestTopic());
-			atreides.addTreacheryCard(new TreacheryCard("Karama"));
+            atreides.addTreacheryCard(new TreacheryCard("Karama"));
             game.addFaction(atreides);
 
             karama = atreides.getTreacheryCard("Karama");
@@ -177,18 +177,18 @@ class MikarrolFactionTest extends FactionTestTemplate {
             assertTrue(faction.getTreacheryHand().contains(karama));
             assertFalse(atreides.getTreacheryHand().contains(karama));
             assertEquals("Your raiders have returned, stealing Karama from " + atreides.getEmoji() + "!", ledger.getMessages().getLast());
-			faction.keepRaidedCard();
+            faction.keepRaidedCard();
             assertEquals("You will keep Karama from the raid", chat.getMessages().getLast());
-			assertTrue(faction.getTreacheryHand().contains(karama));
+            assertTrue(faction.getTreacheryHand().contains(karama));
         }
 
         @Test
         void testVictimDoesNotHaveCard() throws InvalidGameStateException {
             atreides.discard("Karama");
-			faction.raid("Atreides");
-			assertEquals("Your raiders have returned, revealing the enemy had nothing to steal.", chat.getMessages().getLast());
+            faction.raid("Atreides");
+            assertEquals("Your raiders have returned, revealing the enemy had nothing to steal.", chat.getMessages().getLast());
             assertFalse(faction.getTreacheryHand().contains(karama));
-			assertFalse(atreides.getTreacheryHand().contains(karama));
+            assertFalse(atreides.getTreacheryHand().contains(karama));
         }
 
         @Test
@@ -197,9 +197,9 @@ class MikarrolFactionTest extends FactionTestTemplate {
             assertTrue(faction.getTreacheryHand().contains(karama));
             assertFalse(atreides.getTreacheryHand().contains(karama));
             assertEquals("Your raiders have returned, stealing Karama from " + atreides.getEmoji() + "!", ledger.getMessages().getLast());
-			faction.discardRaidedCard();
+            faction.discardRaidedCard();
             assertEquals("You chose not to keep the raided Karama", chat.getMessages().getLast());
-			assertFalse(faction.getTreacheryHand().contains(karama));
+            assertFalse(faction.getTreacheryHand().contains(karama));
         }
     }
 }

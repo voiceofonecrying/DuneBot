@@ -21,7 +21,7 @@ public class MikarrolCommands {
                 Commands.slash("mikarrol", "Commands related to Mikarrol.").addSubcommands(
                         new SubcommandData("raid", "Raid a faction's treachery hand.").addOptions(faction),
                         new SubcommandData("slavers", "Activate Mikarrol's Slavers advantage.").addOptions(amount),
-	                    new SubcommandData("ally-slavers", "Activate Mikarrol's alliance ability.").addOptions(amount),
+                        new SubcommandData("ally-slavers", "Activate Mikarrol's alliance ability.").addOptions(amount),
                         new SubcommandData("block-raiders", "Block or unblock Mikarrol from using Raiders.").addOptions(mikarrolKaramad)
                 )
         );
