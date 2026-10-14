@@ -1738,4 +1738,20 @@ public class Faction {
     public void endKaramaMovement() {
         movementKaramaed = false;
     }
+
+    public BattlePlanBonus getBattleDialBonus(Territory territory, int forcesDialed) {
+        return !hasAlly() ? BattlePlanBonus.ZERO : game.getFaction(ally).getAllianceBattleDialBonus(territory, forcesDialed);
+    }
+
+    public BattlePlanBonus getAllianceBattleDialBonus(Territory territory, int forcesDialed) {
+        return BattlePlanBonus.ZERO;
+    }
+
+    public BattlePlanBonus getBattleOpponentDialPenalty(Territory territory, int forcesDialed) {
+        return !hasAlly() ? BattlePlanBonus.ZERO : game.getFaction(ally).getAllianceBattleOpponentDialPenalty(territory, forcesDialed);
+    }
+
+    public BattlePlanBonus getAllianceBattleOpponentDialPenalty(Territory territory, int forcesDialed) {
+        return BattlePlanBonus.ZERO;
+    }
 }

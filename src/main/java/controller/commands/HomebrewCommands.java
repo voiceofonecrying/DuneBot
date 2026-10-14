@@ -4,6 +4,7 @@ import controller.DiscordGame;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import model.Game;
+import model.factions.Faction;
 import model.factions.HomebrewFaction;
 import net.dv8tion.jda.api.events.interaction.command.SlashCommandInteractionEvent;
 import net.dv8tion.jda.api.interactions.commands.build.CommandData;
@@ -21,7 +22,8 @@ public class HomebrewCommands {
         commandData.add(Commands.slash("homebrew", "Commands related to Homebrew Factions.").addSubcommands(
                 new SubcommandData("set-proxy-faction", "Set the faction to be used for emojis and default images.").addOptions(homebrewFaction, proxyFaction),
                 new SubcommandData("add-token", "Place a homebrew token in a Territory.").addOptions(territory, homebrewFaction, homebrewTokenName),
-                new SubcommandData("remove-token", "Remove a homebrew token from a Territory.").addOptions(territory, homebrewFaction, homebrewTokenName)
+                new SubcommandData("remove-token", "Remove a homebrew token from a Territory.").addOptions(territory, homebrewFaction, homebrewTokenName),
+                new SubcommandData("set-ability-state", "Change the state of a homebrew faction's ability.").addOptions(homebrewFaction, homebrewAbility, homebrewAbilityState)
 //              new SubcommandData("set-proxy-homeworld", "Set a different homeworld image if desired.").addOptions(atreidesKaramad)
         ));
         return commandData;
@@ -36,7 +38,16 @@ public class HomebrewCommands {
             case "set-proxy-faction" -> setProxyFaction(discordGame, game);
             case "add-token" -> addToken(discordGame, game);
             case "remove-token" -> removeToken(discordGame, game);
+            case "set-ability-state" -> setBattleAbilityState(discordGame, game);
         }
+    }
+
+    private static void setBattleAbilityState(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+        String homebrewFactionName = discordGame.required(homebrewFaction).getAsString();
+        String homebrewAbilityName = discordGame.required(homebrewAbility).getAsString();
+        String homebrewAbilityStateName = discordGame.required(homebrewAbilityState).getAsString();
+        ((HomebrewFaction) game.getFaction(homebrewFactionName)).setAbilityState(homebrewAbilityName, homebrewAbilityStateName);
+        discordGame.pushGame();
     }
 
     private static void setProxyFaction(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
