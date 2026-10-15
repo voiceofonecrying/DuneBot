@@ -17,6 +17,7 @@ public class MovementTest extends DuneTest {
     List<String> spiceBlowTerritories;
     List<String> rockTerritories;
     List<String> nonSpiceNonRockTerritories;
+    List<String> nonSpiceNonRockTerritoriesWithoutPolarSink;
     List<String> discoveryTokenTerritories;
     Territory meridianWestSector;
     Territory pastyMesaNorthSector;
@@ -31,6 +32,7 @@ public class MovementTest extends DuneTest {
         spiceBlowTerritories = game.getTerritories().getSpiceBlowTerritoryNames();
         rockTerritories = game.getTerritories().getRockTerritoryNames();
         nonSpiceNonRockTerritories = game.getTerritories().getNonSpiceNonRockTerritoryNames();
+        nonSpiceNonRockTerritoriesWithoutPolarSink = nonSpiceNonRockTerritories.stream().filter(t -> !t.equals("Polar Sink")).toList();
         meridianWestSector = game.getTerritory("Meridian (West Sector)");
         meridianWestSector.setDiscoveryToken("Ecological Testing Station");
         meridianWestSector.setDiscovered(true);
@@ -390,6 +392,7 @@ public class MovementTest extends DuneTest {
             assertEquals(16, fremenChat.getChoices().getLast().size());
             assertEquals("fremen-ride-start-over", fremenChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
+            assertTrue(fremenChat.getChoices().getLast().stream().map(DuneChoice::getLabel).toList().contains("Polar Sink"));
             for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
                 assertTrue(c.getId().startsWith("fremen-ride-"));
                 assertFalse(c.isDisabled());
@@ -407,17 +410,18 @@ public class MovementTest extends DuneTest {
             fremen.getMovement().setMoveType(MoveType.SHAI_HULUD_PLACEMENT);
             fremen.getMovement().presentNonSpiceNonRockChoices();
             assertEquals("Which Territory?", fremenChat.getMessages().getLast());
-            assertEquals(16, fremenChat.getChoices().getLast().size());
+            assertEquals(15, fremenChat.getChoices().getLast().size());
             assertEquals("fremen-place-shai-hulud-start-over", fremenChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
+            assertFalse(fremenChat.getChoices().getLast().stream().map(DuneChoice::getLabel).toList().contains("Polar Sink"));
+            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 14)) {
                 assertTrue(c.getId().startsWith("fremen-place-shai-hulud-"));
                 assertFalse(c.isDisabled());
                 String action = c.getId().replace("fremen-place-shai-hulud-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
-                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+                assertTrue(nonSpiceNonRockTerritoriesWithoutPolarSink.contains(c.getLabel()));
             }
-            for (String s : nonSpiceNonRockTerritories)
+            for (String s : nonSpiceNonRockTerritoriesWithoutPolarSink)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.SHAI_HULUD_PLACEMENT, fremen.getMovement().getMoveType());
         }
@@ -427,17 +431,18 @@ public class MovementTest extends DuneTest {
             fremen.getMovement().setMoveType(MoveType.GREAT_MAKER_PLACEMENT);
             fremen.getMovement().presentNonSpiceNonRockChoices();
             assertEquals("Which Territory?", fremenChat.getMessages().getLast());
-            assertEquals(16, fremenChat.getChoices().getLast().size());
+            assertEquals(15, fremenChat.getChoices().getLast().size());
             assertEquals("fremen-place-great-maker-start-over", fremenChat.getChoices().getLast().getLast().getId());
             assertEquals("Start over", fremenChat.getChoices().getLast().getLast().getLabel());
-            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 15)) {
+            assertFalse(fremenChat.getChoices().getLast().stream().map(DuneChoice::getLabel).toList().contains("Polar Sink"));
+            for (DuneChoice c : fremenChat.getChoices().getLast().subList(0, 14)) {
                 assertTrue(c.getId().startsWith("fremen-place-great-maker-"));
                 assertFalse(c.isDisabled());
                 String action = c.getId().replace("fremen-place-great-maker-", "").replace(c.getLabel(), "");
                 assertEquals("territory-", action);
-                assertTrue(nonSpiceNonRockTerritories.contains(c.getLabel()));
+                assertTrue(nonSpiceNonRockTerritoriesWithoutPolarSink.contains(c.getLabel()));
             }
-            for (String s : nonSpiceNonRockTerritories)
+            for (String s : nonSpiceNonRockTerritoriesWithoutPolarSink)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
             assertEquals(MoveType.GREAT_MAKER_PLACEMENT, fremen.getMovement().getMoveType());
         }
