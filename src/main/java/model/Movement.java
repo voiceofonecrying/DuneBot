@@ -279,6 +279,8 @@ public class Movement {
         boolean hmsPlacement = moveType == MoveType.HMS_PLACEMENT;
         boolean initialPlacement = startingForces || hmsPlacement;
         List<String> nonSpiceNonRockTerritories = game.getTerritories().getNonSpiceNonRockTerritoryNames();
+        if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT)
+            nonSpiceNonRockTerritories = nonSpiceNonRockTerritories.stream().filter(t -> !t.equals("Polar Sink")).toList();
         List<DuneChoice> choices = nonSpiceNonRockTerritories.stream().map(s -> faction.getMovement().shipToTerritoryChoice(s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", getChoicePrefix() + "start-over", "Start over"));
         faction.getChat().reply("Which Territory?", choices);
