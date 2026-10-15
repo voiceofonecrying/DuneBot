@@ -518,6 +518,10 @@ public class Faction {
         setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
     }
 
+    public void performEndOfPhaseActions() {
+        // Some factions like CHOAM and Mikarrol can override to execute powers at the end of each phase
+    }
+
     public int getReservesStrength() {
         return game.getTerritory(homeworld).getForceStrength(name);
     }

@@ -24,6 +24,8 @@ public class Battles {
     public void startBattlePhase(Game game) {
         factionsInBattleOrder = new ArrayList<>(game.getFactionsInStormOrder().stream().map(Faction::getName).toList());
         getBattles(game);
+        if (game.hasMikarrolFaction())
+            game.getMikarrolFaction().setInfiniteHand();
         if (battles.stream().anyMatch(b -> b.getForces().stream().anyMatch(f -> f.getName().equals("Ix"))))
             presentIxCunningChoices(game);
         List<Faction> saphoList = game.getFactionsWithTreacheryCard("Juice of Sapho");

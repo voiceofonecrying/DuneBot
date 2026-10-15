@@ -48,6 +48,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static controller.commands.CommandOptions.faction;
+import static controller.buttons.MikarrolButtons.sendSlaversButtons;
 
 public class ShowCommands {
     public static List<CommandData> getCommands() {
@@ -181,7 +182,7 @@ public class ShowCommands {
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage;
             List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol");
             if (!allFactionNames.contains(leader.getOriginalFactionName())) {
                 String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
                 if (imageUrl != null) {
@@ -533,6 +534,7 @@ public class ShowCommands {
 
         sendAllySpiceSupportButtons(discordGame, game, faction, false);
         sendAllianceActions(discordGame, game, faction, false);
+        sendFactionPowerButtons(discordGame, game, faction, false);
         if (game.isInBiddingPhase()) {
             sendBiddingActions(discordGame, game, faction, false);
             Bidding bidding = game.getBidding();
@@ -624,6 +626,16 @@ public class ShowCommands {
                     discordGame.queueMessage(infoChannelName, builder.build());
             }
         }
+    }
+
+    public static void sendFactionPowerButtons(DiscordGame discordGame, Game game, Faction faction, boolean isReply) throws ChannelNotFoundException, InvalidGameStateException {
+        if(!game.isSetupFinished())
+            return;
+        // Other faction info buttons to go here, Ix, CHOAM, etc.
+        if (faction instanceof MikarrolFaction)
+            sendSlaversButtons((MikarrolFaction)faction, faction, false, discordGame, isReply);
+        if (faction.getAlly() == "Mikarrol")
+            sendSlaversButtons(game.getMikarrolFaction(), faction, true, discordGame, isReply);
     }
 
     public static void sendAllianceActions(DiscordGame discordGame, Game game, Faction faction, boolean isReply) throws ChannelNotFoundException {
@@ -1311,7 +1323,7 @@ public class ShowCommands {
         for (Leader leader : faction.getLeaders()) {
             FileUpload leaderImage;
             List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol");
             if (!allFactionNames.contains(leader.getOriginalFactionName())) {
                 String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
                 if (imageUrl != null) {

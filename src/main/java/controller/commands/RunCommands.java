@@ -157,8 +157,8 @@ public class RunCommands {
         } else if (phase == 7) {
             if (!game.allFactionsHaveMoved())
                 throw new InvalidGameStateException("Shipment and movement is still in progress.");
-            game.startBattlePhase();
             game.advancePhase();
+            game.startBattlePhase();
         } else if (phase == 8) {
             game.startSpiceHarvest();
             game.advancePhase();

@@ -921,6 +921,7 @@ public class Battle {
         Faction winner = isAggressorWin(game) ? getAggressor(game) : getDefender(game);
         Faction loser = isAggressorWin(game) ? getDefender(game) : getAggressor(game);
         resolution += handleHarkonnenLeaderCapture(game, winner, loser, isLoser, executeResolution);
+        resolution += handleMikarrolRaidAndReplenish(game, winner, loser, isLoser, executeResolution);
         if (!isLoser && winner instanceof AtreidesFaction atreides) {
             if (game.hasGameOption(GameOption.HOMEWORLDS) && atreides.isHighThreshold() && !wholeTerritoryName.equals("Caladan")
                     && regularForcesTotal - regularForcesDialed > 0 && atreides.getReservesStrength() > 0) {
@@ -1309,6 +1310,26 @@ public class Battle {
                 harkonnen.returnCapturedLeader(leader.getName());
             else
                 resolution += Emojis.HARKONNEN + " returns " + leader.getName() + " to " + Emojis.getFactionEmoji(leaderFaction) + "\n";
+        }
+        return resolution;
+    }
+
+    protected String handleMikarrolRaidAndReplenish(Game game, Faction winner, Faction loser, boolean isLoser, boolean executeResolution) throws InvalidGameStateException {
+        String resolution = "";
+        BattlePlan loserBattlePlan = isAggressorWin(game) ? defenderBattlePlan : aggressorBattlePlan;
+        if (!isLoser && winner instanceof MikarrolFaction mikarrol) {
+            if (executeResolution) {
+                mikarrol.offerRaidChoice(loser);
+                mikarrol.replenishment(true);
+            }
+            else
+                resolution += Emojis.getFactionEmoji("Mikarrol") + " replenishes forces and may raid " + loser.getEmoji() + "\n";
+        }
+        else if (isLoser && loser instanceof MikarrolFaction mikarrol) {
+            if (executeResolution)
+                mikarrol.replenishment(false);
+            else
+                resolution += Emojis.getFactionEmoji("Mikarrol") + " replenishes forces\n";
         }
         return resolution;
     }

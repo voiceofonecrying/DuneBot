@@ -39,7 +39,8 @@ public class CommandOptions {
             .addChoice("CHOAM", "CHOAM")
             .addChoice("Richese", "Richese")
             .addChoice("Ecaz", "Ecaz")
-            .addChoice("Moritani", "Moritani");
+            .addChoice("Moritani", "Moritani")
+            .addChoice("Mikarrol", "Mikarrol");
     public static final OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
             .setAutoComplete(true);
     public static final OptionData homebrewFaction = new OptionData(OptionType.STRING, "homebrew-faction-name", "The Homebrew Faction", true)
@@ -170,6 +171,7 @@ public class CommandOptions {
             new OptionData(OptionType.STRING, "paid-to-faction", "Which faction is bidding paid to.", false)
                     .setAutoComplete(true);
     public static final OptionData harkonnenKaramad = new OptionData(OptionType.BOOLEAN, "no-bonus-card", "If someone Karamas Harkonnen's bonus card", false);
+    public static final OptionData mikarrolKaramad = new OptionData(OptionType.BOOLEAN, "no-raiders", "If someone Karamas Mikarrol's Raiders", false);
     public static final OptionData richeseNoFields =
             new OptionData(OptionType.INTEGER, "richese-no-fields", "Value of Richese No-Fields token.", true)
                     .addChoice("0 No-Field", 0)
@@ -378,7 +380,7 @@ public class CommandOptions {
 
     private static List<Command.Choice> proxyFactions(@NotNull Game game, String searchValue) {
         List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani");
+                "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol");
         allFactionNames = allFactionNames.stream().filter(f -> !game.hasFaction(f)).toList();
         allFactionNames = allFactionNames.stream().filter(f -> !(game.hasFaction(f) && game.getFaction(f) instanceof HomebrewFaction hbf && hbf.getFactionProxy().equals(f))).toList();
         return allFactionNames.stream()

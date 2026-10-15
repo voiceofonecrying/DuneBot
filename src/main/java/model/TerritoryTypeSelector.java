@@ -15,7 +15,7 @@ public class TerritoryTypeSelector implements TypeSelector<Territory> {
 
         switch (territoryName) {
             case "Caladan", "Wallach IX", "Tleilax", "Tupile", "Ecaz", "Kaitain", "Salusa Secundus",
-                 "Southern Hemisphere", "Junction", "Giedi Prime", "Ix", "Grumman", "Richese" -> territoryClass = HomeworldTerritory.class;
+                 "Southern Hemisphere", "Junction", "Giedi Prime", "Ix", "Grumman", "Richese", "Kublai XII" -> territoryClass = HomeworldTerritory.class;
         }
 
         return territoryClass;
