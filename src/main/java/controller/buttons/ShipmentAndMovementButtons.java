@@ -890,13 +890,16 @@ public class ShipmentAndMovementButtons implements Pressable {
         String buttonSuffix = event.getComponentId().replace("other", "");
         boolean startingForces = event.getComponentId().contains("-starting-forces");
         boolean hmsPlacement = event.getComponentId().contains("-hms-placement");
+        boolean wormPlacement = event.getComponentId().contains("-place-shai-hulud") || event.getComponentId().contains("-place-great-maker");
         Faction faction = ButtonManager.getButtonPresser(event, game);
         boolean initialPlacement = startingForces || hmsPlacement;
-        List<String> otherTerritories = List.of(
-                "Polar Sink", "Cielago Depression", "Meridian", "Cielago East", "Harg Pass",
+        List<String> otherTerritories = new ArrayList<>(List.of(
+                "Cielago Depression", "Meridian", "Cielago East", "Harg Pass",
                 "Gara Kulon", "Hole In The Rock", "Basin", "Imperial Basin", "Arsunt",
                 "Tsimpo", "Bight Of The Cliff", "Wind Pass", "The Greater Flat", "Cielago West"
-        );
+        ));
+        if (!wormPlacement)
+            otherTerritories.add(0, "Polar Sink");
         List<DuneChoice> choices = otherTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
         faction.getChat().reply("Which Territory?", choices);
