@@ -46,8 +46,8 @@ public class Battles {
         List<Battle> battleTerritories = getBattles(game);
         if (!battleTerritories.isEmpty()) {
             String battleMessages = battleTerritories.stream()
-                    .map((battle) -> battle.getFactionsMessage(game) + " in " + battle.getWholeTerritoryName())
-                    .collect(Collectors.joining("\n"));
+                .map((battle) -> battle.getFactionsMessage(game) + " in " + battle.getPublicTerritoryName(game))
+                .collect(Collectors.joining("\n"));
             game.getTurnSummary().publish("The following battles will take place this turn:\n" + battleMessages);
             game.getModInfo().publish("Use /run battle to initiate the first battle " + game.getModOrRoleMention());
         } else {
@@ -202,7 +202,7 @@ public class Battles {
             if (currentBattle.isDiplomatMustBeResolved())
                 throw new InvalidGameStateException("Diplomat must be resolved before running the next battle.");
             else
-                game.getModInfo().publish("The battle in " + currentBattle.getWholeTerritoryName() + " was not resolved and will be repeated.");
+                game.getModInfo().publish("The battle in " + currentBattle.getPublicTerritoryName(game) + " was not resolved and will be repeated.");
         }
         if (currentBattle != null) {
             if (currentBattle.isRihaniDeciphererMustBeResolved(game))
@@ -226,14 +226,14 @@ public class Battles {
                 if (aggressor != battle.getFactions(game).getFirst()) break;
                 nextBattle.append(MessageFormat.format("\n{1}: {0}",
                         battle.getForcesMessage(game),
-                        battle.getWholeTerritoryName()
+                        battle.getPublicTerritoryName(game)
                 ));
             }
         } else {
             Battle battle = battles.getFirst();
             nextBattle.append(MessageFormat.format("Next battle: {0} in {1}",
                     battle.getForcesMessage(game),
-                    battle.getWholeTerritoryName()
+                    battle.getPublicTerritoryName(game)
             ));
         }
         game.getTurnSummary().publish(nextBattle.toString());
@@ -258,7 +258,7 @@ public class Battles {
     }
 
     public void callBattleActions(Game game) {
-        String message = "Battle in " + currentBattle.getWholeTerritoryName() + ": ";
+        String message = "Battle in " + currentBattle.getPublicTerritoryName(game) + ": ";
         message += currentBattle.getForcesMessage(game) + "\n";
         Faction aggressor = currentBattle.getAggressor(game);
         Faction opponent = currentBattle.getDefender(game);

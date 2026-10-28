@@ -112,6 +112,13 @@ public class Battle {
         return wholeTerritoryName;
     }
 
+    public String getPublicTerritoryName(Game game) {
+        Territory territory = game.getTerritory(sectorNames.getFirst());
+        return territory instanceof IdualiTerritory
+                ? territory.getPublicName()
+                : wholeTerritoryName;
+    }
+
     public List<Territory> getTerritorySectors(Game game) {
         return sectorNames.stream().map(game::getTerritory).toList();
     }
@@ -808,7 +815,7 @@ public class Battle {
                                 savedRegularForces--;
                                 savedForceEmoji = troopFaction.getForceEmoji();
                             }
-                            turnSummary.publish(faction.getEmoji() + " leaves 1 " + savedForceEmoji + " in " + wholeTerritoryName + ", may return it to reserves.");
+                            turnSummary.publish(faction.getEmoji() + " leaves 1 " + savedForceEmoji + " in " + getPublicTerritoryName(game) + ", may return it to reserves.");
                             faction.withdrawForces(savedRegularForces, savedSpecialForces, getTerritorySectors(game), "Suk Graduate");
                         }
                     }
@@ -869,7 +876,7 @@ public class Battle {
                     resolution += Emojis.ECAZ + " saves " + savedRegularForces + " " + Emojis.ECAZ_TROOP;
                     resolution += " and may leave 1 in the territory with Suk Graduate\n";
                     if (executeResolution) {
-                        turnSummary.publish(faction.getEmoji() + " leaves 1 " + Emojis.ECAZ_TROOP + " in " + wholeTerritoryName + ", may return it to reserves.");
+                        turnSummary.publish(faction.getEmoji() + " leaves 1 " + Emojis.ECAZ_TROOP + " in " + getPublicTerritoryName(game) + ", may return it to reserves.");
                         ecaz.withdrawForces(2, 0, getTerritorySectors(game), "Suk Graduate");
                     }
                 } else if (battlePlan.isSkillInFront("Suk Graduate")) {
@@ -1503,7 +1510,7 @@ public class Battle {
         if (eitherCallsTraitor(game))
             resolution += "**TRAITOR!**\n\n";
         resolution += MessageFormat.format("{0} **vs {1} in {2}**\n\n",
-                getAggressorEmojis(game), getDefenderEmojis(game), wholeTerritoryName
+                getAggressorEmojis(game), getDefenderEmojis(game), getPublicTerritoryName(game)
         );
 
         RicheseFaction richeseFaction = game.getRicheseFactionOrNull();
@@ -1667,7 +1674,7 @@ public class Battle {
                     List<DuneChoice> choices = new ArrayList<>();
                     choices.add(new DuneChoice("traitor-call-yes-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
                     choices.add(new DuneChoice("traitor-call-no-turn-" + game.getTurn() + "-" + wholeTerritoryName, "No"));
-                    faction.getChat().publish("Will you call Traitor " + forYourAlly + "against " + opponentLeader + " in " + wholeTerritoryName + "? " + faction.getPlayer(), choices);
+                    faction.getChat().publish("Will you call Traitor " + forYourAlly + "against " + opponentLeader + " in " + getPublicTerritoryName(game) + "? " + faction.getPlayer(), choices);
                 }
             } else if (!isHarkonnenAllyPower && battlePlan.isWillCallTraitor() || isHarkonnenAllyPower && battlePlan.isHarkWillCallTraitor()) {
                 modInfo.publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + ".");

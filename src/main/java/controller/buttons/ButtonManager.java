@@ -130,6 +130,8 @@ public class ButtonManager extends ListenerAdapter {
                 FremenButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("harkonnen"))
                 HarkonnenButtons.press(event, game, discordGame);
+            else if (event.getComponentId().startsWith("iduali"))
+                IdualiButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("ix"))
                 IxButtons.press(event, game, discordGame);
             else if (event.getComponentId().startsWith("richese")) {

@@ -13,6 +13,12 @@ public class Territories extends HashMap<String, Territory> {
         return homeworld;
     }
 
+    public IdualiTerritory addIdualiTerritory(Game game, String territoryName, int sector, String adjacentTerritoryName) {
+        IdualiTerritory territory = new IdualiTerritory(game, territoryName, sector, adjacentTerritoryName);
+        put(territoryName, territory);
+        return territory;
+    }
+
     public Territory addDiscoveryToken(String name, boolean isStronghold) {
         Territory discoveryToken = new Territory(name, -1, false, isStronghold, true, false, false);
         discoveryToken.setJustDiscovered(true);
@@ -139,6 +145,27 @@ public class Territories extends HashMap<String, Territory> {
             return true;
         }
         return true;
+    }
+
+    public Set<String> getTerritoryNamesInSector(int sector) {
+        return values().stream()
+            .filter(t -> t.getSector() == sector)
+            .map(t -> t.getTerritoryName()).collect(Collectors.toSet());
+    }
+
+    public List<String> getEquatorialTerritoryNamesInSector(int sector) {
+        List<String> equator = getEquatorialTerritoryNames();
+        return values().stream()
+            .filter(t -> t.getSector() == sector && equator.contains(t.getAggregateTerritoryName()))
+            .map(t -> t.getTerritoryName()).toList();
+    }
+
+    public List<String> getEquatorialTerritoryNames() {
+        return List.of(
+                "Habbanya Ridge Flat", "Meridian", "Cielago South", "Cielago East", "South Mesa", "Red Chasm",
+                "Gara Kulon", "Sihaya Ridge", "Basin", "Old Gap", "Broken Land", "Rock Outcroppings", "Bight Of The Cliff",
+                "Funeral Plain", "The Great Flat", "The Greater Flat", "Habbanya Erg"
+        );
     }
 
     public List<String> getSpiceBlowTerritoryNames() {

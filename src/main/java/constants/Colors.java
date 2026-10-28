@@ -11,6 +11,7 @@ public class Colors {
     public static final Color EMPEROR = Color.decode("#A03929");
     public static final Color FREMEN = Color.decode("#D69733");
     public static final Color GUILD = Color.decode("#C8622F");
+    public static final Color IDUALI = Color.decode("#470704");
     public static final Color IX = Color.decode("#B9B786");
     public static final Color HARKONNEN = Color.decode("#3B3530");
     public static final Color MIKARROL = Color.decode("#C1297A");
@@ -45,6 +46,9 @@ public class Colors {
             }
             case "Richese" -> {
                 return RICHESE;
+            }
+            case "Iduali" -> {
+                return IDUALI;
             }
             case "Ix" -> {
                 return IX;

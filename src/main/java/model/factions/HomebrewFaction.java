@@ -172,6 +172,7 @@ public class HomebrewFaction extends Faction{
         homeworldName.put("Fremen", "Southern Hemisphere");
         homeworldName.put("Guild", "Junction");
         homeworldName.put("Harkonnen", "Giedi Prime");
+        homeworldName.put("Iduali", "Deep Desert");
         homeworldName.put("Ix", "Ix");
         homeworldName.put("Mikarrol", "Kublai XII");
         homeworldName.put("Moritani", "Grumman");

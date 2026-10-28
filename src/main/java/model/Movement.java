@@ -19,6 +19,7 @@ public class Movement {
     private String secondMovingFrom;
     private String movingTo;
     private String mustMoveOutOf;
+    private String caveFrom;
     private int force;
     private int secondForce;
     private int specialForce;
@@ -42,6 +43,7 @@ public class Movement {
         this.secondForce = 0;
         this.secondSpecialForce = 0;
         this.secondMovingFrom = "";
+        this.caveFrom = "";
         this.movingNoField = false;
     }
 
@@ -54,7 +56,7 @@ public class Movement {
     }
 
     public String getChoicePrefix() {
-        if (moveType == MoveType.FREMEN_RIDE)
+        if (moveType == MoveType.WORM_RIDE)
             return "fremen-ride-";
         else if (moveType == MoveType.SHAI_HULUD_PLACEMENT)
             return "fremen-place-shai-hulud-";
@@ -68,6 +70,8 @@ public class Movement {
             return "bt-ht-";
         else if (moveType == MoveType.HMS_PLACEMENT)
             return "ix-hms-placement-";
+        else if (moveType == MoveType.IDUALI_CAVE)
+            return "iduali-cave-";
         return "";
     }
 
@@ -143,6 +147,15 @@ public class Movement {
         this.secondSpecialForce = secondSpecialForce;
     }
 
+    public String getCaveFrom() {
+        if (caveFrom == null) caveFrom = "";
+        return caveFrom;
+    }
+
+    public void setCaveFrom(String caveFrom) {
+        this.caveFrom = caveFrom;
+    }
+
     public Faction getFaction() {
         return faction;
     }
@@ -153,10 +166,13 @@ public class Movement {
 
     public void pass() throws InvalidGameStateException {
         Game game = faction.getGame();
-        if (moveType == MoveType.FREMEN_RIDE) {
+        if (moveType == MoveType.WORM_RIDE) {
             faction.getChat().reply("You will not ride the worm.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
-            ((FremenFaction) faction).setWormRideActive(false);
+            if (faction instanceof FremenFaction)
+                ((FremenFaction) faction).setWormRideActive(false);
+            else
+                ((IdualiFaction) faction).setWormRideActive(false);
         } else if (moveType == MoveType.SHAI_HULUD_PLACEMENT) {
             ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
         } else if (moveType == MoveType.GREAT_MAKER_PLACEMENT) {
@@ -182,8 +198,12 @@ public class Movement {
     public void startOver() {
         String saveMovingFrom = movingFrom;
         clear();
-        if (moveType == MoveType.FREMEN_RIDE)
-            ((FremenFaction) faction).presentWormRideChoices(saveMovingFrom);
+        if (moveType == MoveType.WORM_RIDE) {
+            if (faction instanceof FremenFaction)
+                ((FremenFaction) faction).presentWormRideChoices(saveMovingFrom);
+            else
+                ((IdualiFaction) faction).presentWormRideChoices(saveMovingFrom);
+        }
         else if (moveType == MoveType.SHAI_HULUD_PLACEMENT)
             ((FremenFaction) faction).presentWormPlacementChoices(saveMovingFrom, "Shai-Hulud");
         else if (moveType == MoveType.GREAT_MAKER_PLACEMENT)
@@ -201,7 +221,7 @@ public class Movement {
     public void presentTerritoryTypeChoices() {
         Game game = faction.getGame();
         boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
-        boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
+        boolean fremenRide = moveType == MoveType.WORM_RIDE;
         boolean wormRide = fremenRide || fremenAmbassador;
         String choicePrefix = getChoicePrefix();
         List<DuneChoice> choices = new LinkedList<>();
@@ -231,7 +251,7 @@ public class Movement {
             throw new InvalidGameStateException("The HMS cannot be placed in a Stronghold.");
         Game game = faction.getGame();
         boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
-        boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
+        boolean fremenRide = moveType == MoveType.WORM_RIDE;
         boolean btHTPlacement = moveType == MoveType.BT_HT;
         boolean startingForces = moveType == MoveType.STARTING_FORCES;
         List<DuneChoice> choices = game.getTerritories().values().stream()
@@ -287,7 +307,7 @@ public class Movement {
     public DuneChoice shipToTerritoryChoice(String wholeTerritoryName, boolean isInitialPlacement) {
         Game game = faction.getGame();
         DuneChoice choice = new DuneChoice(getChoicePrefix() + "territory-" + wholeTerritoryName, wholeTerritoryName);
-        boolean shipment = !List.of(MoveType.FREMEN_RIDE, MoveType.FREMEN_AMBASSADOR, MoveType.SHAI_HULUD_PLACEMENT, MoveType.GREAT_MAKER_PLACEMENT).contains(moveType);
+        boolean shipment = !List.of(MoveType.WORM_RIDE, MoveType.FREMEN_AMBASSADOR, MoveType.SHAI_HULUD_PLACEMENT, MoveType.GREAT_MAKER_PLACEMENT).contains(moveType);
         List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(wholeTerritoryName)).toList();
         choice.setDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, shipment, isInitialPlacement)));
         return choice;
@@ -358,7 +378,7 @@ public class Movement {
     public void presentForcesChoices() {
         Game game = faction.getGame();
         boolean fremenAmbassador = moveType == MoveType.FREMEN_AMBASSADOR;
-        boolean fremenRide = moveType == MoveType.FREMEN_RIDE;
+        boolean fremenRide = moveType == MoveType.WORM_RIDE;
         boolean wormRide = fremenRide || fremenAmbassador;
         boolean guildAmbassador = moveType == MoveType.GUILD_AMBASSADOR;
         List<DuneChoice> choices = new ArrayList<>();
@@ -418,7 +438,7 @@ public class Movement {
 
     public boolean execute() throws InvalidGameStateException {
         boolean advanceGame = false;
-        if (moveType == MoveType.FREMEN_RIDE) {
+        if (moveType == MoveType.WORM_RIDE) {
             executeMovement();
             ((FremenFaction) faction).setWormRideActive(false);
             faction.getChat().reply("Worm ride complete.");

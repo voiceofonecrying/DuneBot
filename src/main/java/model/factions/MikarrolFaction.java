@@ -41,6 +41,7 @@ public class MikarrolFaction extends Faction {
         this.slaversAmount = 0;
         this.allySlaversAmount = 0;
         this.homeworld = "Kublai XII";
+        this.handLimit = 5;
     }
 
     @Override
@@ -103,15 +104,15 @@ public class MikarrolFaction extends Faction {
         if (handLimit != 100)
             return;
 
-        if (treacheryHand.size() > 4) {
+        if (treacheryHand.size() > 5) {
             Set<String> cardNames = new HashSet<>(treacheryHand.stream().map(TreacheryCard::name).toList());
             List<DuneChoice> choices = cardNames.stream().map(c -> new DuneChoice("mikarrol-discard-" + c, c)).collect(Collectors.toList());
             choices.add(new DuneChoice("secondary", "mikarrol-finished-discarding", "Done"));
-            chat.publish("You must discard " + Emojis.TREACHERY + " cards until you have only 4 " + player, choices);
+            chat.publish("You must discard " + Emojis.TREACHERY + " cards until you have only 5 " + player, choices);
         }
         else {
-            handLimit = 4;
-            chat.publish("Your hand size has returned to 4 at the end of the Battles phase.");
+            handLimit = 5;
+            chat.publish("Your maximum hand size has returned to 5 at the end of the Battles phase.");
         }
     }
 
@@ -238,7 +239,7 @@ public class MikarrolFaction extends Faction {
                 allyFaction.removeSpecialReserves(specialAmount);
 			game.getTleilaxuTanks().addForces(ally + "*", specialAmount);
         }
-        allyFaction.addSpice(allySlaversAmount, " forces sold to slavers.");
+        allyFaction.addSpice(allySlaversAmount, " forces sold to slavers");
         game.getTurnSummary().publish(allyFaction.getEmoji() + " sell " + allySlaversAmount + " forces to slavers, through " + emoji + ".");
         allyFaction.getChat().reply("You sold " + allySlaversAmount + " forces.");
         setAllySlaversAmount(0);

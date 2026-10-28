@@ -232,6 +232,11 @@ public class SetupCommands {
             }
         }
 
+        if (game.hasIdualiFaction()) {
+            int stormIndex = setupSteps.indexOf(SetupStep.STORM_SELECTION);
+            setupSteps.add(stormIndex, SetupStep.IDUALI_TERRITORIES);
+            setupSteps.add(stormIndex + 1, SetupStep.IDUALI_FORCE);
+        }
 
         game.setSetupSteps(setupSteps);
     }
@@ -264,6 +269,8 @@ public class SetupCommands {
             case HARKONNEN_TRAITORS -> stepStatus = harkonnenTraitorsStep(game);
             case TRAITORS -> stepStatus = traitorSelectionStep(game);
             case BT_FACE_DANCERS -> stepStatus = btDrawFaceDancersStep(game);
+            case IDUALI_TERRITORIES -> stepStatus = idualiTerritoriesStep(game);
+            case IDUALI_FORCE -> stepStatus = idualiForceStep(game);
             case STORM_SELECTION -> stepStatus = stormSelectionStep(game);
             case IX_HMS_PLACEMENT -> stepStatus = ixHMSPlacementStep(game);
             case START_GAME -> stepStatus = startGameStep(discordGame, game);
@@ -392,6 +399,7 @@ public class SetupCommands {
             case "FREMEN" -> faction = new FremenFaction(playerName, userName);
             case "GUILD" -> faction = new GuildFaction(playerName, userName);
             case "HARKONNEN" -> faction = new HarkonnenFaction(playerName, userName);
+            case "IDUALI" -> faction = new IdualiFaction(playerName, userName);
             case "IX" -> faction = new IxFaction(playerName, userName);
             case "MIKARROL" -> faction = new MikarrolFaction(playerName, userName);
             case "MORITANI" -> faction = new MoritaniFaction(playerName, userName);
@@ -623,7 +631,9 @@ public class SetupCommands {
     }
 
     public static StepStatus bgPredictionStep(Game game) {
-        game.getBGFaction().presentPredictedFactionChoices();
+        BGFaction bg = game.getBGFaction();
+        game.getGameActions().publish(bg.getEmoji() + " will predict a future ruler of Arrakis");
+        bg.presentPredictedFactionChoices();
         return StepStatus.STOP;
     }
 
@@ -635,7 +645,9 @@ public class SetupCommands {
     }
 
     public static StepStatus bgForceStep(Game game) {
-        game.getBGFaction().presentStartingForcesChoices();
+        BGFaction bg = game.getBGFaction();
+        game.getGameActions().publish(bg.getEmoji() + " will place their starting " + Emojis.BG_ADVISOR);
+        bg.presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 
@@ -643,6 +655,20 @@ public class SetupCommands {
         MoritaniFaction moritani = game.getMoritaniFaction();
         game.getGameActions().publish(moritani.getEmoji() + " will place their starting 6 " + Emojis.MORITANI_TROOP);
         moritani.presentStartingForcesChoices();
+        return StepStatus.STOP;
+    }
+
+    public static StepStatus idualiTerritoriesStep(Game game) {
+        IdualiFaction iduali = game.getIdualiFaction();
+        game.getGameActions().publish(iduali.getEmoji() + " will identify 3 territories within the deep desert of the South");
+        iduali.presentTerritoriesChoices();
+        return StepStatus.STOP;
+    }
+
+    public static StepStatus idualiForceStep(Game game) {
+        IdualiFaction iduali = game.getIdualiFaction();
+        game.getGameActions().publish(iduali.getEmoji() + " will place their starting 10 " + iduali.getForceEmoji());
+        iduali.presentStartingForcesChoices();
         return StepStatus.STOP;
     }
 

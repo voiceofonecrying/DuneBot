@@ -40,7 +40,8 @@ public class CommandOptions {
             .addChoice("Richese", "Richese")
             .addChoice("Ecaz", "Ecaz")
             .addChoice("Moritani", "Moritani")
-            .addChoice("Mikarrol", "Mikarrol");
+            .addChoice("Mikarrol", "Mikarrol")
+            .addChoice("Iduali", "Iduali");
     public static final OptionData faction = new OptionData(OptionType.STRING, "factionname", "The faction", true)
             .setAutoComplete(true);
     public static final OptionData homebrewFaction = new OptionData(OptionType.STRING, "homebrew-faction-name", "The Homebrew Faction", true)
@@ -76,6 +77,9 @@ public class CommandOptions {
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);
     public static final OptionData card = new OptionData(OptionType.STRING, "card", "The card.", true).setAutoComplete(true);
     public static final OptionData allyCard = new OptionData(OptionType.STRING, "ally-card", "The ally's card to swap for.", true).setAutoComplete(true);
+    public static final OptionData craftCard = new OptionData(OptionType.STRING, "craft-card", "The card to craft or discover", true).setAutoComplete(true);
+    public static final OptionData firstCard = new OptionData(OptionType.STRING, "first-card", "The first card to discard", true).setAutoComplete(true);
+    public static final OptionData secondCard = new OptionData(OptionType.STRING, "second-card", "A second card to discard, of a different effect than the first card", true).setAutoComplete(true);
     public static final OptionData discardCard = new OptionData(OptionType.STRING, "card-discard", "The card.", true).setAutoComplete(true);
     public static final OptionData cardToCreate = new OptionData(OptionType.STRING, "card-to-create", "The name of the card.", true);
     public static final OptionData ixCard = new OptionData(OptionType.STRING, "ixcard", "The card.", true).setAutoComplete(true);
@@ -88,6 +92,8 @@ public class CommandOptions {
     public static final OptionData territory = new OptionData(OptionType.STRING, "territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData sandTerritory = new OptionData(OptionType.STRING, "sand-territory", "The name of the territory", true).setAutoComplete(true);
     public static final OptionData hmsTerritory = new OptionData(OptionType.STRING, "hms-territory", "The name of the territory", true).setAutoComplete(true);
+    public static final OptionData idualiTerritory = new OptionData(OptionType.STRING, "iduali-territory", "The name of the territory", true).setAutoComplete(true);
+    public static final OptionData adjacentTerritory = new OptionData(OptionType.STRING, "adjacent-territory", "The name of the adjancent northen territory", true).setAutoComplete(true);
     public static final OptionData dialOne = new OptionData(OptionType.INTEGER, "dial-one", "The dial of the first player", true);
     public static final OptionData dialTwo = new OptionData(OptionType.INTEGER, "dial-two", "The dial of the second player", true);
     public static final OptionData starred = new OptionData(OptionType.BOOLEAN, "starred", "Are they starred forces?", true);
@@ -296,9 +302,14 @@ public class CommandOptions {
             case "sand-territory" -> choices = sandTerritories(game, searchValue);
             case "homeworld" -> choices = homeworldNames(game, searchValue);
             case "hms-territory" -> choices = hmsTerritories(game, searchValue);
+            case "iduali-territory" -> choices = idualiTerritoryNames(game, searchValue);
+            case "adjacent-territory" -> choices = sandTerritories(game, searchValue);
             case "traitor" -> choices = traitors(event, game, searchValue);
             case "card" -> choices = cardsInHand(event, game, searchValue);
             case "ally-card" -> choices = allyCardsInHand(game, searchValue);
+            case "craft-card" -> choices = craftCard(game, searchValue);
+            case "first-card" -> choices = cardsInHand(event, game, searchValue);
+            case "second-card" -> choices = cardsInHand(event, game, searchValue);
             case "card-discard" -> choices = cardsInDiscard(game, searchValue);
             case "ixcard" -> choices = ixCardsInHand(game, searchValue);
             case "putbackcard" -> choices = cardsInMarket(game, searchValue);
@@ -380,7 +391,7 @@ public class CommandOptions {
 
     private static List<Command.Choice> proxyFactions(@NotNull Game game, String searchValue) {
         List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol");
+                "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol", "Iduali");
         allFactionNames = allFactionNames.stream().filter(f -> !game.hasFaction(f)).toList();
         allFactionNames = allFactionNames.stream().filter(f -> !(game.hasFaction(f) && game.getFaction(f) instanceof HomebrewFaction hbf && hbf.getFactionProxy().equals(f))).toList();
         return allFactionNames.stream()
@@ -463,6 +474,13 @@ public class CommandOptions {
         return returnlist;
     }
 
+    private static List<Command.Choice> idualiTerritoryNames(@NotNull Game game, String searchValue) {
+        return game.getIdualiFaction().getTerritoryNames(true).stream()
+            .filter(territoryName -> territoryName.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+            .map(territoryName -> new Command.Choice(territoryName, territoryName))
+            .collect(Collectors.toList());
+    }
+
     private static List<Command.Choice> homeworldNames(@NotNull Game game, String searchValue) {
         return game.getTerritories().values().stream()
                 .filter(t -> t instanceof HomeworldTerritory)
@@ -498,12 +516,24 @@ public class CommandOptions {
         }
     }
 
+    private static List<Command.Choice> craftCard(Game game, String searchValue) {
+        IdualiFaction faction = game.getIdualiFaction();
+        return faction.getTreacheryCardCache().stream().map(TreacheryCard::name)
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .collect(Collectors.toList());
+    }
+
     private static List<Command.Choice> cardsInHand(CommandAutoCompleteInteractionEvent event, Game game, String searchValue) {
         Faction faction;
         if (event.getSubcommandName() != null && event.getSubcommandName().equals("robbery-discard"))
             faction = game.getMoritaniFaction();
         else if (event.getSubcommandName() != null && event.getSubcommandName().equals("swap-card-with-ally"))
             faction = game.getCHOAMFaction();
+        else if (event.getSubcommandName() != null && event.getSubcommandName().equals("craft-card"))
+            faction = game.getIdualiFaction();
+        else if (event.getSubcommandName() != null && event.getSubcommandName().equals("ally-craft-card"))
+            faction = game.getFaction(game.getIdualiFaction().getAlly());
         else
             faction = game.getFaction(event.getOptionsByName("factionname").getFirst().getAsString());
         return faction.getTreacheryHand().stream().map(TreacheryCard::name)
@@ -678,6 +708,13 @@ public class CommandOptions {
         } else {
             choices.addAll(faction.getTreacheryHand().stream()
                     .map(TreacheryCard::name)
+                    .filter(name -> name.equals("Body Double"))
+                    .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                    .map(card -> new Command.Choice(card, card))
+                    .toList()
+            );
+            choices.addAll(faction.getTreacheryHand().stream()
+                    .map(TreacheryCard::name)
                     .filter(name -> name.equals("Harass and Withdraw"))
                     .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
                     .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
@@ -720,6 +757,13 @@ public class CommandOptions {
                 .map(card -> new Command.Choice("Harass and Withdraw (not on your Homeworld)", card))
                 .toList()
         );
+        choices.addAll(faction.getTreacheryHand().stream()
+                .map(TreacheryCard::name)
+                .filter(name -> name.equals("Body Double"))
+                .filter(card -> card.toLowerCase().matches(searchRegex(searchValue.toLowerCase())))
+                .map(card -> new Command.Choice(card, card))
+                .toList()
+         );
         if (faction.getTotalReservesStrength() >= 3)
             choices.addAll(faction.getTreacheryHand().stream()
                     .map(TreacheryCard::name)

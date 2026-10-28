@@ -135,3 +135,27 @@ Discard after use. Discard this card if it is in your hand at the end of the Bat
 Antidote,Defense - Poison,Blue,"Play as part of your Battle Plan.
 Protects your leader from a poison weapon in this battle.
 Discard after use. Discard this card if it is in your hand at the end of the Battles phase. Once discarded, place this card face up in front of Lindaren's shield instead of the discard pile."
+Spice Heist,Special,Green,"Play at the end of the Spice Blow and Nexus phase move all of the spice from one territory to another territory.
+Spice may not be moved to or from the Polar Sink, nor to or from a territory under storm."
+Hidden Blades,Weapon - Special,Red,"Play as part of your Battle Plan.
+Kills your opponent's leader before battle is resolved unless protected by any defense. If opponent's leader is protected, their battle strength is reduced by 2 this battle (to at least 0), unless protected by Water of Life.
+You may keep this card if you win this battle."
+Water of Life,Defense - Special,Blue,"Play as part of your Battle Plan.
+Places your leader in a trance, after any other effects, their strength is halved (rounded up), and they're vulnerable to be called Traitor with any Traitor card of the faction on their disc.
+But they cannot be killed, unless called Traitor or Face Dancer, or in a Las Gun explosion.
+You may keep this card if you win this battle."
+Body Double,Special,Green,"Play as part of your Battle Plan, in place of a weapon or a defense.
+Your leader cannot be a Traitor. If their body double is killed, the winner collects spice for their strength.
+Regardless of battle result, return the leader or cheap hero to your supply.
+You may keep this card if you win this battle."
+Iduali Thumpers,Special,Green,"Play during the Spice Blow and Nexus phase.
+Place up to 3 Thumpers to summon Shai-Halud to Sand and/or Iduali Territories. Any Iduali or Fremen forces in Territories with Thumpers may 'ride the worm.'
+These worms do not cause a nexus."
+Mining Laser,Special,Green,"Play at the end of the Storm phase (after the Storm moves).
+Target a standard Sietch controlled by your forces. Place the partially destroyed Sietch token there and collect 10 Spice from the Bank.
+This Sietch is now vulnerable to the Storm.
+Remove this card from the game."
+Solaris,Special,Green,"Choose one:
+Purchase a Treachery card for yourself when it is your turn to bid on a card in a normal auction, but pay no spice for the card,
+Recieve Spacing Guild rates for a force shipment for any faction from reserves (even Fremen), paid to the Spice Bank, or
+Pay for spice strength in battle from the Spice Bank."

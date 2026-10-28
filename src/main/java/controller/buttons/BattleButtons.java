@@ -50,7 +50,7 @@ public class BattleButtons implements Pressable {
         discordGame.queueDeleteMessage();
         Battles battles = game.getBattles();
         int battleIndex = Integer.parseInt(event.getComponentId().split("-")[3]);
-        String territory = battles.getBattles(game).get(battleIndex).getWholeTerritoryName();
+        String territory = battles.getBattles(game).get(battleIndex).getPublicTerritoryName(game);
         discordGame.queueMessage("You selected " + territory + ".");
         discordGame.getTurnSummary().queueMessage(battles.getAggressor(game).getEmoji() + " will battle in " + territory + ".");
         BattleCommands.setBattleIndex(discordGame, game, battleIndex);

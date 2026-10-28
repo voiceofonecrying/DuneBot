@@ -67,7 +67,7 @@ public class MovementTest extends DuneTest {
         void testFremenRide() throws InvalidGameStateException {
             fremen.setWormRideActive(true);
             movement = fremen.getMovement();
-            movement.setMoveType(MoveType.FREMEN_RIDE);
+            movement.setMoveType(MoveType.WORM_RIDE);
             movement.setForce(1);
             movement.setSpecialForce(2);
             movement.setMovingTo("Carthag");
@@ -145,7 +145,7 @@ public class MovementTest extends DuneTest {
             funeralPlain.addForces("Fremen*", 2);
             fremen.setWormRideActive(true);
             movement = fremen.getMovement();
-            movement.setMoveType(MoveType.FREMEN_RIDE);
+            movement.setMoveType(MoveType.WORM_RIDE);
             movement.setForce(1);
             movement.setSpecialForce(2);
             movement.setMovingTo("Carthag");
@@ -158,7 +158,7 @@ public class MovementTest extends DuneTest {
             // TODO: Prevent new turn summary message when Fremen starts over
             assertEquals("1 " + Emojis.FREMEN_TROOP + " 2 " + Emojis.FREMEN_FEDAYKIN + " may ride Shai-Hulud from Funeral Plain!", turnSummary.getMessages().getLast());
 //            assertTrue(turnSummary.getMessages().isEmpty());
-            assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
+            assertEquals(MoveType.WORM_RIDE, movement.getMoveType());
         }
 
         @Test
@@ -210,7 +210,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() throws InvalidGameStateException {
-            fremen.getMovement().setMoveType(MoveType.FREMEN_RIDE);
+            fremen.getMovement().setMoveType(MoveType.WORM_RIDE);
             fremen.getMovement().presentStrongholdChoices();
             assertEquals("Which Stronghold?", fremenChat.getMessages().getLast());
             assertEquals(7, fremenChat.getChoices().getLast().size());
@@ -226,7 +226,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : strongholdsWithHMS)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
+            assertEquals(MoveType.WORM_RIDE, fremen.getMovement().getMoveType());
         }
     }
 
@@ -245,7 +245,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() {
-            fremen.getMovement().setMoveType(MoveType.FREMEN_RIDE);
+            fremen.getMovement().setMoveType(MoveType.WORM_RIDE);
             fremen.getMovement().presentSpiceBlowChoices();
             assertEquals("Which Spice Blow Territory?", fremenChat.getMessages().getLast());
             assertEquals(16, fremenChat.getChoices().getLast().size());
@@ -260,7 +260,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : spiceBlowTerritories)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
+            assertEquals(MoveType.WORM_RIDE, fremen.getMovement().getMoveType());
         }
 
         @Test
@@ -319,7 +319,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() {
-            fremen.getMovement().setMoveType(MoveType.FREMEN_RIDE);
+            fremen.getMovement().setMoveType(MoveType.WORM_RIDE);
             fremen.getMovement().presentRockChoices();
             assertEquals("Which Rock Territory?", fremenChat.getMessages().getLast());
             assertEquals(8, fremenChat.getChoices().getLast().size());
@@ -333,7 +333,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : rockTerritories)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
+            assertEquals(MoveType.WORM_RIDE, fremen.getMovement().getMoveType());
         }
     }
 
@@ -351,7 +351,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() throws InvalidGameStateException {
-            ecaz.getMovement().setMoveType(MoveType.FREMEN_RIDE);
+            ecaz.getMovement().setMoveType(MoveType.WORM_RIDE);
             ecaz.getMovement().presentDiscoveryTokenChoices();
             assertEquals("Which Discovery Token?", ecazChat.getMessages().getLast());
             assertEquals(3, ecazChat.getChoices().getLast().size());
@@ -365,7 +365,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : discoveryTokenTerritories)
                 assertTrue(ecazChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_RIDE, ecaz.getMovement().getMoveType());
+            assertEquals(MoveType.WORM_RIDE, ecaz.getMovement().getMoveType());
         }
     }
 
@@ -384,7 +384,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testFremenRide() {
-            fremen.getMovement().setMoveType(MoveType.FREMEN_RIDE);
+            fremen.getMovement().setMoveType(MoveType.WORM_RIDE);
             fremen.getMovement().presentNonSpiceNonRockChoices();
             assertEquals("Which Territory?", fremenChat.getMessages().getLast());
             assertEquals(16, fremenChat.getChoices().getLast().size());
@@ -399,7 +399,7 @@ public class MovementTest extends DuneTest {
             }
             for (String s : nonSpiceNonRockTerritories)
                 assertTrue(fremenChat.getChoices().getLast().stream().anyMatch(c -> c.getLabel().equals(s)));
-            assertEquals(MoveType.FREMEN_RIDE, fremen.getMovement().getMoveType());
+            assertEquals(MoveType.WORM_RIDE, fremen.getMovement().getMoveType());
         }
 
         @Test
@@ -456,7 +456,7 @@ public class MovementTest extends DuneTest {
 
         @Test
         void testCielagoNorthWithFremenRide() {
-            fremen.getMovement().setMoveType(MoveType.FREMEN_RIDE);
+            fremen.getMovement().setMoveType(MoveType.WORM_RIDE);
             game.getTerritory("Cielago South (West Sector)").setSpice(12);
             List<Territory> sectors = game.getTerritories().getTerritorySectorsInStormOrder("Cielago South");
             fremen.getMovement().presentSectorChoices("Cielago South", sectors);
@@ -509,7 +509,7 @@ public class MovementTest extends DuneTest {
             funeralPlain.addForces("Fremen", 1);
             funeralPlain.addForces("Fremen*", 3);
             movement = fremen.getMovement();
-            movement.setMoveType(MoveType.FREMEN_RIDE);
+            movement.setMoveType(MoveType.WORM_RIDE);
             movement.setMovingTo("Carthag");
             movement.setForce(0);
             movement.setSpecialForce(1);
@@ -535,7 +535,7 @@ public class MovementTest extends DuneTest {
             choice = fremenChat.getChoices().getLast().getLast();
             assertEquals("fremen-ride-start-over", choice.getId());
             assertEquals("Start over", choice.getLabel());
-            assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
+            assertEquals(MoveType.WORM_RIDE, movement.getMoveType());
         }
     }
 
@@ -620,7 +620,7 @@ public class MovementTest extends DuneTest {
         @Test
         void testFremenRide() {
             movement = ix.getMovement();
-            movement.setMoveType(MoveType.FREMEN_RIDE);
+            movement.setMoveType(MoveType.WORM_RIDE);
             movement.setMovingTo("Carthag");
             movement.setForce(1);
             movement.setSpecialForce(2);
@@ -628,7 +628,7 @@ public class MovementTest extends DuneTest {
             movement.resetForces();
             assertEquals("Funeral Plain", movement.getMovingFrom());
             assertEquals("Carthag", movement.getMovingTo());
-            assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
+            assertEquals(MoveType.WORM_RIDE, movement.getMoveType());
         }
     }
 
@@ -664,7 +664,7 @@ public class MovementTest extends DuneTest {
             funeralPlain.addForces("Fremen*", 2);
             fremen.setWormRideActive(true);
             movement = fremen.getMovement();
-            movement.setMoveType(MoveType.FREMEN_RIDE);
+            movement.setMoveType(MoveType.WORM_RIDE);
             movement.setMovingTo("Carthag");
             movement.setForce(1);
             movement.setSpecialForce(2);
@@ -711,7 +711,7 @@ public class MovementTest extends DuneTest {
             assertEquals("fremen-ride-pass", fremenChat.getChoices().getLast().getLast().getId());
             assertEquals("No ride", fremenChat.getChoices().getLast().getLast().getLabel());
             assertEquals("danger", fremenChat.getChoices().getLast().getLast().getType());
-            assertEquals(MoveType.FREMEN_RIDE, movement.getMoveType());
+            assertEquals(MoveType.WORM_RIDE, movement.getMoveType());
         }
     }
 

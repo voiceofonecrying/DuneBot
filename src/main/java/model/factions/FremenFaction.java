@@ -134,7 +134,7 @@ public class FremenFaction extends Faction {
         }
         game.getTurnSummary().publish(fremenForces + "may ride " + wormName + " from " + territoryName + "!");
         movement.setMovingFrom(territoryName);
-        movement.setMoveType(MoveType.FREMEN_RIDE);
+        movement.setMoveType(MoveType.WORM_RIDE);
         movement.presentTerritoryTypeChoices();
         wormRideActive = true;
     }

@@ -15,7 +15,8 @@ public class Territory {
     protected final String territoryName;
     private final int sector;
     private boolean isStronghold;
-    private final boolean inFremenRange;
+    protected final boolean inFremenRange;
+    protected boolean inIdualiRange;
     private final boolean isDiscoveryToken;
     private boolean justDiscovered;
     private final boolean isNearShieldWall;
@@ -25,8 +26,7 @@ public class Territory {
     private Integer richeseNoField;
     private String ecazAmbassador;
     private final List<String> terrorTokens;
-    // can be final too after migration
-    private List<String> homebrewTokens;
+    private final List<String> homebrewTokens;
     private boolean aftermathToken;
     private String discoveryToken;
     private boolean discovered;
@@ -40,6 +40,7 @@ public class Territory {
         this.justDiscovered = false;
         this.isNearShieldWall = isNearShieldWall;
         this.inFremenRange = inFremenRange;
+        this.inIdualiRange = false;
         this.spice = 0;
         this.forces = new ArrayList<>();
         this.richeseNoField = null;
@@ -50,6 +51,10 @@ public class Territory {
     }
 
     public String getTerritoryName() {
+        return territoryName;
+    }
+
+    public String getPublicName() {
         return territoryName;
     }
 
@@ -75,6 +80,14 @@ public class Territory {
 
     public boolean isInFremenRange() {
         return inFremenRange;
+    }
+
+    public boolean isInIdualiRange() {
+        return inIdualiRange;
+    }
+
+    public void setAdjacentToIdualiTerritory() {
+        inIdualiRange = true;
     }
 
     public boolean isDiscoveryToken() {
@@ -378,13 +391,13 @@ public class Territory {
         int advisorStrength = getForceStrength("Advisor");
         if (advisorStrength > 0)
             stormRemoveTroops("Advisor", "BG", getForceStrength("Advisor"), game);
-        List<Force> nonFremenForces = forces.stream()
-                .filter(f -> !f.getFactionName().equalsIgnoreCase("Fremen"))
+        List<Force> nonNativeForces = forces.stream()
+                .filter(f -> !f.getFactionName().equalsIgnoreCase("Fremen") && !f.getFactionName().equalsIgnoreCase("Iduali"))
                 .filter(force -> !(force.getName().equalsIgnoreCase("Hidden Mobile Stronghold")))
                 .toList();
 
         stormTroopsFremen(game);
-        for (Force force : nonFremenForces) {
+        for (Force force : nonNativeForces) {
             stormRemoveTroops(force.getName(), force.getFactionName(), force.getStrength(), game);
         }
     }
@@ -490,6 +503,8 @@ public class Territory {
                 return true;
             if (faction instanceof FremenFaction && !inFremenRange && !faction.getAlly().equals("Guild"))
                 return true;
+            if (faction instanceof IdualiFaction && !inIdualiRange && !faction.getAlly().equals("Guild"))
+                return true;
             if (onlyEcazAndAllyPresent(game))
                 return false;
             return isStronghold && getActiveFactions(game).size() >= 2 && !hasActiveFaction(faction) && notEcazAllyException(game, faction);
@@ -503,7 +518,7 @@ public class Territory {
         return !territoryName.equals("Polar Sink") && faction.hasAlly() && hasAllyForces(game, faction) && notEcazAllyException(game, faction);
     }
 
-    private boolean hasAllyForces(Game game, Faction faction) {
+    protected boolean hasAllyForces(Game game, Faction faction) {
         Faction ally = null;
         if (faction.hasAlly())
             ally = game.getFaction(faction.getAlly());
@@ -514,7 +529,7 @@ public class Territory {
         return hasActiveFaction(ally);
     }
 
-    private boolean notEcazAllyException(Game game, Faction faction) {
+    protected boolean notEcazAllyException(Game game, Faction faction) {
         return (!(faction instanceof EcazFaction) || getActiveFactions(game).stream().noneMatch(f -> f.getName().equals(faction.getAlly())))
                 && (!faction.getAlly().equals("Ecaz") || getActiveFactions(game).stream().noneMatch(f -> f instanceof EcazFaction));
     }
@@ -531,11 +546,5 @@ public class Territory {
         int endLocation = territoryName.indexOf(" (");
         if (endLocation == -1) return territoryName;
         return territoryName.substring(0, endLocation);
-    }
-
-    // Temporary migration function. Can be removed after games reload from json
-    public void setupHomebrewTokens() {
-        if (homebrewTokens == null)
-            homebrewTokens = new LinkedList<>();
     }
 }
