@@ -38,6 +38,7 @@ public class ShipmentAndMovementButtons implements Pressable {
         else if (event.getComponentId().startsWith("cross-ship-from-")) setCrossShipFrom(event, game, discordGame);
         else if (event.getComponentId().startsWith("stronghold")) queueStrongholdShippingButtons(event, game, discordGame);
         else if (event.getComponentId().startsWith("spice-blow")) queueSpiceBlowShippingButtons(event, discordGame, game);
+        else if (event.getComponentId().startsWith("secret-location")) queueIdualiShippingButtons(event, discordGame, game);
         else if (event.getComponentId().startsWith("rock")) queueRockShippingButtons(event, discordGame, game);
         else if (event.getComponentId().startsWith("homeworlds")) queueHomeworldShippingButtons(event, game, discordGame);
         else if (event.getComponentId().startsWith("discovery-tokens")) queueDiscoveryShippingButtons(event, game, discordGame);
@@ -340,6 +341,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             moveableTerritories = Set.of("Salusa Secundus");
         else if (territoryName.equals("Salusa Secundus"))
             moveableTerritories = Set.of("Kaitain");
+        else if (faction instanceof IdualiFaction && faction.getMovement().getCaveFrom() != "")
+            moveableTerritories = ((IdualiFaction)faction).getCaveMovableTerritories();
         else
             moveableTerritories = getAdjacentTerritoryNames(territoryName.replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
@@ -349,10 +352,21 @@ public class ShipmentAndMovementButtons implements Pressable {
     }
 
     private static Button moveToTerritoryButton(Game game, Faction faction, String territoryName) {
-        String labelSuffix = "-" + territoryName;
-        Button button = Button.primary("move" + labelSuffix, territoryName);
-        List<Territory> sectors = game.getTerritories().values().stream().filter(s -> s.getTerritoryName().startsWith(territoryName)).toList();
-        return button.withDisabled(sectors.stream().anyMatch(s -> s.factionMayNotEnter(game, faction, false, false)));
+        List<Territory> sectors = game.getTerritories().values().stream()
+            .filter(s -> s.getTerritoryName().startsWith(territoryName))
+            .toList();
+
+        String label = sectors.stream()
+            .filter(t -> t instanceof IdualiTerritory)
+            .map(t -> faction instanceof IdualiFaction
+                ? t.getTerritoryName() + " (Sector " + t.getSector() + ")"
+                : t.getPublicName())
+                .findFirst()
+                .orElse(territoryName);
+
+        Button button = Button.primary("move-" + territoryName, label);
+        return button.withDisabled(sectors.stream()
+            .anyMatch(s -> s.factionMayNotEnter(game, faction, false, false)));
     }
 
     public static Set<String> getAdjacentTerritoryNames(String territory, int spacesAway, Game game) {
@@ -417,6 +431,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                 faction.getMovement().clear();
                 if (faction instanceof FremenFaction fremen)
                     fremen.presentWormRideChoices(fromTerritory);
+                else if (faction instanceof IdualiFaction iduali)
+                    iduali.presentWormRideChoices(fromTerritory);
             } else if (shaiHuludPlacement || greatMakerPlacement) {
                 discordGame.queueMessage("Starting over");
                 String fromTerritory = faction.getMovement().getMovingFrom();
@@ -610,6 +626,9 @@ public class ShipmentAndMovementButtons implements Pressable {
             buttonLimitForces = Math.min(10 - fremen.getStartingForcesPlaced() - forcesInShipment, buttonLimitForces);
             buttonLimitSpecialForces = Math.min(10 - fremen.getStartingForcesPlaced() - forcesInShipment, buttonLimitSpecialForces);
         }
+        else if (isStartingForces && faction instanceof IdualiFaction iduali) {
+            buttonLimitForces = Math.min(10 - iduali.getStartingForcesPlaced() - iduali.getShipment().getForce(), buttonLimitForces);
+        }
 
         if (faction.getShipment().isToReserves()) {
             if (event.getComponentId().startsWith("ship-to-reserves-")) {
@@ -648,7 +667,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             int spice = faction.getShipment().getForce() + faction.getShipment().getSpecialForce();
             if (faction.getShipment().getNoField() >= 0) spice++;
 
-            String territory = faction.getShipment().getTerritoryName();
+            String territory = game.getTerritory(faction.getShipment().getTerritoryName()).getPublicName();
             if (faction.getShipment().isToReserves()) territory = "reserves from " + territory;
             if (!faction.getShipment().getCrossShipFrom().isEmpty())
                 territory = territory + " cross shipping from " + faction.getShipment().getCrossShipFrom();
@@ -659,6 +678,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (faction instanceof FremenFaction && game.getTerritory(faction.getShipment().getTerritoryName()).isInFremenRange())
                 spice = 0;
             if (guildAmbassador)
+                spice = 0;
+            if (faction instanceof IdualiFaction && game.getTerritory(faction.getShipment().getTerritoryName()).isInIdualiRange())
                 spice = 0;
             if (faction instanceof GuildFaction || (faction.hasAlly() && faction.getAlly().equals("Guild")))
                 spice = Math.ceilDiv(spice, 2);
@@ -730,10 +751,15 @@ public class ShipmentAndMovementButtons implements Pressable {
                 forcesButtons.add(Button.primary("richese-no-field-move", "+1 No-Field token")
                         .withDisabled(game.hasGameOption(GameOption.HOMEWORLDS) && !faction.isHighThreshold()));
             String noField = faction.getMovement().isMovingNoField() ? "\n" + game.getTerritory(faction.getMovement().getMovingFrom()).getRicheseNoField() + " No-Field token" : "";
-
+            Territory destination = game.getTerritory(movement.getMovingTo());
+            String destinationName = destination instanceof IdualiTerritory
+                ? (faction instanceof IdualiFaction
+                        ? destination.getTerritoryName() + " (Sector " + destination.getSector() + ")"
+                        : destination.getPublicName())
+                : destination.getTerritoryName();
             String message = "Use buttons below to add forces to your ";
             message += fremenRide ? "ride." : "movement.";
-            message += " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getForce(), faction.getMovement().getSpecialForce()) + " " + noField + "** to " + faction.getMovement().getMovingTo();
+            message += " Currently moving:\n**" + faction.forcesStringWithZeroes(faction.getMovement().getForce(), faction.getMovement().getSpecialForce()) + " " + noField + "** to " + destinationName;
             if (movement.isMovingNoField() || movement.getForce() != 0 || movement.getSpecialForce() != 0 || movement.getSecondForce() != 0 || movement.getSecondSpecialForce() != 0) {
                 if (!fremenRide && !enterDiscoveryToken && faction.hasTreacheryCard("Hajr"))
                     forcesButtons.add(Button.secondary("hajr", "Confirm Movement and play Hajr"));
@@ -833,7 +859,12 @@ public class ShipmentAndMovementButtons implements Pressable {
                 .replace("starting-forces-", "")
                 .replace("hms-placement-", "")
                 .replace("-", " ");
-        List<Territory> territory = new ArrayList<>(game.getTerritories().values().stream().filter(t -> t.getTerritoryName().replaceAll("\\s*\\([^)]*\\)\\s*", "").equalsIgnoreCase(aggregateTerritoryName)).toList());
+        List<Territory> territory = new ArrayList<>(game.getTerritories().values().stream().filter(t -> t.getTerritoryName()
+            .replaceAll("\\s*\\([^)]*\\)\\s*", "")
+            .strip()
+            .equalsIgnoreCase(aggregateTerritoryName))
+            .toList());
+        String publicTerritoryName = territory.getFirst().getPublicName();
         territory.sort(Comparator.comparingInt(Territory::getSector));
         if (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression") || aggregateTerritoryName.equals("Meridian")) {
             territory.addFirst(territory.removeLast());
@@ -850,7 +881,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (btHTPlacement)
                 game.getBTFaction().presentHTExecutionChoices();
             else if (startingForces) {
-                if (faction instanceof FremenFaction)
+                if (faction instanceof FremenFaction || faction instanceof IdualiFaction)
                     queueForcesButtons(event, game, discordGame, faction, isShipment, false, false, false, false, true);
                 else
                     faction.presentStartingForcesExecutionChoices();
@@ -880,7 +911,7 @@ public class ShipmentAndMovementButtons implements Pressable {
 
         deleteShipMoveButtonsInChannel(event.getMessageChannel());
         discordGame.queueMessage(new MessageCreateBuilder()
-                .setContent("Which sector of " + aggregateTerritoryName + "?")
+                .setContent("Which sector of " + publicTerritoryName + "?")
                 .addComponents(ActionRow.of(buttons))
                 .addComponents(ActionRow.of(Button.secondary(backButtonId + buttonSuffix, "Start over")))
         );
@@ -933,6 +964,26 @@ public class ShipmentAndMovementButtons implements Pressable {
         List<DuneChoice> choices = spiceBlowTerritories.stream().map(s -> shipToTerritoryChoice(game, faction, buttonSuffix, s, initialPlacement)).collect(Collectors.toList());
         choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
         faction.getChat().reply("Which Spice Blow Territory?", choices);
+        discordGame.queueDeleteMessage();
+    }
+
+    private static void queueIdualiShippingButtons(ButtonInteractionEvent event, DiscordGame discordGame, Game game) {
+        String buttonSuffix = event.getComponentId().replace("secret-location", "");
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        List<DuneChoice> choices = new ArrayList<>();
+
+        for (String name : List.of("Sietch Jacurutu", "Shuloch", "Kharuz")) {
+            Territory territory = game.getTerritory(name);
+            String label = faction instanceof IdualiFaction
+                ? name + " (Sector " + territory.getSector() + ")"
+                : territory.getPublicName();
+
+            DuneChoice choice = new DuneChoice("ship" + buttonSuffix + "-" + name, label);
+            choice.setDisabled(territory.factionMayNotEnter(game, faction, true, false));
+            choices.add(choice);
+        }
+        choices.add(new DuneChoice("secondary", "reset-shipment" + buttonSuffix, "Start over"));
+        faction.getChat().reply("Which Southern Iduali Territory?", choices);
         discordGame.queueDeleteMessage();
     }
 
@@ -1019,34 +1070,71 @@ public class ShipmentAndMovementButtons implements Pressable {
         queueShippingButtons(event, game, discordGame, false);
     }
 
-    public static void queueShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean fremenRide) {
+    public static void queueShippingButtons(ButtonInteractionEvent event, Game game, DiscordGame discordGame, boolean wormRide) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        String buttonSuffix = fremenRide ? "-fremen-ride" : "";
+        String buttonSuffix = "";
+        if (wormRide) buttonSuffix = faction instanceof FremenFaction ? "-fremen-ride" : "-iduali-ride";
         List<DuneChoice> choices = new LinkedList<>();
-        choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
-        choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
-        choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
-        if (game.hasGameOption(GameOption.HOMEWORLDS) && !fremenRide)
-            choices.add(new DuneChoice("homeworlds", "Homeworlds"));
-        boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
-        if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
-            choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
-        choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
-        choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, fremenRide ? "No ride" : "I don't want to ship."));
-        faction.getChat().reply(fremenRide ? "Where would you like to ride to?" : "Where would you like to ship to?", choices);
+        boolean crossShipping = !faction.getShipment().getCrossShipFrom().isEmpty();
+        if (faction instanceof IdualiFaction && !crossShipping && !wormRide) {
+            game.getTerritories().values().stream()
+                .filter(Territory::isInIdualiRange)
+                .filter(t -> !t.factionMayNotEnter(game, faction, true, false))
+                .sorted(Comparator.comparing(Territory::getTerritoryName))
+                .forEach(t -> {
+                    String label = t instanceof IdualiTerritory
+                            ? t.getTerritoryName() + " (Sector " + t.getSector() + ")"
+                            : t.getPublicName();
+                    choices.add(new DuneChoice("ship-sector-" + t.getTerritoryName(), label));
+                });
+        } else {
+            choices.add(new DuneChoice("stronghold" + buttonSuffix, "Stronghold"));
+            choices.add(new DuneChoice("spice-blow" + buttonSuffix, "Spice Blow Territories"));
+            choices.add(new DuneChoice("rock" + buttonSuffix, "Rock Territories"));
+            if (game.hasIdualiFaction() && game.isSetupFinished())
+                choices.add(new DuneChoice("secret-location" + buttonSuffix, "Iduali Territories"));
+            if (game.hasGameOption(GameOption.HOMEWORLDS) && !wormRide)
+                choices.add(new DuneChoice("homeworlds", "Homeworlds"));
+            boolean revealedDiscoveryTokenOnMap = game.getTerritories().values().stream().anyMatch(Territory::isDiscovered);
+            if (game.hasGameOption(GameOption.DISCOVERY_TOKENS) && revealedDiscoveryTokenOnMap)
+                choices.add(new DuneChoice("discovery-tokens" + buttonSuffix, "Discovery Tokens"));
+            choices.add(new DuneChoice("other" + buttonSuffix, "Somewhere else"));
+        }
 
-        choices = new ArrayList<>();
+        choices.add(new DuneChoice("danger", "pass-shipment" + buttonSuffix, wormRide ? "No ride" : "I don't want to ship."));
+        faction.getChat().reply(wormRide ? "Where would you like to ride to?" : "Where would you like to ship to?", choices);
+
+        List<DuneChoice> specialChoices = new ArrayList<>();
         if (faction instanceof GuildFaction && faction.getShipment().getCrossShipFrom().isEmpty()) {
-            choices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
-            choices.add(new DuneChoice("guild-ship-to-reserves", "Ship to reserves"));
-            faction.getChat().publish("Special options for " + Emojis.GUILD + ":", choices);
+            specialChoices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
+            specialChoices.add(new DuneChoice("guild-ship-to-reserves", "Ship to reserves"));
+            faction.getChat().publish("Special options for " + Emojis.GUILD + ":", specialChoices);
         } else if (faction.getAlly().equals("Guild") && faction.getShipment().getCrossShipFrom().isEmpty()) {
-            choices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
-            faction.getChat().publish("Special option for " + Emojis.GUILD + " ally :", choices);
+            specialChoices.add(new DuneChoice("guild-cross-ship", "Cross ship"));
+            faction.getChat().publish("Special option for " + Emojis.GUILD + " ally :", specialChoices);
         }
 
         discordGame.queueDeleteMessage();
     }
+
+public static void queueCaveDestinations(
+        Game game,
+        DiscordGame discordGame,
+        IdualiFaction faction) throws ChannelNotFoundException {
+
+    TreeSet<Button> buttons = new TreeSet<>(
+            Comparator.comparing(Button::getLabel));
+
+    faction.getCaveMovableTerritories().stream()
+            .map(name -> moveToTerritoryButton(game, faction, name))
+            .forEach(buttons::add);
+
+    arrangeButtonsAndSend(
+            "Where will your forces move through the caves?",
+            buttons,
+            discordGame);
+    discordGame.pushGame();
+}
 
     public static void presentShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
@@ -1100,6 +1188,15 @@ public class ShipmentAndMovementButtons implements Pressable {
         movingFromButtons.add(Button.danger("pass-movement", "No move"));
 
         arrangeButtonsAndSend(message, movingFromButtons, discordGame);
+
+        if (faction instanceof IdualiFaction && faction.getMovement().getCaveFrom().isEmpty()) {
+            IdualiFaction i = (IdualiFaction)faction;
+            if(!i.isCavesBlocked()) {
+                List<DuneChoice> choices = new LinkedList<>();
+                choices.add(new DuneChoice("iduali-cave", "Deep Desert Caves"));
+                faction.getChat().publish("Special option for " + faction.getEmoji() + ":", choices);
+            }
+        }
     }
 
     public static void arrangeButtonsAndSend(String message, TreeSet<Button> buttons, DiscordGame discordGame) {

@@ -182,7 +182,7 @@ public class ShowCommands {
         for (Leader leader : faction.getLeaders()) {
             BufferedImage leaderImage;
             List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol");
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol", "Iduali");
             if (!allFactionNames.contains(leader.getOriginalFactionName())) {
                 String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
                 if (imageUrl != null) {
@@ -481,10 +481,13 @@ public class ShowCommands {
             discordGame.queueMessage(infoChannelName, "__Traitors:__\n" + String.join("\n", homebrewTraitors));
         if (!leadersInTerritories.isEmpty())
             discordGame.queueMessage(infoChannelName, leadersInTerritories.toString());
+
         if (faction instanceof MoritaniFaction moritani)
             discordGame.queueMessage(infoChannelName, moritani.getTerrorTokenMessage(true));
         else if (faction instanceof RicheseFaction richese)
             writeRicheseCardCache(discordGame, infoChannelName, richese);
+        else if (faction instanceof IdualiFaction iduali)
+            writeIdualiCardCache(discordGame, infoChannelName, iduali);
         else if (faction instanceof BTFaction)
             writeFaceDownLeaders(discordGame, game, infoChannelName);
 
@@ -873,6 +876,15 @@ public class ShowCommands {
 
         //Place pieces in territories
         for (Territory territory : game.getTerritories().values()) {
+            if (territory instanceof IdualiTerritory) {
+                IdualiTerritory idualiTerritory = (IdualiTerritory)territory;
+                BufferedImage territoryImage = getResourceImage("Iduali Territory");
+                territoryImage = resize(territoryImage, 70, 70);
+                Point drawPoint = idualiTerritory.getDrawPoint();
+                territoryImage = rotateImageByDegrees(territoryImage, idualiTerritory.getRotation());
+                board = overlay(board, territoryImage, drawPoint, 1);
+            }
+
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
                     && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
                     && !territory.isAftermathToken() && !territory.hasTerrorToken() && !territory.hasHomebrewToken()
@@ -1072,14 +1084,21 @@ public class ShowCommands {
                     continue;
                 }
                 BufferedImage forceImage = buildForceImage(game, force);
-                Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
-                Point forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
-                board = overlay(board, forceImage, forcePlacementOffset, 1);
-                i++;
-                if (i == Initializers.getPoints(territory.getTerritoryName()).size()) {
-                    offset += 20;
-                    i = 0;
+                Point forcePlacementOffset;
+                if (territory instanceof IdualiTerritory) {
+                    forcePlacementOffset = ((IdualiTerritory) territory).getForcePlacementPoint(i);
+                    ++i;
                 }
+                else {
+                    Point forcePlacement = Initializers.getPoints(territory.getTerritoryName()).get(i);
+                    forcePlacementOffset = new Point(forcePlacement.x, forcePlacement.y + offset);
+                    ++i;
+                    if (i == Initializers.getPoints(territory.getTerritoryName()).size()) {
+                        offset += 20;
+                        i = 0;
+                    }
+                }
+                board = overlay(board, forceImage, forcePlacementOffset, 1);
             }
 
             if (territory.hasRicheseNoField() && !territory.isDiscoveryToken()) {
@@ -1323,7 +1342,7 @@ public class ShowCommands {
         for (Leader leader : faction.getLeaders()) {
             FileUpload leaderImage;
             List<String> allFactionNames = List.of("Atreides", "BG", "Harkonnen", "Emperor", "Fremen", "Guild",
-                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol");
+                    "BT", "Ix", "CHOAM", "Richese", "Ecaz", "Moritani", "Mikarrol", "Iduali");
             if (!allFactionNames.contains(leader.getOriginalFactionName())) {
                 String imageUrl = getHomebrewFactionImageUrlFromHomebrewChannel(discordGame, leader.getOriginalFactionName().toLowerCase(), "leaders", leader.getName());
                 if (imageUrl != null) {
@@ -1450,6 +1469,8 @@ public class ShowCommands {
 
             if (faction instanceof RicheseFaction richese)
                 writeRicheseCardCache(discordGame, infoChannelName, richese);
+            else if (faction instanceof IdualiFaction iduali)
+                writeIdualiCardCache(discordGame, infoChannelName, iduali);
             else if (faction instanceof BTFaction)
                 writeFaceDownLeaders(discordGame, faction.getGame(), infoChannelName);
         }
@@ -1468,6 +1489,28 @@ public class ShowCommands {
         }
 
         sendInfoButtons(discordGame.getGame(), discordGame, faction);
+    }
+
+    private static void writeIdualiCardCache(DiscordGame discordGame, String infoChannelName, IdualiFaction iduali) throws ChannelNotFoundException {
+        List<TreacheryCard> treacheryCards = iduali.getTreacheryCardCache();
+        if (!treacheryCards.isEmpty()) {
+            MessageCreateBuilder treacheryCardMessageBuilder = new MessageCreateBuilder();
+            StringBuilder treacheryString = new StringBuilder();
+            treacheryString.append("\n__" + Emojis.getFactionEmoji("Iduali") + " Craftable Cards:__\n");
+            for (TreacheryCard treachery : treacheryCards) {
+                treacheryString.append(Emojis.TREACHERY)
+                        .append(" ")
+                        .append(treachery.name())
+                        .append("\n");
+
+                Optional<FileUpload> image = CardImages.getTreacheryCardImage(discordGame.getEvent().getGuild(), treachery.name());
+                if (image.isPresent())
+                    treacheryCardMessageBuilder = treacheryCardMessageBuilder.addFiles(image.get());
+            }
+
+            treacheryCardMessageBuilder.addContent(treacheryString.toString());
+            discordGame.queueMessage(infoChannelName, treacheryCardMessageBuilder.build());
+        }
     }
 
     private static void writeRicheseCardCache(DiscordGame discordGame, String infoChannelName, RicheseFaction richese) throws ChannelNotFoundException {

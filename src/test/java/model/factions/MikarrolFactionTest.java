@@ -149,7 +149,7 @@ class MikarrolFactionTest extends FactionTestTemplate {
 
     @Test
     public void testHandLimit() {
-        assertEquals(4, faction.getHandLimit());
+        assertEquals(5, faction.getHandLimit());
     }
 
     @Nested

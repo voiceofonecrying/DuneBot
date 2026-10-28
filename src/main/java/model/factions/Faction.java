@@ -432,7 +432,7 @@ public class Faction {
 
     public void placeForces(Territory targetTerritory, int amountValue, int starredAmountValue, boolean isShipment, boolean isIntrusion, boolean canTrigger, boolean karama, boolean crossShip) throws InvalidGameStateException {
         String forcesPlaced = placeAndReportWhatWasPlaced(targetTerritory, amountValue, starredAmountValue);
-        String placedWhere = " placed on " + targetTerritory.getTerritoryName();
+        String placedWhere = " placed on " + targetTerritory.getPublicName();
         String costString = "";
         if (isShipment) {
             getShipment().setShipped(true);
@@ -1443,8 +1443,8 @@ public class Faction {
      */
     public void executeShipment(Game game, boolean karama, boolean free) throws InvalidGameStateException {
         int totalForces = shipment.getForce() + shipment.getSpecialForce();
-        String territoryName = shipment.getTerritoryName();
-        Territory territory = game.getTerritory(territoryName);
+        Territory territory = game.getTerritory(shipment.getTerritoryName());
+        String territoryName = territory.getPublicName();
         int spiceNeeded = free ? 0 : game.shipmentCost(this, totalForces, territory, karama, !shipment.getCrossShipFrom().isEmpty());
         int spiceFromAlly = hasAlly() ? game.getFaction(ally).getShippingSupport() : 0;
         if (spiceNeeded > spice + spiceFromAlly)

@@ -479,7 +479,14 @@ public class BattlePlan {
     public int getLeaderContribution() {
         if (artilleryStrike() || !isLeaderAlive())
             return 0;
-        return getLeaderValue() + (kwisatzHaderach ? 2 : 0);
+
+        int contribution = getLeaderValue() + (kwisatzHaderach ? 2 : 0);
+        if (opponentWeapon != null && opponentWeapon.name().equals("Hidden Blades"))
+            contribution = contribution < 3 ? 0 : contribution - 2;
+        if (defense != null && defense.name().equals("Water of Life"))
+            contribution = (contribution + 2 - 1) / 2;
+
+        return contribution;
     }
 
     public boolean isSkillBehindAndLeaderAlive(String skillName) {
@@ -557,6 +564,8 @@ public class BattlePlan {
         }
         else if (cheapHero != null) leaderString = cheapHero.name() + " (0)" + khString;
 
+        if (opponentWeapon != null && opponentWeapon.name().equals("Hidden Blades") && isLeaderAlive())
+            leaderString += "\n  -2 from Hidden Blades";
         if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
             leaderString += "\n  +3 for Killer Medic" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
         if (isSkillInFront("Killer Medic") && isPoisonDefense())
@@ -708,6 +717,8 @@ public class BattlePlan {
             else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
                     && !(defense.servesAsShield() || defense.name().equals("Weirding Way")))
                 return false;
+            else if (opponentWeapon.name().equals("Hidden Blades"))
+                return (defense.servesAsShield() || defense.servesAsSnooper() || defense.name().equals("Weirding Way") || defense.name().equals("Chemistry"));
             else
                 return !opponentWeapon.name().equals("Lasgun");
         }
@@ -817,7 +828,7 @@ public class BattlePlan {
             if (card.name().equals("Portable Snooper")) return true;
             if (card.name().equals("Stone Burner")) return true;
             if (card.type().equals("Spice Blow - Special")) return true;
-            if (card.type().startsWith("Special")) return true;
+            if (card.type().startsWith("Special")) return !(card.name().equals("Body Double"));
             return card.type().equals("Worthless Card");
         }
         return false;

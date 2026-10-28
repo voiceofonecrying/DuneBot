@@ -352,7 +352,6 @@ public class DiscordGame {
 
         for (Territory territory : game.getTerritories().values()) {
             // Temporary migrations when adding new Territory member variables can be placed here to add them to active games.
-            territory.setupHomebrewTokens();
             // End Temporary
             if (territory.hasForce("Hidden Mobile Stronghold")) {
                 Territory hms = game.getTerritory("Hidden Mobile Stronghold");
@@ -361,6 +360,11 @@ public class DiscordGame {
             if (territory.isDiscovered()) {
                 Territory revealedTerritory = game.getTerritory(territory.getDiscoveryToken());
                 game.putTerritoryInAnotherTerritory(revealedTerritory, territory);
+            }
+            else if (territory instanceof IdualiTerritory) {
+                IdualiTerritory idualiTerritory = (IdualiTerritory)territory;
+                idualiTerritory.setGame(game);
+                idualiTerritory.establishAdjacency();
             }
         }
 

@@ -6,6 +6,7 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import constants.Emojis;
 import enums.GameOption;
+import enums.MoveType;
 import enums.SetupStep;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
@@ -58,6 +59,7 @@ public class Game {
     private Leader dukeVidal;
     private transient final HashMap<String, List<String>> adjacencyList;
     private final HashMap<String, String> homeworlds;
+    private final HashMap<String, String> idualiLocations;
     private final List<String> hieregTokens;
     private final List<String> smugglerTokens;
     private final LinkedList<TreacheryCard> treacheryDeck;
@@ -136,6 +138,7 @@ public class Game {
         this.nexusDeck = new LinkedList<>();
         this.nexusDiscard = new LinkedList<>();
         this.homeworlds = new HashMap<>();
+        this.idualiLocations = new HashMap<>();
         this.hieregTokens = new LinkedList<>();
         this.smugglerTokens = new LinkedList<>();
         this.treacheryDeck = new LinkedList<>();
@@ -786,6 +789,25 @@ public class Game {
         return (MikarrolFaction) getFactionOrNull("Mikarrol");
     }
 
+    /**
+     * Get the Iduali faction object
+     *
+     * @return the IdualiFaction object if Iduali is in the game
+     * @throws IllegalArgumentException if Iduali is not in the game
+     */
+    public IdualiFaction getIdualiFaction() {
+        return (IdualiFaction) getFaction("Iduali");
+    }
+
+    /**
+     * Get the Iduali faction object
+     *
+     * @return the IdualiFaction object if Iduali is in the game or null if Iduali is not in the game
+     */
+    public IdualiFaction getIdualiFactionOrNull() {
+        return (IdualiFaction) getFactionOrNull("Iduali");
+    }
+
     public boolean hasFaction(String name) {
         return findFaction(name).isPresent();
     }
@@ -836,6 +858,10 @@ public class Game {
 
     public boolean hasMikarrolFaction() {
         return hasFaction("Mikarrol");
+    }
+
+    public boolean hasIdualiFaction() {
+        return hasFaction("Iduali");
     }
 
     public void addFaction(Faction faction) {
@@ -1198,6 +1224,10 @@ public class Game {
         return homeworlds;
     }
 
+    public HashMap<String, String> getIdualiLocations() {
+        return idualiLocations;
+    }
+
     public HashMap<Integer, List<String>> getQuotes() throws IOException {
         if (quotes == null) {
             this.quotes = new HashMap<>();
@@ -1470,6 +1500,10 @@ public class Game {
         return spiceBlowAndNexus == null;
     }
 
+    public void removeHieregToken(String tokenName) {
+        hieregTokens.removeIf(token -> token.equals(tokenName));
+    }
+
     public Pair<SpiceCard, Integer> drawSpiceBlow(String spiceBlowDeckName) {
         return drawSpiceBlow(spiceBlowDeckName, false);
     }
@@ -1600,6 +1634,9 @@ public class Game {
             FremenFaction fremen = getFremenFactionOrNull();
             if (fremen != null && drawn.discoveryToken().equals("Hiereg"))
                 fremen.getChat().publish("The Hiereg Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
+            IdualiFaction iduali = getIdualiFactionOrNull();
+            if (iduali != null && drawn.discoveryToken().equals("Hiereg"))
+                iduali.getChat().publish("The Hiereg Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
         }
         if (storm == drawn.sector()) getTerritory(drawn.name()).setSpice(0);
 
@@ -1867,7 +1904,8 @@ public class Game {
         if (to.factionMayNotEnter(this, targetFaction, false, false))
             throw new IllegalArgumentException("You cannot move into this territory.");
 
-        turnSummary.publish(targetFaction.getEmoji() + ": " + targetFaction.forcesString(amountValue, starredAmountValue) + " moved from " + from.getTerritoryName() + " to " + to.getTerritoryName() + ".");
+        String movementMethod = targetFaction.getMovement().getMoveType() == MoveType.IDUALI_CAVE ? " through Deep Desert Caves" : "";
+        turnSummary.publish(targetFaction.getEmoji() + ": " + targetFaction.forcesString(amountValue, starredAmountValue) + " moved from " + from.getPublicName() + " to " + to.getPublicName() + movementMethod + ".");
 
         if (amountValue > 0) {
             String forceName = targetFaction.getName();
@@ -1940,7 +1978,8 @@ public class Game {
 
     public void removeForcesAndReportToTurnSummary(String territoryName, Faction targetFaction, int amountValue, int specialAmount, boolean isToTanks, boolean killedInBattle) {
         removeForces(territoryName, targetFaction, amountValue, specialAmount, isToTanks);
-        turnSummary.publish(targetFaction.forcesString(amountValue, specialAmount) + " in " + territoryName + " were sent to " + (isToTanks ? "the tanks." : "reserves."));
+        String publicTerritoryName = getTerritory(territoryName).getPublicName();
+        turnSummary.publish(targetFaction.forcesString(amountValue, specialAmount) + " in " + publicTerritoryName + " were sent to " + (isToTanks ? "the tanks." : "reserves."));
         if (killedInBattle && targetFaction instanceof AtreidesFaction atreides)
             atreides.addForceLost(amountValue);
         targetFaction.checkForHighThreshold();
@@ -2037,16 +2076,22 @@ public class Game {
 
     public int shipmentCost(Faction targetFaction, int amountToShip, Territory targetTerritory, boolean karama, boolean crossShip) {
         int baseCost = amountToShip * targetTerritory.costToShipInto();
-        if (targetFaction instanceof FremenFaction && targetTerritory.isInFremenRange() && !crossShip)
+        if (
+            (targetFaction instanceof FremenFaction && targetTerritory.isInFremenRange() && !crossShip) ||
+            (targetFaction instanceof IdualiFaction && targetTerritory.isInIdualiRange() && !crossShip)
+        )
             return 0;
-        else if (targetFaction instanceof GuildFaction || (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) || karama)
+        else if (karama ||
+            targetFaction instanceof GuildFaction ||
+            (targetFaction.hasAlly() && targetFaction.getAlly().equals("Guild")) ||
+            (targetTerritory instanceof IdualiTerritory && getIdualiFaction().getOccupier() == targetFaction))
             return Math.ceilDiv(baseCost, 2);
         else
             return baseCost;
     }
 
     public void putTerritoryInAnotherTerritory(Territory insertedTerritory, Territory containingTerritory) {
-        String insertedName = insertedTerritory.getTerritoryName();
+       String insertedName = insertedTerritory.getTerritoryName();
         String containingName = containingTerritory.getTerritoryName().replaceAll("\\(.*\\)", "").strip();
         territories.putIfAbsent(insertedName, insertedTerritory);
         adjacencyList.putIfAbsent(insertedName, new ArrayList<>());

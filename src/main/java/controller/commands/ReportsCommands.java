@@ -864,11 +864,11 @@ public class ReportsCommands {
     public static final Map<String, String> homebrewFactionsAndEmojis = Map.of(
             "mikarrol", ":mikarrol:",
             "wydras", ":wydras:",
-            "spinnette", ":crossed_swords:",
+            "spinnette", ":spinnette:",
             "lindaren", ":lindaren:",
-            "iduali", ":scorpion:",
+            "iduali", ":iduali:",
             "smugglers", ":detective:",
-            "orks", ":troll:",
+            "orks", ":orks:",
             "ordos", ":snake:"
     );
 

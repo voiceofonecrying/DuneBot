@@ -292,6 +292,7 @@ public class CommandManager extends ListenerAdapter {
                 case "hark" -> HarkCommands.runCommand(event, discordGame, game);
                 case "fremen" -> FremenCommands.runCommand(event, discordGame, game);
                 case "choam" -> ChoamCommands.runCommand(event, discordGame, game);
+                case "iduali" -> IdualiCommands.runCommand(event, discordGame, game);
                 case "ix" -> IxCommands.runCommand(event, discordGame, game);
                 case "moritani" -> MoritaniCommands.runCommand(event, discordGame, game);
                 case "bg" -> BGCommands.runCommand(event, discordGame, game);
@@ -467,6 +468,7 @@ public class CommandManager extends ListenerAdapter {
         commandData.addAll(EcazCommands.getCommands());
         commandData.addAll(MoritaniCommands.getCommands());
         commandData.addAll(MikarrolCommands.getCommands());
+        commandData.addAll(IdualiCommands.getCommands());
         commandData.addAll(HomebrewCommands.getCommands());
 
         List<CommandData> commandDataWithPermissions = commandData.stream()
