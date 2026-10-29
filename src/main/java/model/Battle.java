@@ -3,6 +3,7 @@ package model;
 import constants.Emojis;
 import enums.GameOption;
 import enums.UpdateType;
+import enums.Ruleset;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import model.topics.DuneTopic;
@@ -373,6 +374,7 @@ public class Battle {
     }
 
     public String setBattlePlan(Game game, Faction faction, String leaderName, boolean kwisatzHaderach, String dial, int spice, String weaponName, String defenseName) throws InvalidGameStateException {
+        boolean khDial = game.getRuleset() == Ruleset.GF9_KH;
         if (!getAggressorName().equals(faction.getName()) && !getDefenderName().equals(faction.getName()))
             throw new InvalidGameStateException("You are not in the current battle.");
         if (resolutionPublished)
@@ -413,11 +415,14 @@ public class Battle {
             wholeNumberDial = Integer.parseInt(dial);
         else {
             wholeNumberDial = decimalPoint == 0 ? 0 : Integer.parseInt(dial.substring(0, decimalPoint));
-            if (dial.length() == decimalPoint + 2 && dial.substring(decimalPoint + 1).equals("5"))
+            if (!khDial && dial.length() == decimalPoint + 2 && dial.substring(decimalPoint + 1).equals("5"))
                 plusHalfDial = true;
             else
                 throw new InvalidGameStateException(dial + " is not a valid dial");
         }
+
+        if(khDial && (!List.of(0, 2, 4, 8).contains(spice) || spice > wholeNumberDial))
+            throw new InvalidGameStateException(spice + " is not a valid spice strength for a dial of " + dial);
 
         TreacheryCard weapon = null;
         if (!weaponName.equals("None")) {

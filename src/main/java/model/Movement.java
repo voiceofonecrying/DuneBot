@@ -166,6 +166,18 @@ public class Movement {
 
     public void pass() throws InvalidGameStateException {
         Game game = faction.getGame();
+        if (moveType == MoveType.SHAI_HULUD_PLACEMENT || moveType == MoveType.GREAT_MAKER_PLACEMENT) {
+            if (!(faction instanceof FremenFaction))
+                throw new InvalidGameStateException("Only Fremen may place worms.");
+            FremenFaction fremen = (FremenFaction)faction;
+            fremen.placeWorm(game.getTerritory(movingFrom));
+            if (fremen.getWormsToPlace() == 0) {
+                clear();
+                moveType = MoveType.TBD;
+            }
+            return;
+        }
+
         if (moveType == MoveType.WORM_RIDE) {
             faction.getChat().reply("You will not ride the worm.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm.");
@@ -173,10 +185,6 @@ public class Movement {
                 ((FremenFaction) faction).setWormRideActive(false);
             else
                 ((IdualiFaction) faction).setWormRideActive(false);
-        } else if (moveType == MoveType.SHAI_HULUD_PLACEMENT) {
-            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
-        } else if (moveType == MoveType.GREAT_MAKER_PLACEMENT) {
-            ((FremenFaction) faction).placeWorm(game.getTerritory(faction.getMovement().getMovingFrom()));
         } else if (moveType == MoveType.FREMEN_AMBASSADOR) {
             faction.getChat().reply("You will not ride the worm with the Fremen Ambassador.");
             game.getTurnSummary().publish(faction.getEmoji() + " does not ride the worm with the Fremen Ambassador.");
