@@ -2,6 +2,7 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.Ruleset;
 import exceptions.InvalidGameStateException;
 import model.factions.*;
 import net.dv8tion.jda.internal.utils.tuple.ImmutablePair;
@@ -59,10 +60,12 @@ public class BattlePlan {
     private boolean harkWillCallTraitor;
     private boolean leaderIsTraitor;
     private boolean opponentIsTraitor;
+    private boolean khVariant;
 
     public BattlePlan(Game game, Battle battle, Faction faction, boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         this.wholeTerritoryName = battle.getWholeTerritoryName();
         this.numForcesInReserve = getNumForcesInReserve(game, faction);
+        this.khVariant = game.getRuleset() == Ruleset.GF9_KH;
         validatePlanInputs(game, battle, faction, leader, cheapHero, kwisatzHaderach, weapon, defense, spice);
 
         this.aggressor = aggressor;
@@ -204,6 +207,8 @@ public class BattlePlan {
     }
 
     private boolean isSpiceNeeded(Game game, Battle battle, Faction faction, boolean starred) {
+        if (khVariant)
+            return false;
         if (!starred && faction instanceof IxFaction)
             return false;
         if (starred && game.hasGameOption(GameOption.HOMEWORLDS) && faction instanceof EmperorFaction emperorFaction && emperorFaction.isSecundusHighThreshold())
@@ -308,7 +313,7 @@ public class BattlePlan {
 
         int spicedSpecials = doubleStrengthSpecialWithSpice + fullStregnthSpecialWithSpice;
         int unspicedSpecials = (doubleStrengthSpecial - doubleStrengthSpecialWithSpice) + (fullStrengthSpecial - fullStregnthSpecialWithSpice) + halfStrengthSpecial;
-        if (!specialsNegated && spiceUsed < spice
+        if (!specialsNegated && spiceUsed < spice && !khVariant
                 && (isEmperor || isFremen && isSpiceNeeded(game, battle, faction, true))) {
             int unspicedSpecialsToSwap = Math.min(spice - spiceUsed, unspicedSpecials);
             regularDialed += unspicedSpecialsToSwap;
@@ -424,9 +429,13 @@ public class BattlePlan {
             spice -= 2;
         }
 
-        if (spice > spiceUsed)
-            faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE + ", reducing from " + spice + ".");
-        this.spice = spiceUsed;
+        if (khVariant) {
+            this.spice = spice;
+        } else {
+            if (spice > spiceUsed)
+                faction.getChat().publish("This dial can be supported with " + spiceUsed + " " + Emojis.SPICE + ", reducing from " + spice + ".");
+            this.spice = spiceUsed;
+        }
     }
 
     public String getForcesRemainingString(Game game) {
@@ -636,6 +645,13 @@ public class BattlePlan {
         float doubleBonuses = 2 * bonuses;
         int doubleBattleStrength = 2 * wholeNumberDial + (int)doubleBonuses;
         if (plusHalfDial) doubleBattleStrength++;
+        if (khVariant) {
+            switch(spice) {
+                case 2 -> doubleBattleStrength += 2;
+                case 4 -> doubleBattleStrength += 4;
+                case 8 -> doubleBattleStrength += 6;
+            }
+        }
         doubleBattleStrength += 2 * getLeaderContribution();
         doubleBattleStrength += 2 * Math.ceilDiv(ecazTroopsForAlly, 2);
         return doubleBattleStrength;
@@ -755,6 +771,13 @@ public class BattlePlan {
                 dialString += "\n  +2 for Reinforcements";
             if (factionDialAdvantageString != null)
                 dialString += factionDialAdvantageString;
+            if (khVariant) {
+                switch(spice) {
+                    case 2 -> dialString += "\n  +1 for Spice Strength";
+                    case 4 -> dialString += "\n  +2 for Spice Strength";
+                    case 8 -> dialString += "\n  +3 for Spice Strength";
+                }
+            }
         }
         return dialString;
     }

@@ -2,9 +2,11 @@ package model.factions;
 
 import constants.Emojis;
 import enums.UpdateType;
+import enums.Ruleset;
 import model.Game;
 import model.Leader;
 import model.SpiceCard;
+import model.DoubleSpiceCard;
 import model.Territory;
 import org.jetbrains.annotations.NotNull;
 
@@ -82,7 +84,9 @@ public class AtreidesFaction extends Faction {
     }
 
     public void giveSpiceDeckPrescience() {
-        if (isHighThreshold()) {
+        if (!isHighThreshold())
+            return;
+        if (game.getRuleset() != Ruleset.GF9_KH) {
             SpiceCard nextCard = game.getSpiceDeck().peek();
             if (nextCard != null) {
                 if (nextCard.discoveryToken() == null)
@@ -90,6 +94,14 @@ public class AtreidesFaction extends Faction {
                 else
                     chat.publish("6 " + Emojis.SPICE + " will appear in " + nextCard.name() + " and destroy any forces and " + Emojis.SPICE + " there. A " + nextCard.discoveryToken() + " will appear in " + nextCard.tokenLocation());
             }
+        } else {
+            DoubleSpiceCard nextCard = game.getDoubleSpiceDeck().peek();
+            String firstTerritoryName = nextCard.firstTerritoryName();
+
+            if (firstTerritoryName.equals("Little Maker") || firstTerritoryName.equals("Shai-Halud"))
+                chat.publish("You see visions of " + nextCard.firstTerritoryName() + " in your future.");
+            else
+                chat.publish("You see visions of " + Emojis.SPICE + " appearing in " + nextCard.firstTerritoryName() + " and " + nextCard.secondTerritoryName() + " in your future.");
         }
     }
 
