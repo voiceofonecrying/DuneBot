@@ -9,6 +9,7 @@ import controller.Queue;
 import controller.buttons.ButtonManager;
 import enums.GameOption;
 import enums.UpdateType;
+import enums.Ruleset;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
 import helpers.ExceptionHandler;
@@ -992,7 +993,7 @@ public class CommandManager extends ListenerAdapter {
 
     private void publishTerritoriesDisplayString(DiscordGame discordGame, Game game, List<Territory> territories) throws ChannelNotFoundException {
         for (Territory territory : territories) {
-            if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty())
+            if (territory.getSpice() == 0 && !territory.isStronghold() && territory.getForces().isEmpty() && !territory.hasRicheseNoField())
                 continue;
             String spiceString = territory.getSpice() == 0 ? "" : " " + territory.getSpice() + " " + Emojis.SPICE;
             String forcesString = " " + String.join(" ", territory.getForces().stream().map(f -> f.getStrength() + " " + game.getForceEmoji(f.getName())).toList());
@@ -1040,11 +1041,27 @@ public class CommandManager extends ListenerAdapter {
             }
             case "spice" -> {
                 String state = Emojis.SPICE + " Deck:\n";
-                state += String.join(", ", game.getSpiceDeck().stream().map(SpiceCard::name).toList());
-                state += "\n\n" + Emojis.SPICE + " Discard A:\n";
-                state += String.join(", ", game.getSpiceDiscardA().stream().map(SpiceCard::name).toList().reversed());
-                state += "\n\n" + Emojis.SPICE + " Discard B:\n";
-                state += String.join(", ", game.getSpiceDiscardB().stream().map(SpiceCard::name).toList().reversed());
+                if (game.getRuleset() != Ruleset.GF9_KH) {
+                    state += String.join(", ", game.getSpiceDeck().stream().map(SpiceCard::name).toList());
+                    state += "\n\n" + Emojis.SPICE + " Discard A:\n";
+                    state += String.join(", ", game.getSpiceDiscardA().stream().map(SpiceCard::name).toList().reversed());
+                    state += "\n\n" + Emojis.SPICE + " Discard B:\n";
+                    state += String.join(", ", game.getSpiceDiscardB().stream().map(SpiceCard::name).toList().reversed());
+                } else {
+                    state += String.join(", ", game.getDoubleSpiceDeck().stream().map(c -> {
+                        String m = c.firstTerritoryName();
+                        if (!m.equalsIgnoreCase("Little Maker") && !m.equalsIgnoreCase("Shai-Hulud"))
+                            m += " and " + c.secondTerritoryName();
+                        return m;
+                    }).toList());
+                    state += "\n\n" + Emojis.SPICE + " Discard:\n";
+                    state += String.join(", ", game.getDoubleSpiceDiscard().stream().map(c -> {
+                        String m = c.firstTerritoryName();
+                        if (!m.equalsIgnoreCase("Little Maker") && !m.equalsIgnoreCase("Shai-Hulud"))
+                            m += " and " + c.secondTerritoryName();
+                        return m;
+                    }).toList().reversed());
+                }
                 discordGame.getModInfo().queueMessage(state);
             }
             case "dnd" -> {

@@ -2,6 +2,7 @@ package model;
 
 import constants.Emojis;
 import enums.GameOption;
+import enums.Ruleset;
 import model.factions.Faction;
 import model.factions.FremenFaction;
 import net.dv8tion.jda.internal.utils.tuple.Pair;
@@ -18,6 +19,7 @@ public class SpiceBlowAndNexus {
     private boolean thumperResolved = true;
     private boolean thumperWasPlayed;
     private SpiceCard spiceCard;
+    private DoubleSpiceCard doubleSpiceCard;
     private int spiceMultiplier;
 
     SpiceBlowAndNexus(Game game) throws IOException {
@@ -27,12 +29,28 @@ public class SpiceBlowAndNexus {
 
     public boolean nextStep(Game game) throws IOException {
         FremenFaction fremen = game.getFremenFactionOrNull();
+        boolean isDouble = game.getRuleset() == Ruleset.GF9_KH;
         fremenRidesComplete = true;
         if (fremen != null && fremen.hasRidesRemaining()) {
             fremenRidesComplete = false;
             fremen.presentNextWormRideChoices();
         }
-        if (numDecksDrawn == 0 && thumperResolved) {
+        if (isDouble && thumperResolved) {
+            List<String> spiceBlowQuotes = game.getQuotes().get(2);
+            if (!spiceBlowQuotes.isEmpty()) {
+                Collections.shuffle(spiceBlowQuotes);
+                game.getTurnSummary().publish(spiceBlowQuotes.removeFirst());
+            }
+            game.getTurnSummary().publish("**Turn " + game.getTurn() + " Spice Blow Phase**");
+            game.setPhaseForWhispers("Turn " + game.getTurn() + " Spice Blow Phase\n");
+            Pair<DoubleSpiceCard, Integer> spiceBlow = game.drawDoubleSpiceBlow(thumperWasPlayed);
+            doubleSpiceCard = spiceBlow.getLeft();
+            spiceMultiplier = spiceBlow.getRight();
+            thumperWasPlayed = false;
+            // checkOnHarvester(game); - not available for double spice for now
+            numDecksDrawn = 2;
+            fremenRidesComplete = fremen == null || !fremen.hasRidesRemaining();
+        } else if (numDecksDrawn == 0 && thumperResolved) {
             List<String> spiceBlowQuotes = game.getQuotes().get(2);
             if (!spiceBlowQuotes.isEmpty()) {
                 Collections.shuffle(spiceBlowQuotes);
@@ -104,9 +122,14 @@ public class SpiceBlowAndNexus {
                     List<DuneChoice> choices = new ArrayList<>();
                     choices.add(new DuneChoice("spiceblow-thumper-yes", "Yes"));
                     choices.add(new DuneChoice("secondary", "spiceblow-thumper-no", "No"));
-                    String territoryName = game.getSpiceDiscardA().getLast().name();
-                    if (deck.equals("B"))
+                    String territoryName;
+                    if (game.getRuleset() == Ruleset.GF9_KH)
+                        territoryName = game.getDoubleSpiceDiscard().getLast().firstTerritoryName() + " and " + game.getDoubleSpiceDiscard().getLast().secondTerritoryName();
+                    else if (deck.equals("B"))
                         territoryName = game.getSpiceDiscardB().getLast().name();
+                    else
+                        territoryName = game.getSpiceDiscardA().getLast().name();
+
                     faction.getChat().publish("Would you like to play Thumper in " + territoryName + "? " + faction.getPlayer(), choices);
                 }
             }

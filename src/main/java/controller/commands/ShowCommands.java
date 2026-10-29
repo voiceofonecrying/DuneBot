@@ -5,6 +5,7 @@ import constants.Emojis;
 import controller.DiscordGame;
 import enums.ChoamInflationType;
 import enums.GameOption;
+import enums.Ruleset;
 import enums.UpdateType;
 import exceptions.ChannelNotFoundException;
 import exceptions.InvalidGameStateException;
@@ -766,7 +767,8 @@ public class ShowCommands {
     }
 
     public static FileUpload drawGameBoard(DiscordGame discordGame, Game game) throws IOException {
-        BufferedImage board = getResourceImage("Board");
+        String boardFileName = game.getRuleset() == Ruleset.GF9_KH ? "BoardKH" : "Board";
+        BufferedImage board = getResourceImage(boardFileName);
 
         //If Homeworlds are in play, concatenate homeworlds under the board.
         if (game.hasGameOption(GameOption.HOMEWORLDS)) {
@@ -1567,7 +1569,7 @@ public class ShowCommands {
         } catch (InvalidGameStateException ignored) {}
         String deckSizes = EmojiCache.tagEmojis(biddingMarketSize + Emojis.TREACHERY + " " + game.getTreacheryDeck().size()
                         + " :wastebasket: " + game.getTreacheryDiscard().size()
-                        + " " + Emojis.SPICE + " " + game.getSpiceDeck().size());
+                        + " " + Emojis.SPICE + " " + game.getSpiceDeckSize());
         embedBuilder.addField("Deck Sizes", deckSizes, false);
 
         List<String> discoveryTokensLocations = game.getTerritories().values().stream().filter(t -> t.getDiscoveryToken() != null && t.isDiscovered()).map(t -> t.getDiscoveryToken() + " is in " + t.getTerritoryName()).toList();
