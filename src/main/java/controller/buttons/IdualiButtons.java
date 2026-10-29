@@ -51,25 +51,10 @@ public class IdualiButtons implements Pressable {
         IdualiFaction faction = (IdualiFaction) ButtonManager.getButtonPresser(event, game);
         String from = game.getTerritory(event.getComponentId().replace("iduali-cave-from-", "")).getTerritoryName();
         faction.getMovement().setCaveFrom(from);
-         faction.getMovement().setMovingFrom(from);
+        faction.getMovement().setMovingFrom(from);
         ShipmentAndMovementButtons.queueCaveDestinations(game, discordGame, faction);
         discordGame.pushGame();
     }
-
-// private static void setCaveFrom(
-//         ButtonInteractionEvent event,
-//         Game game,
-//         DiscordGame discordGame) throws ChannelNotFoundException {
-
-//     IdualiFaction faction = (IdualiFaction) ButtonManager.getButtonPresser(event, game);
-//     String from = event.getComponentId().substring("iduali-cave-from-".length());
-
-//     faction.getMovement().setCaveFrom(from);
-//     faction.getMovement().setMovingFrom(from);
-
-//     ShipmentAndMovementButtons.queueCaveDestinations(
-//             game, discordGame, faction);
-// }
 
     private static void placeTerritory(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String prefix = "iduali-place-territory-";

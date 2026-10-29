@@ -7,6 +7,7 @@ import com.google.gson.JsonParser;
 import constants.Emojis;
 import enums.GameOption;
 import enums.MoveType;
+import enums.Ruleset;
 import enums.SetupStep;
 import enums.UpdateType;
 import exceptions.InvalidGameStateException;
@@ -34,6 +35,7 @@ public class Game {
     private int subPhase;
     private int phaseForTracker;
     private String modRole;
+    private Ruleset ruleset;
     private SpiceBlowAndNexus spiceBlowAndNexus;
     private Bidding bidding;
     private Revival revival;
@@ -47,6 +49,8 @@ public class Game {
     private final LinkedList<SpiceCard> spiceDeck;
     private final LinkedList<SpiceCard> spiceDiscardA;
     private final LinkedList<SpiceCard> spiceDiscardB;
+    private final LinkedList<DoubleSpiceCard> doubleSpiceDeck;
+    private final LinkedList<DoubleSpiceCard> doubleSpiceDiscard;
     private SpiceCard discardATopBeforeReshuffle;
     private final LinkedList<TraitorCard> traitorDeck;
     private final LinkedList<LeaderSkillCard> leaderSkillDeck;
@@ -125,13 +129,16 @@ public class Game {
         }
 
         this.gameOptions = new HashSet<>();
+        this.ruleset = Ruleset.GF9_CLASSIC;
         this.spiceDeck = new LinkedList<>();
         this.traitorDeck = new LinkedList<>();
         this.leaderSkillDeck = new LinkedList<>();
+        this.doubleSpiceDeck = new LinkedList<>();
         this.homebrewLeaderSkillDescriptions = new HashMap<>();
         this.homebrewLeaderSkillInBattleDescriptions = new HashMap<>();
         this.spiceDiscardA = new LinkedList<>();
         this.spiceDiscardB = new LinkedList<>();
+        this.doubleSpiceDiscard = new LinkedList<>();
         this.tleilaxuTanks = new TleilaxuTanks();
         this.leaderTanks = new LinkedList<>();
         this.dukeVidal = null;
@@ -164,6 +171,11 @@ public class Game {
         csvParser = getCSVFile("SpiceCards.csv");
         for (CSVRecord csvRecord : csvParser) {
             spiceDeck.add(new SpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), null, null));
+        }
+
+        csvParser = getCSVFile("DoubleSpiceCards.csv");
+        for (CSVRecord csvRecord : csvParser) {
+            doubleSpiceDeck.add(new DoubleSpiceCard(csvRecord.get(0), Integer.parseInt(csvRecord.get(1)), Integer.parseInt(csvRecord.get(2)), csvRecord.get(3), Integer.parseInt(csvRecord.get(4)), Integer.parseInt(csvRecord.get(5))));
         }
 
         LeaderSkillCardsCache.getNames().forEach(name -> leaderSkillDeck.add(new LeaderSkillCard(LeaderSkillCardsCache.getCardInfo(name).get("Name"))));
@@ -894,8 +906,16 @@ public class Game {
         return spiceDeck;
     }
 
+    public LinkedList<DoubleSpiceCard> getDoubleSpiceDeck() {
+        return doubleSpiceDeck;
+    }
+
     public LinkedList<TraitorCard> getTraitorDeck() {
         return traitorDeck;
+    }
+
+    public int getSpiceDeckSize() {
+        return ruleset != Ruleset.GF9_KH ? spiceDeck.size() : doubleSpiceDeck.size();
     }
 
     public LinkedList<LeaderSkillCard> getLeaderSkillDeck() {
@@ -930,12 +950,24 @@ public class Game {
         return spiceDiscardB;
     }
 
+    public LinkedList<DoubleSpiceCard> getDoubleSpiceDiscard() {
+        return doubleSpiceDiscard;
+    }
+
     public int getTurn() {
         return turn;
     }
 
     public void setTurn(int turn) {
         this.turn = turn;
+    }
+
+    public Ruleset getRuleset() {
+        return ruleset;
+    }
+
+    public void setRuleset(Ruleset ruleset) {
+        this.ruleset = ruleset;
     }
 
     public int getPhase() {
@@ -1495,7 +1527,7 @@ public class Game {
         if (spiceBlowAndNexus.isThumperActive())
             throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Thumper").getName() + " must decide if they will play Thumper before the game can advance.");
 
-        if (spiceBlowAndNexus.nextStep(this))
+        if (ruleset == Ruleset.GF9_KH || spiceBlowAndNexus.nextStep(this))
             spiceBlowAndNexus = null;
         return spiceBlowAndNexus == null;
     }
@@ -1639,6 +1671,102 @@ public class Game {
                 iduali.getChat().publish("The Hiereg Token in " + drawn.tokenLocation() + " is " + getTerritory(drawn.tokenLocation()).getDiscoveryToken() + ".");
         }
         if (storm == drawn.sector()) getTerritory(drawn.name()).setSpice(0);
+
+        turnSummary.publish(message.toString());
+        setUpdated(UpdateType.MAP);
+        return ImmutablePair.of(drawn, spiceMultiplier);
+    }
+
+    public Pair<DoubleSpiceCard, Integer> drawDoubleSpiceBlow(boolean afterThumper) {
+        DoubleSpiceCard lastCard = null;
+        if (!doubleSpiceDiscard.isEmpty())
+            lastCard = doubleSpiceDiscard.getLast();
+        LinkedList<DoubleSpiceCard> wormsToReshuffle = new LinkedList<>();
+        StringBuilder message = new StringBuilder();
+        DoubleSpiceCard drawn;
+        message.append("**Double Spice Deck**\n");
+
+        boolean shaiHuludSpotted = false;
+        boolean nexus = false;
+        boolean greatMaker = false;
+        int spiceMultiplier = 1;
+
+        do {
+            String spotted = "spotted";
+            if (afterThumper) {
+                drawn = new DoubleSpiceCard("Shai-Hulud", 0, 0, null, 0, 0);
+                spotted = "summoned";
+            } else
+                drawn = doubleSpiceDeck.pop();
+            boolean saveWormForReshuffle = false;
+            boolean cardIsGreatMaker = drawn.firstTerritoryName().equalsIgnoreCase("Great Maker");
+            if (drawn.firstTerritoryName().equalsIgnoreCase("Shai-Hulud") || cardIsGreatMaker) {
+                if (turn <= 1) {
+                    saveWormForReshuffle = true;
+                    message.append(drawn.firstTerritoryName())
+                            .append(" will be reshuffled back into deck.\n");
+                } else if (!shaiHuludSpotted) {
+                    spiceMultiplier = 1;
+                    shaiHuludSpotted = true;
+                    message.append(getTerritory(Objects.requireNonNull(lastCard).firstTerritoryName()).shaiHuludAppears(this, drawn.firstTerritoryName(), true))
+                        .append(getTerritory(Objects.requireNonNull(lastCard).secondTerritoryName()).shaiHuludAppears(this, drawn.firstTerritoryName(), true));
+                    nexus = true;
+                    if (cardIsGreatMaker)
+                        greatMaker = true;
+                } else {
+                    spiceMultiplier = 1;
+                    message.append(Emojis.WORM).append(" ").append(drawn.firstTerritoryName()).append(" has been ").append(spotted).append("!");
+                    nexus = true;
+                    if (cardIsGreatMaker)
+                        greatMaker = true;
+                    FremenFaction fremen = getFremenFactionOrNull();
+                    if (fremen != null) {
+                        message.append(" " + Emojis.FREMEN + " may place it in any sand territory.");
+                        fremen.addWormToPlace(Objects.requireNonNull(lastCard).firstTerritoryName(), drawn.firstTerritoryName());
+                    }
+                    message.append("\n");
+                }
+            } else {
+                if (drawn.firstTerritoryName().equalsIgnoreCase("Little Maker")) {
+                    String factionName = turnOrder.peekLast();
+                    String lastPlayer = getFaction(factionName).getPlayer();
+                    nexus = turn > 1;
+
+                    message.append("Little Maker has been spotted! " + lastPlayer + " must choose a Spice Blow Territory for a 10" + Emojis.SPICE + " blow to appear.");
+                }
+                else {
+                    message.append(drawn.firstSpice() * spiceMultiplier + " " + Emojis.SPICE + " has been spotted in " + drawn.firstTerritoryName());
+                    message.append(drawn.firstSector() == storm ? " - blown away by the storm" : "").append("!\n");
+                    message.append(drawn.secondSpice() * spiceMultiplier + " " + Emojis.SPICE + " has been spotted in " + drawn.secondTerritoryName());
+                    message.append(drawn.secondSector() == storm ? " - blown away by the storm" : "").append("!\n");
+                }
+
+                if (greatMaker)
+                    gameActions.publish(gameRoleMention + " Please vote whether you want a Nexus. A majority is required to have one.");
+                else if (nexus)
+                    gameActions.publish(gameRoleMention + " We have a Nexus! Create your alliances, reaffirm, backstab, or go solo here.");
+            }
+
+            if (saveWormForReshuffle)
+                wormsToReshuffle.add(drawn);
+            else if (drawn.firstTerritoryName().equalsIgnoreCase("Little Maker"))
+                doubleSpiceDiscard.add(0, drawn);
+            else if (!afterThumper)
+                doubleSpiceDiscard.add(drawn);
+            afterThumper = false;
+        } while (drawn.firstTerritoryName().equalsIgnoreCase("Shai-Hulud") || drawn.firstTerritoryName().equalsIgnoreCase("Great Maker"));
+
+        while (!wormsToReshuffle.isEmpty()) {
+            doubleSpiceDeck.add(wormsToReshuffle.pop());
+            if (wormsToReshuffle.isEmpty()) {
+                Collections.shuffle(doubleSpiceDeck);
+            }
+        }
+
+        if (storm != drawn.firstSector())
+            getTerritory(drawn.firstTerritoryName()).addSpice(this, drawn.firstSpice() * spiceMultiplier);
+        if (storm != drawn.secondSector())
+            getTerritory(drawn.secondTerritoryName()).addSpice(this, drawn.secondSpice() * spiceMultiplier);
 
         turnSummary.publish(message.toString());
         setUpdated(UpdateType.MAP);
