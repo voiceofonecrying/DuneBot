@@ -42,73 +42,68 @@ public class IdualiTerritory extends Territory {
         switch(sector) {
             case 1 -> {
                 if (adjacentTerritoryName.equals("Meridian")) {
-                    x = 450;
-                    y = 1030;
-                    rotation = 50;
+                    x = 402;
+                    y = 963;
+                    rotation = 25;
                 } else {
-                    x = 590;
-                    y = 1030;
-                    rotation = 340;
+                    x = 543;
+                    y = 954;
+                    rotation = 320;
                 }
             }
             case 2 -> {
                 if (adjacentTerritoryName.equals("Cielago South (East Sector)")) {
-                    x = 590;
-                    y = 950;
-                    rotation = 320;
+                    x = 580;
+                    y = 960;
+                    rotation = 340;
                 } else {
-                    x = 710;
-                    y = 990;
+                    x = 645;
+                    y = 935;
                     rotation = 330;
                 }
             }
             case 3 -> {
                 if (adjacentTerritoryName.equals("South Mesa (South Sector)")) {
-                    x = 880;
-                    y = 920;
-                    rotation = 40;
-                } else {
-                    x = 790;
-                    y = 990;
+                    x = 770;
+                    y = 861;
                     rotation = 330;
+                } else {
+                    x = 725;
+                    y = 887;
+                    rotation = 310;
                 }
             }
             case 4 -> {
-                rotation = 280;
-                x = 885;
-                y = 700;
+                rotation = 330;
+                x = 825;
+                y = 807;
             }
             case 5 -> {
                 rotation = 290;
-                x = 840;
-                y = 680;
+                x = 910;
+                y = 590;
             }
             case 6 -> {
-                rotation = 250;
-                x = 840;
-                y = 640;
+                rotation = 230;
+                x = 910;
+                y = 450;
             }
             case 7 -> {
-                rotation = 240;
-                if (adjacentTerritoryName.equals("Gara Kulon")) {
-                    x = 420;
-                    y = 970;
-                } else {
-                    x = 420;
-                    y = 970;
-                }
+                rotation = 230;
+                x = 824;
+                y = 265;
             }
             case 8 -> {
                 rotation = 220;
                 if (adjacentTerritoryName.equals("Old Gap (East Sector)")) {
-                    x = 840;
-                    y = 120;
+                    x = 718;
+                    y = 152;
                 } else if (adjacentTerritoryName.equals("Basin")) {
-                    x = 857;
-                    y = 135;
+                    x = 753;
+                    y = 190;
                 } else {
-                    x = 890;
-                    y = 150;
+                    x = 807;
+                    y = 225;
                 }
             }
             case 9 -> {
@@ -117,33 +112,35 @@ public class IdualiTerritory extends Territory {
                 y = 115;
             }
             case 10 -> {
-                rotation = 180;
                 if (adjacentTerritoryName.equals("Old Gap (West Sector)")) {
-                    x = 420;
-                    y = 970;
+                    rotation = 200;
+                    x = 540;
+                    y = 94;
                 } else {
-                    x = 420;
-                    y = 970;
+                    rotation = 140;
+                    x = 394;
+                    y = 100;
                 }
             }
             case 11 -> {
-                rotation = 160;
-                x = 355;
-                y = 50;
+                rotation = 150;
+                x = 305;
+                y = 115;
             }
             case 12 -> {
-                rotation = 140;
-                x = 202;
-                y = 139;
+                rotation = 170;
+                x = 235;
+                y = 158;
             }
             case 13 -> {
-                rotation = 120;
                 if (adjacentTerritoryName.equals("Bight Of The Cliff (North Sector)" )) {
-                    x = 88;
-                    y = 275;
+                    rotation = 90;
+                    x = 68;
+                    y = 370;
                 } else {
-                    x = 88;
-                    y = 275;
+                    rotation = 160;
+                    x = 133;
+                    y = 250;
                 }
             }
             case 14 -> {
@@ -162,19 +159,19 @@ public class IdualiTerritory extends Territory {
                 }
             }
             case 15 -> {
-                rotation = 80;
+                rotation = 70;
                 if (adjacentTerritoryName.equals("The Greater Flat")) {
-                    x = 34;
-                    y = 590;
+                    x = 37;
+                    y = 565;
                 } else {
-                    x = 34;
-                    y = 678;
+                    x = 48;
+                    y = 655;
                 }
             }
             case 16 -> {
-                rotation = 60;
-                x = 88;
-                y = 785;
+                rotation = 30;
+                x = 130;
+                y = 805;
             }
             case 17 -> {
                 rotation = 40;
@@ -183,15 +180,15 @@ public class IdualiTerritory extends Territory {
             }
             default -> {
                 rotation = 20;
-                x = 325;
-                y = 945;
+                x = 315;
+                y = 937;
             }
         }
 
         drawPoint = new Point(x, y);
         forcePlacementPoints = new ArrayList<>();
-        forcePlacementPoints.add(new Point(x, y - 10));
-        forcePlacementPoints.add(new Point(x, y + 10));
+        forcePlacementPoints.add(new Point(x, y - 14));
+        forcePlacementPoints.add(new Point(x, y + 14));
     }
 
     @Override

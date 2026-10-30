@@ -341,8 +341,6 @@ public class ShipmentAndMovementButtons implements Pressable {
             moveableTerritories = Set.of("Salusa Secundus");
         else if (territoryName.equals("Salusa Secundus"))
             moveableTerritories = Set.of("Kaitain");
-        else if (faction instanceof IdualiFaction && faction.getMovement().getCaveFrom() != "")
-            moveableTerritories = ((IdualiFaction)faction).getCaveMovableTerritories();
         else
             moveableTerritories = getAdjacentTerritoryNames(territoryName.replaceAll("\\(.*\\)", "").strip(), spacesCanMove, game);
         TreeSet<Button> moveToButtons = new TreeSet<>(Comparator.comparing(Button::getLabel));
@@ -1117,24 +1115,14 @@ public class ShipmentAndMovementButtons implements Pressable {
         discordGame.queueDeleteMessage();
     }
 
-public static void queueCaveDestinations(
-        Game game,
-        DiscordGame discordGame,
-        IdualiFaction faction) throws ChannelNotFoundException {
-
-    TreeSet<Button> buttons = new TreeSet<>(
-            Comparator.comparing(Button::getLabel));
-
-    faction.getCaveMovableTerritories().stream()
+    public static void queueCaveDestinations(Game game, DiscordGame discordGame, IdualiFaction faction) throws ChannelNotFoundException {
+        TreeSet<Button> buttons = new TreeSet<>(Comparator.comparing(Button::getLabel));
+        faction.getCaveMovableTerritories().stream()
             .map(name -> moveToTerritoryButton(game, faction, name))
             .forEach(buttons::add);
-
-    arrangeButtonsAndSend(
-            "Where will your forces move through the caves?",
-            buttons,
-            discordGame);
-    discordGame.pushGame();
-}
+        arrangeButtonsAndSend("Where will your forces move through the caves?", buttons,discordGame);
+        discordGame.pushGame();
+    }
 
     public static void presentShippingChoices(ButtonInteractionEvent event, Game game, DiscordGame discordGame) {
         Faction faction = ButtonManager.getButtonPresser(event, game);
