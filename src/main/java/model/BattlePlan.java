@@ -61,11 +61,13 @@ public class BattlePlan {
     private boolean leaderIsTraitor;
     private boolean opponentIsTraitor;
     private boolean khVariant;
+    private int khDialBonus;
 
     public BattlePlan(Game game, Battle battle, Faction faction, boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         this.wholeTerritoryName = battle.getWholeTerritoryName();
         this.numForcesInReserve = getNumForcesInReserve(game, faction);
         this.khVariant = game.getRuleset() == Ruleset.GF9_KH;
+        this.khDialBonus = 0;
         validatePlanInputs(game, battle, faction, leader, cheapHero, kwisatzHaderach, weapon, defense, spice);
 
         this.aggressor = aggressor;
@@ -430,6 +432,22 @@ public class BattlePlan {
         }
 
         if (khVariant) {
+            int countForBonus = spice;
+            if (isFremen && !battle.isFremenMustPay()) {
+                countForBonus = wholeNumberDial;
+                if (countForBonus > 8) countForBonus = 8;
+                else if (countForBonus > 4) countForBonus = 4;
+                else if (countForBonus > 2) countForBonus = 2;
+                if (spice > 0) {
+                    spice = 0;
+                    faction.getChat().publish("Spice is not needed for this dial due to " + faction.getEmoji() + " Battle Edge advantage, reducing to 0.");
+                }
+            }
+            switch (countForBonus) {
+                case 2 -> khDialBonus = 1;
+                case 4 -> khDialBonus = 2;
+                case 8 -> khDialBonus = 3;
+            }
             this.spice = spice;
         } else {
             if (spice > spiceUsed)
@@ -645,13 +663,7 @@ public class BattlePlan {
         float doubleBonuses = 2 * bonuses;
         int doubleBattleStrength = 2 * wholeNumberDial + (int)doubleBonuses;
         if (plusHalfDial) doubleBattleStrength++;
-        if (khVariant) {
-            switch(spice) {
-                case 2 -> doubleBattleStrength += 2;
-                case 4 -> doubleBattleStrength += 4;
-                case 8 -> doubleBattleStrength += 6;
-            }
-        }
+        if (khVariant) doubleBattleStrength += 2 * khDialBonus;
         doubleBattleStrength += 2 * getLeaderContribution();
         doubleBattleStrength += 2 * Math.ceilDiv(ecazTroopsForAlly, 2);
         return doubleBattleStrength;
@@ -771,13 +783,8 @@ public class BattlePlan {
                 dialString += "\n  +2 for Reinforcements";
             if (factionDialAdvantageString != null)
                 dialString += factionDialAdvantageString;
-            if (khVariant) {
-                switch(spice) {
-                    case 2 -> dialString += "\n  +1 for Spice Strength";
-                    case 4 -> dialString += "\n  +2 for Spice Strength";
-                    case 8 -> dialString += "\n  +3 for Spice Strength";
-                }
-            }
+            if (khVariant)
+                dialString += "\n  +" + khDialBonus + " for Spice Strength";
         }
         return dialString;
     }
