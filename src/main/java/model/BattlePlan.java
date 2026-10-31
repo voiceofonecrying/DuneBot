@@ -435,18 +435,19 @@ public class BattlePlan {
             int countForBonus = spice;
             if (isFremen && !battle.isFremenMustPay()) {
                 countForBonus = wholeNumberDial;
+                if (countForBonus > 8) countForBonus = 8;
+                else if (countForBonus > 4) countForBonus = 4;
+                else if (countForBonus > 2) countForBonus = 2;
                 if (spice > 0) {
                     spice = 0;
                     faction.getChat().publish("Spice is not needed for this dial due to " + faction.getEmoji() + " Battle Edge advantage, reducing to 0.");
                 }
             }
-
             switch (countForBonus) {
                 case 2 -> khDialBonus = 1;
                 case 4 -> khDialBonus = 2;
                 case 8 -> khDialBonus = 3;
             }
-
             this.spice = spice;
         } else {
             if (spice > spiceUsed)
