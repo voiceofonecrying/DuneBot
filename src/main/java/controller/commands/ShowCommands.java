@@ -276,6 +276,14 @@ public class ShowCommands {
             BufferedImage ornithopterImage = getResourceImage("Ornithopter");
             ornithopterImage = resize(ornithopterImage, 250, 250);
             table = overlay(table, ornithopterImage, new Point(1200 + offset, 200), 1);
+            offset += 120;
+        }
+
+        //Place Atomics token
+        if (faction.hasAtomicsToken()) {
+            BufferedImage atomicsImage = getResourceImage("Family Atomics Token");
+            atomicsImage = resize(atomicsImage, 250, 250);
+            table = overlay(table, atomicsImage, new Point(1200 + offset, 200), 1);
         }
 
         //Place leaders
@@ -888,7 +896,7 @@ public class ShowCommands {
             }
 
             if (territory.getForces().isEmpty() && territory.getSpice() == 0
-                    && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null
+                    && !territory.hasRicheseNoField() && territory.getEcazAmbassador() == null && !territory.isMiningDamageToken()
                     && !territory.isAftermathToken() && !territory.hasTerrorToken() && !territory.hasHomebrewToken()
                     && territory.getDiscoveryToken() == null) continue;
             if (territory.isDiscoveryToken() || territory instanceof HomeworldTerritory || territory.getTerritoryName().equals("Hidden Mobile Stronghold"))
@@ -902,6 +910,14 @@ public class ShowCommands {
                 Point placement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
                 Point placementCorner = new Point(placement.x, placement.y);
                 board = overlay(board, aftermath, placementCorner, 1);
+            }
+
+            if (territory.isMiningDamageToken()) {
+                BufferedImage miningDamage = getResourceImage("Mining Damage");
+                miningDamage = resize(miningDamage, 50, 50);
+                Point placement = Initializers.getPoints(territory.getTerritoryName()).getFirst();
+                Point placementCorner = new Point(placement.x + 30, placement.y + 30);
+                board = overlay(board, miningDamage, placementCorner, 1);
             }
 
             if (territory.getEcazAmbassador() != null) {
@@ -1405,13 +1421,14 @@ public class ShowCommands {
                 String.join("\n", traitors.stream().map(TraitorCard::getEmojiNameAndStrengthString).toList()) + "\n";
         String reservesString = "\n__Reserves:__ " + FactionView.getTaggedReservesString(discordGame, faction);
 
-        StringBuilder ornithopter = new StringBuilder();
-        if (faction.hasOrnithoperToken()) ornithopter.append("\nOrnithopter Token\n");
+        StringBuilder smugglerTokens = new StringBuilder();
+        if (faction.hasOrnithoperToken()) smugglerTokens.append("\nOrnithopter Token\n");
+        if (faction.hasAtomicsToken()) smugglerTokens.append("\nFamily Atomics Token\n");
         MessageCreateBuilder builder = new MessageCreateBuilder()
                 .addContent(emoji + "**Faction Info**" + emoji + "\n__Spice:__ " +
                         faction.getSpice() +
                         reservesString +
-                        ornithopter +
+                        smugglerTokens +
                         factionSpecificString +
                         traitorString);
         StringBuilder leadersInTerritories = new StringBuilder();

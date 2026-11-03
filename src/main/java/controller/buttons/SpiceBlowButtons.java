@@ -19,6 +19,8 @@ public class SpiceBlowButtons implements Pressable {
             case "spiceblow-thumper-no" -> declineThumper(event, discordGame, game);
             case "spiceblow-harvester-yes" -> playHarvester(event, game, discordGame);
             case "spiceblow-harvester-no" -> declineHarvester(event, game, discordGame);
+            case "spiceblow-spice-heist-yes" -> playSpiceHeist(event, game, discordGame);
+            case "spiceblow-spice-heist-no" -> declineSpiceHeist(event, game, discordGame);
         }
     }
 
@@ -46,6 +48,20 @@ public class SpiceBlowButtons implements Pressable {
     private static void declineHarvester(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         game.getSpiceBlowAndNexus().declineHarvester(faction);
+        discordGame.queueDeleteMessage();
+        discordGame.pushGame();
+    }
+
+    private static void playSpiceHeist(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        discordGame.queueDeleteMessage();
+        game.getSpiceBlowAndNexus().playSpiceHeist(game, faction);
+        discordGame.pushGame();
+    }
+
+    private static void declineSpiceHeist(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getSpiceBlowAndNexus().declineSpiceHeist(faction);
         discordGame.queueDeleteMessage();
         discordGame.pushGame();
     }

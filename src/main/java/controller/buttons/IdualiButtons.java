@@ -7,6 +7,7 @@ import controller.buttons.ButtonManager;
 import controller.buttons.MovementButtonActions;
 import controller.buttons.Pressable;
 import controller.buttons.ShipmentAndMovementButtons;
+import controller.commands.RunCommands;
 import controller.commands.SetupCommands;
 import enums.MoveType;
 import exceptions.InvalidGameStateException;
@@ -33,6 +34,8 @@ public class IdualiButtons implements Pressable {
         else if (event.getComponentId().equals("iduali-cave")) caveMove(event, game, discordGame);
         else if (event.getComponentId().startsWith("iduali-cave-from-")) setCaveFrom(event, game, discordGame);
         else if (event.getComponentId().startsWith("iduali-ride-")) handleIdualiRideButtons(event, discordGame);
+        else if (event.getComponentId().startsWith("iduali-mining-laser-yes")) playMiningLaser(event, game, discordGame);
+        else if (event.getComponentId().equals("iduali-mining-laser-no")) declineMiningLaser(event, game, discordGame);
     }
 
     private static void caveMove(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
@@ -132,6 +135,21 @@ public class IdualiButtons implements Pressable {
     private static void handleIdualiRideButtons(ButtonInteractionEvent event, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         String action = event.getComponentId().replace("iduali-ride-", "");
         MovementButtonActions.handleMovementAction(event, discordGame, action);
+    }
+
+    private static void playMiningLaser(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        discordGame.queueDeleteMessage();
+        Territory territory = game.getTerritory(event.getComponentId().replace("iduali-mining-laser-yes-", ""));
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getSpiceBlowAndNexus().playMiningLaser(game, faction, territory);
+        RunCommands.advance(discordGame, game);
+    }
+
+    private static void declineMiningLaser(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
+        discordGame.queueDeleteMessage();
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        game.getSpiceBlowAndNexus().declineMiningLaser(game, faction);
+        RunCommands.advance(discordGame, game);
     }
 }
 

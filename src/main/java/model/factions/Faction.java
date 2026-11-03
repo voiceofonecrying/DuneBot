@@ -72,6 +72,7 @@ public class Faction {
     private boolean allySpiceFinishedForTurn;
     protected boolean isHighThreshold;
     private Boolean ornithoperToken;
+    private boolean atomicsToken;
     @Exclude
     protected Game game;
     @Exclude
@@ -116,6 +117,7 @@ public class Faction {
         this.paidRevivalTBD = false;
         this.isHighThreshold = true;
         this.ornithoperToken = false;
+        this.atomicsToken = false;
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(
                 Objects.requireNonNull(Faction.class.getClassLoader().getResourceAsStream("Leaders.csv"))
@@ -1181,6 +1183,14 @@ public class Faction {
         this.ornithoperToken = ornithoperToken;
     }
 
+    public boolean hasAtomicsToken() {
+        return atomicsToken;
+    }
+
+    public void setAtomicsToken(boolean atomicsToken) {
+        this.atomicsToken = atomicsToken;
+    }
+
     public void sendWhisper(Faction recipient, String whisperedMessage, DuneTopic senderWhispers, DuneTopic recipientWhispers) {
         String fullMessage = emoji + " :speaking_head: " + whisperedMessage;
         recipientWhispers.publish(fullMessage);
@@ -1701,6 +1711,9 @@ public class Faction {
                 modInfo.publish(emoji + " has Family Atomics.");
             }
         }
+
+        if (atomicsToken)
+            modInfo.publish(emoji + " has Family Atomics.");
 
         if (extortionTokenTriggered)
             presentExtortionChoices();
