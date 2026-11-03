@@ -87,6 +87,13 @@ public class SpiceCollectionButtons  implements Pressable{
                     territory.setDiscoveryToken(null);
                     territory.setDiscovered(false);
                 }
+                case "Family Atomics" -> {
+                    faction.setAtomicsToken(true);
+                    faction.getLedger().publish("Family Atomics found in " + territory.getTerritoryName());
+                    discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered Family Atomics in " + territory.getTerritoryName() + "!");
+                    territory.setDiscoveryToken(null);
+                    territory.setDiscovered(false);
+                }
                 default -> discordGame.getTurnSummary().queueMessage(faction.getEmoji() + " has discovered the " + token + " in " + territory.getTerritoryName() + "!");
             }
             discordGame.pushGame();

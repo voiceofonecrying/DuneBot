@@ -1106,9 +1106,7 @@ public class Game {
     }
 
     public void destroyShieldWall() throws InvalidGameStateException {
-        Faction factionWithAtomics = factions.stream()
-                .filter(f -> !f.getName().equals("Hidden Mobile Stronghold"))
-                .filter(f -> f.hasTreacheryCard("Family Atomics")).findFirst().orElse(null);
+        Faction factionWithAtomics = getFirstFactionWithAtomics();
         if (factionWithAtomics == null)
             throw new InvalidGameStateException("No faction holds Family Atomics.");
         if (!factionWithAtomics.isNearShieldWall())
@@ -1121,7 +1119,10 @@ public class Game {
         territories.get("Imperial Basin (West Sector)").setRock(false);
         territories.get("Arrakeen").setRock(false);
 
-        if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
+        if (factionWithAtomics.hasAtomicsToken()) {
+            factionWithAtomics.setAtomicsToken(false);
+            turnSummary.publish("The Shield Wall has been destroyed!");
+        } else if (hasGameOption(GameOption.FAMILY_ATOMICS_TO_DISCARD)) {
             factionWithAtomics.discard("Family Atomics");
             turnSummary.publish("The Shield Wall has been destroyed!\nFamily Atomics is in the discard pile.");
         } else {
@@ -1362,6 +1363,13 @@ public class Game {
         return faction;
     }
 
+    public Faction getFirstFactionWithAtomics() {
+        return factions.stream()
+            .filter(f -> f.hasAtomicsToken() || f.hasTreacheryCard("Family Atomics"))
+            .findFirst()
+            .orElse(null);
+    }
+
     public List<Faction> getFactionsInStormOrder() {
         int firstFactionIndex = Math.ceilDiv(storm, 3) % factions.size();
         List<Faction> stormOrderFactions = new ArrayList<>();
@@ -1450,7 +1458,7 @@ public class Game {
             newDiscovery.setJustDiscovered(false);
         }
 
-        Faction factionWithAtomics = getFirstFactionWithTreacheryCard("Family Atomics");
+        Faction factionWithAtomics = getFirstFactionWithAtomics();
         if (factionWithAtomics != null && factionWithAtomics.isNearShieldWall())
             factionWithAtomics.getChat().publish(factionWithAtomics.getPlayer() + " will you play Family Atomics?");
 
@@ -1526,8 +1534,12 @@ public class Game {
             throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Harvester").getName() + " must decide if they will play Harvester before the game can advance.");
         if (spiceBlowAndNexus.isThumperActive())
             throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Thumper").getName() + " must decide if they will play Thumper before the game can advance.");
+        if (spiceBlowAndNexus.isMiningLaserActive())
+            throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Mining Laser").getName() + " must decide if they will play Mining Laser before the game can advance.");
+        if (spiceBlowAndNexus.isSpiceHeistActive())
+            throw new InvalidGameStateException(getFirstFactionWithTreacheryCard("Spice Heist").getName() + " must decide if they will play Spice Heist before the game can advance.");
 
-        if (ruleset == Ruleset.GF9_KH || spiceBlowAndNexus.nextStep(this))
+       if (spiceBlowAndNexus.nextStep(this))
             spiceBlowAndNexus = null;
         return spiceBlowAndNexus == null;
     }

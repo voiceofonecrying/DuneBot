@@ -162,7 +162,7 @@ public class MikarrolFaction extends Faction {
         ledger.publish("Your raiders have returned, stealing " + raidedCardName + " from " + faction.getEmoji() + "!");
         List<DuneChoice> choices = new ArrayList<>();
         choices.add(new DuneChoice("mikarrol-keep-raid-card", "Keep"));
-        choices.add(new DuneChoice("secondary", "mikarrol-discard-raid-card", "Discard"));
+        choices.add(new DuneChoice("secondary", "mikarrol-discard-raid-card", "Discard and Gain 2" + Emojis.SPICE));
         chat.publish("Will you keep " + raidedCardName + "? " + getPlayer(), choices);
     }
 
@@ -172,7 +172,8 @@ public class MikarrolFaction extends Faction {
     }
 
     public void discardRaidedCard() {
-        discard(raidedCardName, "Discarding card collected in raid on " + game.getFaction(raidTarget).getEmoji());
+        discard(raidedCardName, "Discarding card taken in raid on " + game.getFaction(raidTarget).getEmoji());
+        addSpice(2, "Raid against "+ game.getFaction(raidTarget).getEmoji());
         chat.publish("You chose not to keep the raided " + raidedCardName);
         endRaid();
     }

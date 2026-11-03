@@ -28,6 +28,7 @@ public class Territory {
     private final List<String> terrorTokens;
     private final List<String> homebrewTokens;
     private boolean aftermathToken;
+    private boolean miningDamageToken;
     private String discoveryToken;
     private boolean discovered;
 
@@ -46,6 +47,7 @@ public class Territory {
         this.richeseNoField = null;
         this.ecazAmbassador = null;
         this.aftermathToken = false;
+        this.miningDamageToken = false;
         this.terrorTokens = new LinkedList<>();
         this.homebrewTokens = new LinkedList<>();
     }
@@ -313,6 +315,14 @@ public class Territory {
 
     public void setAftermathToken(boolean aftermathToken) {
         this.aftermathToken = aftermathToken;
+    }
+
+    public boolean isMiningDamageToken() {
+        return miningDamageToken;
+    }
+
+    public void setMiningDamageToken(boolean miningDamageToken) {
+        this.miningDamageToken = miningDamageToken;
     }
 
     public String getDiscoveryToken() {

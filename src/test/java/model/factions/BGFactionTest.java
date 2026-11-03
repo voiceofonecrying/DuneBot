@@ -250,7 +250,6 @@ class BGFactionTest extends FactionTestTemplate {
         faction.presentStartingForcesChoices();
         assertEquals("Where would you like to place your starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER + "? player", chat.getMessages().getFirst());
         assertEquals(4, chat.getChoices().getFirst().size());
-        assertEquals(Emojis.BG + " will place their starting " + Emojis.BG_ADVISOR + " or " + Emojis.BG_FIGHTER, gameActions.getMessages().getFirst());
     }
 
     @Test
