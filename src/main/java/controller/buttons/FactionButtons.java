@@ -21,6 +21,7 @@ import java.util.stream.Collectors;
 
 import static controller.buttons.ShipmentAndMovementButtons.arrangeButtonsAndSend;
 import static controller.buttons.ShipmentAndMovementButtons.getButtonComparator;
+import static controller.commands.CommandOptions.leader;
 
 public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
@@ -151,7 +152,10 @@ public class FactionButtons {
     private static void leaderSkill(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String leaderSkill = event.getComponentId().split("-")[3];
-        List<DuneChoice> choices = faction.getLeaders().stream().map(l -> new DuneChoice("faction-skilled-leader-" + leaderSkill + "-" + l.getName(), l.getName())).collect(Collectors.toList());
+        List<DuneChoice> choices = faction.getLeaders().stream()
+            .filter(l -> !l.getName().equalsIgnoreCase("auditor"))
+            .map(l -> new DuneChoice("faction-skilled-leader-" + leaderSkill + "-" + l.getName(), l.getName()))
+            .collect(Collectors.toList());
         faction.getChat().reply("Which leader will be a " + leaderSkill + "?", choices);
         discordGame.pushGame();
     }
@@ -160,6 +164,8 @@ public class FactionButtons {
         Faction faction = ButtonManager.getButtonPresser(event, game);
         String leaderSkill = event.getComponentId().split("-")[3];
         String leaderName = event.getComponentId().split("-")[4];
+        if (leaderName.equalsIgnoreCase("auditor"))
+            throw new InvalidGameStateException("The Auditor cannot be assigned a leader skill");
         faction.assignSkillToLeader(leaderName, leaderSkill);
         discordGame.pushGame();
         if (game.getTurn() > 0 || game.getFactions().stream().anyMatch(f -> !f.getLeaderSkillsHand().isEmpty())) {
