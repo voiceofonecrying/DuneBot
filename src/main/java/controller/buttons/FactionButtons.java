@@ -21,7 +21,6 @@ import java.util.stream.Collectors;
 
 import static controller.buttons.ShipmentAndMovementButtons.arrangeButtonsAndSend;
 import static controller.buttons.ShipmentAndMovementButtons.getButtonComparator;
-import static controller.commands.CommandOptions.leader;
 
 public class FactionButtons {
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
