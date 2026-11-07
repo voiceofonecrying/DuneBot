@@ -378,37 +378,37 @@ public class Initializers {
     public static Point getDrawCoordinates(String location) {
         switch (location) {
             case "sigil 1" -> {
-                return new Point(475, 978);
+                return new Point(477, 980);
             }
             case "ally 1" -> {
                 return new Point(475, 1040);
             }
             case "sigil 2" -> {
-                return new Point(865, 753);
+                return new Point(866, 756);
             }
             case "ally 2" -> {
                 return new Point(915, 783);
             }
             case "sigil 3" -> {
-                return new Point(865, 301);
+                return new Point(866, 304);
             }
             case "ally 3" -> {
                 return new Point(915, 271);
             }
             case "sigil 4" -> {
-                return new Point(475, 80);
+                return new Point(477, 78);
             }
             case "ally 4" -> {
                 return new Point(475, 20);
             }
             case "sigil 5" -> {
-                return new Point(85, 301);
+                return new Point(85, 304);
             }
             case "ally 5" -> {
                 return new Point(35, 271);
             }
             case "sigil 6" -> {
-                return new Point(85, 753);
+                return new Point(85, 756);
             }
             case "ally 6" -> {
                 return new Point(35, 783);
