@@ -32,7 +32,7 @@ public final class Emojis {
     public static final String MORITANI_TROOP = ":moritani_troop:";
     public static final String RICHESE = ":richese:";
     public static final String RICHESE_TROOP = ":richese_troop:";
-    public static final String SPICE = ":spice4:";
+    public static final String SPICE = ":spice:";
     public static final String TREACHERY = ":treachery:";
     public static final String DUNE_RULEBOOK = ":DuneRulebook01:";
     public static final String WEIRDING = ":weirding:";
