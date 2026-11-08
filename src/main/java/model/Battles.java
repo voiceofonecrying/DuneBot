@@ -237,12 +237,16 @@ public class Battles {
             ));
         }
         game.getTurnSummary().publish(nextBattle.toString());
-//        currentBattle = battleTerritories.
     }
 
     protected void presentSkilledLeaderChoices(Faction faction) {
         for (Leader leader : faction.getSkilledLeaders()) {
-            if (leader.getOriginalFactionName().equals(faction.getName())) {
+            if (
+                // Harkonnen can't use the front of shield skills of captured leaders - this is Hark specific
+                // All factions must take the skilled leader behind shield if it's their only leader option
+                (leader.getOriginalFactionName().equals(faction.getName()) || !(faction instanceof HarkonnenFaction)) &&
+                (faction.getLeaders().size() > 1 || faction.hasTreacheryCard("Cheap Heroine") || faction.hasTreacheryCard("Cheap Hero"))
+            ) {
                 List<DuneChoice> choices = new ArrayList<>();
                 choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-yes", "Yes, pull behind"));
                 choices.add(new DuneChoice("battle-pull-leader-" + faction.getName() + "-" + leader.getName() + "-no", "No, leave out front"));
