@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -152,6 +153,20 @@ public class IdualiFaction extends Faction {
         return territories.stream().map(t -> game.getTerritory(t).getPublicName()).toList();
     }
 
+    public String getLocationInfo() {
+        StringBuilder result = new StringBuilder();
+        result.append("\n__" + emoji + " Locations:__\n");
+        for (TerritoryLocation location : territoryLocations) {
+            result.append(location.name)
+                .append(" is in Sector ")
+                .append(location.sector)
+                .append(", near ")
+                .append(location.adjacentTerritoryName)
+                .append("\n");
+        }
+        return result.toString();
+    }
+
     @Override
     public void presentStartingForcesChoices() {
         shipment.clear();
@@ -244,17 +259,28 @@ public class IdualiFaction extends Faction {
         TreacheryCard craftCard = getTreacheryCardFromCache(craftCardName);
         if (forAlly) {
             Faction ally = game.getFaction(getAlly());
-            ally.getTreacheryHand().add(craftCard);
             ally.discard(firstCardName);
             ally.discard(secondCardName);
+            ally.getTreacheryHand().add(craftCard);
             game.getTurnSummary().publish(ally.getEmoji() + " crafts a card");
         }
         else {
-            treacheryHand.add(craftCard);
             discard(firstCardName);
             discard(secondCardName);
+            treacheryHand.add(craftCard);
             game.getTurnSummary().publish(emoji + " crafts a card");
         }
+        removeTreacheryCardFromCache(craftCard);
+    }
+
+    public void craft(String craftCardName) throws InvalidGameStateException {
+        if (!hasTreacheryCard("Karama"))
+            throw new InvalidGameStateException("Iduali does not have a Karama card");
+
+        TreacheryCard craftCard = getTreacheryCardFromCache(craftCardName);
+        discard("Karama");
+        treacheryHand.add(craftCard);
+        game.getTurnSummary().publish(emoji + " crafts a card");
         removeTreacheryCardFromCache(craftCard);
     }
 

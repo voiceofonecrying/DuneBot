@@ -496,7 +496,7 @@ public class ShowCommands {
         else if (faction instanceof RicheseFaction richese)
             writeRicheseCardCache(discordGame, infoChannelName, richese);
         else if (faction instanceof IdualiFaction iduali)
-            writeIdualiCardCache(discordGame, infoChannelName, iduali);
+            writeIdualiLocationsAndCardCache(discordGame, infoChannelName, iduali);
         else if (faction instanceof BTFaction)
             writeFaceDownLeaders(discordGame, game, infoChannelName);
 
@@ -1489,7 +1489,7 @@ public class ShowCommands {
             if (faction instanceof RicheseFaction richese)
                 writeRicheseCardCache(discordGame, infoChannelName, richese);
             else if (faction instanceof IdualiFaction iduali)
-                writeIdualiCardCache(discordGame, infoChannelName, iduali);
+                writeIdualiLocationsAndCardCache(discordGame, infoChannelName, iduali);
             else if (faction instanceof BTFaction)
                 writeFaceDownLeaders(discordGame, faction.getGame(), infoChannelName);
         }
@@ -1510,8 +1510,11 @@ public class ShowCommands {
         sendInfoButtons(discordGame.getGame(), discordGame, faction);
     }
 
-    private static void writeIdualiCardCache(DiscordGame discordGame, String infoChannelName, IdualiFaction iduali) throws ChannelNotFoundException {
+    private static void writeIdualiLocationsAndCardCache(DiscordGame discordGame, String infoChannelName, IdualiFaction iduali) throws ChannelNotFoundException {
         List<TreacheryCard> treacheryCards = iduali.getTreacheryCardCache();
+        MessageCreateBuilder locationsBuilder = new MessageCreateBuilder();
+        locationsBuilder.addContent(iduali.getLocationInfo());
+        discordGame.queueMessage(infoChannelName, locationsBuilder.build());
         if (!treacheryCards.isEmpty()) {
             MessageCreateBuilder treacheryCardMessageBuilder = new MessageCreateBuilder();
             StringBuilder treacheryString = new StringBuilder();
