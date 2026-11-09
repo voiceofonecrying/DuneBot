@@ -22,6 +22,7 @@ public class IdualiCommands {
         commandData.add(Commands.slash("iduali", "Commands related to the Iduali Faction.").addSubcommands(
                 new SubcommandData("place-territory", "Place an Iduali special southern territory").addOptions(idualiTerritory, adjacentTerritory, sector),
 				new SubcommandData("craft-card", "Craft a card").addOptions(craftCard, firstCard, secondCard),
+                new SubcommandData("craft-card-karama", "Craft a card using Karama").addOptions(craftCard),
 				new SubcommandData("ally-craft-card", "Craft a card for Iduali's ally").addOptions(craftCard, firstCard, secondCard),
                 new SubcommandData("karama-caves", "Prevent Iduali from using Deep Desert Caves in their next Movement")
         ));
@@ -35,6 +36,7 @@ public class IdualiCommands {
         switch (name) {
 			case "place-territory"-> placeTerritory(discordGame, game);
             case "craft-card" -> craftCard(discordGame, game, false);
+            case "craft-card-karama" -> craftCardKarama(discordGame, game);
 			case "ally-craft-card" -> craftCard(discordGame, game, true);
 			case "karama-caves" -> karamaCaves(discordGame, game);
         }
@@ -53,6 +55,12 @@ public class IdualiCommands {
 		String firstCardName = discordGame.required(firstCard).getAsString();
 		String secondCardName = discordGame.required(secondCard).getAsString();
 		game.getIdualiFaction().craft(craftCardName, firstCardName, secondCardName, forAlly);
+        discordGame.pushGame();
+    }
+
+	public static void craftCardKarama(DiscordGame discordGame, Game game) throws InvalidGameStateException, ChannelNotFoundException {
+		String craftCardName = discordGame.required(craftCard).getAsString();
+		game.getIdualiFaction().craft(craftCardName);
         discordGame.pushGame();
     }
 
