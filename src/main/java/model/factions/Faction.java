@@ -455,6 +455,7 @@ public class Faction {
 
         if (isShipment && !(this instanceof GuildFaction)
                 && !(this instanceof FremenFaction && !(targetTerritory instanceof HomeworldTerritory))
+                && !(this instanceof IdualiFaction && !(targetTerritory instanceof HomeworldTerritory))
                 && game.hasGameOption(GameOption.TECH_TOKENS))
             TechToken.addSpice(game, TechToken.HEIGHLINERS);
 

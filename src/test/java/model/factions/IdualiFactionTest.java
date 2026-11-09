@@ -153,4 +153,38 @@ class IdualiFactionTest extends FactionTestTemplate {
     public void testHandLimit() {
         assertEquals(4, faction.getHandLimit());
     }
+
+        @Nested
+    @DisplayName("#placeForces")
+    class PlaceForces extends FactionTestTemplate.PlaceForces {
+        @Test
+        @Override
+        void testForcesStringInTurnSummaryMessage() throws InvalidGameStateException {
+            faction.placeForces(territory, 3, 0, false, false, false, false, false);
+            assertEquals(faction.getEmoji() + ": 3 " + Emojis.getForceEmoji("Iduali") + " placed on The Great Flat", turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        @Override
+        void testSpiceCostInTurnSummaryMessage() throws InvalidGameStateException {
+            faction.placeForces(territory, 1, 0, true, true, true, false, false);
+            assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji("Iduali") + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+        }
+
+        @Test
+        @Override
+        void testHeighlinersMessageAfterFirstShipmentMessage() throws InvalidGameStateException {
+            game.addGameOption(GameOption.TECH_TOKENS);
+            faction.addTechToken("Heighliners");
+            faction.addTechToken("Axlotl Tanks");
+            faction.placeForces(territory, 1, 0, true, true, true, false, false);
+            assertEquals(faction.getEmoji() + ": 1 " + Emojis.getForceEmoji("Iduali") + " placed on The Great Flat for 2 " + Emojis.SPICE, turnSummary.getMessages().getFirst());
+            assertFalse(turnSummary.getMessages().getLast().contains(Emojis.SPICE + " is placed on " + Emojis.HEIGHLINERS));
+        }
+
+        @Test
+        @Override
+        void testBGGetAdviseMessage() {
+        }
+    }
 }
