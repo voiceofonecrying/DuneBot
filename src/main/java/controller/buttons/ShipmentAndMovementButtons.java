@@ -862,7 +862,8 @@ public class ShipmentAndMovementButtons implements Pressable {
             .strip()
             .equalsIgnoreCase(aggregateTerritoryName))
             .toList());
-        String publicTerritoryName = territory.getFirst().getPublicName();
+        Territory firstTerritory = territory.getFirst();
+        String publicTerritoryName = firstTerritory instanceof IdualiTerritory ? firstTerritory.getPublicName() : firstTerritory.getAggregateTerritoryName();
         territory.sort(Comparator.comparingInt(Territory::getSector));
         if (aggregateTerritoryName.equals("Cielago North") || aggregateTerritoryName.equals("Cielago Depression") || aggregateTerritoryName.equals("Meridian")) {
             territory.addFirst(territory.removeLast());
@@ -1118,6 +1119,9 @@ public class ShipmentAndMovementButtons implements Pressable {
     public static void queueCaveDestinations(Game game, DiscordGame discordGame, IdualiFaction faction) throws ChannelNotFoundException {
         TreeSet<Button> buttons = new TreeSet<>(Comparator.comparing(Button::getLabel));
         faction.getCaveMovableTerritories().stream()
+            .map(game::getTerritory)
+            .map(Territory::getAggregateTerritoryName)
+            .distinct()
             .map(name -> moveToTerritoryButton(game, faction, name))
             .forEach(buttons::add);
         arrangeButtonsAndSend("Where will your forces move through the caves?", buttons,discordGame);
@@ -1159,6 +1163,7 @@ public class ShipmentAndMovementButtons implements Pressable {
             if (territory instanceof HomeworldTerritory &&
                     (!game.hasGameOption(GameOption.HOMEWORLDS) || !(faction instanceof EmperorFaction) || !territoryName.equals("Kaitain") && !territoryName.equals("Salusa Secundus")))
                 continue;
+            String label = territory instanceof IdualiTerritory ? territoryName + " (Sector " + territory.getSector() + ")": territoryName;
             int count = territory.getTotalForceCount(faction);
             if (game.hasGameOption(GameOption.HOMEWORLDS) && territory.hasRicheseNoField() && faction instanceof RicheseFaction && !faction.isHighThreshold())
                 count--;
@@ -1166,11 +1171,11 @@ public class ShipmentAndMovementButtons implements Pressable {
                 boolean disabled = false;
                 if (mustMoveOutOf != null && !mustMoveOutOf.isEmpty())
                     disabled = !territoryName.equals(mustMoveOutOf);
-                movingFromButtons.add(Button.primary("moving-from-" + territoryName, territoryName).withDisabled(disabled));
+                movingFromButtons.add(Button.primary("moving-from-" + territoryName, label).withDisabled(disabled));
                 if (faction.hasTreacheryCard("Ornithopter"))
-                    movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territoryName, territoryName + " (use Ornithopter)").withDisabled(disabled));
+                    movingFromButtons.add(Button.primary("ornithopter-moving-from-" + territoryName, label + " (use Ornithopter)").withDisabled(disabled));
                 if (faction.hasOrnithoperToken())
-                    movingFromButtons.add(Button.primary("ornithopter-token-moving-from-" + territoryName, territoryName + " (use Ornithopter Token)").withDisabled(disabled));
+                    movingFromButtons.add(Button.primary("ornithopter-token-moving-from-" + territoryName, label + " (use Ornithopter Token)").withDisabled(disabled));
             }
         }
         movingFromButtons.add(Button.danger("pass-movement", "No move"));
