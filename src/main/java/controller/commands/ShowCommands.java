@@ -641,7 +641,7 @@ public class ShowCommands {
     }
 
     public static void sendFactionPowerButtons(DiscordGame discordGame, Game game, Faction faction, boolean isReply) throws ChannelNotFoundException, InvalidGameStateException {
-        if(!game.isSetupFinished())
+        if(!game.isSetupFinished() && !(faction instanceof MikarrolFaction))
             return;
         // Other faction info buttons to go here, Ix, CHOAM, etc.
         if (faction instanceof MikarrolFaction)
