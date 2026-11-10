@@ -1089,7 +1089,7 @@ public class Game {
         phaseForTracker = phase;
         phase++;
         subPhase = 1;
-        if (turn >= 1 && phase >= 1)
+        if (turn >= 1 && phase > 1)
             this.getFactions().forEach(f -> f.performEndOfPhaseActions());
         if (turn >= 1 && phase > 10) {
             advanceTurn();
