@@ -380,35 +380,71 @@ public class Initializers {
             case "sigil 1" -> {
                 return new Point(477, 980);
             }
+            case "sigil 2"  -> {
+                return new Point(630, 954);
+            }
+            case "sigil 3"  -> {
+                return new Point(766, 875);
+            }
+            case "sigil 4" -> {
+                return new Point(866, 756);
+            }
+            case "sigil 5"  -> {
+                return new Point(920, 608);
+            }
+            case "sigil 6"  -> {
+                return new Point(920, 451);
+            }
+            case "sigil 7" -> {
+                return new Point(866, 304);
+            }
+            case "sigil 8"  -> {
+                return new Point(766, 184);
+            }
+            case "sigil 9"  -> {
+                return new Point(630, 106);
+            }
+            case "sigil 10" -> {
+                return new Point(477, 78);
+            }
+            case "sigil 11" -> {
+                return new Point(322, 106);
+            }
+            case "sigil 12" -> {
+                return new Point(186, 184);
+            }
+            case "sigil 13" -> {
+                return new Point(85, 304);
+            }
+            case "sigil 14" -> {
+                return new Point(32, 451);
+            }
+            case "sigil 15" -> {
+                return new Point(32, 608);
+            }
+            case "sigil 16" -> {
+                return new Point(85, 756);
+            }
+            case "sigil 17" -> {
+                return new Point(186, 875);
+            }
+            case "sigil 18" -> {
+                return new Point(322, 954);
+            }
             case "ally 1" -> {
                 return new Point(475, 1040);
-            }
-            case "sigil 2" -> {
-                return new Point(866, 756);
             }
             case "ally 2" -> {
                 return new Point(915, 783);
             }
-            case "sigil 3" -> {
-                return new Point(866, 304);
-            }
             case "ally 3" -> {
                 return new Point(915, 271);
-            }
-            case "sigil 4" -> {
-                return new Point(477, 78);
             }
             case "ally 4" -> {
                 return new Point(475, 20);
             }
-            case "sigil 5" -> {
-                return new Point(85, 304);
-            }
             case "ally 5" -> {
                 return new Point(35, 271);
-            }
-            case "sigil 6" -> {
-                return new Point(85, 756);
             }
             case "ally 6" -> {
                 return new Point(35, 783);

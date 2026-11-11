@@ -44,7 +44,7 @@ class BGFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
@@ -55,7 +55,7 @@ class BGFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThresholdAlliedToFremen() {
+    public void testFreeRevivalLowThresholdAlliedToFremen() throws InvalidGameStateException {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
@@ -325,7 +325,7 @@ class BGFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testBGDontGetFlipMessageOnHomeworlds() {
+    public void testBGDontGetFlipMessageOnHomeworlds() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         faction.presentFlipMessage(game, "Wallach IX");
         assertTrue(chat.getMessages().isEmpty());
@@ -336,7 +336,7 @@ class BGFactionTest extends FactionTestTemplate {
     class Homeworld extends FactionTestTemplate.Homeworld {
         @Test
         @Override
-        public void testHomweworldDialAdvantageHighThreshold() {
+        public void testHomweworldDialAdvantageHighThreshold() throws InvalidGameStateException {
             assertEquals(0, faction.homeworldDialAdvantage(game, territory));
             game.addGameOption(GameOption.HOMEWORLDS);
             assertEquals(3, faction.homeworldDialAdvantage(game, territory));
@@ -424,7 +424,7 @@ class BGFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testBGDoesNotGetAskedAtLowThreshold() {
+        public void testBGDoesNotGetAskedAtLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.placeForcesFromReserves(polarSink, 20, false);
             faction.presentAdvisorChoices(game, harkonnen, carthag);
@@ -432,7 +432,7 @@ class BGFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testBGDoesNotGetAskedToAdviseShipmentsToWallachIX() {
+        public void testBGDoesNotGetAskedToAdviseShipmentsToWallachIX() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory wallachIX = game.getTerritory("Wallach IX");
             faction.presentAdvisorChoices(game, harkonnen, wallachIX);
@@ -440,7 +440,7 @@ class BGFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testBGDoesNotGetAskedToAdviseShipmentsToOtherHomeworld() {
+        public void testBGDoesNotGetAskedToAdviseShipmentsToOtherHomeworld() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory giediPrime = game.getTerritory("Giedi Prime");
             faction.placeForcesFromReserves(giediPrime, 1, false);
@@ -548,7 +548,7 @@ class BGFactionTest extends FactionTestTemplate {
             }
 
             @Test
-            public void testAdviseButtonEnabledWithAllyInTerritoryWithAllyCoexistence() {
+            public void testAdviseButtonEnabledWithAllyInTerritoryWithAllyCoexistence() throws InvalidGameStateException {
                 game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
                 faction.presentAdvisorChoices(game, emperor, carthag);
                 DuneChoice adviseChoice = chat.getChoices().getFirst().getFirst();
@@ -587,7 +587,7 @@ class BGFactionTest extends FactionTestTemplate {
             }
 
             @Test
-            public void testBGCanAdviseAllyTerrititoryWithAllyCoexistence() {
+            public void testBGCanAdviseAllyTerrititoryWithAllyCoexistence() throws InvalidGameStateException {
                 game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
                 assertDoesNotThrow(() -> faction.advise(game, carthag, 1));
             }

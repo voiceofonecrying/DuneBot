@@ -34,6 +34,7 @@ public class Game {
     private int phase;
     private int subPhase;
     private int phaseForTracker;
+    private int playerCount;
     private String modRole;
     private Ruleset ruleset;
     private SpiceBlowAndNexus spiceBlowAndNexus;
@@ -129,6 +130,7 @@ public class Game {
         }
 
         this.gameOptions = new HashSet<>();
+        this.playerCount = 6;
         this.ruleset = Ruleset.GF9_CLASSIC;
         this.spiceDeck = new LinkedList<>();
         this.traitorDeck = new LinkedList<>();
@@ -263,7 +265,7 @@ public class Game {
         return getGameOptions().contains(gameOption);
     }
 
-    public void addGameOption(GameOption gameOption) {
+    public void addGameOption(GameOption gameOption) throws InvalidGameStateException {
         if (this.gameOptions == null) {
             this.gameOptions = new HashSet<>();
         }
@@ -271,6 +273,8 @@ public class Game {
 
         if (gameOption == GameOption.DISCOVERY_CARDS_IN_TOP_HALF)
             this.gameOptions.add(GameOption.DISCOVERY_TOKENS);
+        else if(gameOption == GameOption.HOMEWORLDS && (playerCount > 7 || (playerCount == 7 && hasEmperorFaction())))
+            throw new InvalidGameStateException("Reduce the player count to enable homeworlds");
 
         if (gameOption == GameOption.DISCOVERY_TOKENS && hasGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER))
             modInfo.publish("The game already has REPLACE_SHAI_HULUD_WITH_MAKER. The " + Emojis.SPICE + " deck will have 5 Shai-Huluds and 2 Great Makers.");
@@ -962,6 +966,20 @@ public class Game {
         this.turn = turn;
     }
 
+    public int getPlayerCount() {
+        return playerCount;
+    }
+
+    public void setPlayerCount(int playerCount) throws InvalidGameStateException {
+        if (isSetupFinished())
+            throw new InvalidGameStateException("The game has already begun");
+        this.playerCount = playerCount;
+    }
+
+    public boolean isFull() {
+       return getFactions().size() >= playerCount;
+    }
+
     public Ruleset getRuleset() {
         return ruleset;
     }
@@ -1008,6 +1026,111 @@ public class Game {
             return true;
         }
         return false;
+    }
+
+    public int getSigilSector(int playerNumber) {
+        return switch (playerCount) {
+            case 4 -> switch (playerNumber) {
+                case 1 -> 4;
+                case 2 -> 8;
+                case 3 -> 13;
+                case 4 -> 17;
+                default -> 1;
+            };
+            case 5 -> switch (playerNumber) {
+                case 1 -> 1;
+                case 2 -> 4;
+                case 3 -> 8;
+                case 4 -> 12;
+                case 5 -> 16;
+                default -> 1;
+            };
+            case 6 -> switch (playerNumber) {
+                case 1 -> 1;
+                case 2 -> 4;
+                case 3 -> 7;
+                case 4 -> 10;
+                case 5 -> 13;
+                case 6 -> 16;
+                default -> 1;
+            };
+            case 7 -> switch (playerNumber) {
+                case 1 -> 2;
+                case 2 -> 5;
+                case 3 -> 8;
+                case 4 -> 10;
+                case 5 -> 13;
+                case 6 -> 16;
+                case 7 -> 18;
+                default -> 1;
+            };
+            case 8 -> switch (playerNumber) {
+                case 1 -> 1;
+                case 2 -> 4;
+                case 3 -> 6;
+                case 4 -> 8;
+                case 5 -> 10;
+                case 6 -> 13;
+                case 7 -> 15;
+                case 8 -> 17;
+                default -> 1;
+            };
+            case 9 -> switch (playerNumber) {
+                case 1 -> 2;
+                case 2 -> 4;
+                case 3 -> 6;
+                case 4 -> 8;
+                case 5 -> 10;
+                case 6 -> 12;
+                case 7 -> 14;
+                case 8 -> 16;
+                case 9 -> 18;
+                default -> 1;
+            };
+            case 10 -> switch (playerNumber) {
+                case 1 -> 2;
+                case 2 -> 4;
+                case 3 -> 5;
+                case 4 -> 7;
+                case 5 -> 9;
+                case 6 -> 11;
+                case 7 -> 13;
+                case 8 -> 14;
+                case 9 -> 16;
+                case 10 -> 18;
+                default -> 1;
+            };
+            case 11 -> switch (playerNumber) {
+                case 1 -> 2;
+                case 2 -> 4;
+                case 3 -> 5;
+                case 4 -> 7;
+                case 5 -> 9;
+                case 6 -> 10;
+                case 7 -> 12;
+                case 8 -> 13;
+                case 9 -> 15;
+                case 10 -> 17;
+                case 11 -> 18;
+                default -> 1;
+            };
+            case 12 -> switch (playerNumber) {
+                case 1 -> 1;
+                case 2 -> 3;
+                case 3 -> 4;
+                case 4 -> 6;
+                case 5 -> 7;
+                case 6 -> 9;
+                case 7 -> 10;
+                case 8 -> 12;
+                case 9 -> 13;
+                case 10 -> 15;
+                case 11 -> 16;
+                case 12 -> 18;
+                default -> 1;
+            };
+            default -> 1;
+        };
     }
 
     public TleilaxuTanks getTleilaxuTanks() {
@@ -1371,7 +1494,13 @@ public class Game {
     }
 
     public List<Faction> getFactionsInStormOrder() {
-        int firstFactionIndex = Math.ceilDiv(storm, 3) % factions.size();
+        if (factions.isEmpty()) return new ArrayList<>();
+        int passedSigils = 0;
+        for (int i = 0; i < playerCount; i++) {
+            if (getSigilSector(i + 1) <= storm)
+                passedSigils++;
+        }
+        int firstFactionIndex = passedSigils % factions.size();
         List<Faction> stormOrderFactions = new ArrayList<>();
         stormOrderFactions.addAll(factions.subList(firstFactionIndex, factions.size()));
         stormOrderFactions.addAll(factions.subList(0, firstFactionIndex));

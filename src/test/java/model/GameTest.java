@@ -27,14 +27,14 @@ class GameTest extends DuneTest {
     }
 
     @Test
-    public void testSpiceDeckWithDiscoveryTokens() throws IOException {
+    public void testSpiceDeckWithDiscoveryTokens() throws IOException, InvalidGameStateException {
         game.addGameOption(GameOption.DISCOVERY_TOKENS);
         SetupCommands.createDecks(game);
         assertEquals(28, game.getSpiceDeck().size());
     }
 
     @Test
-    public void testReplaceShaiHuludWithGreatMaker() throws IOException {
+    public void testReplaceShaiHuludWithGreatMaker() throws IOException, InvalidGameStateException {
         game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
         SetupCommands.createDecks(game);
         List<SpiceCard> spiceDeck = game.getSpiceDeck();
@@ -44,7 +44,7 @@ class GameTest extends DuneTest {
     }
 
     @Test
-    public void testDiscoveryTokensAndReplaceShaiHulud() throws IOException {
+    public void testDiscoveryTokensAndReplaceShaiHulud() throws IOException, InvalidGameStateException {
         game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
         game.addGameOption(GameOption.DISCOVERY_TOKENS);
         SetupCommands.createDecks(game);
@@ -56,7 +56,7 @@ class GameTest extends DuneTest {
     }
 
     @Test
-    public void testReplaceShaiHuludAndDiscoveryTokens() throws IOException {
+    public void testReplaceShaiHuludAndDiscoveryTokens() throws IOException, InvalidGameStateException {
         game.addGameOption(GameOption.DISCOVERY_TOKENS);
         game.addGameOption(GameOption.REPLACE_SHAI_HULUD_WITH_MAKER);
         SetupCommands.createDecks(game);
@@ -151,7 +151,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        public void testEmperorCollectsAtLowThreshold() {
+        public void testEmperorCollectsAtLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             emperor.removeReserves(15);
             assertFalse(emperor.isHighThreshold());
@@ -185,7 +185,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        public void testBGAlwaysCollectsAtLowThreshold() {
+        public void testBGAlwaysCollectsAtLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             bg.removeReserves(10);
             assertEquals(5, bg.getSpice());
@@ -211,7 +211,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        public void testCHOAMDoesNotGetPlusOneSpiceAtLowThreshold() {
+        public void testCHOAMDoesNotGetPlusOneSpiceAtLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             choam.removeReserves(20);
             assertEquals(2, choam.getSpice());
@@ -638,7 +638,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testFremenShipToOtherHomeworld() {
+        void testFremenShipToOtherHomeworld() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             String junction = game.getHomeworlds().get("Guild");
             assertEquals("Junction", junction);
@@ -943,7 +943,7 @@ class GameTest extends DuneTest {
     @DisplayName("#initialStorm")
     class InitialStorm {
         @BeforeEach
-        void setUp() throws IOException {
+        void setUp() throws IOException, InvalidGameStateException {
             game.addGameOption(GameOption.TECH_TOKENS);
         }
 
@@ -1122,11 +1122,11 @@ class GameTest extends DuneTest {
         @Test
         void dot3IsFirst() {
             List<Faction> expected = Arrays.asList(emperor, fremen, guild, harkonnen, atreides, bg);
-            game.setStorm(5);
+            game.setStorm(4);
             assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
             game.setStorm(5);
             assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
-            game.setStorm(5);
+            game.setStorm(6);
             assertArrayEquals(expected.toArray(), game.getFactionsInStormOrder().toArray());
         }
 
@@ -1436,7 +1436,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testBGFlipIfAlone() {
+        void testBGFlipIfAlone() throws InvalidGameStateException {
             game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
             game.setStorm(1);
             sietchTabr.addForces("Advisor", 1);
@@ -1447,7 +1447,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testBGDontFlipWithOpponentInOtherSector() {
+        void testBGDontFlipWithOpponentInOtherSector() throws InvalidGameStateException {
             game.addGameOption(GameOption.BG_COEXIST_WITH_ALLY);
             game.setStorm(10);
             cielagoNorth_eastSector.addForces("Advisor", 1);
@@ -1860,7 +1860,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void removeNotToTanksFlipsToHighThreshold() {
+        void removeNotToTanksFlipsToHighThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.removeForces("Caladan", atreides, 5, 0, true);
             assertFalse(atreides.isHighThreshold());
@@ -1911,7 +1911,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void removeEmperorTroopAndSardaukarFromHomeworlds() {
+        void removeEmperorTroopAndSardaukarFromHomeworlds() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             // Change to placeForces after placeForces moves to Game
             Territory kaitain = game.getTerritory("Kaitain");
@@ -1947,7 +1947,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void removeEmperorTroopButSardaukarCountForHighThreshold() {
+        void removeEmperorTroopButSardaukarCountForHighThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             // Change to placeForces after placeForces moves to Game
             Territory kaitain = game.getTerritory("Kaitain");
@@ -1958,7 +1958,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void removeSardaukarButRegularDoNotCountForHighThreshold() {
+        void removeSardaukarButRegularDoNotCountForHighThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             // Change to placeForces after placeForces moves to Game
             Territory salusaSecundus = game.getTerritory("Salusa Secundus");
@@ -2095,7 +2095,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testIxHighTresholdPaidRevival() {
+        void testIxHighTresholdPaidRevival() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.removeForces("Ix", ix, 2, 1, true);
             game.reviveForces(ix, true, 0, 1, false);
@@ -2110,7 +2110,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testIxHighTresholFreeRevivalDoesNotGetBonusSuboids() {
+        void testIxHighTresholFreeRevivalDoesNotGetBonusSuboids() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.removeForces("Ix", ix, 2, 1, true);
             game.reviveForces(ix, false, 0, 1, false);
@@ -2118,7 +2118,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testIxHighTresholdEmperorAllyRevivalDoesNotGetBonusSuboids() {
+        void testIxHighTresholdEmperorAllyRevivalDoesNotGetBonusSuboids() throws InvalidGameStateException {
             game.createAlliance(ix, emperor);
             game.addGameOption(GameOption.HOMEWORLDS);
             game.removeForces("Ix", ix, 2, 1, true);
@@ -2139,7 +2139,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testRevivalFlipsToHighThreshold() {
+        void testRevivalFlipsToHighThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertTrue(tanks.getForces().isEmpty());
             game.removeForces("Kaitain", emperor, 15, 0, true);
@@ -2156,7 +2156,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testSardaukarOnKaitainCountForHighThreshold() {
+        void testSardaukarOnKaitainCountForHighThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertTrue(tanks.getForces().isEmpty());
             // Replace with game.moveForces after that is refactored
@@ -2169,7 +2169,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testRegularOnSalusaSecundusDoNotCountForHighThreshold() {
+        void testRegularOnSalusaSecundusDoNotCountForHighThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertTrue(tanks.getForces().isEmpty());
             // Replace with game.moveForces after that is refactored
@@ -2270,7 +2270,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testWithStrongholdCards() {
+        void testWithStrongholdCards() throws InvalidGameStateException {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             game.updateStrongholdSkills();
             assertEquals(1, atreides.getStrongholdCards().size());
@@ -2288,7 +2288,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testWithStrongholdCardsEcazAlly() {
+        void testWithStrongholdCardsEcazAlly() throws InvalidGameStateException {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             arrakeen.addForces("Ecaz", 1);
             game.createAlliance(atreides, ecaz);
@@ -2304,7 +2304,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testWithStrongholdCardsEcazAllyFalse() {
+        void testWithStrongholdCardsEcazAllyFalse() throws InvalidGameStateException {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             arrakeen.addForces("Harkonnen", 1);
             game.createAlliance(atreides, ecaz);
@@ -2428,7 +2428,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testAllyingWithTupileOccupier() {
+        void testAllyingWithTupileOccupier() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory tupile = game.getTerritory("Tupile");
             choam.placeForcesFromReserves(sietchTabr, 20, false);
@@ -2505,7 +2505,7 @@ class GameTest extends DuneTest {
         }
 
         @Test
-        void testLeaveTupileOccupier() {
+        void testLeaveTupileOccupier() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory tupile = game.getTerritory("Tupile");
             choam.placeForcesFromReserves(sietchTabr, 20, false);

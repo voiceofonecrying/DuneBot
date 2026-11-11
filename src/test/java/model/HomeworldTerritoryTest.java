@@ -141,7 +141,7 @@ public class HomeworldTerritoryTest extends DuneTest {
         }
 
         @Test
-        void testNativeRevivalWithZeroRegularsDoesNotEndOccupy() {
+        void testNativeRevivalWithZeroRegularsDoesNotEndOccupy() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             ixHomeworld.removeForces(game, "Ix", 10);
             ixHomeworld.removeForces(game, "Ix*", 4);
@@ -154,7 +154,7 @@ public class HomeworldTerritoryTest extends DuneTest {
         }
 
         @Test
-        void testNativeToEmptyHomeworldEndsOccupation() {
+        void testNativeToEmptyHomeworldEndsOccupation() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             caladan.removeForces(game, "Atreides", 10);
             caladan.addForces("Harkonnen", 1);
@@ -211,7 +211,7 @@ public class HomeworldTerritoryTest extends DuneTest {
         }
 
         @Test
-        void testClearingEcazOccupationReleasesDukeVidalFromOccupier() {
+        void testClearingEcazOccupationReleasesDukeVidalFromOccupier() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.createAlliance(emperor, harkonnen);
             ecazHomeworld.removeForces(game, "Ecaz", 14);
@@ -226,7 +226,7 @@ public class HomeworldTerritoryTest extends DuneTest {
         }
 
         @Test
-        void testClearingEcazOccupationReleasesDukeVidalFromOccupierAlly() {
+        void testClearingEcazOccupationReleasesDukeVidalFromOccupierAlly() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.createAlliance(emperor, harkonnen);
             ecazHomeworld.removeForces(game, "Ecaz", 14);

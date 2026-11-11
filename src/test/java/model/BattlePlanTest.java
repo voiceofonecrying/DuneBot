@@ -1787,7 +1787,7 @@ public class BattlePlanTest extends DuneTest {
         Battle battle1;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.setTurnSummary(new TestTopic());
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             atreides.addStrongholdCard(new StrongholdCard("Arrakeen"));
@@ -1921,7 +1921,7 @@ public class BattlePlanTest extends DuneTest {
         Battle battle;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
             caladan = game.getTerritory("Caladan");

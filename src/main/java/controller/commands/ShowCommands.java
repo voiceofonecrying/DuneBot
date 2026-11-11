@@ -775,7 +775,7 @@ public class ShowCommands {
     }
 
     public static FileUpload drawGameBoard(DiscordGame discordGame, Game game) throws IOException {
-        String boardFileName = game.getRuleset() == Ruleset.GF9_KH ? "BoardKH" : "Board";
+        String boardFileName = game.getRuleset() != Ruleset.GF9_KH ? (game.getPlayerCount() == 6 ? "Board" : "BoardVariable") : "BoardKH";
         BufferedImage board = getResourceImage(boardFileName);
 
         //If Homeworlds are in play, concatenate homeworlds under the board.
@@ -1140,16 +1140,22 @@ public class ShowCommands {
                 Faction faction = game.getFactions().get(k - 1);
                 BufferedImage sigil;
                 sigil = getSigilImage(faction);
-                coordinates = Initializers.getDrawCoordinates("sigil " + k);
+                coordinates = Initializers.getDrawCoordinates("sigil " + game.getSigilSector(k));
                 sigil = resize(sigil, 50, 50);
                 board = overlay(board, sigil, coordinates, 1);
 
                 // Check for alliances
                 if (faction.hasAlly()) {
                     BufferedImage allySigil = getSigilImage(game.getFaction(faction.getAlly()));
-                    coordinates = Initializers.getDrawCoordinates("ally " + k);
-                    allySigil = resize(allySigil, 40, 40);
-                    board = overlay(board, allySigil, coordinates, 1);
+                    Point allyCoordinates;
+                    if (game.getPlayerCount() == 6) {
+                        allyCoordinates = Initializers.getDrawCoordinates("ally " + k);
+                        allySigil = resize(allySigil, 40, 40);
+                    } else {
+                        allyCoordinates = new Point(coordinates.x + 15, coordinates.y + 15);
+                        allySigil = resize(allySigil, 30, 30);
+                    }
+                    board = overlay(board, allySigil, allyCoordinates, 1);
                 }
             }
         }

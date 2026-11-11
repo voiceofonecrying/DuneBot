@@ -56,7 +56,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
@@ -67,7 +67,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThresholdAlliedToFremen() {
+    public void testFreeRevivalLowThresholdAlliedToFremen() throws InvalidGameStateException {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
@@ -254,7 +254,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testCannotTriggerAtLowThreshold() {
+        void testCannotTriggerAtLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertTrue(faction.isHighThreshold);
             faction.removeReserves(13);
@@ -637,7 +637,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testHomeworldsHighThreshold() {
+        void testHomeworldsHighThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.sendTerrorTokenLocationMessage();
             assertEquals("Where would you like to place a Terror Token? player\nYou are at High Threshold and may place in a stronghold that has one.\n- Sabotage is in Arrakeen\n- Robbery is in Carthag", chat.getMessages().getLast());
@@ -646,7 +646,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testHomeworldsLowThreshold() {
+        void testHomeworldsLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.placeForcesFromReserves(carthag, 13, false);
             faction.sendTerrorTokenLocationMessage();
@@ -656,7 +656,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testRemovedTerrorTokenWithHT() {
+        void testRemovedTerrorTokenWithHT() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertFalse(faction.isRemovedTerrorTokenWithHT());
             faction.removeTerrorTokenWithHighThreshold("Carthag", "Robbery");
@@ -708,7 +708,7 @@ public class MoritaniFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testSecondTerrorTokenNotAllowedAtLowThreshold() {
+        void testSecondTerrorTokenNotAllowedAtLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.placeForcesFromReserves(carthag, 13, false);
             assertFalse(faction.isHighThreshold());
