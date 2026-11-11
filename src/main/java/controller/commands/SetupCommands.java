@@ -67,7 +67,8 @@ public class SetupCommands {
                         new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand and advance"),
                         new SubcommandData("bg-prediction", "Set BG prediction").addOptions(faction, turn),
                         new SubcommandData("faction-board-position", "Set a board position for a faction, swap with the faction currently there").addOptions(faction, dotPosition),
-                        new SubcommandData("remove-double-powered-treachery", "Remove Poison Blade and Shield Snooper from the deck.")
+                        new SubcommandData("remove-double-powered-treachery", "Remove Poison Blade and Shield Snooper from the deck."),
+                        new SubcommandData("player-count", "Set the player count for the game").addOptions(playerCount)
                 )
         );
 
@@ -98,6 +99,7 @@ public class SetupCommands {
             case "bg-prediction" -> setPrediction(discordGame, game);
             case "faction-board-position" -> setFactionBoardPosition(discordGame, game);
             case "remove-double-powered-treachery" -> removeDoublePoweredBattleCards(event, discordGame, game);
+            case "player-count" -> setPlayerCount(discordGame, game);
         }
     }
 
@@ -111,18 +113,20 @@ public class SetupCommands {
     private static void setFactionBoardPosition(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String factionName = discordGame.required(faction).getAsString();
         int position = discordGame.required(dotPosition).getAsInt();
-        if (position < 1 || position > 6)
-            throw new IllegalArgumentException("dotPosition must be a value from 1 to 6.");
+        if (position < 1 || position > game.getPlayerCount())
+            throw new IllegalArgumentException("dotPosition must be a value from 1 to " + game.getPlayerCount() + ".");
         game.setDotPosition(factionName, position);
         discordGame.pushGame();
     }
 
     public static void advance(Guild discordGuild, DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException, IOException {
-        if (game.getFactions().size() != 6)
+        if (!game.isFull())
             throw new InvalidGameStateException("Set up all factions before running /setup advance.");
         if (game.getTurn() != 0 || game.isSetupFinished()) {
             return;
         }
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && (game.getPlayerCount() > 7 || (game.getPlayerCount() == 7 && game.hasEmperorFaction())))
+            throw new InvalidGameStateException("There are too many players for Homeworlds. Please disable this variant before advancing.");
 
         if (!game.isSetupStarted() && !game.isSetupFinished()) {
             game.setSetupStarted(true);
@@ -138,6 +142,12 @@ public class SetupCommands {
 
         } while (stepStatus == StepStatus.CONTINUE);
 
+        discordGame.pushGame();
+    }
+
+    private static void setPlayerCount(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
+        int count = discordGame.required(playerCount).getAsInt();
+        game.setPlayerCount(count);
         discordGame.pushGame();
     }
 
@@ -378,7 +388,7 @@ public class SetupCommands {
             discordGame.getModInfo().queueMessage("The game has already started, you can't add more factions!");
             return;
         }
-        if (game.getFactions().size() >= 6) {
+        if (game.isFull()) {
             discordGame.getModInfo().queueMessage("This game is already full!");
             return;
         }
@@ -438,7 +448,7 @@ public class SetupCommands {
             discordGame.getModInfo().queueMessage("The game has already started, you can't add more factions!");
             return;
         }
-        if (game.getFactions().size() >= 6) {
+        if (game.isFull()) {
             discordGame.getModInfo().queueMessage("This game is already full!");
             return;
         }
@@ -540,7 +550,7 @@ public class SetupCommands {
         game.getModInfo().publish(options);
     }
 
-    public static void addGameOption(DiscordGame discordGame, Game game) throws ChannelNotFoundException {
+    public static void addGameOption(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
         String gameOptionName = discordGame.required(addGameOption).getAsString();
         GameOption gameOption = GameOption.valueOf(gameOptionName);
 

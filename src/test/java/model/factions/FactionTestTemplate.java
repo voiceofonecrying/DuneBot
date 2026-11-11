@@ -569,7 +569,7 @@ abstract class FactionTestTemplate {
         }
 
         @Test
-        public void testHomweworldDialAdvantageHighThreshold() {
+        public void testHomweworldDialAdvantageHighThreshold() throws InvalidGameStateException {
             assertTrue(getFaction().isHighThreshold());
             assertEquals(0, getFaction().homeworldDialAdvantage(game, territory));
             game.addGameOption(GameOption.HOMEWORLDS);
@@ -577,7 +577,7 @@ abstract class FactionTestTemplate {
         }
 
         @Test
-        public void testHomweworldDialAdvantageLowThreshold() {
+        public void testHomweworldDialAdvantageLowThreshold() throws InvalidGameStateException {
             int numForces = territory.getForceStrength(getFaction().getName());
             int numSpecials = territory.getForceStrength(getFaction().getName() + "*");
             game.removeForces(territory.getTerritoryName(), getFaction(), numForces, numSpecials, true);
@@ -594,7 +594,7 @@ abstract class FactionTestTemplate {
         }
 
         @Test
-        public void testNoReturnToHighThresholdWhileOccupied() {
+        public void testNoReturnToHighThresholdWhileOccupied() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             int strength = territory.getForceStrength(getFaction().getName());
             territory.removeForces(game, getFaction().getName(), territory.getForceStrength(getFaction().getName()));
@@ -864,7 +864,7 @@ abstract class FactionTestTemplate {
         }
 
         @Test
-        void testFlipToLowThreshold() {
+        void testFlipToLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertTrue(faction.isHighThreshold());
             int numForces = homeworld.getForceStrength(getFaction().getName());
@@ -1064,7 +1064,7 @@ abstract class FactionTestTemplate {
             assertEquals("Will you trigger your Robbery Terror Token in Funeral Plain against " + faction.getEmoji() + "? mo", moritaniChat.getMessages().getFirst());
         }
     }
-    
+
     @Nested
     @DisplayName("#canUseOrnithopters")
     class CanUseOrnithopters {
@@ -1077,7 +1077,7 @@ abstract class FactionTestTemplate {
             territory = game.getTerritory("Sihaya Ridge");
             faction.placeForcesFromReserves(territory, 1, false);
         }
-        
+
         @Test
         void testNoOrnithopters() {
             assertFalse(faction.canUseOrnithopters(game, territory, false));

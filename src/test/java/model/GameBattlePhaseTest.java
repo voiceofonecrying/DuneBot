@@ -146,7 +146,7 @@ public class GameBattlePhaseTest extends DuneTest {
         }
 
         @Test
-        void testMoritaniDoesNotGetVidalBecauseEcazHomeworldIsOccupied() {
+        void testMoritaniDoesNotGetVidalBecauseEcazHomeworldIsOccupied() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(moritani);
             game.addFaction(ecaz);

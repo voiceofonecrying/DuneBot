@@ -402,7 +402,7 @@ public class BattlesTest extends DuneTest {
         Territory ecazHomeworld;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(ecaz);
             game.addFaction(moritani);

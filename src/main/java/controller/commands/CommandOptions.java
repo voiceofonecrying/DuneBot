@@ -72,6 +72,7 @@ public class CommandOptions {
     public static final OptionData fremenSpecialWin = new OptionData(OptionType.BOOLEAN, "fremen-special", "Was this a Fremen special victory condition?", false);
     public static final OptionData bgPredictionWin = new OptionData(OptionType.BOOLEAN, "bg-prediction", "Was this a BG prediction win?", false);
     public static final OptionData ecazOccupyWin = new OptionData(OptionType.BOOLEAN, "ecaz-occupy", "Was this an Ecaz-ally occupy win?", false);
+    public static final OptionData playerCount = new OptionData(OptionType.INTEGER, "player-count", "New player count for the game. (4-12)", true);
     public static final OptionData amount = new OptionData(OptionType.INTEGER, "amount", "Amount", true);
     public static final OptionData message = new OptionData(OptionType.STRING, "message", "Message for spice transactions", true);
     public static final OptionData reason = new OptionData(OptionType.STRING, "reason", "description of the bribe", false);

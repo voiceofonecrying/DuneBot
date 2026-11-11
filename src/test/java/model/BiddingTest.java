@@ -285,7 +285,7 @@ class BiddingTest extends DuneTest {
         TestTopic atreidesAllianceThread;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addFaction(atreides);
             game.addFaction(emperor);
             game.addFaction(harkonnen);
@@ -1370,7 +1370,7 @@ class BiddingTest extends DuneTest {
             bidding.setBlackMarketDecisionInProgress(false);
 //            numMessagesInBiddingPhaseChannel = biddingPhase.getMessages().size();
         }
-        
+
         @Test
         void testAllFillCardsRemainingRicheseCardAlreadySold() throws InvalidGameStateException {
             richese.addTreacheryCard(new TreacheryCard("Ornithopter"));
