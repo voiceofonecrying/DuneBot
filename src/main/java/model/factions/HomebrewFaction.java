@@ -71,6 +71,11 @@ public class HomebrewFaction extends Faction{
         super(name, player, userName);
     }
 
+    public void createHomebrewAbilitiesForExistingGames() {
+        if (homebrewAbilities == null)
+            homebrewAbilities = new LinkedList<>();
+    }
+
     public static class FactionSpecs {
         public static class LeaderSpecs {
             String name;
