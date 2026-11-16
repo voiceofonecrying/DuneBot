@@ -361,8 +361,7 @@ public class DiscordGame {
                 Territory revealedTerritory = game.getTerritory(territory.getDiscoveryToken());
                 game.putTerritoryInAnotherTerritory(revealedTerritory, territory);
             }
-            else if (territory instanceof IdualiTerritory) {
-                IdualiTerritory idualiTerritory = (IdualiTerritory)territory;
+            else if (territory instanceof IdualiTerritory idualiTerritory) {
                 idualiTerritory.setGame(game);
                 idualiTerritory.establishAdjacency();
             }

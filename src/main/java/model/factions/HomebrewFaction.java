@@ -17,10 +17,8 @@ import java.util.stream.Collectors;
 public class HomebrewFaction extends Faction{
     Boolean emojisSetup = false;
     String colorHexCode;
-    String color;
     String factionProxy;
     String homeworldProxy;
-    String colorProxy;
     String highDescription;
     String lowDescription;
     String occupiedDescription;
@@ -29,7 +27,7 @@ public class HomebrewFaction extends Faction{
     int lowRevivalCharity;
     List<HomebrewAbility> homebrewAbilities;
 
-    private class HomebrewAbility {
+    public static class HomebrewAbility {
         String type;
         String name;
         boolean targetsOpponent;
@@ -50,16 +48,16 @@ public class HomebrewFaction extends Faction{
                 .findFirst()
                 .orElse(null);
 
-            return state.value;
+            return state != null ? state.value : 0;
         }
     }
 
-    private class HomebrewAbilityState {
+    private static class HomebrewAbilityState {
         String name;
         float value;
     }
 
-    private class HomebrewAbilityRoll {
+    private static class HomebrewAbilityRoll {
         int sides;
         int perForce;
         int minResult;
@@ -246,13 +244,13 @@ public class HomebrewFaction extends Faction{
     }
 
     public List<HomebrewAbility> getJSONAbilities(String type) {
-        return homebrewAbilities.stream().filter(a -> a.type == type).collect(Collectors.toList());
+        return homebrewAbilities.stream().filter(a -> a.type.equals(type)).collect(Collectors.toList());
     }
 
     public List<HomebrewAbility> getJSONBattleAbilities(Territory territory, boolean targetingOpponent, boolean forAlly) {
         return homebrewAbilities.stream().filter(a ->
             a.type.equals("battle") &&
-            (targetingOpponent ? a.targetsOpponent : !a.targetsOpponent) &&
+            (targetingOpponent == a.targetsOpponent) &&
             (!a.homeworldsOnly || territory instanceof HomeworldTerritory) &&
             (!a.requiresHT || (isHighThreshold() && game.hasGameOption(GameOption.HOMEWORLDS))) &&
             (!forAlly || a.alliance)
