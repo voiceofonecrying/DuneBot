@@ -491,8 +491,11 @@ public class CommandManager extends ListenerAdapter {
         Guild guild = Objects.requireNonNull(event.getGuild());
         String name = Objects.requireNonNull(event.getOption(gameName.getName())).getAsString();
         int colonIndex = name.indexOf(':');
-        if (colonIndex < 0) throw new IOException("Game name must contain a colon");
+        if (colonIndex < 0)
+            throw new IOException("Game name must contain a colon");
         String title = name.substring(0, colonIndex);
+        if (!guild.getRolesByName(title, true).isEmpty() || !guild.getRolesByName(title + " Mod", true).isEmpty())
+            throw new IOException("Game " + title + " already exists");
         List<Member> players = new ArrayList<>();
         for (var playerOption : List.of(player1, player2, player3, player4)) {
             OptionMapping option = Objects.requireNonNull(event.getOption(playerOption.getName()), "Missing required option: " + playerOption.getName());
