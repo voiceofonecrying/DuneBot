@@ -116,7 +116,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
 
         @Test
-        void testFremenDeclinesThumperOnDeckAThumperAllowedOnDeckB() throws IOException {
+        void testFremenDeclinesThumperOnDeckAThumperAllowedOnDeckB() throws IOException, InvalidGameStateException {
             game.addGameOption(GameOption.THUMPER_ON_DECK_B);
 //            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
             spiceBlowAndNexus.declineThumper(game, fremen);
@@ -129,7 +129,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
         }
 
         @Test
-        void testFremenDeclinesThumperOnDeckAAndDeckB() throws IOException {
+        void testFremenDeclinesThumperOnDeckAAndDeckB() throws IOException, InvalidGameStateException {
             game.addGameOption(GameOption.THUMPER_ON_DECK_B);
 //            assertThrows(InvalidGameStateException.class, () -> spiceBlowAndNexus.nextStep(game));
             spiceBlowAndNexus.declineThumper(game, fremen);
@@ -159,7 +159,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Test
-    void testFremenSeeHieregToken() {
+    void testFremenSeeHieregToken() throws InvalidGameStateException {
         game.addGameOption(GameOption.DISCOVERY_TOKENS);
         game.addFaction(fremen);
         game.getSpiceDeck().addFirst(new SpiceCard("Sihaya Ridge", 8, 6, "Hiereg", "Cielago East (West Sector)"));
@@ -169,7 +169,7 @@ public class SpiceBlowAndNexusTest extends DuneTest {
     }
 
     @Test
-    void testGuildSeeSmugglerToken() {
+    void testGuildSeeSmugglerToken() throws InvalidGameStateException {
         game.addGameOption(GameOption.DISCOVERY_TOKENS);
         game.addFaction(guild);
         game.getSpiceDeck().addFirst(new SpiceCard("Funeral Plain", 14, 6, "Smuggler", "Pasty Mesa (North Sector)"));

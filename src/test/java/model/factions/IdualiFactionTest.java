@@ -77,12 +77,11 @@ class IdualiFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
         homeworld.removeForces(game, faction.getName(), forcesToRemove);
-        homeworld.removeForces(game, faction.getName() + "*", homeworld.getForceStrength(faction.getName() + "*"));
         faction.checkForLowThreshold();
         assertFalse(faction.isHighThreshold());
         assertEquals(4, faction.getFreeRevival());

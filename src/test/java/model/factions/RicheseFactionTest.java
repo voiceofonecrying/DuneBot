@@ -45,7 +45,7 @@ class RicheseFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
@@ -56,7 +56,7 @@ class RicheseFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThresholdAlliedToFremen() {
+    public void testFreeRevivalLowThresholdAlliedToFremen() throws InvalidGameStateException {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
@@ -175,7 +175,7 @@ class RicheseFactionTest extends FactionTestTemplate {
     @DisplayName("#executeShipment")
     class ExecuteShipment extends FactionTestTemplate.ExecuteShipment {
         @Test
-        void testShipNoFieldWithForces() {
+        void testShipNoFieldWithForces() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             assertTrue(faction.isHighThreshold());
             shipment.setNoField(3);
@@ -221,7 +221,7 @@ class RicheseFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testRicheseMustBeHighThresholdToShipForcesWithNoField() {
+        public void testRicheseMustBeHighThresholdToShipForcesWithNoField() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.removeReserves(11);
             assertFalse(faction.isHighThreshold());
@@ -229,7 +229,7 @@ class RicheseFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testRicheseAllyCannotShipForcesWithNoField() {
+        public void testRicheseAllyCannotShipForcesWithNoField() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.setAlly(choam.getName());
             choam.setAlly(faction.getName());
@@ -266,7 +266,7 @@ class RicheseFactionTest extends FactionTestTemplate {
         Territory sietchTabr;
 
         @BeforeEach
-        void setUp() throws IOException {
+        void setUp() throws IOException, InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(new IxFaction("ix", "ix"));
             ixHomeworld = game.getTerritory("Ix");

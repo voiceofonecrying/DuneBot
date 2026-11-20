@@ -40,7 +40,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     @DisplayName("#presentKaitainHighThresholdChoices")
     class PresentKaitainHighThresholdChoices {
         @BeforeEach
-        public void setUp() {
+        public void setUp() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
         }
 
@@ -234,7 +234,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
@@ -245,7 +245,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThresholdAlliedToFremen() {
+    public void testFreeRevivalLowThresholdAlliedToFremen() throws InvalidGameStateException {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
@@ -272,7 +272,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalWithRecruitsLowThreshold() throws InvalidGameStateException {
+    public void testFreeRevivalWithRecruitsLowThreshold() throws InvalidGameStateException, InvalidGameStateException {
         game.startRevival();
         game.getRevival().setRecruitsInPlay(true);
         game.addGameOption(GameOption.HOMEWORLDS);
@@ -510,7 +510,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     @DisplayName("#placeForcesFromReserves")
     class PlaceForcesFromReserves extends FactionTestTemplate.PlaceForcesFromReserves {
         @Test
-        void testFlipSalusaSecundusToLowThreshold() {
+        void testFlipSalusaSecundusToLowThreshold() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.placeForcesFromReserves(sietchTabr, 5, true);
             assertFalse(((EmperorFaction) faction).isSecundusHighThreshold());
@@ -731,7 +731,7 @@ class EmperorFactionTest extends FactionTestTemplate {
     @DisplayName("#homeworld")
     class Homeworld extends FactionTestTemplate.Homeworld {
         @Test
-        public void testSecondHomweworldDialAdvantageHighThreshold() {
+        public void testSecondHomweworldDialAdvantageHighThreshold() throws InvalidGameStateException {
             HomeworldTerritory secondTerritory = (HomeworldTerritory) game.getTerritories().get(faction.getSecondHomeworld());
             assertEquals(0, faction.homeworldDialAdvantage(game, secondTerritory));
             game.addGameOption(GameOption.HOMEWORLDS);
@@ -740,7 +740,7 @@ class EmperorFactionTest extends FactionTestTemplate {
 
         @Test
         @Override
-        public void testHomweworldDialAdvantageLowThreshold() {
+        public void testHomweworldDialAdvantageLowThreshold() throws InvalidGameStateException {
             int numForces = territory.getForceStrength(faction.getName());
             int numSpecials = territory.getForceStrength(faction.getName() + "*");
             game.removeForces(territory.getTerritoryName(), faction, numForces, numSpecials, true);
@@ -752,7 +752,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testSecondHomweworldDialAdvantageLowThreshold() {
+        public void testSecondHomweworldDialAdvantageLowThreshold() throws InvalidGameStateException {
             HomeworldTerritory secondTerritory = (HomeworldTerritory) game.getTerritories().get(faction.getSecondHomeworld());
             int numSpecials = secondTerritory.getForceStrength(faction.getName() + "*");
             game.removeForces(secondTerritory.getTerritoryName(), faction, 0, numSpecials, true);
@@ -772,7 +772,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testNoReturnToHighThresholdWhileOccupied() {
+        public void testNoReturnToHighThresholdWhileOccupied() throws InvalidGameStateException {
             String homeworldName = faction.getSecondHomeworld();
             HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
             game.addGameOption(GameOption.HOMEWORLDS);
@@ -785,7 +785,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testNoReturnToHighThresholdWith2Sardaukar() {
+        public void testNoReturnToHighThresholdWith2Sardaukar() throws InvalidGameStateException {
             String homeworldName = faction.getSecondHomeworld();
             HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
             game.addGameOption(GameOption.HOMEWORLDS);
@@ -802,7 +802,7 @@ class EmperorFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testReturnToHighThresholdWith3Sardaukar() {
+        public void testReturnToHighThresholdWith3Sardaukar() throws InvalidGameStateException {
             String homeworldName = faction.getSecondHomeworld();
             HomeworldTerritory territory = (HomeworldTerritory) game.getTerritories().get(homeworldName);
             game.addGameOption(GameOption.HOMEWORLDS);

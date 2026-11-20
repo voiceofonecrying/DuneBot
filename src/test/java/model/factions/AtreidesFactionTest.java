@@ -43,7 +43,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
@@ -54,7 +54,7 @@ class AtreidesFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThresholdAlliedToFremen() {
+    public void testFreeRevivalLowThresholdAlliedToFremen() throws InvalidGameStateException {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());

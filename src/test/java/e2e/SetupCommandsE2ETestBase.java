@@ -176,6 +176,27 @@ abstract class SetupCommandsE2ETestBase {
         // Create mock Discord server and guild
         server = MockDiscordServer.create();
         guildState = server.createGuild(123456789L, "Test Server");
+        // var guild = StatefulMockFactory.mockGuild(guildState);
+        // when(guild.createRole()).thenAnswer(invocation -> {
+        //     var action = mock(
+        //             net.dv8tion.jda.api.requests.restaction.RoleAction.class,
+        //             org.mockito.Answers.RETURNS_SELF);
+        //     var roleName = new java.util.concurrent.atomic.AtomicReference<String>();
+
+        //     when(action.setName(anyString())).thenAnswer(setNameInvocation -> {
+        //         roleName.set(setNameInvocation.getArgument(0));
+        //         return action;
+        //     });
+
+        //     when(action.complete()).thenAnswer(completeInvocation -> {
+        //         MockRoleState roleState = guildState.createRole(roleName.get());
+        //         return guild.getRolesByName(roleName.get(), false).stream()
+        //                 .filter(role -> role.getIdLong() == roleState.getRoleId())
+        //                 .findFirst()
+        //                 .orElseThrow();
+        //     });
+        //     return action;
+        // });
         StatefulMockFactory.mockGuild(guildState);
 
         // Create waiting-list channel (guild-level channel, not in any category)
@@ -184,16 +205,14 @@ abstract class SetupCommandsE2ETestBase {
         // Create Game Resources category (needed for card images when drawing the board)
         guildState.createCategory("Game Resources");
 
-        // Create required roles
-        modRole = guildState.createRole("Moderators");
-        gameRole = guildState.createRole("Game #1");
+        // Server role authorizing the moderator to run /new-game.
+        MockRoleState serverModeratorRole = guildState.createRole("Moderators");
         guildState.createRole("Observer");
         guildState.createRole("EasyPoll");
 
-        // Create a moderator user and member
         moderatorUser = guildState.createUser("TestModerator");
         moderatorMember = guildState.createMember(moderatorUser.getUserId());
-        moderatorMember.addRole(modRole.getRoleId());
+        moderatorMember.addRole(serverModeratorRole.getRoleId());
 
         // Initialize EmojiCache with mock emojis for this guild
         setupMockEmojis();
@@ -206,24 +225,59 @@ abstract class SetupCommandsE2ETestBase {
         ButtonManager.setAllowModButtonPress();
 
         // Create a game with the new-game command first
-        SlashCommandInteractionEvent newGameEvent = new MockSlashCommandEventBuilder(guildState)
-                .setMember(moderatorMember)
-                .setCommandName("new-game")
-                .addStringOption("name", "Test Game")
-                .addRoleOption("gamerole", gameRole)
-                .addRoleOption("modrole", modRole)
-                .build();
+        var newGameBuilder = new MockSlashCommandEventBuilder(guildState)
+            .setMember(moderatorMember)
+            .setCommandName("new-game")
+            .addStringOption(controller.commands.CommandOptions.gameName.getName(), "Test Game: E2E");
 
-        try {
-            commandManager.onSlashCommandInteraction(newGameEvent);
-        } catch (Exception e) {
-            logger.error("Failed to create new game during test setup", e);
-            throw e;
+        var playerOptions = List.of(
+            controller.commands.CommandOptions.player1,
+            controller.commands.CommandOptions.player2,
+            controller.commands.CommandOptions.player3,
+            controller.commands.CommandOptions.player4,
+            controller.commands.CommandOptions.player5,
+            controller.commands.CommandOptions.player6
+        );
+
+        for (int i = 0; i < playerOptions.size(); i++) {
+            MockUserState playerUser = guildState.createUser("Player" + (i + 1));
+            guildState.createMember(playerUser.getUserId());
+            newGameBuilder.addUserOption(playerOptions.get(i).getName(), playerUser);
         }
+
+        SlashCommandInteractionEvent newGameEvent = newGameBuilder.build();
+        var guild = java.util.Objects.requireNonNull(newGameEvent.getGuild());
+        Map<String, MockRoleState> createdRoles = new java.util.HashMap<>();
+
+        when(guild.createRole()).thenAnswer(invocation -> {
+            var action = mock(net.dv8tion.jda.api.requests.restaction.RoleAction.class, org.mockito.Answers.RETURNS_SELF);
+            var roleName = new java.util.concurrent.atomic.AtomicReference<String>();
+
+            when(action.setName(anyString())).thenAnswer(nameInvocation -> {
+                roleName.set(nameInvocation.getArgument(0));
+                return action;
+            });
+
+            when(action.complete()).thenAnswer(completeInvocation -> {
+                MockRoleState roleState = guildState.createRole(roleName.get());
+                createdRoles.put(roleName.get(), roleState);
+
+                return guild.getRolesByName(roleName.get(), false).stream()
+                    .filter(role -> role.getIdLong() == roleState.getRoleId())
+                    .findFirst()
+                    .orElseThrow(() -> new IllegalStateException("Created role not found in mock guild: " + roleName.get()));
+            });
+
+            return action;
+        });
+
+        commandManager.onSlashCommandInteraction(newGameEvent);
+        gameRole = java.util.Objects.requireNonNull(createdRoles.get("Test Game"), "/new-game did not create the Test Game role");
+        modRole = java.util.Objects.requireNonNull(createdRoles.get("Test Game Mod"), "/new-game did not create the Test Game Mod role");
 
         // Get the created game category and channels
         gameCategory = guildState.getCategories().stream()
-                .filter(c -> c.getCategoryName().equals("Test Game"))
+                .filter(c -> c.getCategoryName().equals("Test Game: E2E"))
                 .findFirst()
                 .orElseThrow();
 

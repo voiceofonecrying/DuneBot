@@ -47,7 +47,7 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
@@ -58,7 +58,7 @@ public class EcazFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThresholdAlliedToFremen() {
+    public void testFreeRevivalLowThresholdAlliedToFremen() throws InvalidGameStateException {
         faction.setAlly("Fremen");
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
@@ -749,7 +749,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        public void testEcazHomeworldOccupied() {
+        public void testEcazHomeworldOccupied() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             Territory ecazHomeworld = game.getTerritory("Ecaz");
             ecazHomeworld.removeForces(game, "Ecaz", 14);
@@ -847,7 +847,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         }
 
         @Test
-        void testDukeVidalIsWithEcazOccupier() throws IOException {
+        void testDukeVidalIsWithEcazOccupier() throws IOException, InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             AtreidesFaction atreides = new AtreidesFaction("at", "at");
             atreides.setChat(new TestTopic());
@@ -925,7 +925,7 @@ public class EcazFactionTest extends FactionTestTemplate {
         BTFaction bt;
 
         @BeforeEach
-        public void setUp() throws IOException {
+        public void setUp() throws IOException, InvalidGameStateException {
             ecazHomeworld = faction.getHomeworldTerritory();
             bt = new BTFaction("bt", "bt");
             TestTopic btChat = new TestTopic();

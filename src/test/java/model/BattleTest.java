@@ -437,7 +437,7 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testNonNativeNoAdvantageOnOtherHomeworlds() {
+        void testNonNativeNoAdvantageOnOtherHomeworlds() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.getHomeworlds().forEach((_, h) -> game.getFactions().stream().filter(f -> !f.getHomeworld().equals(h) && !(f instanceof EmperorFaction e && e.getSecondHomeworld().equals(h)))
                     .forEach(f -> assertEquals(0, f.homeworldDialAdvantage(game, game.getTerritory(h)))));
@@ -529,7 +529,7 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testEcazLowThresholdOpponentGetsCombatantChoices() {
+        void testEcazLowThresholdOpponentGetsCombatantChoices() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.getTerritory("Ecaz").removeForces(game, "Ecaz", 14);
             assertFalse(ecaz.isHighThreshold());
@@ -1032,7 +1032,7 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testSalusaSecundusHighSpiceNotNeededForSardaukar() {
+        void testSalusaSecundusHighSpiceNotNeededForSardaukar() throws InvalidGameStateException {
             HomeworldTerritory wallachIX = new HomeworldTerritory(game, "Wallach IX", "BG");
             wallachIX.addForces("Emperor", 9);
             wallachIX.addForces("Emperor*", 3);
@@ -1044,7 +1044,7 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testSalusaSecundusLowSpiceNeededForSardaukar() {
+        void testSalusaSecundusLowSpiceNeededForSardaukar() throws InvalidGameStateException {
             HomeworldTerritory wallachIX = new HomeworldTerritory(game, "Wallach IX", "BG");
             wallachIX.addForces("Emperor", 9);
             wallachIX.addForces("Emperor*", 1);
@@ -1057,7 +1057,7 @@ class BattleTest extends DuneTest {
         }
 
         @Test
-        void testSalusaSecundusOccupiedNegatesSardaukar() {
+        void testSalusaSecundusOccupiedNegatesSardaukar() throws InvalidGameStateException {
             HomeworldTerritory wallachIX = new HomeworldTerritory(game, "Wallach IX", "BG");
             wallachIX.addForces("Emperor*", 1);
             wallachIX.addForces("BG", 15);
@@ -1244,7 +1244,7 @@ class BattleTest extends DuneTest {
         Battle battle;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
             game.addFaction(fremen);
@@ -4530,7 +4530,7 @@ class BattleTest extends DuneTest {
         Battle battle;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
             game.addFaction(harkonnen);
@@ -4716,7 +4716,7 @@ class BattleTest extends DuneTest {
         Territory hms;
 
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addGameOption(GameOption.STRONGHOLD_SKILLS);
             game.addFaction(atreides);
             game.addFaction(ix);
@@ -5834,7 +5834,7 @@ class BattleTest extends DuneTest {
     @DisplayName("#resolutionWithOccupyScenarios")
     class ResolutionWithOccupyScenarios {
         @BeforeEach
-        void setUp() {
+        void setUp() throws InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             game.addFaction(atreides);
             game.addFaction(harkonnen);

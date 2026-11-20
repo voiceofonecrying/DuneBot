@@ -62,9 +62,6 @@ public class CommandManager extends ListenerAdapter {
      */
     private static volatile boolean runSynchronously = false;
 
-    /**
-     * Enable synchronous command execution (for testing).
-     */
     public static void setRunSynchronously(boolean sync) {
         runSynchronously = sync;
     }
@@ -188,9 +185,6 @@ public class CommandManager extends ListenerAdapter {
             if (name.equals("new-game") && roles.stream().anyMatch(role -> role.getName().equals("Moderators"))) {
                 newGame(event);
                 event.getHook().editOriginal("Command Done.").queue();
-            } else if (name.equals("new-game-create-roles")) {
-                newGame2(event);
-                event.getHook().editOriginal("Command Done.").queue();
             } else if (name.equals("waiting-list")) {
                 waitingList(event);
                 event.getHook().editOriginal("Command Done.").queue();
@@ -238,10 +232,11 @@ public class CommandManager extends ListenerAdapter {
         } catch (Exception e) {
             editOriginalSafely(event, e.getMessage() != null ? e.getMessage() : e.getClass().getSimpleName());
             logger.error("Slash command execution failed: {}", event.getCommandString(), e);
-            Category category = DiscordGame.categoryFromEvent(event);
-            if (category != null) {
+            if (!"new-game".equals(event.getName())) {
                 try {
-                    ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getCommandString(), event.getUser());
+                    Category category = DiscordGame.categoryFromEvent(event);
+                    if (category != null)
+                        ExceptionHandler.sendExceptionToModInfo(category, e, "Slash command: " + event.getCommandString(), event.getUser());
                 } catch (Exception reportFailure) {
                     logger.error("Failed to report slash command exception to mod-info", reportFailure);
                 }
@@ -397,7 +392,7 @@ public class CommandManager extends ListenerAdapter {
     public static List<CommandData> getAllCommands() {
         //add new slash command definitions to commandData list
         List<CommandData> commandData = new ArrayList<>();
-        commandData.add(Commands.slash("new-game", "Creates a new Dune game instance.").addOptions(gameName, gameRole, modRole));
+        commandData.add(Commands.slash("new-game", "Creates a new Dune game instance.").addOptions(gameName, player1, player2, player3, player4, player5, player6, player7, player8, player9, player10, player11, player12));
         commandData.add(Commands.slash("draw-treachery-card", "Draw a card from the top of a deck.").addOptions(faction));
         commandData.add(Commands.slash("draw-traitor-card", "Draw a card from the top of the traitor deck.").addOptions(faction));
         commandData.add(Commands.slash("shuffle-treachery-deck", "Shuffle the treachery deck."));
@@ -481,7 +476,7 @@ public class CommandManager extends ListenerAdapter {
         commandDataWithPermissions.addAll(PlayerCommands.getCommands());
         commandDataWithPermissions.addAll(ReportsCommands.getCommands());
         commandDataWithPermissions.add(Commands.slash("waiting-list", "Add an entry to the waiting list")
-                .addOptions(slowGame, midGame, fastGame, originalSixFactions, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, leaderSkills, strongholdCards, homeworlds));
+                .addOptions(slowGame, midGame, fastGame, originalSixFactions, ixianstleilaxuExpansion, choamricheseExpansion, ecazmoritaniExpansion, modifiedTreachery, leaderSkills, strongholdCards, homeworlds));
         commandDataWithPermissions.add(Commands.slash("my-record", "View your record in an ephemeral message"));
 
         return commandDataWithPermissions;
@@ -494,38 +489,48 @@ public class CommandManager extends ListenerAdapter {
 
     public void newGame(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
         Guild guild = Objects.requireNonNull(event.getGuild());
-        Role gameRoleValue = Objects.requireNonNull(event.getOption(gameRole.getName())).getAsRole();
-        Role modRoleValue = Objects.requireNonNull(event.getOption(modRole.getName())).getAsRole();
+        String name = Objects.requireNonNull(event.getOption(gameName.getName())).getAsString();
+        int colonIndex = name.indexOf(':');
+        if (colonIndex < 0)
+            throw new IOException("Game name must contain a colon");
+        String title = name.substring(0, colonIndex);
+        if (!guild.getRolesByName(title, true).isEmpty() || !guild.getRolesByName(title + " Mod", true).isEmpty())
+            throw new IOException("Game " + title + " already exists");
+        List<Member> players = new ArrayList<>();
+        for (var playerOption : List.of(player1, player2, player3, player4)) {
+            OptionMapping option = Objects.requireNonNull(event.getOption(playerOption.getName()), "Missing required option: " + playerOption.getName());
+            players.add(Objects.requireNonNull(option.getAsMember(), "Player must be a server member: " + playerOption.getName()));
+        }
+        for (var playerOption : List.of(player5, player6, player7, player8, player9, player10, player11, player12)) {
+            OptionMapping option = event.getOption(playerOption.getName());
+            if (option != null)
+                players.add(Objects.requireNonNull(option.getAsMember(), "Players must be current server members: " + playerOption.getName()));
+        }
         Member mentat = guild.getMemberById("994020136266776647");
-        if (mentat == null)
-            mentat = guild.getMemberById("1117428381600985168");
-        try {
-            guild.addRoleToMember(Objects.requireNonNull(mentat), modRoleValue).complete();
-            guild.addRoleToMember(Objects.requireNonNull(event.getMember()), modRoleValue).complete();
-        } catch (Exception ignored) {}
-        newGame(event, gameRoleValue, modRoleValue);
+        if (mentat == null) mentat = guild.getMemberById("1117428381600985168");
+        Role gameRoleValue = guild.createRole()
+            .setName(title)
+            .setColor(Color.ORANGE)
+            .setHoisted(false)
+            .setMentionable(true)
+            .complete();
+        Role modRoleValue = guild.createRole()
+            .setName(title + " Mod")
+            .setColor(Color.BLUE)
+            .setHoisted(false)
+            .setMentionable(true)
+            .complete();
+        guild.addRoleToMember(Objects.requireNonNull(event.getMember()), modRoleValue).complete();
+        if (mentat != null)
+            guild.addRoleToMember(mentat, modRoleValue).complete();
+        for (Member player : players)
+            guild.addRoleToMember(player, gameRoleValue).complete();
+        newGame(event, name, players.size(), gameRoleValue, modRoleValue);
     }
 
-    public void newGame2(SlashCommandInteractionEvent event) throws ChannelNotFoundException, IOException {
-        Role gameRoleValue = Objects.requireNonNull(event.getGuild()).createRole()
-                .setName("Create Test Game Role")
-                .setColor(Color.red)
-                .setHoisted(true)
-                .setPermissions(Permission.ADMINISTRATOR)
-                .complete();
-        Role modRoleValue = Objects.requireNonNull(event.getGuild()).createRole()
-                .setName("Create Test Mod Role")
-                .setColor(Color.blue)
-                .setHoisted(true)
-                .setPermissions(Permission.ADMINISTRATOR)
-                .complete();
-        newGame(event, gameRoleValue, modRoleValue);
-    }
-
-    public void newGame(SlashCommandInteractionEvent event, Role gameRoleValue, Role modRoleValue) throws ChannelNotFoundException, IOException {
+    public void newGame(SlashCommandInteractionEvent event, String name, int playerCount, Role gameRoleValue, Role modRoleValue) throws ChannelNotFoundException, IOException {
         Role observerRole = Objects.requireNonNull(event.getGuild()).getRolesByName("Observer", true).getFirst();
         Role pollBot = event.getGuild().getRolesByName("EasyPoll", true).getFirst();
-        String name = Objects.requireNonNull(event.getOption(gameName.getName())).getAsString();
 
         // Create category and set base permissions to deny everything for everyone except the mod role.
         // The channel permissions assume that this is set this way.
@@ -614,7 +619,7 @@ public class CommandManager extends ListenerAdapter {
                 """
                         {0}  Dune rulebook: https://www.gf9games.com/dunegame/wp-content/uploads/Dune-Rulebook.pdf
                         {1}  Dune FAQ Nov 20: https://www.gf9games.com/dune/wp-content/uploads/2020/11/Dune-FAQ-Nov-2020.pdf
-                        {2} {3}  Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
+                        {2} {3} Ixians & Tleilaxu Rules: https://www.gf9games.com/dunegame/wp-content/uploads/2020/09/IxianAndTleilaxuRulebook.pdf
                         {4} {5} CHOAM & Richese Rules: https://www.gf9games.com/dune/wp-content/uploads/2021/11/CHOAM-Rulebook-low-res.pdf
                         {6} {7} Ecaz & Moritani Rules: https://www.gf9games.com/dune/wp-content/uploads/EcazMoritani-Rulebook-LOWRES.pdf""",
                 Emojis.DUNE_RULEBOOK,
@@ -624,7 +629,7 @@ public class CommandManager extends ListenerAdapter {
                 Emojis.ECAZ, Emojis.MORITANI
         ));
 
-        Game game = new Game();
+        Game game = new Game(playerCount);
         game.setGameRole(gameRoleValue.getName());
         game.setGameRoleMention(gameRoleValue.getAsMention());
         game.setModRole(modRoleValue.getName());
@@ -1203,38 +1208,41 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public String waitingListItemResult(String itemEmoji, String choice) {
+        String wordJoin = "\u2060";
         return switch (choice) {
-            case "Yes" -> itemEmoji + " :white_check_mark:";
-            case "Maybe" -> itemEmoji + " :ok:";
-            default -> itemEmoji + " :no_entry_sign:";
+            case "Yes" -> itemEmoji + wordJoin + ":white_check_mark:";
+            case "Maybe" -> itemEmoji + wordJoin + ":ok:";
+            default -> itemEmoji + wordJoin + ":no_entry_sign:";
         };
     }
 
     public void waitingList(SlashCommandInteractionEvent event) {
         String userTag = event.getUser().getId();
         TextChannel textChannel = Objects.requireNonNull(event.getGuild()).getTextChannelsByName("waiting-list", true).getFirst();
+        String spacer = "  ";
         String message = "Speed: ";
         message += waitingListItemResult(":scooter:", DiscordGame.required(slowGame, event).getAsString());
-        message += " -- ";
+        message += spacer;
         message += waitingListItemResult(":blue_car:", DiscordGame.required(midGame, event).getAsString());
-        message += " -- ";
+        message += spacer;
         message += waitingListItemResult(":race_car:", DiscordGame.required(fastGame, event).getAsString());
-        message += "\nExpansions: ";
+        message += "\nFactions: ";
         message += waitingListItemResult("O6", DiscordGame.required(originalSixFactions, event).getAsString());
-        message += " -- ";
-        message += waitingListItemResult(EmojiCache.getFormatted("bt") + " " + EmojiCache.getFormatted("ix"), DiscordGame.required(ixianstleilaxuExpansion, event).getAsString());
-        message += " -- ";
-        message += waitingListItemResult(EmojiCache.getFormatted("choam") + " " + EmojiCache.getFormatted("richese"), DiscordGame.required(choamricheseExpansion, event).getAsString());
-        message += " -- ";
-        message += waitingListItemResult(EmojiCache.getFormatted("ecaz") + " " + EmojiCache.getFormatted("moritani"), DiscordGame.required(ecazmoritaniExpansion, event).getAsString());
-        message += "\nOptions: ";
-        message += waitingListItemResult(EmojiCache.getFormatted("weirding"), DiscordGame.required(leaderSkills, event).getAsString());
-        message += " -- ";
-        message += waitingListItemResult(":european_castle:", DiscordGame.required(strongholdCards, event).getAsString());
-        message += " -- ";
+        message += spacer;
+        message += waitingListItemResult(EmojiCache.getFormatted("bt") + "\u2060" + EmojiCache.getFormatted("ix"), DiscordGame.required(ixianstleilaxuExpansion, event).getAsString());
+        message += spacer;
+        message += waitingListItemResult(EmojiCache.getFormatted("choam") + "\u2060" + EmojiCache.getFormatted("richese"), DiscordGame.required(choamricheseExpansion, event).getAsString());
+        message += spacer;
+        message += waitingListItemResult(EmojiCache.getFormatted("ecaz") + "\u2060" + EmojiCache.getFormatted("moritani"), DiscordGame.required(ecazmoritaniExpansion, event).getAsString());
+        message += "\nVariants: ";
+        message += waitingListItemResult(EmojiCache.getFormatted("treachery"), DiscordGame.required(modifiedTreachery, event).getAsString());
+        message += spacer;
+        message += waitingListItemResult(EmojiCache.getFormatted("leader"), DiscordGame.required(leaderSkills, event).getAsString());
+        message += spacer;
+        message += waitingListItemResult(EmojiCache.getFormatted("stronghold"), DiscordGame.required(strongholdCards, event).getAsString());
+        message += spacer;
         message += waitingListItemResult(":ringed_planet:", DiscordGame.required(homeworlds, event).getAsString());
         message += "\nUser: <@" + userTag + ">";
         textChannel.sendMessage(message).queue();
-        // textChannel.sendMessage("Speed: :turtle: " + event.getOption(slowGame.getName()).getAsBoolean() + " :racehorse: " + event.getOption(midGame.getName()).getAsBoolean() + " :race_car: " + event.getOption(fastGame.getName()).getAsBoolean() + "\nExpansions: <:bt:991763325576810546> <:ix:991763319406997514>  " + event.getOption(ixianstleilaxuExpansion.getName()).getAsBoolean() + " <:choam:991763324624703538> <:richese:991763318467465337> " + event.getOption(choamricheseExpansion.getName()).getAsBoolean() + " :ecaz: :moritani: " + event.getOption(ecazmoritaniExpansion.getName()).getAsBoolean() + "\nOptions: Leader Skills " + event.getOption(leaderSkills.getName()).getAsBoolean() + " Stronghold Cards " + event.getOption(strongholdCards.getName()).getAsBoolean() + "\nUser: <@" + userTag + ">").queue();
     }
 }

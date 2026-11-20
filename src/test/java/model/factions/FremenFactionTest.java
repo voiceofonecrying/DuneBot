@@ -147,7 +147,7 @@ class FremenFactionTest extends FactionTestTemplate {
     class PlaceForcesFromReserves extends FactionTestTemplate.PlaceForcesFromReserves {
         @Test
         @Override
-        void testFlipToLowThreshold() {
+        void testFlipToLowThreshold() throws InvalidGameStateException {
             faction.placeForcesFromReserves(sietchTabr, 1, true);
             super.testFlipToLowThreshold();
         }
@@ -226,7 +226,7 @@ class FremenFactionTest extends FactionTestTemplate {
     }
 
     @Test
-    public void testFreeRevivalLowThreshold() {
+    public void testFreeRevivalLowThreshold() throws InvalidGameStateException {
         game.addGameOption(GameOption.HOMEWORLDS);
         Territory homeworld = game.getTerritory(faction.getHomeworld());
         int forcesToRemove = homeworld.getForceStrength(faction.getName()) - (faction.highThreshold - 1);
@@ -323,7 +323,7 @@ class FremenFactionTest extends FactionTestTemplate {
     @DisplayName("#colectSpiceFromTerritory")
     class CollectSpiceFromTerritory extends FactionTestTemplate.CollectSpiceFromTerritory {
         @Test
-        void testHomeworldOccupied() throws IOException {
+        void testHomeworldOccupied() throws IOException, InvalidGameStateException {
             game.addGameOption(GameOption.HOMEWORLDS);
             faction.placeForcesFromReserves(game.getTerritory("Sietch Tabr"), 17, false);
             faction.placeForcesFromReserves(game.getTerritory("Sietch Tabr"), 3, true);
