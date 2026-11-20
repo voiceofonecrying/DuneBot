@@ -67,8 +67,7 @@ public class SetupCommands {
                         new SubcommandData("harkonnen-mulligan", "Mulligan Harkonnen traitor hand and advance"),
                         new SubcommandData("bg-prediction", "Set BG prediction").addOptions(faction, turn),
                         new SubcommandData("faction-board-position", "Set a board position for a faction, swap with the faction currently there").addOptions(faction, dotPosition),
-                        new SubcommandData("remove-double-powered-treachery", "Remove Poison Blade and Shield Snooper from the deck."),
-                        new SubcommandData("player-count", "Set the player count for the game").addOptions(playerCount)
+                        new SubcommandData("remove-double-powered-treachery", "Remove Poison Blade and Shield Snooper from the deck.")
                 )
         );
 
@@ -99,7 +98,6 @@ public class SetupCommands {
             case "bg-prediction" -> setPrediction(discordGame, game);
             case "faction-board-position" -> setFactionBoardPosition(discordGame, game);
             case "remove-double-powered-treachery" -> removeDoublePoweredBattleCards(event, discordGame, game);
-            case "player-count" -> setPlayerCount(discordGame, game);
         }
     }
 
@@ -142,12 +140,6 @@ public class SetupCommands {
 
         } while (stepStatus == StepStatus.CONTINUE);
 
-        discordGame.pushGame();
-    }
-
-    private static void setPlayerCount(DiscordGame discordGame, Game game) throws ChannelNotFoundException, InvalidGameStateException {
-        int count = discordGame.required(playerCount).getAsInt();
-        game.setPlayerCount(count);
         discordGame.pushGame();
     }
 

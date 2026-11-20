@@ -112,6 +112,10 @@ public class Game {
     private DuneTopic bribes;
 
     public Game() throws IOException {
+        this(6);
+    }
+
+    public Game(int playerCount) throws IOException {
         super();
 
         this.turn = 0;
@@ -130,7 +134,7 @@ public class Game {
         }
 
         this.gameOptions = new HashSet<>();
-        this.playerCount = 6;
+        this.playerCount = playerCount;
         this.ruleset = Ruleset.GF9_CLASSIC;
         this.spiceDeck = new LinkedList<>();
         this.traitorDeck = new LinkedList<>();

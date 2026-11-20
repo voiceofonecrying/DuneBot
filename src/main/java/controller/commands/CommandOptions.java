@@ -22,11 +22,23 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 public class CommandOptions {
-    public static final OptionData gameName = new OptionData(OptionType.STRING, "name", "e.g. 'Dune Discord #5: The Tortoise and the Hajr'", true);
+    public static final OptionData gameName = new OptionData(OptionType.STRING, "game-name", "(must contain a :) e.g. 'PBD5: The Tortoise and the Hajr'", true);
     public static final OptionData gameRole = new OptionData(OptionType.ROLE, "gamerole", "The role you created for the players of this game", true);
     public static final OptionData modRole = new OptionData(OptionType.ROLE, "modrole", "The role you created for the mod(s) of this game", true);
     public static final OptionData teamModSwitch = new OptionData(OptionType.BOOLEAN, "enable-team-mod", "True enables team mod, False disables", true);
     public static final OptionData user = new OptionData(OptionType.USER, "player", "The player for the faction", true);
+    public static final OptionData player1 = new OptionData(OptionType.USER, "player-1", "A player for the new game", true);
+    public static final OptionData player2 = new OptionData(OptionType.USER, "player-2", "A player for the new game", true);
+    public static final OptionData player3 = new OptionData(OptionType.USER, "player-3", "A player for the new game", true);
+    public static final OptionData player4 = new OptionData(OptionType.USER, "player-4", "A player for the new game", true);
+    public static final OptionData player5 = new OptionData(OptionType.USER, "player-5", "A player for the new game", false);
+    public static final OptionData player6 = new OptionData(OptionType.USER, "player-6", "A player for the new game", false);
+    public static final OptionData player7 = new OptionData(OptionType.USER, "player-7", "A player for the new game", false);
+    public static final OptionData player8 = new OptionData(OptionType.USER, "player-8", "A player for the new game", false);
+    public static final OptionData player9 = new OptionData(OptionType.USER, "player-9", "A player for the new game", false);
+    public static final OptionData player10 = new OptionData(OptionType.USER, "player-10", "A player for the new game", false);
+    public static final OptionData player11 = new OptionData(OptionType.USER, "player-11", "A player for the new game", false);
+    public static final OptionData player12 = new OptionData(OptionType.USER, "player-12", "A player for the new game", false);
     public static final OptionData allFactions = new OptionData(OptionType.STRING, "faction", "The faction", true)
             .addChoice("Atreides", "Atreides")
             .addChoice("Harkonnen", "Harkonnen")
@@ -230,6 +242,7 @@ public class CommandOptions {
     public static final OptionData ixianstleilaxuExpansion = waitingListOptionData("ix-bt", "Do you want to with the Ixians & Tleilaxu expansion content?");
     public static final OptionData choamricheseExpansion = waitingListOptionData("choam-rich", "Do you want to play with the Choam & Richese expansion content?");
     public static final OptionData ecazmoritaniExpansion = waitingListOptionData("ecaz-moritani", "Do you want to play with the Ecaz & Moritani expansion content?");
+    public static final OptionData modifiedTreachery = waitingListOptionData("additional-treachery", "Do you want non-classic Treachery Cards (GF9 Expansions 1/3, and/or other fan made Treachery cards)?");
     public static final OptionData leaderSkills = waitingListOptionData("leader-skills", "Do you want to play with leader skills?");
     public static final OptionData strongholdCards = waitingListOptionData("stronghold-cards", "Do you want to play with stronghold cards?");
     public static final OptionData homeworlds = waitingListOptionData("homeworlds", "Do you want to play with homeworlds?");
