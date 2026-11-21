@@ -6,11 +6,9 @@ import exceptions.InvalidGameStateException;
 import model.DuneChoice;
 import model.Game;
 import model.Territory;
-import model.TleilaxuTanks;
 import model.TreacheryCard;
 import model.factions.EmperorFaction;
 import model.factions.Faction;
-import model.TleilaxuTanks;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
@@ -85,13 +83,13 @@ public class MikarrolFaction extends Faction {
     }
 
     public void setSlaversAmount(int slaversAmount) throws InvalidGameStateException {
-        if (slaversAmount > getTotalReservesStrength())
+        if (slaversAmount > getTotalReservesStrength() || slaversAmount < 0)
             throw new InvalidGameStateException("You do not have enough forces in reserves");
         this.slaversAmount = slaversAmount;
     }
 
     public void setAllySlaversAmount(int slaversAmount) throws InvalidGameStateException {
-        if (slaversAmount > game.getFaction(getAlly()).getTotalReservesStrength())
+        if (slaversAmount > game.getFaction(getAlly()).getTotalReservesStrength() || slaversAmount < 0)
             throw new InvalidGameStateException("You do not have enough forces in reserves");
         this.allySlaversAmount = slaversAmount;
     }
@@ -150,7 +148,8 @@ public class MikarrolFaction extends Faction {
             endRaid();
             return;
         }
-
+        if (treacheryHand.size() >= getHandLimit())
+            throw new IllegalStateException("Hand limit reached");
         Random r = new Random();
         raidedCardName = raidedHand.get(r.nextInt(cardCount)).name();
         TreacheryCard raidedCard = faction.removeTreacheryCardWithoutDiscard(raidedCardName);
@@ -227,18 +226,14 @@ public class MikarrolFaction extends Faction {
         int normalAmount = allySlaversAmount;
         if (allySlaversAmount > allyFaction.getReservesStrength()) {
             normalAmount = allyFaction.getReservesStrength();
-            specialAmount = allyFaction.getSpecialReservesStrength();
+            specialAmount = allySlaversAmount - normalAmount;
         }
 
         allyFaction.removeReserves(normalAmount);
         game.getTleilaxuTanks().addForces(ally, normalAmount);
         if (specialAmount > 0) {
-            if (allyFaction instanceof EmperorFaction) {
-                EmperorFaction emp = (EmperorFaction)allyFaction;
-                emp.removeSpecialReserves(specialAmount);
-			} else
-                allyFaction.removeSpecialReserves(specialAmount);
-			game.getTleilaxuTanks().addForces(ally + "*", specialAmount);
+            allyFaction.removeSpecialReserves(specialAmount);
+            game.getTleilaxuTanks().addForces(ally + "*", specialAmount);
         }
         allyFaction.addSpice(allySlaversAmount, " forces sold to slavers");
         game.getTurnSummary().publish(allyFaction.getEmoji() + " sell " + allySlaversAmount + " forces to slavers, through " + emoji + ".");
