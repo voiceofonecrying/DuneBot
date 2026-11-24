@@ -11,6 +11,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class HarkonnenFaction extends Faction {
@@ -43,10 +44,11 @@ public class HarkonnenFaction extends Faction {
     }
 
     public void mulliganTraitorHand() {
-        game.getTraitorDeck().addAll(traitorHand);
+        List<TraitorCard> oldTraitors = List.copyOf(traitorHand);
         traitorHand.clear();
-        Collections.shuffle(game.getTraitorDeck());
         IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", "Harkonnen"));
+        game.getTraitorDeck().addAll(oldTraitors);
+        Collections.shuffle(game.getTraitorDeck());
         game.getTurnSummary().publish(emoji + " mulliganed their Traitor Hand.");
     }
 
