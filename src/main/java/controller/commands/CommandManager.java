@@ -1155,12 +1155,19 @@ public class CommandManager extends ListenerAdapter {
 
         Faction faction = game.getFaction(factionName);
         TextChannel info = discordGame.getTextChannel(factionName.toLowerCase() + "-info");
-        Member oldPlayer = members.stream().filter(m -> m.getUser().getAsMention().equals(faction.getPlayer())).findFirst().orElse(null);
+        Guild guild = Objects.requireNonNull(event.getGuild());
+        String oldPlayerMention = faction.getPlayer();
+        if (oldPlayerMention == null || !oldPlayerMention.matches("<@!?\\d+>"))
+            throw new IllegalArgumentException("Invalid old player mention: " + oldPlayerMention);
+        String oldPlayerId = oldPlayerMention.replaceAll("[<@!>]", "");
+        Member oldPlayer = null;
+        try {
+            oldPlayer = guild.retrieveMemberById(oldPlayerId).useCache(false).complete();
+        } catch (Exception e) {}
         if (oldPlayer != null) {
             SetupCommands.removePlayerFromGameRole(event, game, oldPlayer);
             info.upsertPermissionOverride(oldPlayer).deny(ChannelPermissions.readWriteAllow).complete();
-            // The following only works if the Member is cached.
-            info.getPermissionOverrides().stream().filter(o -> o.getMember() == oldPlayer).findFirst().ifPresent(po -> po.delete().complete());
+            info.getPermissionOverrides().stream().filter(o -> o.isMemberOverride() && o.getId().equals(oldPlayerId)).findFirst().ifPresent(po -> po.delete().complete());
         }
 
         SetupCommands.addPlayerToGameRole(event, discordGame, game);
