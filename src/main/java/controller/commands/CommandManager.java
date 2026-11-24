@@ -536,7 +536,6 @@ public class CommandManager extends ListenerAdapter {
         // Create category and set base permissions to deny everything for everyone except the mod role.
         // The channel permissions assume that this is set this way.
         Category category = guild.createCategory(name)
-                .createCategory(name)
                 .addPermissionOverride(modRoleValue, ChannelPermissions.all, null)
                 .addPermissionOverride(guild.getSelfMember(), ChannelPermissions.all, null)
                 .addPermissionOverride(event.getGuild().getPublicRole(), null, ChannelPermissions.all)
