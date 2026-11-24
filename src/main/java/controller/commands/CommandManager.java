@@ -529,20 +529,19 @@ public class CommandManager extends ListenerAdapter {
     }
 
     public void newGame(SlashCommandInteractionEvent event, String name, int playerCount, Role gameRoleValue, Role modRoleValue) throws ChannelNotFoundException, IOException {
-        Role observerRole = Objects.requireNonNull(event.getGuild()).getRolesByName("Observer", true).getFirst();
-        Role pollBot = event.getGuild().getRolesByName("EasyPoll", true).getFirst();
+        Guild guild = Objects.requireNonNull(event.getGuild());
+        Role observerRole = guild.getRolesByName("Observer", true).getFirst();
+        Role pollBot = guild.getRolesByName("EasyPoll", true).getFirst();
 
         // Create category and set base permissions to deny everything for everyone except the mod role.
         // The channel permissions assume that this is set this way.
-        event.getGuild()
-                .createCategory(name)
+        Category category = guild.createCategory(name)
                 .addPermissionOverride(modRoleValue, ChannelPermissions.all, null)
+                .addPermissionOverride(guild.getSelfMember(), ChannelPermissions.all, null)
                 .addPermissionOverride(event.getGuild().getPublicRole(), null, ChannelPermissions.all)
                 .addPermissionOverride(gameRoleValue, null, ChannelPermissions.all)
                 .addPermissionOverride(observerRole, null, ChannelPermissions.all)
                 .complete();
-
-        Category category = event.getGuild().getCategoriesByName(name, true).getFirst();
 
         category.createTextChannel("chat")
                 .addPermissionOverride(
