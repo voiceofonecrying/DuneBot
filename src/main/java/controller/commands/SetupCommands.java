@@ -205,7 +205,7 @@ public class SetupCommands {
             );
         }
 
-        if (game.hasGameOption(GameOption.HARKONNEN_MULLIGAN) && game.hasHarkonnenFaction()) {
+        if (game.hasHarkonnenFaction() && (game.hasGameOption(GameOption.HARKONNEN_MULLIGAN) || game.hasGameOption(GameOption.HARKONNEN_RESTRICTED_MULLIGAN))) {
             setupSteps.add(
                     setupSteps.indexOf(SetupStep.TRAITORS),
                     SetupStep.HARKONNEN_TRAITORS
@@ -776,13 +776,15 @@ public class SetupCommands {
         Faction faction = game.getHarkonnenFaction();
         IntStream.range(0, 4).forEach(_ -> game.drawCard("traitor deck", faction.getName()));
         long numHarkonnenTraitors = faction.getTraitorHand().stream().filter(TraitorCard::isHarkonnenTraitor).count();
-        if (numHarkonnenTraitors > 1) {
-            // Harkonnen can mulligan their hand
-            game.getModInfo().publish("Harkonnen can mulligan.");
+        if (numHarkonnenTraitors > 1 || !game.hasGameOption(GameOption.HARKONNEN_RESTRICTED_MULLIGAN)) {
+            String chatMessage = game.hasGameOption(GameOption.HARKONNEN_RESTRICTED_MULLIGAN) ?
+                "You have drawn " + numHarkonnenTraitors + " of your own leaders as Traitors.\nDo you want to mulligan your Traitor cards and draw a new set? " :
+                "Will you mulligan your Traitor cards and draw a new set? ";
+            game.getTurnSummary().publish(Emojis.HARKONNEN + " may mulligan their traitor hand.");
             List<DuneChoice> choices = new ArrayList<>();
-            choices.add(new DuneChoice("harkonnen-mulligan-yes", "Yes, draw 4 new traitors"));
-            choices.add(new DuneChoice("harkonnen-mulligan-no", "No, keep my current traitors"));
-            faction.getChat().publish("You have drawn " + numHarkonnenTraitors + " of your own leaders as Traitors.\nDo you want to mulligan your Traitor cards and draw a new set? " + faction.getPlayer(), choices);
+            choices.add(new DuneChoice("harkonnen-mulligan-yes", "Yes, draw 4 different traitors"));
+            choices.add(new DuneChoice("harkonnen-mulligan-no", "No, keep current traitors"));
+            faction.getChat().publish(chatMessage + faction.getPlayer(), choices);
             return StepStatus.STOP;
         } else {
             game.getModInfo().publish("Harkonnen cannot mulligan.");

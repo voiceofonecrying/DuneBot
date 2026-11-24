@@ -43,10 +43,11 @@ public class HarkonnenFaction extends Faction {
     }
 
     public void mulliganTraitorHand() {
-        game.getTraitorDeck().addAll(traitorHand);
+        List<TraitorCard> oldTraitors = List.copyOf(traitorHand);
         traitorHand.clear();
-        Collections.shuffle(game.getTraitorDeck());
         IntStream.range(0, 4).forEach(j -> game.drawCard("traitor deck", "Harkonnen"));
+        game.getTraitorDeck().addAll(oldTraitors);
+        Collections.shuffle(game.getTraitorDeck());
         game.getTurnSummary().publish(emoji + " mulliganed their Traitor Hand.");
     }
 
