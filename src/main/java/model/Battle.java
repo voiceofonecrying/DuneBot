@@ -421,8 +421,13 @@ public class Battle {
                 throw new InvalidGameStateException(dial + " is not a valid dial");
         }
 
-        if(khDial && (!List.of(0, 2, 4, 8).contains(spice) || spice > wholeNumberDial))
-            throw new InvalidGameStateException(spice + " is not a valid spice strength for a dial of " + dial);
+        if (khDial) {
+            boolean emperorBattleEdge = "Emperor".equals(faction.getAlly()) && (!(faction instanceof FremenFaction) || isFremenMustPay());
+            List<Integer> allowedSpice = emperorBattleEdge ? List.of(0, 1, 2, 4) : List.of(0, 2, 4, 8);
+            int effectiveSpice = emperorBattleEdge ? spice * 2 : spice;
+            if (!allowedSpice.contains(spice) || effectiveSpice > wholeNumberDial)
+                throw new InvalidGameStateException(spice + " is not a valid spice strength for a dial of " + dial);
+        }
 
         TreacheryCard weapon = null;
         if (!weaponName.equals("None")) {

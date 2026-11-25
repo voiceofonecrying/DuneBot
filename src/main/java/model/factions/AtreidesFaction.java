@@ -98,7 +98,7 @@ public class AtreidesFaction extends Faction {
             DoubleSpiceCard nextCard = game.getDoubleSpiceDeck().peek();
             String firstTerritoryName = nextCard.firstTerritoryName();
 
-            if (firstTerritoryName.equals("Little Maker") || firstTerritoryName.equals("Shai-Halud"))
+            if (firstTerritoryName.equals("Little Maker") || firstTerritoryName.equals("Shai-Hulud"))
                 chat.publish("You see visions of " + nextCard.firstTerritoryName() + " in your future.");
             else
                 chat.publish("You see visions of " + Emojis.SPICE + " appearing in " + nextCard.firstTerritoryName() + " and " + nextCard.secondTerritoryName() + " in your future.");

@@ -434,14 +434,20 @@ public class BattlePlan {
         if (khVariant) {
             int countForBonus = spice;
             if (isFremen && !battle.isFremenMustPay()) {
-                countForBonus = wholeNumberDial;
-                if (countForBonus > 8) countForBonus = 8;
-                else if (countForBonus > 4) countForBonus = 4;
-                else if (countForBonus > 2) countForBonus = 2;
+                if (wholeNumberDial >= 8)
+                    countForBonus = 8;
+                else if (wholeNumberDial >= 4)
+                    countForBonus = 4;
+                else if (wholeNumberDial >= 2)
+                    countForBonus = 2;
+                else
+                    countForBonus = 0;
                 if (spice > 0) {
                     spice = 0;
                     faction.getChat().publish("Spice is not needed for this dial due to " + faction.getEmoji() + " Battle Edge advantage, reducing to 0.");
                 }
+            } else if ("Emperor".equals(faction.getAlly())) {
+                countForBonus *= 2;
             }
             switch (countForBonus) {
                 case 2 -> khDialBonus = 1;
