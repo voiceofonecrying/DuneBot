@@ -1853,8 +1853,12 @@ public class Game {
                 } else if (!shaiHuludSpotted) {
                     spiceMultiplier = 1;
                     shaiHuludSpotted = true;
-                    message.append(getTerritory(Objects.requireNonNull(lastCard).firstTerritoryName()).shaiHuludAppears(this, drawn.firstTerritoryName(), true))
-                        .append(getTerritory(Objects.requireNonNull(lastCard).secondTerritoryName()).shaiHuludAppears(this, drawn.firstTerritoryName(), true));
+                    if ("Little Maker".equals(Objects.requireNonNull(lastCard).firstTerritoryName())) {
+                        message.append("Shai-Hulud has been spotted in the Territory where spice was placed for Little Maker!");
+                    } else {
+                        message.append(getTerritory(Objects.requireNonNull(lastCard).firstTerritoryName()).shaiHuludAppears(this, drawn.firstTerritoryName(), true))
+                            .append(getTerritory(Objects.requireNonNull(lastCard).secondTerritoryName()).shaiHuludAppears(this, drawn.firstTerritoryName(), true));
+                    }
                     nexus = true;
                     if (cardIsGreatMaker)
                         greatMaker = true;
@@ -1894,8 +1898,6 @@ public class Game {
 
             if (saveWormForReshuffle)
                 wormsToReshuffle.add(drawn);
-            else if (drawn.firstTerritoryName().equalsIgnoreCase("Little Maker"))
-                doubleSpiceDiscard.add(0, drawn);
             else if (!afterThumper)
                 doubleSpiceDiscard.add(drawn);
             afterThumper = false;
