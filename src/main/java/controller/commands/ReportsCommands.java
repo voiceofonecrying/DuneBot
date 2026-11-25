@@ -862,14 +862,14 @@ public class ReportsCommands {
     }
 
     public static final Map<String, String> homebrewFactionsAndEmojis = Map.of(
-            "mikarrol", ":mikarrol:",
-            "wydras", ":wydras:",
-            "spinnette", ":spinnette:",
-            "lindaren", ":lindaren:",
             "iduali", ":iduali:",
-            "smugglers", ":detective:",
+            "lindaren", ":lindaren:",
+            "mikarrol", ":mikarrol:",
             "orks", ":orks:",
-            "ordos", ":snake:"
+            "ordos", ":ordos:",
+            "smugglers", ":smugglers:",
+            "spinnette", ":spinnette:",
+            "wydras", ":wydras:"
     );
 
     private static FactionPerformance overallHomebrewFactionPerformance(GRList gameResults) {
@@ -903,7 +903,7 @@ public class ReportsCommands {
     private static List<FactionPerformance> getAllHomebrewFactionPerformance(GRList gameResults) {
         List<FactionPerformance> allFactionPerformance = new ArrayList<>();
         homebrewFactionsAndEmojis.forEach((factionName, factionEmoji) -> {
-            allFactionPerformance.add(factionPerformance(gameResults, factionName, StringUtils.capitalize(factionName) + " " + factionEmoji));
+            allFactionPerformance.add(factionPerformance(gameResults, factionName, factionEmoji + " " + StringUtils.capitalize(factionName)));
         });
         allFactionPerformance.sort((a, b) -> Float.compare(b.winPercentage, a.winPercentage));
         return allFactionPerformance;
@@ -1274,27 +1274,27 @@ public class ReportsCommands {
                 if (wydrasWins > 0) returnString += ", " + wydrasWins + " wins";
             }
             if (spinnetteGames > 0) {
-                returnString += "\nSpinnette " + spinnetteGames + " games";
+                returnString += "\n:spinnette: " + spinnetteGames + " games";
                 if (spinnetteWins > 0) returnString += ", " + spinnetteWins + " wins";
             }
             if (lindarenGames > 0) {
-                returnString += "\nLindaren " + lindarenGames + " games";
+                returnString += "\n:lindaren: " + lindarenGames + " games";
                 if (lindarenWins > 0) returnString += ", " + lindarenWins + " wins";
             }
             if (idualiGames > 0) {
-                returnString += "\nIduali " + idualiGames + " games";
+                returnString += "\n:iduali: " + idualiGames + " games";
                 if (idualiWins > 0) returnString += ", " + idualiWins + " wins";
             }
             if (smugglersGames > 0) {
-                returnString += "\nSmugglers " + smugglersGames + " games";
+                returnString += "\n:smugglers: " + smugglersGames + " games";
                 if (smugglersWins > 0) returnString += ", " + smugglersWins + " wins";
             }
             if (orksGames > 0) {
-                returnString += "\nSpace Orks " + orksGames + " games";
+                returnString += "\n:orks: " + orksGames + " games";
                 if (orksWins > 0) returnString += ", " + orksWins + " wins";
             }
             if (ordosGames > 0) {
-                returnString += "\nOrdos " + ordosGames + " games";
+                returnString += "\n:ordos: " + ordosGames + " games";
                 if (ordosWins > 0) returnString += ", " + ordosWins + " wins";
             }
             return EmojiCache.tagEmojis(returnString);
