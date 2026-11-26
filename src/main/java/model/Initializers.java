@@ -206,7 +206,7 @@ public class Initializers {
             }
             case "Imperial Basin (East Sector)" -> {
                 points.add(new Point(548, 413));
-                points.add(new Point(716, 366));
+                points.add(new Point(576, 366));
             }
             case "Shield Wall (North Sector)" -> {
                 points.add(new Point(580, 410));
