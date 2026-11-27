@@ -21,6 +21,7 @@ public class TraitorButtons implements Pressable {
     // And any button that begins with "traitor" must be handled by this class
     public static void press(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException, IOException {
         if (event.getComponentId().startsWith("traitor-selection-")) selectTraitor(event, game, discordGame);
+        else if (event.getComponentId().startsWith("traitor-call-card-")) selectTraitorForBattle(event, game, discordGame);
         else if (event.getComponentId().startsWith("traitor-call-")) callTraitor(event, game, discordGame);
         else if (event.getComponentId().startsWith("traitor-discard-")) discardTraitor(event, game, discordGame);
         else if (event.getComponentId().startsWith("traitor-reveal-and-discard-")) revealAndDiscardTraitor(event, game, discordGame);
@@ -39,41 +40,56 @@ public class TraitorButtons implements Pressable {
         }
     }
 
+    private static Battle currentBattle(Game game) throws InvalidGameStateException {
+        if (game.getBattles() == null || game.getBattles().getCurrentBattle() == null)
+            throw new InvalidGameStateException("There is no current battle.");
+        return game.getBattles().getCurrentBattle();
+    }
+
     public static void callTraitor(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
         Faction faction = ButtonManager.getButtonPresser(event, game);
-        String[] params = event.getComponentId().replace("traitor-call-", "").split("-");
+        String[] params = event.getComponentId().substring("traitor-call-".length()).split("-", 4);
+        if (params.length != 4 || !params[1].equals("turn"))
+            throw new InvalidGameStateException("Invalid traitor-call button.");
         String response = params[0];
-        int turn = Integer.parseInt(params[2]);
+        if (!List.of("wait", "yes", "no").contains(response))
+            throw new InvalidGameStateException("Invalid traitor response: " + response);
+        int turn;
+        try {
+            turn = Integer.parseInt(params[2]);
+        } catch (NumberFormatException e) {
+            throw new InvalidGameStateException("Invalid turn in traitor-call button.");
+        }
         String wholeTerritoryName = params[3];
-        discordGame.queueDeleteMessage();
-        Battle battle = game.getBattles().getCurrentBattle();
+        Battle battle = currentBattle(game);
+        battle.validateTraitorCall(game, faction, turn, wholeTerritoryName);
+
+        // Remove old prompts before Battle publishes replacement choices.
+        deleteTraitorCallButtonsInChannel(event.getMessageChannel());
         switch (response) {
             case "wait" -> {
                 discordGame.queueMessage("You will wait for battle wheels to decide.");
-                if (battle.mightCallTraitor(game, faction, turn, wholeTerritoryName))
-                    discordGame.pushGame();
+                battle.mightCallTraitor(game, faction, turn, wholeTerritoryName);
             }
-            case "yes" -> {
-                if (battle.isResolutionPublished())
-                    discordGame.queueMessage("You will call Traitor.");
-                else
-                    discordGame.queueMessage("You will call Traitor if possible.");
-                battle.willCallTraitor(game, faction, true, turn, wholeTerritoryName);
-                deleteTraitorCallButtonsInChannel(event.getMessageChannel());
-                discordGame.pushGame();
-            }
-            case "no" -> {
-                discordGame.queueMessage("You will not call Traitor.");
-                battle.willCallTraitor(game, faction, false, turn, wholeTerritoryName);
-                deleteTraitorCallButtonsInChannel(event.getMessageChannel());
-                discordGame.pushGame();
-            }
+            case "yes" -> battle.willCallTraitor(game, faction, true, turn, wholeTerritoryName);
+            case "no" -> battle.willCallTraitor(game, faction, false, turn, wholeTerritoryName);
         }
+        discordGame.pushGame();
+    }
+
+    private static void selectTraitorForBattle(ButtonInteractionEvent event, Game game, DiscordGame discordGame) throws ChannelNotFoundException, InvalidGameStateException {
+        Faction faction = ButtonManager.getButtonPresser(event, game);
+        String token = event.getComponentId().substring("traitor-call-card-".length());
+        Battle battle = currentBattle(game);
+        battle.validateTraitorCardChoice(game, faction, token);
+        deleteTraitorCallButtonsInChannel(event.getMessageChannel());
+        battle.selectTraitorForBattle(game, faction, token);
+        discordGame.pushGame();
     }
 
     public static void deleteTraitorCallButtonsInChannel(MessageChannel channel) {
         List<Message> messages = channel.getHistoryAround(channel.getLatestMessageId(), 100).complete().getRetrievedHistory();
-        List<Message> messagesToDelete = messages.stream().filter(message -> MessageHelper.getButtons(message).stream().map(ActionComponent::getCustomId).anyMatch(id -> id != null && id.startsWith("traitor-call"))).toList();
+        List<Message> messagesToDelete = messages.stream().filter(message -> MessageHelper.getButtons(message).stream().map(ActionComponent::getCustomId).anyMatch(id -> id != null && id.startsWith("traitor-call-"))).toList();
         messagesToDelete.forEach(message -> message.delete().complete());
     }
 

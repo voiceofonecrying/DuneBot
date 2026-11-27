@@ -315,4 +315,19 @@ public class IdualiFaction extends Faction {
         }
         return 0;
     }
+
+    public void stealWater(int forcesEliminated) {
+        if (forcesEliminated <= 0)
+            return;
+
+        int spiceGained = forcesEliminated;
+        if (game.hasGameOption(GameOption.HOMEWORLDS) && !isHighThreshold())
+            spiceGained = Math.floorDiv(spiceGained, 2);
+
+        if (spiceGained == 0)
+            return;
+
+        addSpice(spiceGained, "Water Stealers");
+        game.getTurnSummary().publish(getEmoji() + " gains " + spiceGained + " " + Emojis.SPICE + " from selling stolen water.");
+    }
 }

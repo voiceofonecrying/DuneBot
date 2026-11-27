@@ -1514,6 +1514,7 @@ public class Faction {
         }
         movementKaramaed = false;
         movement.clear();
+        movement.setMoveType(MoveType.TBD);
         setUpdated(UpdateType.MAP);
     }
 
