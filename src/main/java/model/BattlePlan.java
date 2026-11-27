@@ -62,6 +62,8 @@ public class BattlePlan {
     private boolean opponentIsTraitor;
     private boolean khVariant;
     private int khDialBonus;
+    private String selectedTraitorName;
+    private String selectedHarkonnenTraitorName;
 
     public BattlePlan(Game game, Battle battle, Faction faction, boolean aggressor, Leader leader, TreacheryCard cheapHero, boolean kwisatzHaderach, TreacheryCard weapon, TreacheryCard defense, int wholeNumberDial, boolean plusHalfDial, int spice) throws InvalidGameStateException {
         this.wholeTerritoryName = battle.getWholeTerritoryName();
@@ -509,21 +511,102 @@ public class BattlePlan {
         return leader == null ? 0 : leader.getValue();
     }
 
+    public boolean hasBodyDouble() {
+        return weapon != null && weapon.name().equals("Body Double")
+                || originalDefense != null && originalDefense.name().equals("Body Double");
+    }
+
+    public boolean hasWaterOfLife() {
+        return defense != null && defense.name().equals("Water of Life");
+    }
+
+    public String getLeaderDisplayName() {
+        if (leader == null)
+            return cheapHero == null ? "-" : cheapHero.name();
+        return (hasBodyDouble() ? "Body Double for " : "") + leader.getName();
+    }
+
+    public List<TraitorCard> getEligibleTraitors(Faction caller) {
+        if (caller instanceof BTFaction)
+            return List.of();
+        if (hasWaterOfLife() && leader != null) {
+            return caller.getTraitorHand().stream()
+                    .filter(card -> card.getFactionName().equals(leader.getOriginalFactionName()))
+                    .toList();
+        }
+        if (!hasWaterOfLife() && (hasKwisatzHaderach() || hasBodyDouble()))
+            return List.of();
+        String targetName = getLeaderNameForTraitor();
+        return caller.getTraitorHand().stream()
+                .filter(card -> card.getName().equals(targetName))
+                .toList();
+    }
+
+    public String getSelectedTraitorName(boolean harkonnenAllyPower) {
+        return harkonnenAllyPower ? selectedHarkonnenTraitorName : selectedTraitorName;
+    }
+
+    public void setSelectedTraitorName(String traitorName, boolean harkonnenAllyPower) {
+        if (harkonnenAllyPower)
+            selectedHarkonnenTraitorName = traitorName;
+        else
+            selectedTraitorName = traitorName;
+    }
+
+    private boolean suffersHiddenBladesPenalty() {
+        return !hasWaterOfLife() && opponentWeapon != null && opponentWeapon.name().equals("Hidden Blades");
+    }
+
     public int getLeaderContribution() {
-        if (artilleryStrike() || !isLeaderAlive())
+        if (!hasWaterOfLife() && !suffersHiddenBladesPenalty())
+            return artilleryStrike() || !isLeaderAlive() ? 0 : getLeaderValue() + (kwisatzHaderach ? 2 : 0);
+        if (artilleryStrike() || stoneBurnerForTroops() || !isLeaderAlive())
             return 0;
 
-        int contribution = getLeaderValue() + (kwisatzHaderach ? 2 : 0);
-        if (opponentWeapon != null && opponentWeapon.name().equals("Hidden Blades"))
-            contribution = contribution < 3 ? 0 : contribution - 2;
-        if (defense != null && defense.name().equals("Water of Life"))
-            contribution = (contribution + 2 - 1) / 2;
-
+        int contribution = Math.max(0, getLeaderValue() + (kwisatzHaderach ? 2 : 0) + getLeaderSkillBonus());
+        if (hasWaterOfLife())
+            contribution = Math.ceilDiv(contribution, 2);
+        else if (suffersHiddenBladesPenalty())
+            contribution = Math.max(0, contribution - 2);
         return contribution;
     }
 
+    private int getLeaderSkillBonus() {
+        int bonuses = 0;
+        if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
+            bonuses += 3;
+        if (isSkillInFrontAndLeaderAlive("Killer Medic") && isPoisonDefense())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
+            bonuses += 3;
+        if (isSkillInFrontAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Mentat"))
+            bonuses += 2;
+        if (isSkillBehindAndLeaderAlive("Planetologist") && isSpecialForWeapon())
+            bonuses += 2;
+        if (isSkillBehindAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
+            bonuses += 3;
+        if (isSkillInFrontAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Spice Banker"))
+            bonuses += spiceBankerSupport;
+        if (isSkillBehindAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
+            bonuses += 3;
+        if (isSkillInFrontAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
+            bonuses += 1;
+        if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
+            bonuses += 3;
+        if (isSkillInFrontAndLeaderAlive("Warmaster") && hasWorthlessCard())
+            bonuses += 1;
+        if (opponentHasBureaucrat)
+            bonuses -= numStrongholdsOccupied;
+        return bonuses;
+    }
+
     public boolean isSkillBehindAndLeaderAlive(String skillName) {
-        return leader != null && leader.isPulledBehindShield() && isLeaderAlive() && leader.getSkillCard().name().equals(skillName);
+        return leader != null && leader.isPulledBehindShield() && leader.getSkillCard() != null
+                && isLeaderAlive() && leader.getSkillCard().name().equals(skillName);
     }
 
     public boolean isSkillInFront(String skillName) {
@@ -592,13 +675,11 @@ public class BattlePlan {
         String leaderName = "";
         if (leader != null) {
             leaderName = leader.getName();
-            leaderString = MessageFormat.format("{0} ({1}){2}",
-                    leaderName, leaderName.equals("Zoal") ? "X" : leader.getValue(), khString);
+            leaderString = MessageFormat.format("{0} ({1}){2}", getLeaderDisplayName(), leaderName.equals("Zoal") ? "X" : leader.getValue(), khString);
         }
-        else if (cheapHero != null) leaderString = cheapHero.name() + " (0)" + khString;
+        else if (cheapHero != null)
+            leaderString = cheapHero.name() + " (0)" + khString;
 
-        if (opponentWeapon != null && opponentWeapon.name().equals("Hidden Blades") && isLeaderAlive())
-            leaderString += "\n  -2 from Hidden Blades";
         if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
             leaderString += "\n  +3 for Killer Medic" + (revealLeaderSkills ? "" : " if " + leaderName + " survives");
         if (isSkillInFront("Killer Medic") && isPoisonDefense())
@@ -629,41 +710,21 @@ public class BattlePlan {
             if (opponentHasBureaucrat && numStrongholdsOccupied > 0)
                 leaderString += "\n -" + numStrongholdsOccupied + " for opponent Bureaucrat";
         }
+        if (hasWaterOfLife())
+            leaderString += "\n  Half rounded up, after all other modifiers, due to Water of Life";
+        else if (suffersHiddenBladesPenalty() && isLeaderAlive())
+            leaderString += "\n  -2 from Hidden Blades (minimum 0)";
+        if (revealLeaderSkills && (hasWaterOfLife() || suffersHiddenBladesPenalty()))
+            leaderString += "\n  Strength: " + getLeaderContribution();
         return "Leader: " + leaderString;
     }
 
     public int getDoubleBattleStrength() {
         float bonuses = homeworldDialAdvantage + factionDialAdvantage;
+        if (!hasWaterOfLife() && !suffersHiddenBladesPenalty())
+            bonuses += getLeaderSkillBonus();
         if (numForcesInReserve >= 3 && (weapon != null && weapon.name().equals("Reinforcements") || defense != null && defense.name().equals("Reinforcements")))
             bonuses += 2;
-        if (isSkillBehindAndLeaderAlive("Killer Medic") && isPoisonDefense())
-            bonuses += 3;
-        if (isSkillInFrontAndLeaderAlive("Killer Medic") && isPoisonDefense())
-            bonuses += 1;
-        if (isSkillBehindAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
-            bonuses += 3;
-        if (isSkillInFrontAndLeaderAlive("Master of Assassins") && isPoisonWeapon())
-            bonuses += 1;
-        if (isSkillBehindAndLeaderAlive("Mentat"))
-            bonuses += 2;
-        if (isSkillBehindAndLeaderAlive("Planetologist") && isSpecialForWeapon())
-            bonuses += 2;
-        if (isSkillBehindAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
-            bonuses += 3;
-        if (isSkillInFrontAndLeaderAlive("Prana Bindu Adept") && isProjectileDefense())
-            bonuses += 1;
-        if (isSkillBehindAndLeaderAlive("Spice Banker"))
-            bonuses += spiceBankerSupport;
-        if (isSkillBehindAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
-            bonuses += 3;
-        if (isSkillInFrontAndLeaderAlive("Swordmaster of Ginaz") && isProjectileWeapon())
-            bonuses += 1;
-        if (isSkillBehindAndLeaderAlive("Warmaster") && hasWorthlessCard())
-            bonuses += 3;
-        if (isSkillInFrontAndLeaderAlive("Warmaster") && hasWorthlessCard())
-            bonuses += 1;
-        if (opponentHasBureaucrat)
-            bonuses -= numStrongholdsOccupied;
         if (stoneBurnerForTroops())
             return 2 * (regularNotDialed + specialNotDialed);
         float doubleBonuses = 2 * bonuses;
@@ -731,6 +792,8 @@ public class BattlePlan {
             return false;
         } else if (opponentIsTraitor) {
             return true;
+        } else if (hasWaterOfLife()) {
+            return true;
         } else if (isLasgunShieldExplosion()) {
             return false;
         } else if (stoneBurnerKills()) {
@@ -742,6 +805,9 @@ public class BattlePlan {
         } else if (opponentWeapon != null && !opponentWeapon.type().equals("Worthless Card") && !opponentWeapon.name().equals("Stone Burner")) {
             if (defense == null)
                 return false;
+            else if (opponentWeapon.name().equals("Hidden Blades"))
+                return defense.servesAsShield() || defense.servesAsSnooper()
+                        || defense.name().equals("Weirding Way") || defense.name().equals("Chemistry");
             else if (opponentWeapon.name().equals("Poison Blade")
                     && !(defense.name().equals("Shield Snooper") || carthagStrongholdPoisonDefense()))
                 return false;
@@ -751,8 +817,6 @@ public class BattlePlan {
             else if ((opponentWeapon.type().equals("Weapon - Projectile") || opponentWeapon.name().equals("Weirding Way"))
                     && !(defense.servesAsShield() || defense.name().equals("Weirding Way")))
                 return false;
-            else if (opponentWeapon.name().equals("Hidden Blades"))
-                return (defense.servesAsShield() || defense.servesAsSnooper() || defense.name().equals("Weirding Way") || defense.name().equals("Chemistry"));
             else
                 return !opponentWeapon.name().equals("Lasgun");
         }
@@ -951,7 +1015,7 @@ public class BattlePlan {
         if (leader == null && cheapHero == null && !faction.getLeaders().stream()
                 .filter(l -> !l.getName().equals("Kwisatz Haderach") && (l.getBattleTerritoryName() == null || battleTerritoryNames.stream().anyMatch(n -> n.equals(l.getBattleTerritoryName()))))
                 .toList().isEmpty())
-            throw new InvalidGameStateException(faction.getName() + " must play a leader or a Cheap Hero");
+            throw new InvalidGameStateException(faction.getName() + " must play a leader or Cheap Hero");
         if (kwisatzHaderach) {
             if (leader == null && cheapHero == null)
                 throw new InvalidGameStateException("A leader or Cheap Hero must be played to use the Kwisatz Haderach");
@@ -982,7 +1046,7 @@ public class BattlePlan {
                     && isNotPlanetologist
                     && numForcesInReserve < 3)
                 throw new InvalidGameStateException("There must be at least 3 forces in reserves to use Reinforcements");
-            else if (isNotPlanetologist && weapon.isGreenSpecialCard() && !weapon.name().equals("Harass and Withdraw") && !weapon.name().equals("Reinforcements"))
+            else if (isNotPlanetologist && weapon.isGreenSpecialCard() && !weapon.name().equals("Harass and Withdraw") && !weapon.name().equals("Reinforcements") && !weapon.name().equals("Body Double"))
                 throw new InvalidGameStateException(weapon.name() + " can only be played as a weapon if leader has Planetologist skill");
         }
         if (defense != null) {

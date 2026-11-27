@@ -54,6 +54,9 @@ public class Battle {
     private boolean auditorMustBeResolved;
     private boolean assassinationMustBeResolved;
     private List<String> cardsForAudit;
+    private Map<String, List<String>> traitorCardChoices = new HashMap<>();
+    private boolean traitorUsageRecorded;
+    private boolean battleResolutionExecuted;
 
     public Battle(Game game, List<Territory> territorySectors, List<Faction> battleFactionsInStormOrder) {
         this.wholeTerritoryName = territorySectors.getFirst().getAggregateTerritoryName();
@@ -360,6 +363,7 @@ public class Battle {
             throw new InvalidGameStateException("You are not in the current battle.");
 
         removePreviouslySubmittedLeaderFromTerritory(faction);
+        clearTraitorCardChoices();
 
         boolean planIsForAggressor = false;
         if (getAggressorName().equals(faction.getName()))
@@ -387,11 +391,13 @@ public class Battle {
             cheapHero = faction.getTreacheryHand().stream().filter(f -> f.name().equals(leaderName)).findFirst().orElseThrow();
         else if (!leaderName.equals("None")) {
             leader = faction.getLeaders().stream().filter(l -> l.getName().equals(leaderName)).findFirst().orElseThrow();
-            Territory battleTerritory = getTerritorySectors(game).stream()
-                    .filter(t -> t.getTotalForceCount(faction) > 0)
-                    .findAny().orElseThrow();
-            leader.setBattleTerritoryName(battleTerritory.getTerritoryName());
-            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            if (!"Body Double".equals(weaponName) && !"Body Double".equals(defenseName)) {
+                Territory battleTerritory = getTerritorySectors(game).stream()
+                        .filter(t -> t.getTotalForceCount(faction) > 0)
+                        .findAny().orElseThrow();
+                leader.setBattleTerritoryName(battleTerritory.getTerritoryName());
+                faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            }
         }
 
         String returnString = "";
@@ -458,6 +464,11 @@ public class Battle {
             throw new InvalidGameStateException(faction.getName() + " is not in this battle.");
 
         BattlePlan battlePlan = new BattlePlan(game, this, faction, planIsForAggressor, leader, cheapHero, kwisatzHaderach, weapon, defense, wholeNumberDial, plusHalfDial, spice);
+        clearTraitorCardChoices();
+        if (leader != null && battlePlan.hasBodyDouble()) {
+            leader.setBattleTerritoryName(null);
+            faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+        }
         if (planIsForAggressor) {
             if (aggressorBattlePlan == null && battlePlan.isDialedForcesSettled() && game.getGameActions() != null) {
                 game.getGameActions().publish(faction.getEmoji() + " battle plan submitted.");
@@ -655,24 +666,51 @@ public class Battle {
         return isAggressorWin(game) ? getAggressorEmojis(game) : getDefenderEmojis(game);
     }
 
+    private List<TraitorCard> eligibleTraitors(Game game, Faction caller, BattlePlan target) {
+        if (target == null)
+            return List.of();
+        if (game.getHomeworlds().containsValue(wholeTerritoryName)
+                && game.getTerritory(wholeTerritoryName) instanceof HomeworldTerritory homeworld
+                && !homeworld.getNativeName().equals(caller.getName()))
+            return List.of();
+        return target.getEligibleTraitors(caller);
+    }
+
+    private boolean requiresTraitorCardChoice(BattlePlan target, List<TraitorCard> eligible) {
+        return target != null && target.hasWaterOfLife() && eligible.size() > 1;
+    }
+
+    private String calledTraitorName(Game game, Faction caller, BattlePlan plan,
+                                     BattlePlan target, boolean harkAlly) {
+        if (plan == null || !(harkAlly ? plan.isHarkWillCallTraitor() : plan.isWillCallTraitor()))
+            return null;
+        List<TraitorCard> eligible = eligibleTraitors(game, caller, target);
+        String selected = plan.getSelectedTraitorName(harkAlly);
+        if (selected == null)
+            return !eligible.isEmpty() && !requiresTraitorCardChoice(target, eligible)
+                    ? eligible.getFirst().getName() : null;
+        return eligible.stream().anyMatch(card -> card.getName().equals(selected)) ? selected : null;
+    }
+
     protected boolean aggressorCallsTraitor(Game game) {
-        String opponentLeader = defenderBattlePlan.getLeaderNameForTraitor();
-        if (defenderBattlePlan.hasKwisatzHaderach())
-            return false;
-        else if (aggressorBattlePlan.isWillCallTraitor() && getAggressor(game).hasTraitor(opponentLeader))
-            return true;
-        else
-            return getAggressor(game).getAlly().equals("Harkonnen") && aggressorBattlePlan.isHarkWillCallTraitor() && game.getHarkonnenFaction().hasTraitor(opponentLeader);
+        return calledTraitorName(game, getAggressor(game), aggressorBattlePlan, defenderBattlePlan, false) != null
+                || "Harkonnen".equals(getAggressor(game).getAlly())
+                && calledTraitorName(game, game.getHarkonnenFaction(), aggressorBattlePlan, defenderBattlePlan, true) != null;
     }
 
     protected boolean defenderCallsTraitor(Game game) {
-        String opponentLeader = aggressorBattlePlan.getLeaderNameForTraitor();
-        if (aggressorBattlePlan.hasKwisatzHaderach())
-            return false;
-        else if (defenderBattlePlan.isWillCallTraitor() && getDefender(game).hasTraitor(opponentLeader))
-            return true;
-        else
-            return getDefender(game).getAlly().equals("Harkonnen") && defenderBattlePlan.isHarkWillCallTraitor() && game.getHarkonnenFaction().hasTraitor(opponentLeader);
+        return calledTraitorName(game, getDefender(game), defenderBattlePlan, aggressorBattlePlan, false) != null
+                || "Harkonnen".equals(getDefender(game).getAlly())
+                && calledTraitorName(game, game.getHarkonnenFaction(), defenderBattlePlan, aggressorBattlePlan, true) != null;
+    }
+
+    private void refreshTraitorOutcomes(Game game) {
+        boolean aggressorCalls = aggressorCallsTraitor(game);
+        boolean defenderCalls = defenderCallsTraitor(game);
+        aggressorBattlePlan.setOpponentIsTraitor(aggressorCalls);
+        defenderBattlePlan.setLeaderIsTraitor(aggressorCalls);
+        defenderBattlePlan.setOpponentIsTraitor(defenderCalls);
+        aggressorBattlePlan.setLeaderIsTraitor(defenderCalls);
     }
 
     private boolean bothCallTraitor(Game game) {
@@ -688,6 +726,7 @@ public class Battle {
     }
 
     public String factionBattleResults(Game game, boolean isAggressor, boolean executeResolution) throws InvalidGameStateException {
+        refreshTraitorOutcomes(game);
         String resolution = "";
         Faction faction = isAggressor ? getAggressor(game) : getDefender(game);
         String troopFactionName = hasEcazAndAlly() && faction.getName().equals("Ecaz") ? ecazAllyName : faction.getName();
@@ -700,6 +739,7 @@ public class Battle {
         BattlePlan opponentBattlePlan = isAggressor ? defenderPlan : aggressorPlan;
         boolean isLasgunShieldExplosion = battlePlan.isLasgunShieldExplosion() && neitherCallTraitor(game);
         boolean callsTraitor = isAggressor ? aggressorCallsTraitor(game) : defenderCallsTraitor(game);
+        int forcesEliminated = 0;
         if (callsTraitor) {
             battlePlan.setOpponentIsTraitor(true);
             opponentBattlePlan.setLeaderIsTraitor(true);
@@ -714,7 +754,13 @@ public class Battle {
         String wholeTerritoryName = getWholeTerritoryName();
         boolean battleIsOnAHomeworld =  game.getHomeworlds().containsValue(wholeTerritoryName);
 
-        if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive()) {
+        if (battlePlan.getLeader() != null && battlePlan.hasBodyDouble()) {
+            resolution += emojis + " keeps " + battlePlan.getLeader().getName() + " available after using a Body Double\n";
+            if (executeResolution) {
+                battlePlan.getLeader().setBattleTerritoryName(null);
+                faction.setUpdated(UpdateType.MISC_BACK_OF_SHIELD);
+            }
+        } else if (battlePlan.getLeader() != null && !battlePlan.isLeaderAlive()) {
             resolution += emojis + " loses " + battlePlan.getKilledLeaderString() + " to the tanks\n";
             if (executeResolution)
                 game.killLeader(faction, battlePlan.getKilledLeaderString());
@@ -807,6 +853,7 @@ public class Battle {
                 }
             }
             resolution += killForces(game, troopFaction, regularForcesTotal, specialForcesTotal, regularForcesTotal, executeResolution);
+            forcesEliminated += regularForcesTotal + specialForcesTotal;
         } else if (!callsTraitor && (regularForcesDialed > 0 || specialForcesDialed > 0)) {
             if (!(faction instanceof EcazFaction && hasEcazAndAlly())) {
                 String savedForceEmoji;
@@ -878,6 +925,7 @@ public class Battle {
                     }
                 }
                 resolution += killForces(game, ecaz, ecazForcesToKill, 0, 0, executeResolution);
+                forcesEliminated += ecazForcesToKill;
             } else if (!callsTraitor) {
                 int ecazForces = Math.ceilDiv(battlePlan.getEcazTroopsForAlly(), 2);
                 if (battlePlan.isSkillBehindAndLeaderAlive("Suk Graduate")) {
@@ -899,6 +947,9 @@ public class Battle {
                 }
                 resolution += killForces(game, ecaz, ecazForces, 0, 0, executeResolution);
             }
+        }
+        if (executeResolution && isLoser && !isLasgunShieldExplosion && !opponentCallsTraitor && opponentFaction instanceof IdualiFaction iduali) {
+            iduali.stealWater(forcesEliminated);
         }
         boolean successfulTraitor = callsTraitor && !bothCallTraitor(game);
         resolution += handleReinforcements(game, faction, successfulTraitor, battlePlan, executeResolution);
@@ -1315,6 +1366,8 @@ public class Battle {
     }
 
     private String handleCapturedLeaderReturn(HarkonnenFaction harkonnen, BattlePlan battlePlan, boolean executeResolution) {
+        if (battlePlan.hasBodyDouble())
+            return "";
         String resolution = "";
         String leaderFaction = "Harkonnen";
         Leader leader = battlePlan.getLeader();
@@ -1356,7 +1409,7 @@ public class Battle {
         BattlePlan loserBattlePlan = isAggressorWin(game) ? defenderBattlePlan : aggressorBattlePlan;
         if (!isLoser && winner instanceof HarkonnenFaction harkonnen) {
             if (executeResolution) {
-                String loserKilledLeader = loserBattlePlan.getLeader() == null || loserBattlePlan.isLeaderAlive() ? null : loserBattlePlan.getLeader().getName();
+                String loserKilledLeader = loserBattlePlan.getLeader() == null || loserBattlePlan.hasBodyDouble() || loserBattlePlan.isLeaderAlive() ? null : loserBattlePlan.getLeader().getName();
                 List<Leader> eligibleLeaders = new ArrayList<>(loser.getLeaders().stream()
                         .filter(l -> !l.getName().equals(loserKilledLeader))
                         .filter(l -> l.getBattleTerritoryName() == null || sectorNames.contains(l.getBattleTerritoryName()))
@@ -1418,12 +1471,19 @@ public class Battle {
     }
 
     public String getTraitorCallString(Game game, Faction faction, String opponentLeader) throws InvalidGameStateException {
-        if (faction.hasTraitor(opponentLeader))
-            return faction.getEmoji() + " calls Traitor against " + opponentLeader + "!";
-        else if (faction.getAlly().equals("Harkonnen") && game.getHarkonnenFaction().hasTraitor(opponentLeader))
-            return Emojis.HARKONNEN + " calls Traitor against " + opponentLeader + "!";
-        else
+        BattlePlan plan = callerPlan(game, faction);
+        BattlePlan target = targetPlan(plan);
+        if (!target.hasWaterOfLife() && !target.hasBodyDouble()) {
+            if (faction.hasTraitor(opponentLeader))
+                return faction.getEmoji() + " calls Traitor against " + opponentLeader + "!";
+            if ("Harkonnen".equals(faction.getAlly()) && game.getHarkonnenFaction().hasTraitor(opponentLeader))
+                return Emojis.HARKONNEN + " calls Traitor against " + opponentLeader + "!";
             throw new InvalidGameStateException("Traitor not found.");
+        }
+        String announcement = traitorAnnouncement(game, faction, plan, target);
+        if (announcement.isEmpty())
+            throw new InvalidGameStateException("Traitor not found.");
+        return announcement.stripTrailing();
     }
 
     public void battleResolution(Game game, boolean publishToTurnSummary, boolean playedJuiceOfSapho, boolean noKillStoneBurner, boolean portableSnooper, boolean noPoisonTooth, boolean aggressorCallsTraitor, boolean defenderCallsTraitor, boolean overrideDecisions) throws InvalidGameStateException {
@@ -1510,6 +1570,18 @@ public class Battle {
     }
 
     public void printBattleResolution(Game game, boolean publishToTurnSummary, boolean executeResolution) throws InvalidGameStateException {
+        if (battleResolutionExecuted)
+            throw new InvalidGameStateException("This battle has already been resolved.");
+        if (aggressorBattlePlan == null || defenderBattlePlan == null)
+            throw new InvalidGameStateException("Battle cannot be resolved yet. Missing battle plan(s).");
+        if (executeResolution && hasPendingTraitorCardChoice(game))
+            throw new InvalidGameStateException("A traitor card must be selected or the call declined before resolving.");
+        refreshTraitorOutcomes(game);
+        if (executeResolution && !traitorUsageRecorded) {
+            recordTraitorUsage(game, getAggressor(game), aggressorBattlePlan, defenderBattlePlan);
+            recordTraitorUsage(game, getDefender(game), defenderBattlePlan, aggressorBattlePlan);
+            traitorUsageRecorded = true;
+        }
         if (executeResolution)
             populateCardsForAudit(game);
         resolutionPublished = publishToTurnSummary;
@@ -1572,6 +1644,8 @@ public class Battle {
             resolution += "\n" + resolutionDecisions;
 
         if (executeResolution) {
+            battleResolutionExecuted = true;
+            clearTraitorCardChoices();
             if (isAggressorWin(game))
                 checkForAssassination(game, getDefender(game), getAggressor(game), aggressorBattlePlan);
             else
@@ -1596,35 +1670,26 @@ public class Battle {
     }
 
     public void betrayHarkTraitorAndResolve(Game game, boolean publishToTurnSummary, int turn, String territoryName) throws InvalidGameStateException {
-        Faction factionWithHarkonnenNexusCard = game.getFactions().stream().filter(f -> f.getNexusCard() != null && f.getNexusCard().name().equals("Harkonnen")).findFirst().orElseThrow();
-        game.discardNexusCard(factionWithHarkonnenNexusCard);
-        game.getTurnSummary().publish(factionWithHarkonnenNexusCard.getEmoji() + " cancels the " + Emojis. HARKONNEN + " Traitor call!");
-
-        boolean harkonnenCalledTraitor = false;
-        if (aggressorCallsTraitor(game)) {
-            if (getAggressor(game) instanceof HarkonnenFaction harkonnen && aggressorBattlePlan.isWillCallTraitor()) {
-                aggressorBattlePlan.setWillCallTraitor(false);
-                harkonnen.nexusCardBetrayal(defenderBattlePlan.getLeaderNameForTraitor());
-                harkonnenCalledTraitor = true;
-            } else if (getAggressor(game).getAlly() != null && getAggressor(game).getAlly().equals("Harkonnen") && aggressorBattlePlan.isHarkWillCallTraitor()) {
-                aggressorBattlePlan.setHarkWillCallTraitor(false);
-                game.getHarkonnenFaction().nexusCardBetrayal(defenderBattlePlan.getLeaderNameForTraitor());
-                harkonnenCalledTraitor = true;
-            }
-        }
-        if (defenderCallsTraitor(game)) {
-            if (getDefender(game) instanceof HarkonnenFaction harkonnen && defenderBattlePlan.isWillCallTraitor()) {
-                defenderBattlePlan.setWillCallTraitor(false);
-                harkonnen.nexusCardBetrayal(aggressorBattlePlan.getLeaderNameForTraitor());
-                harkonnenCalledTraitor = true;
-            } else if (getDefender(game).getAlly() != null && getDefender(game).getAlly().equals("Harkonnen") && defenderBattlePlan.isHarkWillCallTraitor()) {
-                defenderBattlePlan.setHarkWillCallTraitor(false);
-                game.getHarkonnenFaction().nexusCardBetrayal(aggressorBattlePlan.getLeaderNameForTraitor());
-                harkonnenCalledTraitor = true;
-            }
-        }
-        if (!harkonnenCalledTraitor)
+        if (turn != game.getTurn() || !wholeTerritoryName.equals(territoryName) || battleResolutionExecuted)
+            throw new InvalidGameStateException("This button does not belong to an unresolved current battle.");
+        if (hasPendingTraitorCardChoice(game))
+            throw new InvalidGameStateException("Choose the traitor card before using Nexus betrayal.");
+        Faction betrayer = getHarkonnenNexusBetrayalFaction(game);
+        if (betrayer == null)
+            throw new InvalidGameStateException("No eligible Harkonnen Nexus betrayal is available.");
+        HarkonnenFaction harkonnen = game.getHarkonnenFaction();
+        BattlePlan plan = harkonnen == getAggressor(game) || Objects.equals(harkonnen.getAlly(), getAggressorName())
+                ? aggressorBattlePlan : defenderBattlePlan;
+        boolean harkAlly = isHarkonnenAllyCaller(game, harkonnen);
+        String card = calledTraitorName(game, harkonnen, plan, targetPlan(plan), harkAlly);
+        if (card == null)
             throw new InvalidGameStateException("Harkonnen did not call Traitor.");
+        game.discardNexusCard(betrayer);
+        setTraitorDecision(plan, harkAlly, false, true, false);
+        plan.setSelectedTraitorName(null, harkAlly);
+        clearTraitorCardChoices(harkonnen);
+        harkonnen.nexusCardBetrayal(card);
+        game.getTurnSummary().publish(betrayer.getEmoji() + " cancels the " + Emojis.HARKONNEN + " Traitor call using " + card + "!");
         printBattleResolution(game, true, false);
         resolveBattle(game, publishToTurnSummary, turn, territoryName);
     }
@@ -1645,168 +1710,294 @@ public class Battle {
         }
     }
 
-    private void checkForTraitorCall(Game game, Faction faction, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean publishToTurnSummary, boolean executeResolution) {
-        DuneTopic modInfo = game.getModInfo();
-        if (faction instanceof BTFaction) {
-            if (!publishToTurnSummary)
-                modInfo.publish(faction.getEmoji() + " does not call Traitors.");
-            battlePlan.setCanCallTraitor(false);
-            return;
-        } else if (battlePlan.isDeclinedTraitor()) {
-            if (!publishToTurnSummary)
-                modInfo.publish(faction.getEmoji() + " declined calling Traitor in " + wholeTerritoryName + ".");
-            return;
-        } else if (opponentPlan.hasKwisatzHaderach()) {
-            if (!publishToTurnSummary)
-                modInfo.publish(faction.getEmoji() + " cannot call Traitor against Kwisatz Haderach.");
-            battlePlan.setCanCallTraitor(false);
-            return;
-        }
-
-        checkForTraitorCall(game, faction, faction, battlePlan, opponent, opponentPlan, false, modInfo, publishToTurnSummary, executeResolution);
-        if (faction.getAlly().equals("Harkonnen"))
-            checkForTraitorCall(game, game.getHarkonnenFaction(), faction, battlePlan, opponent, opponentPlan, true, modInfo, publishToTurnSummary, executeResolution);
+    private void clearTraitorCardChoices() {
+        if (traitorCardChoices == null)
+            traitorCardChoices = new HashMap<>();
+        else
+            traitorCardChoices.clear();
     }
 
-    private void checkForTraitorCall(Game game, Faction faction, Faction combatant, BattlePlan battlePlan, Faction opponent, BattlePlan opponentPlan, boolean isHarkonnenAllyPower, DuneTopic modInfo, boolean publishToTurnSummary, boolean executeResolution) {
-        String opponentLeader = opponentPlan.getLeaderNameForTraitor();
-        String forYourAlly = isHarkonnenAllyPower ? "for your ally " : "";
-        if (faction.hasTraitor(opponentLeader)) {
-            if (executeResolution)
-                faction.useTraitor(opponentLeader);
-            if (publishToTurnSummary) {
-                if (!isHarkonnenAllyPower && battlePlan.isWillCallTraitor()) {
-                    faction.getChat().publish(opponentLeader + " has betrayed " + opponent.getEmoji() + " for you!");
-                } else if (isHarkonnenAllyPower && battlePlan.isHarkWillCallTraitor()) {
-                    faction.getChat().publish(opponentLeader + " has betrayed " + opponent.getEmoji() + " for your ally!");
-                    combatant.getChat().publish(opponentLeader + " has betrayed " + opponent.getEmoji() + " for " + Emojis.HARKONNEN + " and you!");
-                } else if (!isHarkonnenAllyPower && battlePlan.isCanCallTraitor() || isHarkonnenAllyPower && battlePlan.isHarkCanCallTraitor()) {
-                    List<DuneChoice> choices = new ArrayList<>();
-                    choices.add(new DuneChoice("traitor-call-yes-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
-                    choices.add(new DuneChoice("traitor-call-no-turn-" + game.getTurn() + "-" + wholeTerritoryName, "No"));
-                    faction.getChat().publish("Will you call Traitor " + forYourAlly + "against " + opponentLeader + " in " + getPublicTerritoryName(game) + "? " + faction.getPlayer(), choices);
-                }
-            } else if (!isHarkonnenAllyPower && battlePlan.isWillCallTraitor() || isHarkonnenAllyPower && battlePlan.isHarkWillCallTraitor()) {
-                modInfo.publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + ".");
-            } else if (!isHarkonnenAllyPower && battlePlan.isDeclinedTraitor() || isHarkonnenAllyPower && battlePlan.isHarkDeclinedTraitor()) {
-                modInfo.publish(faction.getEmoji() + " declined Traitor call in " + wholeTerritoryName + ".");
-            } else {
-                modInfo.publish(faction.getEmoji() + " can call Traitor against " + opponentLeader + " in " + wholeTerritoryName + ".");
-                if (isHarkonnenAllyPower)
-                    battlePlan.setHarkCanCallTraitor(true);
-                else
-                    battlePlan.setCanCallTraitor(true);
-            }
-        } else if (!publishToTurnSummary) {
-            modInfo.publish(faction.getEmoji() + " cannot call Traitor in " + wholeTerritoryName + ".");
-            if (isHarkonnenAllyPower)
-                battlePlan.setHarkCanCallTraitor(false);
-            else
-                battlePlan.setCanCallTraitor(false);
+    private void clearTraitorCardChoices(Faction caller) {
+        if (traitorCardChoices == null)
+            traitorCardChoices = new HashMap<>();
+        traitorCardChoices.entrySet().removeIf(e -> e.getValue().get(0).equals(caller.getName()));
+    }
+
+    private void setTraitorDecision(BattlePlan plan, boolean harkAlly, boolean will, boolean declined, boolean pending) {
+        if (harkAlly) {
+            plan.setHarkWillCallTraitor(will);
+            plan.setHarkDeclinedTraitor(declined);
+            plan.setHarkCanCallTraitor(pending);
+        } else {
+            plan.setWillCallTraitor(will);
+            plan.setDeclinedTraitor(declined);
+            plan.setCanCallTraitor(pending);
         }
+    }
+
+    private void checkForTraitorCall(Game game, Faction faction, BattlePlan plan, Faction opponent, BattlePlan target, boolean publish, boolean execute) {
+        if (faction instanceof BTFaction) {
+            if (!publish)
+                game.getModInfo().publish(faction.getEmoji() + " does not call Traitors.");
+            plan.setCanCallTraitor(false);
+            return;
+        }
+        if (plan.isDeclinedTraitor()) {
+            if (!publish)
+                game.getModInfo().publish(faction.getEmoji() + " declined calling Traitor in " + wholeTerritoryName + ".");
+            plan.setCanCallTraitor(false);
+            return;
+        }
+        if (target.hasKwisatzHaderach() && !target.hasWaterOfLife()) {
+            if (!publish)
+                game.getModInfo().publish(faction.getEmoji() + " cannot call Traitor against Kwisatz Haderach.");
+            plan.setCanCallTraitor(false);
+            plan.setHarkCanCallTraitor(false);
+            return;
+        }
+        checkCallerTraitorChoice(game, faction, plan, target, false, publish);
+        if ("Harkonnen".equals(faction.getAlly()))
+            checkCallerTraitorChoice(game, game.getHarkonnenFaction(), plan, target, true, publish);
+    }
+
+    private void checkCallerTraitorChoice(Game game, Faction caller, BattlePlan plan, BattlePlan target, boolean harkAlly, boolean publish) {
+        List<TraitorCard> eligible = eligibleTraitors(game, caller, target);
+        boolean declined = harkAlly ? plan.isHarkDeclinedTraitor() : plan.isDeclinedTraitor();
+        boolean will = harkAlly ? plan.isHarkWillCallTraitor() : plan.isWillCallTraitor();
+
+        if (declined || eligible.isEmpty()) {
+            setTraitorDecision(plan, harkAlly, false, declined, false);
+            plan.setSelectedTraitorName(null, harkAlly);
+            clearTraitorCardChoices(caller);
+            if (!publish) {
+                String action = declined ? " declined Traitor call in " : " cannot call Traitor in ";
+                game.getModInfo().publish(caller.getEmoji() + action + wholeTerritoryName + ".");
+            }
+            return;
+        }
+
+        String selected = plan.getSelectedTraitorName(harkAlly);
+        if (selected != null && eligible.stream().noneMatch(c -> c.getName().equals(selected)))
+            plan.setSelectedTraitorName(null, harkAlly);
+
+        String calledCard = calledTraitorName(game, caller, plan, target, harkAlly);
+        if (calledCard != null) {
+            plan.setSelectedTraitorName(calledCard, harkAlly);
+            setTraitorDecision(plan, harkAlly, true, false, false);
+            clearTraitorCardChoices(caller);
+            if (publish) {
+                Faction opponent = plan == aggressorBattlePlan ? getDefender(game) : getAggressor(game);
+                Faction combatant = plan == aggressorBattlePlan ? getAggressor(game) : getDefender(game);
+                String betrayal = calledCard.equals(target.getLeaderNameForTraitor()) && !target.hasBodyDouble()
+                    ? calledCard + " has betrayed " + opponent.getEmoji()
+                    : caller.getEmoji() + " reveals " + calledCard + " card, against " + target.getLeaderDisplayName() + ", deep in a trance, they are tricked into betraying " + opponent.getEmoji();
+
+                caller.getChat().publish(betrayal + (harkAlly ? " for your ally!" : " for you!"));
+                if (harkAlly)
+                    combatant.getChat().publish(betrayal + " for " + Emojis.HARKONNEN + " and you!");
+            } else {
+                game.getModInfo().publish(caller.getEmoji() + " will call Traitor in " + wholeTerritoryName + ".");
+            }
+            return;
+        }
+        setTraitorDecision(plan, harkAlly, will, false, true);
+        if (!publish) {
+            game.getModInfo().publish(caller.getEmoji() + " can call Traitor against " + target.getLeaderDisplayName() + " in " + wholeTerritoryName + ".");
+            return;
+        }
+
+        if (will && requiresTraitorCardChoice(target, eligible)) {
+            presentTraitorCardChoices(game, caller, target, eligible, harkAlly);
+        } else {
+            List<DuneChoice> choices = new ArrayList<>();
+            choices.add(new DuneChoice("traitor-call-yes-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Yes"));
+            choices.add(new DuneChoice("traitor-call-no-turn-" + game.getTurn() + "-" + wholeTerritoryName, "No"));
+            caller.getChat().publish("Will you call Traitor " + (harkAlly ? "for your ally " : "") + "against " +
+                (target.hasBodyDouble() ? target.getLeaderDisplayName() : target.getLeaderNameForTraitor()) +
+                " in " + getPublicTerritoryName(game) + "? " + caller.getPlayer(), choices);
+        }
+    }
+
+    private void presentTraitorCardChoices(Game game, Faction caller, BattlePlan target, List<TraitorCard> eligible, boolean harkAlly) {
+        clearTraitorCardChoices(caller);
+        List<DuneChoice> choices = new ArrayList<>();
+        for (TraitorCard card : eligible) {
+            String token = UUID.randomUUID().toString();
+            traitorCardChoices.put(token, List.of(caller.getName(), card.getName(), String.valueOf(game.getTurn())));
+            choices.add(new DuneChoice("traitor-call-card-" + token, card.getName()));
+        }
+        choices.add(new DuneChoice("secondary", "traitor-call-no-turn-" + game.getTurn() + "-" + wholeTerritoryName, "Do not call"));
+        caller.getChat().publish("Choose which Traitor card to reveal " + (harkAlly ? "for your ally " : "")
+                + "against " + target.getLeaderDisplayName() + " due to trance from Water of Life. " + caller.getPlayer(), choices);
+    }
+
+    private boolean isHarkonnenAllyCaller(Game game, Faction caller) {
+        return caller instanceof HarkonnenFaction && caller != getAggressor(game) && caller != getDefender(game);
+    }
+
+    private BattlePlan callerPlan(Game game, Faction caller) throws InvalidGameStateException {
+        if (caller == getAggressor(game))
+            return aggressorBattlePlan;
+        if (caller == getDefender(game))
+            return defenderBattlePlan;
+        if (caller instanceof HarkonnenFaction) {
+            if (Objects.equals(caller.getAlly(), getAggressorName()))
+                return aggressorBattlePlan;
+            if (Objects.equals(caller.getAlly(), getDefenderName()))
+                return defenderBattlePlan;
+        }
+        throw new InvalidGameStateException("You cannot call Traitor in this battle.");
+    }
+
+    private BattlePlan targetPlan(BattlePlan plan) {
+        return plan == aggressorBattlePlan ? defenderBattlePlan : aggressorBattlePlan;
+    }
+
+    public void validateTraitorCall(Game game, Faction caller, int turn, String territory) throws InvalidGameStateException {
+        if (battleResolutionExecuted)
+            throw new InvalidGameStateException("This battle has already been resolved.");
+        if (turn != game.getTurn() || !wholeTerritoryName.equals(territory))
+            throw new InvalidGameStateException("This button belongs to a different turn or battle.");
+        if (callerPlan(game, caller) == null)
+            throw new InvalidGameStateException("Your battle plan has not been submitted.");
+    }
+
+    public void validateTraitorCardChoice(Game game, Faction caller, String token) throws InvalidGameStateException {
+        if (!resolutionPublished || battleResolutionExecuted || traitorCardChoices == null)
+            throw new InvalidGameStateException("There is no pending traitor-card selection.");
+        List<String> choice = traitorCardChoices.get(token);
+        if (choice == null || !choice.get(0).equals(caller.getName()) || !choice.get(2).equals(String.valueOf(game.getTurn())))
+            throw new InvalidGameStateException("This traitor-card button is stale or belongs to another faction.");
+        BattlePlan plan = callerPlan(game, caller);
+        boolean harkAlly = isHarkonnenAllyCaller(game, caller);
+        if (plan == null || !(harkAlly ? plan.isHarkCanCallTraitor() : plan.isCanCallTraitor())
+                || eligibleTraitors(game, caller, targetPlan(plan)).stream().noneMatch(c -> c.getName().equals(choice.get(1))))
+            throw new InvalidGameStateException("That Traitor card cannot be called in this battle.");
+    }
+
+    public void selectTraitorForBattle(Game game, Faction caller, String token) throws InvalidGameStateException {
+        validateTraitorCardChoice(game, caller, token);
+        BattlePlan plan = callerPlan(game, caller);
+        boolean harkAlly = isHarkonnenAllyCaller(game, caller);
+        plan.setSelectedTraitorName(traitorCardChoices.get(token).get(1), harkAlly);
+        clearTraitorCardChoices(caller);
+        setTraitorDecision(plan, harkAlly, true, false, false);
+        printBattleResolution(game, true);
     }
 
     public boolean isResolutionPublished() {
         return resolutionPublished;
     }
 
-    public void willCallTraitor(Game game, Faction faction, boolean willCallTraitor, int turn, String wholeTerritoryForTraitor) throws InvalidGameStateException {
-        if (turn != game.getTurn())
-            throw new InvalidGameStateException("It is no longer turn " + turn);
-        if (!wholeTerritoryForTraitor.equals(wholeTerritoryName))
-            throw new InvalidGameStateException("The current battle is not in " + wholeTerritoryForTraitor);
+    public void willCallTraitor(Game game, Faction caller, boolean will, int turn, String territory) throws InvalidGameStateException {
+        validateTraitorCall(game, caller, turn, territory);
+        BattlePlan plan = callerPlan(game, caller);
+        BattlePlan target = targetPlan(plan);
+        boolean harkAlly = isHarkonnenAllyCaller(game, caller);
+        boolean canCall = harkAlly ? plan.isHarkCanCallTraitor() : plan.isCanCallTraitor();
+        String forAlly = harkAlly ? " for " + Emojis.getFactionEmoji(caller.getAlly()) : "";
+        clearTraitorCardChoices(caller);
+        plan.setSelectedTraitorName(null, harkAlly);
 
-        BattlePlan plan;
-        BattlePlan opponentPlan;
-        Faction opponent;
-        boolean resolutionChecked = false;
-        if (faction == getAggressor(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getAggressorName())) {
-            plan = aggressorBattlePlan;
-            opponentPlan = defenderBattlePlan;
-            opponent = getDefender(game);
-        } else if (faction == getDefender(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getDefenderName())) {
-            plan = defenderBattlePlan;
-            opponentPlan = aggressorBattlePlan;
-            opponent = getAggressor(game);
-        } else
-            throw new InvalidGameStateException(faction.getName() + " does not have a battle plan for this battle.");
-
-        boolean isHarkonnenAllyPower = faction instanceof HarkonnenFaction && faction != getAggressor(game) && faction != getDefender(game);
-        if (isHarkonnenAllyPower) {
-            String harkAllyEmoji = Emojis.getFactionEmoji(faction.getAlly());
-            if (willCallTraitor) {
-                if (resolutionPublished && faction.hasTraitor(opponentPlan.getLeaderNameForTraitor())) {
-                    game.getModInfo().publish(faction.getEmoji() + " calls Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + "!");
-                    plan.setHarkWillCallTraitor(true);
-                    printBattleResolution(game, true);
-                    resolutionChecked = true;
-                } else if (!resolutionPublished && plan.isHarkCanCallTraitor()) {
-                    plan.setHarkWillCallTraitor(true);
-                    game.getModInfo().publish(faction.getEmoji() + " will call Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + " if possible.");
-                } else {
-                    faction.getChat().publish("You cannot call Traitor for " + harkAllyEmoji + ".");
-                }
-                plan.setHarkCanCallTraitor(false);
-            } else if (plan.isHarkCanCallTraitor()) {
-                plan.setHarkDeclinedTraitor(true);
-                game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor for " + harkAllyEmoji + " in " + wholeTerritoryName + ".");
-                plan.setHarkCanCallTraitor(false);
+        if (!will) {
+            setTraitorDecision(plan, harkAlly, false, true, false);
+            if (canCall)
+                game.getModInfo().publish(caller.getEmoji() + " declines calling Traitor" + forAlly + " in " + wholeTerritoryName + ".");
+        } else if (!resolutionPublished && canCall) {
+            setTraitorDecision(plan, harkAlly, true, false, false);
+            game.getModInfo().publish(caller.getEmoji() + " will call Traitor" + forAlly + " in " + wholeTerritoryName + " if possible.");
+            if (!harkAlly && "Harkonnen".equals(caller.getAlly())) {
+                Faction opponent = plan == aggressorBattlePlan ? getDefender(game) : getAggressor(game);
+                plan.presentEarlyTraitorChoices(game, game.getHarkonnenFaction(), opponent, true);
+                if (plan.isHarkCanCallTraitor())
+                    game.getModInfo().publish(Emojis.HARKONNEN + " can call Traitor for ally " + caller.getEmoji() + " in " + wholeTerritoryName + ".");
             }
-        } else if (willCallTraitor) {
-            if (resolutionPublished && faction.hasTraitor(opponentPlan.getLeaderNameForTraitor())) {
-                game.getModInfo().publish(faction.getEmoji() + " calls Traitor in " + wholeTerritoryName + "!");
-                plan.setWillCallTraitor(true);
-                printBattleResolution(game, true);
-                resolutionChecked = true;
-            } else if (!resolutionPublished && plan.isCanCallTraitor()) {
-                plan.setWillCallTraitor(true);
-                game.getModInfo().publish(faction.getEmoji() + " will call Traitor in " + wholeTerritoryName + " if possible.");
-                if (faction.getAlly().equals("Harkonnen")) {
-                    plan.presentEarlyTraitorChoices(game, game.getHarkonnenFaction(), opponent, true);
-                    if (plan.isHarkCanCallTraitor())
-                        game.getModInfo().publish(Emojis.HARKONNEN + " can call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
-                }
+        } else if (resolutionPublished) {
+            List<TraitorCard> eligible = eligibleTraitors(game, caller, target);
+            if (eligible.isEmpty()) {
+                setTraitorDecision(plan, harkAlly, false, false, false);
+                caller.getChat().publish("You cannot call Traitor" + forAlly + ".");
             } else {
-                faction.getChat().publish("You cannot call Traitor.");
+                boolean chooseCard = requiresTraitorCardChoice(target, eligible);
+                setTraitorDecision(plan, harkAlly, true, false, chooseCard);
+                if (!chooseCard) {
+                    plan.setSelectedTraitorName(eligible.getFirst().getName(), harkAlly);
+                    game.getModInfo().publish(caller.getEmoji() + " calls Traitor" + forAlly + " in " + wholeTerritoryName + "!");
+                }
+                printBattleResolution(game, true);
+                return;
             }
-            plan.setCanCallTraitor(false);
-        } else if (plan.isCanCallTraitor()) {
-            plan.setDeclinedTraitor(true);
-            game.getModInfo().publish(faction.getEmoji() + " declines calling Traitor in " + wholeTerritoryName + ".");
-            plan.setCanCallTraitor(false);
+        } else {
+            setTraitorDecision(plan, harkAlly, false, false, false);
+            caller.getChat().publish("You cannot call Traitor" + forAlly + ".");
         }
-        if (resolutionPublished && !resolutionChecked)
+
+        if (resolutionPublished)
             checkIfResolvable(game);
     }
 
-    public boolean mightCallTraitor(Game game, Faction faction, int turn, String wholeTerritoryForTraitor) throws InvalidGameStateException {
-        if (turn != game.getTurn())
-            throw new InvalidGameStateException("It is no longer turn " + turn);
-        if (!wholeTerritoryForTraitor.equals(wholeTerritoryName))
-            throw new InvalidGameStateException("The current battle is not in " + wholeTerritoryForTraitor);
-
-        BattlePlan plan;
-        Faction opponent;
-        if (faction == getAggressor(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getAggressorName())) {
-            plan = aggressorBattlePlan;
-            opponent = getDefender(game);
-        } else if (faction == getDefender(game) || faction instanceof HarkonnenFaction && faction.getAlly().equals(getDefenderName())) {
-            plan = defenderBattlePlan;
-            opponent = getAggressor(game);
-        } else
-            throw new InvalidGameStateException(faction.getName() + " does not have a battle plan for this battle.");
-
-        if (!resolutionPublished) {
-            game.getModInfo().publish(faction.getEmoji() + " will wait for battle wheels  to decide whether to call Traitor in " + wholeTerritoryName);
-            if (faction.getAlly().equals("Harkonnen")) {
+    public boolean mightCallTraitor(Game game, Faction caller, int turn, String territory) throws InvalidGameStateException {
+        validateTraitorCall(game, caller, turn, territory);
+        BattlePlan plan = callerPlan(game, caller);
+        boolean harkAlly = isHarkonnenAllyCaller(game, caller);
+        clearTraitorCardChoices(caller);
+        plan.setSelectedTraitorName(null, harkAlly);
+        setTraitorDecision(plan, harkAlly, false, false, true);
+        if (resolutionPublished) {
+            printBattleResolution(game, true);
+        } else {
+            game.getModInfo().publish(caller.getEmoji() + " will wait for battle wheels  to decide whether to call Traitor in " + wholeTerritoryName);
+            if (!harkAlly && "Harkonnen".equals(caller.getAlly())) {
+                Faction opponent = plan == aggressorBattlePlan ? getDefender(game) : getAggressor(game);
                 plan.presentEarlyTraitorChoices(game, game.getHarkonnenFaction(), opponent, true);
-                if (plan.isHarkCanCallTraitor())
-                    game.getModInfo().publish(Emojis.HARKONNEN + " can call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
-                else
-                    game.getModInfo().publish(Emojis.HARKONNEN + " cannot call Traitor for ally " + faction.getEmoji() + " in " + wholeTerritoryName + ".");
+                String availability = plan.isHarkCanCallTraitor() ? " can" : " cannot";
+                game.getModInfo().publish(Emojis.HARKONNEN + availability + " call Traitor for ally " + caller.getEmoji() + " in " + wholeTerritoryName + ".");
             }
         }
         return plan.isHarkCanCallTraitor();
+    }
+
+    private boolean pendingTraitorCardChoice(Game game, Faction caller, BattlePlan plan, BattlePlan target, boolean harkAlly) {
+        return (harkAlly ? plan.isHarkWillCallTraitor() : plan.isWillCallTraitor())
+                && requiresTraitorCardChoice(target, eligibleTraitors(game, caller, target))
+                && calledTraitorName(game, caller, plan, target, harkAlly) == null;
+    }
+
+    private boolean hasPendingTraitorCardChoice(Game game) {
+        return pendingTraitorCardChoice(game, getAggressor(game), aggressorBattlePlan, defenderBattlePlan, false)
+                || pendingTraitorCardChoice(game, getDefender(game), defenderBattlePlan, aggressorBattlePlan, false)
+                || "Harkonnen".equals(getAggressor(game).getAlly()) && pendingTraitorCardChoice(game, game.getHarkonnenFaction(), aggressorBattlePlan, defenderBattlePlan, true)
+                || "Harkonnen".equals(getDefender(game).getAlly()) && pendingTraitorCardChoice(game, game.getHarkonnenFaction(), defenderBattlePlan, aggressorBattlePlan, true);
+    }
+
+    private void recordTraitorUsage(Game game, Faction combatant, BattlePlan plan, BattlePlan target) {
+        String own = calledTraitorName(game, combatant, plan, target, false);
+        if (own != null)
+            combatant.useTraitor(own);
+        if ("Harkonnen".equals(combatant.getAlly())) {
+            Faction harkonnen = game.getHarkonnenFaction();
+            String allied = calledTraitorName(game, harkonnen, plan, target, true);
+            if (allied != null)
+                harkonnen.useTraitor(allied);
+        }
+    }
+
+    private String traitorAnnouncement(Game game, Faction combatant, BattlePlan plan, BattlePlan target) {
+        String result = callerTraitorAnnouncement(game, combatant, plan, target, false);
+        if ("Harkonnen".equals(combatant.getAlly()))
+            result += callerTraitorAnnouncement(game, game.getHarkonnenFaction(), plan, target, true);
+        return result;
+    }
+
+    private String callerTraitorAnnouncement(Game game, Faction caller, BattlePlan plan, BattlePlan target, boolean harkAlly) {
+        String card = calledTraitorName(game, caller, plan, target, harkAlly);
+        if (card == null)
+            return "";
+        boolean waterOfLifeCall = target.hasWaterOfLife()
+                && (target.hasBodyDouble() || !card.equals(target.getLeaderNameForTraitor()));
+        return caller.getEmoji() + " reveals " + card + " to call Traitor "
+                + (harkAlly ? "for their ally " : "") + "against " + target.getLeaderDisplayName()
+                + (waterOfLifeCall ? " through Water of Life" : "") + ".\n";
     }
 
     private String lasgunShieldCarnage(Game game, boolean executeResolution) {
@@ -2169,7 +2360,9 @@ public class Battle {
         if (defenderBattlePlan.isCanCallTraitor() || defenderBattlePlan.isHarkCanCallTraitor())
             openIssues.add("Defender Traitor Call");
 
-        if (openIssues.isEmpty() || overrideDecisions) {
+        if (hasPendingTraitorCardChoice(game))
+            openIssues.add("Traitor card selection");
+        if ((openIssues.isEmpty() || overrideDecisions) && !hasPendingTraitorCardChoice(game)) {
             String resolveString = "Would you like the bot to resolve the battle? " + game.getModOrRoleMention();
             List<DuneChoice> choices = new ArrayList<>();
             Faction harkBetrayer = getHarkonnenNexusBetrayalFaction(game);
@@ -2196,13 +2389,13 @@ public class Battle {
         if (harkonnen.hasAlly() && harkonnen.getAlly().equals(factionWithHarkonnenNexusCard.getName()))
             return null;
 
-        if (getAggressor(game) instanceof HarkonnenFaction && aggressorBattlePlan.isWillCallTraitor() && aggressorCallsTraitor(game))
+        if (getAggressor(game) instanceof HarkonnenFaction && calledTraitorName(game, harkonnen, aggressorBattlePlan, defenderBattlePlan, false) != null)
             return factionWithHarkonnenNexusCard;
-        if (harkonnen.hasAlly() && harkonnen.getAlly().equals(getAggressorName()) && aggressorBattlePlan.isHarkWillCallTraitor() && aggressorCallsTraitor(game))
+        if (harkonnen.hasAlly() && harkonnen.getAlly().equals(getAggressorName()) && calledTraitorName(game, harkonnen, aggressorBattlePlan, defenderBattlePlan, true) != null)
             return factionWithHarkonnenNexusCard;
-        if (getDefender(game) instanceof HarkonnenFaction && defenderBattlePlan.isWillCallTraitor() && defenderCallsTraitor(game))
+        if (getDefender(game) instanceof HarkonnenFaction && calledTraitorName(game, harkonnen, defenderBattlePlan, aggressorBattlePlan, false) != null)
             return factionWithHarkonnenNexusCard;
-        if (harkonnen.hasAlly() && harkonnen.getAlly().equals(getDefenderName()) && defenderBattlePlan.isHarkWillCallTraitor() && defenderCallsTraitor(game))
+        if (harkonnen.hasAlly() && harkonnen.getAlly().equals(getDefenderName()) && calledTraitorName(game, harkonnen, defenderBattlePlan, aggressorBattlePlan, true) != null)
             return factionWithHarkonnenNexusCard;
         return null;
     }

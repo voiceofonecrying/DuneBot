@@ -117,6 +117,8 @@ public class ShipmentAndMovementButtons implements Pressable {
                         id.startsWith("planetologist-add-force") ||
                         id.startsWith("planetologist-add-special-force") ||
                         id.startsWith("guild-cross-ship") ||
+                        id.equals("iduali-cave") ||
+                        id.startsWith("iduali-cave-from-") ||
                         id.startsWith("pass-movement") ||
                         id.startsWith("reset-movement") ||
                         id.startsWith("move-") ||
